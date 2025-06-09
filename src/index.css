@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    font-family:
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      Roboto,
+      'Helvetica Neue',
+      Arial,
+      'Noto Sans',
+      sans-serif,
+      'Apple Color Emoji',
+      'Segoe UI Emoji',
+      'Segoe UI Symbol',
+      'Noto Color Emoji';
+  }
+
+  body {
+    @apply text-gray-900 bg-white;
+  }
+
+  /* Print styles */
+  @media print {
+    @page {
+      size: A4;
+      margin: 20mm 25mm 20mm 25mm;
+    }
+
+    body {
+      @apply text-black bg-white;
+    }
+
+    .no-print {
+      display: none !important;
+    }
+
+    .page-break {
+      page-break-after: always;
+    }
+
+    .avoid-break {
+      page-break-inside: avoid;
+    }
+  }
+}
+
+@layer components {
+  /* Problem styles for worksheets */
+  .problem-text {
+    @apply font-mono text-base leading-loose;
+  }
+
+  .answer-line {
+    @apply inline-block w-16 border-b border-gray-800 mx-1;
+  }
+
+  .hissan-grid {
+    @apply inline-grid gap-0 font-mono text-lg;
+  }
+
+  .hissan-cell {
+    @apply w-8 h-8 flex items-center justify-center;
+  }
+
+  .hissan-line {
+    @apply border-b-2 border-gray-800;
+  }
+}
