@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>筆算レイアウト実装例</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        /* 基本的な筆算スタイル */
+        .calculation {
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            display: inline-block;
+            margin: 20px;
+            position: relative;
+        }
+
+        .number, .result {
+            display: inline-block;
+            text-align: right;
+            min-width: 30px;
+        }
+
+        .carry-row {
+            font-size: 16px;
+            color: #ff0000;
+            height: 20px;
+            text-align: right;
+            margin-right: 5px;
+        }
+
+        .operator {
+            display: inline-block;
+            width: 30px;
+            text-align: right;
+            padding-right: 10px;
+        }
+
+        .line {
+            border-bottom: 2px solid #000;
+            margin: 5px 0;
+        }
+
+        /* たし算専用 */
+        .addition .number-row,
+        .addition .operator-row,
+        .addition .result-row {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .addition .digit {
+            width: 30px;
+            text-align: center;
+        }
+
+        /* ひき算専用 */
+        .subtraction .borrow-row {
+            font-size: 14px;
+            color: #0066cc;
+            height: 20px;
+        }
+
+        .subtraction .crossed {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .subtraction .borrowed {
+            color: #0066cc;
+            font-size: 14px;
+            vertical-align: super;
+        }
+
+        /* かけ算専用 */
+        .multiplication .partial-product {
+            text-align: right;
+            margin: 2px 0;
+        }
+
+        .multiplication .partial-product:first-of-type {
+            padding-right: 0;
+        }
+
+        .multiplication .partial-product:nth-of-type(2) {
+            padding-right: 30px;
+        }
+
+        /* わり算専用 */
+        .division-container {
+            display: inline-block;
+            margin: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+        }
+
+        .division-layout {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .quotient {
+            text-align: right;
+            margin-bottom: 5px;
+            padding-left: 40px;
+            border-bottom: 2px solid #000;
+            min-width: 80px;
+        }
+
+        .divisor {
+            margin-right: 10px;
+            padding-top: 5px;
+        }
+
+        .division-symbol {
+            font-size: 30px;
+            line-height: 1;
+            margin-right: 5px;
+        }
+
+        .dividend-area {
+            position: relative;
+        }
+
+        .dividend {
+            padding-top: 5px;
+        }
+
+        .intermediate-steps {
+            margin-top: 10px;
+        }
+
+        .step {
+            text-align: right;
+            margin: 2px 0;
+        }
+
+        .step.subtract {
+            border-bottom: 1px solid #000;
+            padding-bottom: 2px;
+            margin-bottom: 5px;
+        }
+
+        /* 手書きスペース */
+        .handwriting-space {
+            border: 2px dashed #ccc;
+            min-height: 60px;
+            margin: 10px 0;
+            background-color: #fafafa;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .handwriting-space::after {
+            content: "ここに計算を書いてください";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ccc;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Grid レイアウト例 */
+        .grid-calculation {
+            display: grid;
+            grid-template-columns: 40px repeat(4, 40px);
+            gap: 2px;
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            margin: 20px;
+        }
+
+        .grid-calculation .operator-cell {
+            text-align: right;
+            padding-right: 10px;
+        }
+
+        .grid-calculation .digit-cell {
+            text-align: center;
+            padding: 5px;
+        }
+
+        .grid-calculation .carry-cell {
+            text-align: center;
+            color: #ff0000;
+            font-size: 16px;
+        }
+
+        .grid-calculation .line-cell {
+            grid-column: 1 / -1;
+            border-bottom: 2px solid black;
+            margin: 5px 0;
+        }
+
+        /* 印刷対応 */
+        @media print {
+            body {
+                background-color: white;
+            }
+
+            .container {
+                box-shadow: none;
+                page-break-inside: avoid;
+            }
+
+            .handwriting-space {
+                background-color: white;
+                border-color: #666;
+            }
+
+            .handwriting-space::after {
+                display: none;
+            }
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 600px) {
+            .calculation,
+            .grid-calculation,
+            .division-container {
+                font-size: 18px;
+            }
+
+            .grid-calculation {
+                grid-template-columns: 30px repeat(4, 30px);
+            }
+
+            .handwriting-space {
+                min-height: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>筆算レイアウト実装例</h1>
+
+    <div class="container">
+        <h2>1. たし算の筆算</h2>
+        
+        <div class="calculation addition">
+            <div class="carry-row">
+                <span style="margin-right: 35px;">1</span>
+            </div>
+            <div class="number-row">
+                <span class="digit">1</span>
+                <span class="digit">2</span>
+                <span class="digit">3</span>
+            </div>
+            <div class="operator-row">
+                <span class="operator">+</span>
+                <span class="digit">4</span>
+                <span class="digit">5</span>
+                <span class="digit">6</span>
+            </div>
+            <div class="line"></div>
+            <div class="result-row">
+                <span class="digit">5</span>
+                <span class="digit">7</span>
+                <span class="digit">9</span>
+            </div>
+        </div>
+
+        <div class="handwriting-space"></div>
+    </div>
+
+    <div class="container">
+        <h2>2. ひき算の筆算</h2>
+        
+        <div class="calculation subtraction">
+            <div class="borrow-row">
+                <span style="margin-right: 35px;"><span class="crossed">5</span><span class="borrowed">4</span></span>
+                <span><span class="borrowed">10</span></span>
+            </div>
+            <div class="number-row">
+                <span class="digit">5</span>
+                <span class="digit">0</span>
+                <span class="digit">0</span>
+            </div>
+            <div class="operator-row">
+                <span class="operator">−</span>
+                <span class="digit">2</span>
+                <span class="digit">3</span>
+                <span class="digit">4</span>
+            </div>
+            <div class="line"></div>
+            <div class="result-row">
+                <span class="digit">2</span>
+                <span class="digit">6</span>
+                <span class="digit">6</span>
+            </div>
+        </div>
+
+        <div class="handwriting-space"></div>
+    </div>
+
+    <div class="container">
+        <h2>3. かけ算の筆算</h2>
+        
+        <div class="calculation multiplication">
+            <div class="number-row" style="text-align: right;">
+                <span>123</span>
+            </div>
+            <div class="operator-row" style="display: flex; justify-content: flex-end;">
+                <span class="operator">×</span>
+                <span style="min-width: 60px; text-align: right;">45</span>
+            </div>
+            <div class="line"></div>
+            <div class="partial-product">615</div>
+            <div class="partial-product">4920</div>
+            <div class="line"></div>
+            <div class="result" style="text-align: right;">5535</div>
+        </div>
+
+        <div class="handwriting-space"></div>
+    </div>
+
+    <div class="container">
+        <h2>4. わり算の筆算</h2>
+        
+        <div class="division-container">
+            <div class="quotient">12</div>
+            <div class="division-layout">
+                <span class="divisor">5</span>
+                <span class="division-symbol">)</span>
+                <div class="dividend-area">
+                    <div class="dividend">60</div>
+                    <div class="intermediate-steps">
+                        <div class="step">5</div>
+                        <div class="step subtract">10</div>
+                        <div class="step">10</div>
+                        <div class="step subtract">10</div>
+                        <div class="step">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="handwriting-space"></div>
+    </div>
+
+    <div class="container">
+        <h2>5. Grid レイアウトを使用した例</h2>
+        
+        <div class="grid-calculation">
+            <!-- 繰り上がり行 -->
+            <div class="operator-cell"></div>
+            <div class="carry-cell"></div>
+            <div class="carry-cell">1</div>
+            <div class="carry-cell"></div>
+            <div class="carry-cell"></div>
+            
+            <!-- 1つ目の数 -->
+            <div class="operator-cell"></div>
+            <div class="digit-cell"></div>
+            <div class="digit-cell">2</div>
+            <div class="digit-cell">3</div>
+            <div class="digit-cell">4</div>
+            
+            <!-- 演算子と2つ目の数 -->
+            <div class="operator-cell">+</div>
+            <div class="digit-cell"></div>
+            <div class="digit-cell">7</div>
+            <div class="digit-cell">8</div>
+            <div class="digit-cell">9</div>
+            
+            <!-- 横線 -->
+            <div class="line-cell"></div>
+            
+            <!-- 答え -->
+            <div class="operator-cell"></div>
+            <div class="digit-cell">1</div>
+            <div class="digit-cell">0</div>
+            <div class="digit-cell">2</div>
+            <div class="digit-cell">3</div>
+        </div>
+
+        <div class="handwriting-space"></div>
+    </div>
+
+    <div class="container">
+        <h2>6. 複雑なわり算の例</h2>
+        
+        <div class="division-container">
+            <div class="quotient">245 あまり 3</div>
+            <div class="division-layout">
+                <span class="divisor">17</span>
+                <span class="division-symbol">)</span>
+                <div class="dividend-area">
+                    <div class="dividend">4168</div>
+                    <div class="intermediate-steps">
+                        <div class="step">34</div>
+                        <div class="step subtract">76</div>
+                        <div class="step">68</div>
+                        <div class="step subtract">88</div>
+                        <div class="step">85</div>
+                        <div class="step subtract">3</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="handwriting-space"></div>
+    </div>
+</body>
+</html>
