@@ -72,11 +72,16 @@ function App(): React.ReactElement {
                     problemCount={settings.problemCount}
                     layoutColumns={settings.layoutColumns}
                     includeCarryOver={settings.includeCarryOver}
+                    operation={settings.operation}
                     minNumber={settings.minNumber}
                     maxNumber={settings.maxNumber}
                     onProblemCountChange={(problemCount) => updateSettings({ problemCount })}
                     onLayoutColumnsChange={(layoutColumns) => updateSettings({ layoutColumns })}
-                    onIncludeCarryOverChange={(includeCarryOver) => updateSettings({ includeCarryOver })}
+                    onIncludeCarryOverChange={
+                      (settings.operation === 'addition' || settings.operation === 'subtraction')
+                        ? (includeCarryOver: boolean): void => updateSettings({ includeCarryOver })
+                        : undefined
+                    }
                     onMinNumberChange={(minNumber) => updateSettings({ minNumber })}
                     onMaxNumberChange={(maxNumber) => updateSettings({ maxNumber })}
                   />

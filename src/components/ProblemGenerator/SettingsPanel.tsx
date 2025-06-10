@@ -1,10 +1,11 @@
 import React from 'react';
-import type { LayoutColumns } from '../../types';
+import type { LayoutColumns, Operation } from '../../types';
 
 interface SettingsPanelProps {
   problemCount: number;
   layoutColumns: LayoutColumns;
   includeCarryOver?: boolean;
+  operation?: Operation;
   minNumber?: number;
   maxNumber?: number;
   onProblemCountChange: (count: number) => void;
@@ -25,6 +26,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   problemCount,
   layoutColumns,
   includeCarryOver,
+  operation,
   minNumber,
   maxNumber,
   onProblemCountChange,
@@ -48,6 +50,29 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   for (let i = 5; i <= maxProblems; i += 5) {
     problemCountOptions.push(i);
   }
+
+  // 演算に応じた繰り上がり・繰り下がりのラベルを取得
+  const getCarryOverLabel = (): { label: string; description: string } => {
+    switch (operation) {
+      case 'addition':
+        return {
+          label: '繰り上がりを含む',
+          description: '繰り上がりのあるたし算を含めます'
+        };
+      case 'subtraction':
+        return {
+          label: '繰り下がりを含む',
+          description: '繰り下がりのあるひき算を含めます'
+        };
+      default:
+        return {
+          label: '繰り上がり・繰り下がりを含む',
+          description: 'より難しい計算問題を含めます'
+        };
+    }
+  };
+
+  const carryOverLabels = getCarryOverLabel();
 
   return (
     <div className="space-y-6">
@@ -126,11 +151,11 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
             <span className="ml-2 text-sm text-gray-700">
-              繰り上がり・繰り下がりを含む
+              {carryOverLabels.label}
             </span>
           </label>
           <p className="text-xs text-gray-500 mt-1">
-            より難しい計算問題を含めます
+            {carryOverLabels.description}
           </p>
         </div>
       )}
@@ -174,9 +199,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <div className="text-sm text-gray-600 space-y-1">
           <div>レイアウト: {layoutColumns}列</div>
           <div>問題数: {problemCount}問</div>
-          {includeCarryOver !== undefined && (
+          {includeCarryOver !== undefined && onIncludeCarryOverChange && (
             <div>
-              繰り上がり・繰り下がり: {includeCarryOver ? 'あり' : 'なし'}
+              {operation === 'addition' ? '繰り上がり' : operation === 'subtraction' ? '繰り下がり' : '繰り上がり・繰り下がり'}: {includeCarryOver ? 'あり' : 'なし'}
             </div>
           )}
           {minNumber !== undefined && maxNumber !== undefined && (
