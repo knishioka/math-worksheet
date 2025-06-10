@@ -120,3 +120,12 @@
     @apply border-b-2 border-black;
   }
 }
+
+/* MathML印刷最適化 */
+@media print {
+  math {
+    page-break-inside: avoid;
+    color: black \!important;
+    font-size: inherit;
+  }
+}

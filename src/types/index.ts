@@ -4,7 +4,7 @@ export type Operation =
   | 'multiplication'
   | 'division';
 
-export type ProblemType = 'basic' | 'hissan' | 'missing' | 'word';
+export type ProblemType = 'basic' | 'fraction' | 'decimal' | 'mixed' | 'hissan' | 'missing' | 'word';
 
 export type Grade = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -31,6 +31,44 @@ export interface HissanProblem {
   carryOverDisplay?: boolean;
 }
 
+export interface FractionProblem {
+  id: string;
+  type: 'fraction';
+  operation: Operation;
+  numerator1: number;
+  denominator1: number;
+  numerator2?: number;
+  denominator2?: number;
+  answerNumerator: number;
+  answerDenominator: number;
+  simplified?: boolean; // 約分済みかどうか
+}
+
+export interface DecimalProblem {
+  id: string;
+  type: 'decimal';
+  operation: Operation;
+  operand1: number; // 12.5 など
+  operand2: number; // 3.7 など
+  answer: number;
+  decimalPlaces: number; // 小数点以下の桁数
+}
+
+export interface MixedNumberProblem {
+  id: string;
+  type: 'mixed';
+  operation: Operation;
+  whole1: number;
+  numerator1: number;
+  denominator1: number;
+  whole2?: number;
+  numerator2?: number;
+  denominator2?: number;
+  answerWhole: number;
+  answerNumerator: number;
+  answerDenominator: number;
+}
+
 export interface MissingNumberProblem {
   id: string;
   type: 'missing';
@@ -41,7 +79,7 @@ export interface MissingNumberProblem {
   missingPosition: 'operand1' | 'operand2' | 'answer';
 }
 
-export type Problem = BasicProblem | HissanProblem | MissingNumberProblem;
+export type Problem = BasicProblem | FractionProblem | DecimalProblem | MixedNumberProblem | HissanProblem | MissingNumberProblem;
 
 export interface WorksheetSettings {
   grade: Grade;

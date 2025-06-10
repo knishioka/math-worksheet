@@ -3,13 +3,25 @@ import { generateAdditionProblems, generateGradeAdditionProblems } from './addit
 import { generateSubtractionProblems, generateGradeSubtractionProblems } from './subtraction';
 import { generateMultiplicationProblems, generateGradeMultiplicationProblems } from './multiplication';
 import { generateDivisionProblems, generateGradeDivisionProblems } from './division';
+import { generateGradeFractionProblems } from './fraction';
+import { generateGradeDecimalProblems } from './decimal';
 
 /**
  * Main problem generator that routes to appropriate operation generator
  */
 export function generateProblems(settings: WorksheetSettings): Problem[] {
-  const { operation, problemCount, grade } = settings;
+  const { operation, problemType, problemCount, grade } = settings;
 
+  // 問題タイプ別の処理
+  if (problemType === 'fraction') {
+    return generateGradeFractionProblems(grade, problemCount);
+  }
+  
+  if (problemType === 'decimal') {
+    return generateGradeDecimalProblems(grade, problemCount);
+  }
+
+  // 従来の基本計算
   switch (operation) {
     case 'addition':
       return generateGradeAdditionProblems(grade, problemCount);
@@ -163,3 +175,5 @@ export * from './addition';
 export * from './subtraction';
 export * from './multiplication';
 export * from './division';
+export * from './fraction';
+export * from './decimal';

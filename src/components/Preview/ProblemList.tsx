@@ -1,5 +1,6 @@
 import React from 'react';
-import type { Problem, LayoutColumns } from '../../types';
+import type { Problem, LayoutColumns, FractionProblem, DecimalProblem, MixedNumberProblem } from '../../types';
+import { MathFraction, MathDecimal, MathMixedNumber } from '../Math/MathExpression';
 
 interface ProblemListProps {
   problems: Problem[];
@@ -59,6 +60,100 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
     division: '÷',
   }[problem.operation];
 
+  // 分数問題の場合
+  if (problem.type === 'fraction') {
+    const fractionProblem = problem as FractionProblem;
+    return (
+      <div className="problem-text space-y-1">
+        <div className="text-xs text-gray-600">({number})</div>
+        <div className="flex items-center space-x-2">
+          <MathFraction 
+            numerator={fractionProblem.numerator1} 
+            denominator={fractionProblem.denominator1} 
+          />
+          <span className="font-mono text-lg">{operationSymbol}</span>
+          {fractionProblem.numerator2 !== undefined && fractionProblem.denominator2 !== undefined && (
+            <MathFraction 
+              numerator={fractionProblem.numerator2} 
+              denominator={fractionProblem.denominator2} 
+            />
+          )}
+          <span className="font-mono text-lg">=</span>
+          {showAnswer ? (
+            <MathFraction 
+              numerator={fractionProblem.answerNumerator} 
+              denominator={fractionProblem.answerDenominator}
+              className="text-red-600 font-bold"
+            />
+          ) : (
+            <span className="inline-block w-16 border-b border-black mx-1 align-bottom" style={{ height: '1.5rem' }} />
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 小数問題の場合
+  if (problem.type === 'decimal') {
+    const decimalProblem = problem as DecimalProblem;
+    return (
+      <div className="problem-text space-y-1">
+        <div className="text-xs text-gray-600">({number})</div>
+        <div className="flex items-baseline space-x-2">
+          <MathDecimal value={decimalProblem.operand1} />
+          <span className="font-mono text-lg">{operationSymbol}</span>
+          <MathDecimal value={decimalProblem.operand2} />
+          <span className="font-mono text-lg">=</span>
+          {showAnswer ? (
+            <MathDecimal 
+              value={decimalProblem.answer}
+              className="text-red-600 font-bold"
+            />
+          ) : (
+            <span className="inline-block w-16 border-b border-black mx-1 align-bottom" style={{ height: '1.5rem' }} />
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 帯分数問題の場合
+  if (problem.type === 'mixed') {
+    const mixedProblem = problem as MixedNumberProblem;
+    return (
+      <div className="problem-text space-y-1">
+        <div className="text-xs text-gray-600">({number})</div>
+        <div className="flex items-center space-x-2">
+          <MathMixedNumber 
+            whole={mixedProblem.whole1} 
+            numerator={mixedProblem.numerator1} 
+            denominator={mixedProblem.denominator1} 
+          />
+          <span className="font-mono text-lg">{operationSymbol}</span>
+          {mixedProblem.whole2 !== undefined && mixedProblem.numerator2 !== undefined && mixedProblem.denominator2 !== undefined && (
+            <MathMixedNumber 
+              whole={mixedProblem.whole2} 
+              numerator={mixedProblem.numerator2} 
+              denominator={mixedProblem.denominator2} 
+            />
+          )}
+          <span className="font-mono text-lg">=</span>
+          {showAnswer ? (
+            <MathMixedNumber 
+              whole={mixedProblem.answerWhole} 
+              numerator={mixedProblem.answerNumerator} 
+              denominator={mixedProblem.answerDenominator}
+              className="text-red-600 font-bold"
+            />
+          ) : (
+            <span className="inline-block w-16 border-b border-black mx-1 align-bottom" style={{ height: '1.5rem' }} />
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 基本的な問題の場合（整数）
   return (
     <div className="problem-text space-y-1">
       <div className="text-xs text-gray-600">({number})</div>
@@ -80,11 +175,12 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
 };
 
 function formatAnswer(problem: Problem): string {
-  if (problem.answer === null) {
+  if ('answer' in problem && problem.answer === null) {
     return '□';
   }
   
-  if (problem.operation === 'division' && problem.operand1 !== null && problem.operand2 !== null) {
+  if (problem.operation === 'division' && 'operand1' in problem && 'operand2' in problem && 
+      problem.operand1 !== null && problem.operand2 !== null) {
     // For division, check if there's a remainder
     const quotient = Math.floor(problem.operand1 / problem.operand2);
     const remainder = problem.operand1 % problem.operand2;
@@ -96,5 +192,9 @@ function formatAnswer(problem: Problem): string {
     }
   }
   
-  return problem.answer.toString();
+  if ('answer' in problem) {
+    return problem.answer.toString();
+  }
+  
+  return '';
 }
