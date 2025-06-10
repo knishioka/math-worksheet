@@ -125,19 +125,4 @@ function App(): React.ReactElement {
   );
 }
 
-function getOperationName(operation: string): string {
-  switch (operation) {
-    case 'addition':
-      return 'たし算';
-    case 'subtraction':
-      return 'ひき算';
-    case 'multiplication':
-      return 'かけ算';
-    case 'division':
-      return 'わり算';
-    default:
-      return '計算';
-  }
-}
-
 export default App;

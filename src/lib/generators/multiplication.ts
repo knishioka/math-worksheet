@@ -151,7 +151,7 @@ export function generateGradeMultiplicationProblems(
         timesTableFocus: Math.random() < 0.5 ? randomInt(2, 9) : undefined,  // 時々特定の段にフォーカス
       });
 
-    case 3:
+    case 3: {
       // 3年生: 2桁×1桁、3桁×1桁の筆算
       const use2Digit = Math.random() < 0.7;  // 70%の確率で2桁×1桁
       if (use2Digit) {
@@ -181,6 +181,7 @@ export function generateGradeMultiplicationProblems(
           };
         });
       }
+    }
 
     case 4:
       // Grade 4: 2-digit x 1-digit

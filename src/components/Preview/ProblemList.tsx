@@ -192,7 +192,7 @@ function formatAnswer(problem: Problem): string {
     }
   }
   
-  if ('answer' in problem) {
+  if ('answer' in problem && problem.answer !== null) {
     return problem.answer.toString();
   }
   

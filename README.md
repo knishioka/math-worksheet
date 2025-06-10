@@ -7,8 +7,18 @@
 [![MathML](https://img.shields.io/badge/MathML-Native-green.svg)](https://www.w3.org/Math/)
 [![Tests](https://img.shields.io/badge/Tests-54%20passing-brightgreen.svg)](#テスト)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Live Demo](https://img.shields.io/badge/Demo-Live%20on%20GitHub%20Pages-brightgreen.svg)](https://knishioka.github.io/math-worksheet/)
 
 日本の小学校算数カリキュラムに完全対応した、美しい数式表示とフロントエンド完結型の計算プリント自動生成システムです。
+
+## 🌐 ライブデモ
+
+**[📱 今すぐ試す → https://knishioka.github.io/math-worksheet/](https://knishioka.github.io/math-worksheet/)**
+
+- ✅ インストール不要
+- ✅ ブラウザだけで動作
+- ✅ A4印刷対応
+- ✅ MathML対応ブラウザで美しい数式表示
 
 ## ✨ 主な特徴
 

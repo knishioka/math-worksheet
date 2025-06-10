@@ -19,7 +19,7 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
   onProblemTypeChange,
 }) => {
   // Check which operations are available for the current grade
-  const isOperationAvailable = (op: Operation): boolean => {
+  const isOperationAvailable = React.useCallback((op: Operation): boolean => {
     if (grade === 1 && (op === 'multiplication' || op === 'division')) {
       return false;
     }
@@ -27,10 +27,10 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
       return false;
     }
     return true;
-  };
+  }, [grade]);
 
   // Check which problem types are available for the current grade
-  const isProblemTypeAvailable = (type: ProblemType): boolean => {
+  const isProblemTypeAvailable = React.useCallback((type: ProblemType): boolean => {
     if (type === 'fraction') {
       return grade >= 2; // 2年生以降で分数を学習
     }
@@ -38,21 +38,21 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
       return grade >= 3; // 3年生以降で小数を学習
     }
     return true;
-  };
+  }, [grade]);
 
   // If current operation is not available for the new grade, switch to addition
   React.useEffect(() => {
     if (!isOperationAvailable(operation)) {
       onOperationChange('addition');
     }
-  }, [grade, operation]);
+  }, [grade, operation, isOperationAvailable, onOperationChange]);
 
   // If current problem type is not available for the new grade, switch to basic
   React.useEffect(() => {
     if (!isProblemTypeAvailable(problemType)) {
       onProblemTypeChange('basic');
     }
-  }, [grade, problemType]);
+  }, [grade, problemType, isProblemTypeAvailable, onProblemTypeChange]);
   
   return (
     <div className="space-y-6">
@@ -194,18 +194,6 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
   );
 };
 
-function getOperationName(operation: Operation): string {
-  switch (operation) {
-    case 'addition':
-      return 'たし算';
-    case 'subtraction':
-      return 'ひき算';
-    case 'multiplication':
-      return 'かけ算';
-    case 'division':
-      return 'わり算';
-  }
-}
 
 function getProblemTypeDescription(problemType: ProblemType): string {
   switch (problemType) {

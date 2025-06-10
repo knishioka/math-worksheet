@@ -7,7 +7,7 @@ function supportsMathML(): boolean {
   const div = document.createElement('div');
   div.innerHTML = '<math><mspace height="23px" width="77px"></mspace></math>';
   document.body.appendChild(div);
-  const box = div.firstChild?.firstChild?.getBoundingClientRect();
+  const box = (div.firstChild?.firstChild as HTMLElement)?.getBoundingClientRect();
   document.body.removeChild(div);
   
   return box ? Math.abs(box.height - 23) <= 1 && Math.abs(box.width - 77) <= 1 : false;
@@ -38,13 +38,12 @@ export const MathFraction: React.FC<MathFractionProps> = ({
 
   // MathMLサポートあり
   if (hasMathMLSupport) {
-    return (
-      <math xmlns="http://www.w3.org/1998/Math/MathML" className={className}>
-        <mfrac>
-          <mn>{numerator}</mn>
-          <mn>{denominator}</mn>
-        </mfrac>
-      </math>
+    return React.createElement('math', 
+      { xmlns: "http://www.w3.org/1998/Math/MathML", className },
+      React.createElement('mfrac', {},
+        React.createElement('mn', {}, numerator),
+        React.createElement('mn', {}, denominator)
+      )
     );
   }
 
@@ -88,16 +87,15 @@ export const MathMixedNumber: React.FC<MathMixedNumberProps> = ({
 
   // MathMLサポートあり
   if (hasMathMLSupport) {
-    return (
-      <math xmlns="http://www.w3.org/1998/Math/MathML" className={className}>
-        <mrow>
-          <mn>{whole}</mn>
-          <mfrac>
-            <mn>{numerator}</mn>
-            <mn>{denominator}</mn>
-          </mfrac>
-        </mrow>
-      </math>
+    return React.createElement('math',
+      { xmlns: "http://www.w3.org/1998/Math/MathML", className },
+      React.createElement('mrow', {},
+        React.createElement('mn', {}, whole),
+        React.createElement('mfrac', {},
+          React.createElement('mn', {}, numerator),
+          React.createElement('mn', {}, denominator)
+        )
+      )
     );
   }
 
@@ -142,10 +140,9 @@ export const MathDecimal: React.FC<MathDecimalProps> = ({
 
   // MathMLサポートあり
   if (hasMathMLSupport) {
-    return (
-      <math xmlns="http://www.w3.org/1998/Math/MathML" className={className}>
-        <mn>{formattedValue}</mn>
-      </math>
+    return React.createElement('math',
+      { xmlns: "http://www.w3.org/1998/Math/MathML", className },
+      React.createElement('mn', {}, formattedValue)
     );
   }
 
@@ -177,13 +174,12 @@ export const MathExpression: React.FC<MathExpressionProps> = ({
   }
 
   // MathMLサポートあり
-  return (
-    <math 
-      xmlns="http://www.w3.org/1998/Math/MathML" 
-      display={display ? 'block' : 'inline'}
-      className={className}
-    >
-      {children}
-    </math>
+  return React.createElement('math',
+    {
+      xmlns: "http://www.w3.org/1998/Math/MathML",
+      display: display ? 'block' : 'inline',
+      className
+    },
+    children
   );
 };

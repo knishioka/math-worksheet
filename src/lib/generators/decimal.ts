@@ -52,13 +52,12 @@ export function generateDecimalProblem(
   const {
     minValue = 0.1,
     maxValue = 99.9,
-    decimalPlaces = 1,
     maxDecimalPlaces = 2,
     allowZero = false,
     wholeNumberRange = [0, 99],
   } = options;
 
-  let operand1: number, operand2: number, answer: number;
+  let operand1: number = 0, operand2: number = 0, answer: number = 0;
   let attempts = 0;
   const maxAttempts = 100;
 
@@ -208,7 +207,7 @@ export function generateGradeDecimalProblems(
       // 1・2年生: 小数は学習しない
       return [];
 
-    case 3:
+    case 3: {
       // 3年生: 0.1の位までの小数、小数のたし算・ひき算
       const operation3 = Math.random() < 0.5 ? 'addition' : 'subtraction';
       return generateDecimalProblems(
@@ -222,8 +221,9 @@ export function generateGradeDecimalProblems(
           allowZero: false,
         }
       );
+    }
 
-    case 4:
+    case 4: {
       // 4年生: 整数×小数、整数÷小数
       const operation4 = Math.random() < 0.5 ? 'multiplication' : 'division';
       return generateDecimalProblems(
@@ -238,8 +238,9 @@ export function generateGradeDecimalProblems(
           wholeNumberRange: [1, 20],
         }
       );
+    }
 
-    case 5:
+    case 5: {
       // 5年生: 小数×小数、小数÷小数
       const operations5: Array<'addition' | 'subtraction' | 'multiplication' | 'division'> = 
         ['addition', 'subtraction', 'multiplication', 'division'];
@@ -256,8 +257,9 @@ export function generateGradeDecimalProblems(
           wholeNumberRange: [1, 50],
         }
       );
+    }
 
-    case 6:
+    case 6: {
       // 6年生: より複雑な小数計算
       const operations6: Array<'addition' | 'subtraction' | 'multiplication' | 'division'> = 
         ['addition', 'subtraction', 'multiplication', 'division'];
@@ -274,6 +276,7 @@ export function generateGradeDecimalProblems(
           wholeNumberRange: [1, 100],
         }
       );
+    }
 
     default:
       return generateDecimalProblems(baseSettings, count, {

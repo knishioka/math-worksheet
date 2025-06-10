@@ -110,9 +110,9 @@ export function generateFractionProblem(
     commonDenominator = false,
   } = options;
 
-  let numerator1: number, denominator1: number;
-  let numerator2: number, denominator2: number;
-  let answerNumerator: number, answerDenominator: number;
+  let numerator1: number = 1, denominator1: number = 2;
+  let numerator2: number = 1, denominator2: number = 2;
+  let answerNumerator: number = 1, answerDenominator: number = 2;
   
   let attempts = 0;
   const maxAttempts = 100;
@@ -255,7 +255,7 @@ export function generateGradeFractionProblems(
         allowImproper: false,
       });
 
-    case 3:
+    case 3: {
       // 3年生: 単位分数、同分母分数の加減
       const operation = Math.random() < 0.5 ? 'addition' : 'subtraction';
       return generateFractionProblems(
@@ -268,8 +268,9 @@ export function generateGradeFractionProblems(
           allowImproper: false,
         }
       );
+    }
 
-    case 4:
+    case 4: {
       // 4年生: 同分母分数の加減、真分数・仮分数
       const op4 = Math.random() < 0.5 ? 'addition' : 'subtraction';
       return generateFractionProblems(
@@ -282,8 +283,9 @@ export function generateGradeFractionProblems(
           allowImproper: true,
         }
       );
+    }
 
-    case 5:
+    case 5: {
       // 5年生: 異分母分数の加減、約分・通分
       const op5 = Math.random() < 0.5 ? 'addition' : 'subtraction';
       return generateFractionProblems(
@@ -297,8 +299,9 @@ export function generateGradeFractionProblems(
           requireSimplification: Math.random() < 0.3, // 30%は約分必要
         }
       );
+    }
 
-    case 6:
+    case 6: {
       // 6年生: 分数の乗除、複雑な計算
       const operations: Array<'addition' | 'subtraction' | 'multiplication' | 'division'> = 
         ['addition', 'subtraction', 'multiplication', 'division'];
@@ -314,6 +317,7 @@ export function generateGradeFractionProblems(
           requireSimplification: Math.random() < 0.4, // 40%は約分必要
         }
       );
+    }
 
     default:
       return generateFractionProblems(baseSettings, count, {
@@ -333,7 +337,6 @@ export function generateMixedNumberProblem(
   options: FractionOptions = {}
 ): MixedNumberProblem {
   const {
-    maxNumerator = 8,
     maxDenominator = 8,
   } = options;
 
