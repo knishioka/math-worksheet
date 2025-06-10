@@ -50,6 +50,17 @@
 }
 
 @layer components {
+  /* Print visibility controls */
+  .print-only {
+    @apply hidden;
+  }
+
+  @media print {
+    .print-only {
+      display: block !important;
+    }
+  }
+
   /* Problem styles for worksheets */
   .problem-text {
     @apply font-mono text-base leading-loose;
