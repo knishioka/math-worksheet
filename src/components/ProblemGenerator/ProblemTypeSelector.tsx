@@ -53,6 +53,7 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
       onProblemTypeChange('basic');
     }
   }, [grade, problemType]);
+  
   return (
     <div className="space-y-6">
       <div>
@@ -254,7 +255,9 @@ function getGradeProblemTypeDescription(grade: Grade, problemType: ProblemType, 
   
   // 従来の基本計算の説明
   return getGradeOperationDescription(grade, operation);
-}\n\nfunction getGradeOperationDescription(grade: Grade, operation: Operation): string {
+}
+
+function getGradeOperationDescription(grade: Grade, operation: Operation): string {
   const descriptions: Record<Grade, Partial<Record<Operation, string>>> = {
     1: {
       addition: '1〜100の範囲でのたし算。繰り上がりのある計算は2学期後半から学習します。',
