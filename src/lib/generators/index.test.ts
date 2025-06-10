@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateProblems, generateMixedProblems, validateSettings } from './index';
-import type { WorksheetSettings } from '../../types';
+import type { WorksheetSettings, Operation } from '../../types';
 
 describe('generateProblems', () => {
   it('should generate addition problems', () => {

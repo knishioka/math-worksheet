@@ -21,18 +21,48 @@
   }
 
   body {
-    @apply text-gray-900 bg-white;
+    @apply text-black bg-white;
   }
 
   /* Print styles */
   @media print {
     @page {
       size: A4;
-      margin: 20mm 25mm 20mm 25mm;
+      margin: 10mm 15mm;
     }
 
     body {
       @apply text-black bg-white;
+    }
+
+    /* Hide everything by default */
+    body > * {
+      display: none !important;
+    }
+
+    /* Show only the print container */
+    #print-container {
+      display: block !important;
+    }
+
+    /* Show the printable worksheet if printing normally */
+    #printable-worksheet {
+      display: block !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    
+    /* Adjust padding for print */
+    .print\:p-2 {
+      padding: 0.5rem !important;
+    }
+    
+    .print\:p-3 {
+      padding: 0.75rem !important;
+    }
+    
+    .print\:gap-y-1 {
+      row-gap: 0.25rem !important;
     }
 
     .no-print {
@@ -63,11 +93,19 @@
 
   /* Problem styles for worksheets */
   .problem-text {
-    @apply font-mono text-base leading-loose;
+    @apply font-mono text-base;
+    line-height: 1.8;
+  }
+  
+  @media print {
+    .problem-text {
+      @apply text-sm;
+      line-height: 1.6;
+    }
   }
 
   .answer-line {
-    @apply inline-block w-16 border-b border-gray-800 mx-1;
+    @apply inline-block w-16 border-b border-black mx-1;
   }
 
   .hissan-grid {
@@ -79,6 +117,6 @@
   }
 
   .hissan-line {
-    @apply border-b-2 border-gray-800;
+    @apply border-b-2 border-black;
   }
 }

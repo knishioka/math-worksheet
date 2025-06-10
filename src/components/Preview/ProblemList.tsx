@@ -27,7 +27,7 @@ export const ProblemList: React.FC<ProblemListProps> = ({
   }[layoutColumns];
 
   return (
-    <div className={`grid ${gridCols} gap-4 avoid-break`}>
+    <div className={`grid ${gridCols} gap-x-3 gap-y-2 print:gap-y-1 avoid-break`}>
       {problems.map((problem, index) => (
         <div key={problem.id} className="avoid-break">
           <ProblemItem
@@ -60,19 +60,19 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
   }[problem.operation];
 
   return (
-    <div className="problem-text space-y-2">
-      <div className="text-sm text-gray-600">({number})</div>
-      <div className="flex items-center space-x-2">
-        <span className="font-mono text-lg">{problem.operand1}</span>
+    <div className="problem-text space-y-1">
+      <div className="text-xs text-gray-600">({number})</div>
+      <div className="flex items-baseline space-x-2">
+        <span className="font-mono text-lg">{problem.operand1 ?? '□'}</span>
         <span className="font-mono text-lg">{operationSymbol}</span>
-        <span className="font-mono text-lg">{problem.operand2}</span>
+        <span className="font-mono text-lg">{problem.operand2 ?? '□'}</span>
         <span className="font-mono text-lg">=</span>
         {showAnswer ? (
           <span className="font-mono text-lg text-red-600 font-bold">
             {formatAnswer(problem)}
           </span>
         ) : (
-          <span className="answer-line" />
+          <span className="inline-block w-16 border-b border-black mx-1 align-bottom" style={{ height: '1.5rem' }} />
         )}
       </div>
     </div>
@@ -80,7 +80,11 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
 };
 
 function formatAnswer(problem: Problem): string {
-  if (problem.operation === 'division') {
+  if (problem.answer === null) {
+    return '□';
+  }
+  
+  if (problem.operation === 'division' && problem.operand1 !== null && problem.operand2 !== null) {
     // For division, check if there's a remainder
     const quotient = Math.floor(problem.operand1 / problem.operand2);
     const remainder = problem.operand1 % problem.operand2;

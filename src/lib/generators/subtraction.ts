@@ -26,8 +26,8 @@ export function generateSubtractionProblem(
     allowNegative = false,
   } = options;
 
-  let operand1: number;
-  let operand2: number;
+  let operand1: number = minNumber;
+  let operand2: number = minNumber;
   let attempts = 0;
   const maxAttempts = 100;
 
@@ -123,25 +123,30 @@ export function generateGradeSubtractionProblems(
 
   switch (grade) {
     case 1:
+      // 1年生: 1〜100の範囲、繰り下がりはオプション（2学期後半から）
       return generateSubtractionProblems(baseSettings, count, {
         minNumber: 1,
-        maxNumber: 10,
-        includeBorrow: false,
+        maxNumber: 100,
+        // ランダムに繰り下がりあり・なしを混在
+        includeBorrow: Math.random() < 0.3,  // 30%の確率で繰り下がりあり
         allowNegative: false,
       });
 
     case 2:
+      // 2年生: 2桁の筆算、繰り下がり含む
       return generateSubtractionProblems(baseSettings, count, {
-        minNumber: 1,
-        maxNumber: 100,
+        minNumber: 10,
+        maxNumber: 99,
         includeBorrow: true,
         allowNegative: false,
+        digitCount: 2,
       });
 
     case 3:
+      // 3年生: 3桁・4桁の筆算
       return generateSubtractionProblems(baseSettings, count, {
-        minNumber: 10,
-        maxNumber: 1000,
+        minNumber: 100,
+        maxNumber: 9999,
         includeBorrow: true,
         allowNegative: false,
       });
@@ -149,9 +154,10 @@ export function generateGradeSubtractionProblems(
     case 4:
     case 5:
     case 6:
+      // 4〜6年生: より大きな数、小数・分数は別途実装
       return generateSubtractionProblems(baseSettings, count, {
         minNumber: 100,
-        maxNumber: 10000,
+        maxNumber: 99999,
         includeBorrow: true,
         allowNegative: false,
       });

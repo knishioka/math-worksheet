@@ -30,10 +30,10 @@ export function generateDivisionProblem(
     timesTableBased = true,
   } = options;
 
-  let dividend: number;
-  let divisor: number;
-  let quotient: number;
-  let remainder: number;
+  let dividend: number = minDividend;
+  let divisor: number = minDivisor;
+  let quotient: number = 1;
+  let remainder: number = 0;
   let attempts = 0;
   const maxAttempts = 100;
 
@@ -130,18 +130,11 @@ export function generateGradeDivisionProblems(
   switch (grade) {
     case 1:
     case 2:
-      // Grades 1-2: Very basic division, mostly sharing/grouping concepts
-      return generateDivisionProblems(baseSettings, count, {
-        minDividend: 2,
-        maxDividend: 20,
-        minDivisor: 2,
-        maxDivisor: 5,
-        exactDivisionOnly: true,
-        maxQuotient: 10,
-      });
+      // 1・2年生: 割り算は学習しない
+      return [];
 
     case 3:
-      // Grade 3: Introduction to formal division, times table based
+      // 3年生: 基本的な割り算の導入、九九ベース
       return generateDivisionProblems(baseSettings, count, {
         minDividend: 6,
         maxDividend: 81,
@@ -149,11 +142,11 @@ export function generateGradeDivisionProblems(
         maxDivisor: 9,
         exactDivisionOnly: true,
         timesTableBased: true,
-        maxQuotient: 12,
+        maxQuotient: 9,
       });
 
     case 4:
-      // Grade 4: Division with and without remainders
+      // 4年生: あまりのある割り算
       return generateDivisionProblems(baseSettings, count, {
         minDividend: 10,
         maxDividend: 100,
@@ -165,7 +158,7 @@ export function generateGradeDivisionProblems(
 
     case 5:
     case 6:
-      // Grade 5-6: Multi-digit division
+      // 5・6年生: 多桁数の割り算、小数・分数は別途実装
       return generateDivisionProblems(baseSettings, count, {
         minDividend: 100,
         maxDividend: 999,

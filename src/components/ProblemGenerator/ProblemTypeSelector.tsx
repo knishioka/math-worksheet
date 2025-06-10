@@ -18,6 +18,23 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
   onOperationChange,
   onProblemTypeChange,
 }) => {
+  // Check which operations are available for the current grade
+  const isOperationAvailable = (op: Operation): boolean => {
+    if (grade === 1 && (op === 'multiplication' || op === 'division')) {
+      return false;
+    }
+    if (grade === 2 && op === 'division') {
+      return false;
+    }
+    return true;
+  };
+
+  // If current operation is not available for the new grade, switch to addition
+  React.useEffect(() => {
+    if (!isOperationAvailable(operation)) {
+      onOperationChange('addition');
+    }
+  }, [grade, operation]);
   return (
     <div className="space-y-6">
       <div>
@@ -65,28 +82,32 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
           >
             ひき算
           </button>
-          <button
-            type="button"
-            onClick={() => onOperationChange('multiplication')}
-            className={`px-4 py-2 text-sm font-medium rounded-md border ${
-              operation === 'multiplication'
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            かけ算
-          </button>
-          <button
-            type="button"
-            onClick={() => onOperationChange('division')}
-            className={`px-4 py-2 text-sm font-medium rounded-md border ${
-              operation === 'division'
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            わり算
-          </button>
+          {isOperationAvailable('multiplication') && (
+            <button
+              type="button"
+              onClick={() => onOperationChange('multiplication')}
+              className={`px-4 py-2 text-sm font-medium rounded-md border ${
+                operation === 'multiplication'
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              かけ算
+            </button>
+          )}
+          {isOperationAvailable('division') && (
+            <button
+              type="button"
+              onClick={() => onOperationChange('division')}
+              className={`px-4 py-2 text-sm font-medium rounded-md border ${
+                operation === 'division'
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              わり算
+            </button>
+          )}
         </div>
       </div>
 
@@ -144,44 +165,41 @@ function getOperationName(operation: Operation): string {
 }
 
 function getGradeOperationDescription(grade: Grade, operation: Operation): string {
-  const descriptions: Record<Grade, Record<Operation, string>> = {
+  const descriptions: Record<Grade, Partial<Record<Operation, string>>> = {
     1: {
-      addition: '1桁の数のたし算。繰り上がりのある計算も含みます。',
-      subtraction: '1桁の数のひき算。繰り下がりのある計算も含みます。',
-      multiplication: 'かけ算の基本的な概念を学習します。',
-      division: 'わり算の基本的な概念を学習します。',
+      addition: '1〜100の範囲でのたし算。繰り上がりのある計算は2学期後半から学習します。',
+      subtraction: '1〜100の範囲でのひき算。繰り下がりのある計算は2学期後半から学習します。',
     },
     2: {
-      addition: '2桁の数のたし算。筆算での計算方法を学習します。',
-      subtraction: '2桁の数のひき算。筆算での計算方法を学習します。',
-      multiplication: '九九を覚えて、かけ算の基礎を固めます。',
-      division: 'わり算の基本的な計算を学習します。',
+      addition: '2桁の数の筆算。繰り上がりのある計算を含みます。',
+      subtraction: '2桁の数の筆算。繰り下がりのある計算を含みます。',
+      multiplication: '九九（1×1〜9×9）を覚えて、かけ算の基礎を固めます。',
     },
     3: {
-      addition: '3桁・4桁の数のたし算。より大きな数での計算を学習します。',
-      subtraction: '3桁・4桁の数のひき算。より大きな数での計算を学習します。',
+      addition: '3桁・4桁の数の筆算。より大きな数での計算を学習します。',
+      subtraction: '3桁・4桁の数の筆算。より大きな数での計算を学習します。',
       multiplication: '2桁×1桁、3桁×1桁の筆算を学習します。',
-      division: 'わり算の筆算の基礎を学習します。',
+      division: '九九を使った基本的な割り算を学習します。',
     },
     4: {
-      addition: '小数のたし算も含めて、より複雑な計算を学習します。',
-      subtraction: '小数のひき算も含めて、より複雑な計算を学習します。',
-      multiplication: '2桁×2桁の筆算や小数のかけ算を学習します。',
-      division: '2桁÷1桁の筆算や小数のわり算を学習します。',
+      addition: '大きな数のたし算。※小数・分数は現在未実装です。',
+      subtraction: '大きな数のひき算。※小数・分数は現在未実装です。',
+      multiplication: '2桁×1桁の筆算を学習します。※小数は現在未実装です。',
+      division: 'あまりのある割り算を学習します。※小数は現在未実装です。',
     },
     5: {
-      addition: '分数のたし算や小数のたし算を学習します。',
-      subtraction: '分数のひき算や小数のひき算を学習します。',
-      multiplication: '小数×小数の計算を学習します。',
-      division: '小数÷小数の計算を学習します。',
+      addition: '大きな数のたし算。※小数・分数は現在未実装です。',
+      subtraction: '大きな数のひき算。※小数・分数は現在未実装です。',
+      multiplication: '多桁数のかけ算を学習します。※小数は現在未実装です。',
+      division: '多桁数の割り算を学習します。※小数は現在未実装です。',
     },
     6: {
-      addition: '分数と小数の混合計算を学習します。',
-      subtraction: '分数と小数の混合計算を学習します。',
-      multiplication: '分数×分数の計算を学習します。',
-      division: '分数÷分数の計算を学習します。',
+      addition: '大きな数のたし算。※小数・分数は現在未実装です。',
+      subtraction: '大きな数のひき算。※小数・分数は現在未実装です。',
+      multiplication: '多桁数のかけ算を学習します。※分数は現在未実装です。',
+      division: '多桁数の割り算を学習します。※分数は現在未実装です。',
     },
   };
 
-  return descriptions[grade][operation];
+  return descriptions[grade][operation] || '（この学年では学習しません）';
 }

@@ -24,8 +24,8 @@ export function generateAdditionProblem(
     digitCount,
   } = options;
 
-  let operand1: number;
-  let operand2: number;
+  let operand1: number = minNumber;
+  let operand2: number = minNumber;
   let attempts = 0;
   const maxAttempts = 100;
 
@@ -117,32 +117,38 @@ export function generateGradeAdditionProblems(
 
   switch (grade) {
     case 1:
-      return generateAdditionProblems(baseSettings, count, {
-        minNumber: 1,
-        maxNumber: 10,
-        excludeCarryOver: true,
-      });
-
-    case 2:
+      // 1年生: 1〜100の範囲、繰り上がりはオプション（2学期後半から）
       return generateAdditionProblems(baseSettings, count, {
         minNumber: 1,
         maxNumber: 100,
+        // ランダムに繰り上がりあり・なしを混在
+        includeCarryOver: Math.random() < 0.3,  // 30%の確率で繰り上がりあり
+      });
+
+    case 2:
+      // 2年生: 2桁の筆算、繰り上がり含む
+      return generateAdditionProblems(baseSettings, count, {
+        minNumber: 10,
+        maxNumber: 99,
         includeCarryOver: true,
+        digitCount: 2,
       });
 
     case 3:
+      // 3年生: 3桁・4桁の筆算
       return generateAdditionProblems(baseSettings, count, {
-        minNumber: 10,
-        maxNumber: 1000,
+        minNumber: 100,
+        maxNumber: 9999,
         includeCarryOver: true,
       });
 
     case 4:
     case 5:
     case 6:
+      // 4〜6年生: より大きな数、小数・分数は別途実装
       return generateAdditionProblems(baseSettings, count, {
         minNumber: 100,
-        maxNumber: 10000,
+        maxNumber: 99999,
         includeCarryOver: true,
       });
 

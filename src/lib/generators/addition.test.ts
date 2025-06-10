@@ -100,9 +100,9 @@ describe('generateGradeAdditionProblems', () => {
     const problems = generateGradeAdditionProblems(1, 10);
     
     problems.forEach(problem => {
-      expect(problem.operand1).toBeLessThanOrEqual(10);
-      expect(problem.operand2).toBeLessThanOrEqual(10);
-      expect(problem.carryOver).toBe(false); // Grade 1 should not have carry over
+      expect(problem.operand1).toBeLessThanOrEqual(100);
+      expect(problem.operand2).toBeLessThanOrEqual(100);
+      // Grade 1 can have carry over (30% chance)
     });
   });
 
@@ -110,9 +110,11 @@ describe('generateGradeAdditionProblems', () => {
     const problems = generateGradeAdditionProblems(2, 10);
     
     problems.forEach(problem => {
-      expect(problem.operand1).toBeLessThanOrEqual(100);
-      expect(problem.operand2).toBeLessThanOrEqual(100);
-      // Grade 2 can have carry over
+      expect(problem.operand1).toBeGreaterThanOrEqual(10);
+      expect(problem.operand1).toBeLessThanOrEqual(99);
+      expect(problem.operand2).toBeGreaterThanOrEqual(10);
+      expect(problem.operand2).toBeLessThanOrEqual(99);
+      // Grade 2 focuses on 2-digit numbers with carry over
     });
   });
 
@@ -120,10 +122,11 @@ describe('generateGradeAdditionProblems', () => {
     const problems = generateGradeAdditionProblems(3, 10);
     
     problems.forEach(problem => {
-      expect(problem.operand1).toBeGreaterThanOrEqual(10);
-      expect(problem.operand1).toBeLessThanOrEqual(1000);
-      expect(problem.operand2).toBeGreaterThanOrEqual(10);
-      expect(problem.operand2).toBeLessThanOrEqual(1000);
+      expect(problem.operand1).toBeGreaterThanOrEqual(100);
+      expect(problem.operand1).toBeLessThanOrEqual(9999);
+      expect(problem.operand2).toBeGreaterThanOrEqual(100);
+      expect(problem.operand2).toBeLessThanOrEqual(9999);
+      // Grade 3 focuses on 3-4 digit numbers
     });
   });
 

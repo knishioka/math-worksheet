@@ -28,8 +28,8 @@ export function generateMultiplicationProblem(
     maxAnswer = 1000,
   } = options;
 
-  let operand1: number;
-  let operand2: number;
+  let operand1: number = minNumber;
+  let operand2: number = minNumber;
   let attempts = 0;
   const maxAttempts = 100;
 
@@ -137,31 +137,50 @@ export function generateGradeMultiplicationProblems(
 
   switch (grade) {
     case 1:
-      // Grade 1: Introduction to multiplication concept (very basic)
-      return generateMultiplicationProblems(baseSettings, count, {
-        minNumber: 1,
-        maxNumber: 5,
-        includeOne: true,
-        maxAnswer: 25,
-      });
+      // 1年生: 掛け算は学習しない
+      return [];
 
     case 2:
-      // Grade 2: Times tables introduction, focus on 2, 5, 10
-      return generateMultiplicationProblems(baseSettings, count, {
-        minNumber: 1,
-        maxNumber: 10,
-        includeOne: true,
-        maxAnswer: 50,
-      });
-
-    case 3:
-      // Grade 3: Full times tables (1-9)
+      // 2年生: 九九（1×1〜9×9）
       return generateMultiplicationProblems(baseSettings, count, {
         minNumber: 1,
         maxNumber: 9,
         includeOne: true,
+        includeZero: false,
         maxAnswer: 81,
+        timesTableFocus: Math.random() < 0.5 ? randomInt(2, 9) : undefined,  // 時々特定の段にフォーカス
       });
+
+    case 3:
+      // 3年生: 2桁×1桁、3桁×1桁の筆算
+      const use2Digit = Math.random() < 0.7;  // 70%の確率で2桁×1桁
+      if (use2Digit) {
+        return Array.from({ length: count }, () => {
+          const operand1 = randomInt(10, 99);  // 2桁
+          const operand2 = randomInt(1, 9);    // 1桁
+          return {
+            id: generateId(),
+            type: 'basic' as const,
+            operation: 'multiplication' as const,
+            operand1,
+            operand2,
+            answer: operand1 * operand2,
+          };
+        });
+      } else {
+        return Array.from({ length: count }, () => {
+          const operand1 = randomInt(100, 999);  // 3桁
+          const operand2 = randomInt(1, 9);      // 1桁
+          return {
+            id: generateId(),
+            type: 'basic' as const,
+            operation: 'multiplication' as const,
+            operand1,
+            operand2,
+            answer: operand1 * operand2,
+          };
+        });
+      }
 
     case 4:
       // Grade 4: 2-digit x 1-digit

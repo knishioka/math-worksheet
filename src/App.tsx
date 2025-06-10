@@ -5,7 +5,6 @@ import { ProblemTypeSelector } from './components/ProblemGenerator/ProblemTypeSe
 import { SettingsPanel } from './components/ProblemGenerator/SettingsPanel';
 import { GenerateButton } from './components/ProblemGenerator/GenerateButton';
 import { WorksheetPreview } from './components/Preview/WorksheetPreview';
-import { PrintButton } from './components/Export/PrintButton';
 import { useProblemStore } from './stores/problemStore';
 import { generateProblems } from './lib/generators';
 import type { WorksheetData } from './types';
@@ -92,7 +91,7 @@ function App(): React.ReactElement {
 
                 {/* Export Controls */}
                 {worksheetData && (
-                  <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
+                  <div className="mt-6 pt-6 border-t border-gray-200">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-700">
                         表示オプション
@@ -107,10 +106,6 @@ function App(): React.ReactElement {
                         <span className="ml-2 text-sm text-gray-600">解答表示</span>
                       </label>
                     </div>
-                    
-                    <PrintButton
-                      worksheetTitle={`${settings.grade}年生${getOperationName(settings.operation)}プリント`}
-                    />
                   </div>
                 )}
               </div>

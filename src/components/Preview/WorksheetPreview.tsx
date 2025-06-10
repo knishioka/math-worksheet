@@ -1,6 +1,7 @@
 import React from 'react';
 import type { WorksheetData } from '../../types';
 import { ProblemList } from './ProblemList';
+import { PrintButton } from '../Export/PrintButton';
 
 interface WorksheetPreviewProps {
   worksheetData?: WorksheetData;
@@ -32,7 +33,7 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
       {/* Worksheet Header */}
       <div className="p-6 border-b border-gray-200 bg-gray-50 no-print">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="text-lg font-semibold text-black">
             プレビュー - {getOperationName(settings.operation)}
             ({settings.grade}年生)
           </h2>
@@ -50,33 +51,44 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
         </div>
       </div>
 
-      {/* Print Header - Only visible when printing */}
-      <div className="print-only p-6 border-b border-gray-200">
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="text-sm">
-            名前：<span className="answer-line w-32" />
+      {/* Printable worksheet content */}
+      <div id="printable-worksheet">
+        {/* Print Header - Only visible when printing */}
+        <div className="print-only p-3 border-b border-gray-200">
+          <div className="grid grid-cols-3 gap-4 mb-3">
+            <div className="text-sm flex items-baseline">
+              名前：<span className="inline-block w-32 border-b border-black mx-1" style={{ height: '1.2rem' }} />
+            </div>
+            <div className="text-sm text-center">
+              {settings.grade}年生 {getOperationName(settings.operation)}
+            </div>
+            <div className="text-sm text-right flex items-baseline justify-end">
+              点数：<span className="inline-block w-16 border-b border-black mx-1" style={{ height: '1.2rem' }} />点
+            </div>
           </div>
-          <div className="text-sm text-center">
-            {settings.grade}年生 {getOperationName(settings.operation)}
-          </div>
-          <div className="text-sm text-right">
-            点数：<span className="answer-line w-16" />点
-          </div>
+        </div>
+
+        {/* Problems Content */}
+        <div className="p-4 print:p-2">
+          <ProblemList
+            problems={problems}
+            layoutColumns={settings.layoutColumns}
+            showAnswers={showAnswers}
+          />
+        </div>
+
+        {/* Footer - Only visible when printing */}
+        <div className="print-only p-2 border-t border-gray-200 text-center text-xs text-gray-500">
+          計算プリント自動作成ツール
         </div>
       </div>
 
-      {/* Problems Content */}
-      <div className="p-6">
-        <ProblemList
-          problems={problems}
-          layoutColumns={settings.layoutColumns}
-          showAnswers={showAnswers}
+      {/* Print Button - Below problems */}
+      <div className="p-6 pt-0 no-print">
+        <PrintButton
+          worksheetTitle={`${settings.grade}年生${getOperationName(settings.operation)}プリント`}
+          elementId="printable-worksheet"
         />
-      </div>
-
-      {/* Footer - Only visible when printing */}
-      <div className="print-only p-4 border-t border-gray-200 text-center text-xs text-gray-500">
-        計算プリント自動作成ツール
       </div>
     </div>
   );
