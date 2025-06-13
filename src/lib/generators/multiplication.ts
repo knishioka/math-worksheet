@@ -104,7 +104,9 @@ export function generateMultiplicationProblems(
 
     do {
       problem = generateMultiplicationProblem(settings, options);
-      const key = `${Math.min(problem.operand1, problem.operand2)}x${Math.max(problem.operand1, problem.operand2)}`;
+      const key = problem.operand1 !== null && problem.operand2 !== null 
+        ? `${Math.min(problem.operand1, problem.operand2)}x${Math.max(problem.operand1, problem.operand2)}`
+        : `${problem.operand1}x${problem.operand2}`;
 
       if (!usedCombinations.has(key)) {
         usedCombinations.add(key);

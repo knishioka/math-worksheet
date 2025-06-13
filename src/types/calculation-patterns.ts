@@ -9,6 +9,8 @@ export type CalculationPattern =
   | 'sub-single-digit-borrow'       // 繰り下がりのある引き算（20まで）
   | 'sub-from-10'                   // 10－□の計算
   | 'add-sub-mixed-basic'           // たし算・ひき算混合（10まで）
+  | 'add-single-missing'            // □＋△＝答え の虫食い算
+  | 'sub-single-missing'            // □－△＝答え の虫食い算
   
   // 2年生のパターン
   | 'add-double-digit-no-carry'     // 2桁＋2桁（繰り上がりなし）
@@ -17,6 +19,9 @@ export type CalculationPattern =
   | 'sub-double-digit-borrow'       // 2桁－2桁（繰り下がりあり）
   | 'mult-single-digit'             // 九九（1×1〜9×9）
   | 'add-hundreds-simple'           // 100単位の簡単な計算
+  | 'add-double-missing'            // 2桁の虫食い算（たし算）
+  | 'sub-double-missing'            // 2桁の虫食い算（ひき算）
+  | 'mult-single-missing'           // 九九の虫食い算
   
   // 3年生のパターン
   | 'add-triple-digit'              // 3桁の足し算
@@ -61,7 +66,9 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'sub-single-digit',
     'sub-single-digit-borrow',
     'sub-from-10',
-    'add-sub-mixed-basic'
+    'add-sub-mixed-basic',
+    'add-single-missing',
+    'sub-single-missing'
   ],
   2: [
     'add-double-digit-no-carry',
@@ -69,7 +76,10 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'sub-double-digit-no-borrow',
     'sub-double-digit-borrow',
     'mult-single-digit',
-    'add-hundreds-simple'
+    'add-hundreds-simple',
+    'add-double-missing',
+    'sub-double-missing',
+    'mult-single-missing'
   ],
   3: [
     'add-triple-digit',
@@ -117,6 +127,8 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'sub-single-digit-borrow': '1桁のひき算（繰り下がりあり）',
   'sub-from-10': '10－□の計算',
   'add-sub-mixed-basic': 'たし算・ひき算ミックス',
+  'add-single-missing': 'たし算の虫食い算',
+  'sub-single-missing': 'ひき算の虫食い算',
   
   // 2年生
   'add-double-digit-no-carry': '2桁のたし算（繰り上がりなし）',
@@ -125,6 +137,9 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'sub-double-digit-borrow': '2桁のひき算（繰り下がりあり）',
   'mult-single-digit': '九九（かけ算）',
   'add-hundreds-simple': '100単位の計算',
+  'add-double-missing': '2桁たし算の虫食い算',
+  'sub-double-missing': '2桁ひき算の虫食い算',
+  'mult-single-missing': '九九の虫食い算',
   
   // 3年生
   'add-triple-digit': '3桁のたし算',
@@ -171,6 +186,8 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'sub-single-digit-borrow': '13－5などの繰り下がりのあるひき算',
   'sub-from-10': '10から引く計算',
   'add-sub-mixed-basic': 'たし算とひき算を混ぜた問題',
+  'add-single-missing': '□＋3＝7 のような虫食い算',
+  'sub-single-missing': '8－□＝3 のような虫食い算',
   
   // 2年生
   'add-double-digit-no-carry': '23＋45などの繰り上がりのないたし算',
@@ -179,6 +196,9 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'sub-double-digit-borrow': '72－38などの繰り下がりのあるひき算',
   'mult-single-digit': '1×1から9×9までの九九',
   'add-hundreds-simple': '300＋200などの100単位の計算',
+  'add-double-missing': '□＋23＝45 のような2桁の虫食い算',
+  'sub-double-missing': '56－□＝23 のような2桁の虫食い算',
+  'mult-single-missing': '□×3＝12 のような九九の虫食い算',
   
   // 3年生
   'add-triple-digit': '234＋567などの3桁のたし算',

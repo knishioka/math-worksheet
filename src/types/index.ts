@@ -19,10 +19,11 @@ export interface BasicProblem {
   id: string;
   type: 'basic';
   operation: Operation;
-  operand1: number;
-  operand2: number;
-  answer: number;
+  operand1: number | null;
+  operand2: number | null;
+  answer: number | null;
   carryOver?: boolean;
+  missingPosition?: 'operand1' | 'operand2' | 'answer';
 }
 
 export interface HissanProblem {

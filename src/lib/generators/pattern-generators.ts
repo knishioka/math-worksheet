@@ -32,6 +32,10 @@ export function generatePatternProblems(
       return generateSubFrom10(settings, count);
     case 'add-sub-mixed-basic':
       return generateAddSubMixedBasic(settings, count);
+    case 'add-single-missing':
+      return generateAddSingleMissing(settings, count);
+    case 'sub-single-missing':
+      return generateSubSingleMissing(settings, count);
     
     // 2年生のパターン
     case 'add-double-digit-no-carry':
@@ -46,6 +50,12 @@ export function generatePatternProblems(
       return generateMultSingleDigit(settings, count);
     case 'add-hundreds-simple':
       return generateAddHundredsSimple(settings, count);
+    case 'add-double-missing':
+      return generateAddDoubleMissing(settings, count);
+    case 'sub-double-missing':
+      return generateSubDoubleMissing(settings, count);
+    case 'mult-single-missing':
+      return generateMultSingleMissing(settings, count);
     
     // 3年生のパターン
     case 'add-triple-digit':
@@ -1743,5 +1753,249 @@ function generateComplexCalc(_settings: WorksheetSettings, count: number): Basic
     }
   }
 
+  return problems;
+}
+
+// 1年生: たし算の虫食い算
+function generateAddSingleMissing(_settings: WorksheetSettings, count: number): BasicProblem[] {
+  const problems: BasicProblem[] = [];
+  
+  for (let i = 0; i < count; i++) {
+    // 答えが10以下になるようにする
+    const answer = randomInt(3, 10);
+    const missingPosition = (['operand1', 'operand2', 'answer'] as const)[randomInt(0, 2)];
+    
+    let operand1: number | null = null;
+    let operand2: number | null = null;
+    let answerValue: number | null = answer;
+    
+    if (missingPosition === 'answer') {
+      // □ の位置が答えの場合: 3 + 4 = □
+      operand1 = randomInt(1, answer - 1);
+      operand2 = answer - operand1;
+      answerValue = null;
+    } else if (missingPosition === 'operand1') {
+      // □ の位置が最初の数の場合: □ + 3 = 7
+      operand2 = randomInt(1, answer - 1);
+      operand1 = null;
+      answerValue = answer;
+    } else {
+      // □ の位置が2番目の数の場合: 5 + □ = 8
+      operand1 = randomInt(1, answer - 1);
+      operand2 = null;
+      answerValue = answer;
+    }
+    
+    problems.push({
+      id: generateId(),
+      type: 'basic',
+      operation: 'addition',
+      operand1,
+      operand2,
+      answer: answerValue,
+      missingPosition,
+      carryOver: false,
+    });
+  }
+  
+  return problems;
+}
+
+// 1年生: ひき算の虫食い算
+function generateSubSingleMissing(_settings: WorksheetSettings, count: number): BasicProblem[] {
+  const problems: BasicProblem[] = [];
+  
+  for (let i = 0; i < count; i++) {
+    const missingPosition = (['operand1', 'operand2', 'answer'] as const)[randomInt(0, 2)];
+    
+    let operand1: number | null = null;
+    let operand2: number | null = null;
+    let answer: number | null = null;
+    
+    if (missingPosition === 'answer') {
+      // □ の位置が答えの場合: 8 - 3 = □
+      operand1 = randomInt(4, 10);
+      operand2 = randomInt(1, operand1 - 1);
+      answer = null;
+    } else if (missingPosition === 'operand1') {
+      // □ の位置が最初の数の場合: □ - 3 = 5
+      answer = randomInt(1, 7);
+      operand2 = randomInt(1, 3);
+      operand1 = null;
+    } else {
+      // □ の位置が2番目の数の場合: 9 - □ = 6
+      operand1 = randomInt(4, 10);
+      answer = randomInt(1, operand1 - 1);
+      operand2 = null;
+    }
+    
+    problems.push({
+      id: generateId(),
+      type: 'basic',
+      operation: 'subtraction',
+      operand1,
+      operand2,
+      answer,
+      missingPosition,
+      carryOver: false,
+    });
+  }
+  
+  return problems;
+}
+
+// 2年生: 2桁たし算の虫食い算
+function generateAddDoubleMissing(_settings: WorksheetSettings, count: number): BasicProblem[] {
+  const problems: BasicProblem[] = [];
+  
+  for (let i = 0; i < count; i++) {
+    // 答えが100以下になるようにする
+    const answer = randomInt(20, 99);
+    const missingPosition = (['operand1', 'operand2', 'answer'] as const)[randomInt(0, 2)];
+    
+    let operand1: number | null = null;
+    let operand2: number | null = null;
+    let answerValue: number | null = answer;
+    
+    if (missingPosition === 'answer') {
+      // □ の位置が答えの場合
+      operand1 = randomInt(10, Math.min(89, answer - 10));
+      operand2 = answer - operand1;
+      answerValue = null;
+    } else if (missingPosition === 'operand1') {
+      // □ の位置が最初の数の場合
+      operand2 = randomInt(10, Math.min(89, answer - 10));
+      operand1 = null;
+      answerValue = answer;
+    } else {
+      // □ の位置が2番目の数の場合
+      operand1 = randomInt(10, Math.min(89, answer - 10));
+      operand2 = null;
+      answerValue = answer;
+    }
+    
+    problems.push({
+      id: generateId(),
+      type: 'basic',
+      operation: 'addition',
+      operand1,
+      operand2,
+      answer: answerValue,
+      missingPosition,
+    });
+  }
+  
+  return problems;
+}
+
+// 2年生: 2桁ひき算の虫食い算
+function generateSubDoubleMissing(_settings: WorksheetSettings, count: number): BasicProblem[] {
+  const problems: BasicProblem[] = [];
+  
+  for (let i = 0; i < count; i++) {
+    const missingPosition = (['operand1', 'operand2', 'answer'] as const)[randomInt(0, 2)];
+    
+    let operand1: number | null = null;
+    let operand2: number | null = null;
+    let answer: number | null = null;
+    
+    if (missingPosition === 'answer') {
+      // □ の位置が答えの場合
+      operand1 = randomInt(30, 99);
+      operand2 = randomInt(10, operand1 - 10);
+      answer = null;
+    } else if (missingPosition === 'operand1') {
+      // □ の位置が最初の数の場合
+      answer = randomInt(10, 80);
+      operand2 = randomInt(10, 40);
+      operand1 = null;
+    } else {
+      // □ の位置が2番目の数の場合
+      operand1 = randomInt(30, 99);
+      answer = randomInt(10, operand1 - 10);
+      operand2 = null;
+    }
+    
+    problems.push({
+      id: generateId(),
+      type: 'basic',
+      operation: 'subtraction',
+      operand1,
+      operand2,
+      answer,
+      missingPosition,
+    });
+  }
+  
+  return problems;
+}
+
+// 2年生: 九九の虫食い算
+function generateMultSingleMissing(_settings: WorksheetSettings, count: number): BasicProblem[] {
+  const problems: BasicProblem[] = [];
+  const usedCombinations = new Set<string>();
+  
+  for (let i = 0; i < count; i++) {
+    let operand1: number | null = null;
+    let operand2: number | null = null;
+    let answer: number | null = null;
+    let missingPosition: 'operand1' | 'operand2' | 'answer';
+    let key: string;
+    let attempts = 0;
+    const maxAttempts = 50;
+    
+    do {
+      missingPosition = (['operand1', 'operand2', 'answer'] as const)[randomInt(0, 2)];
+      
+      if (missingPosition === 'answer') {
+        // □ の位置が答えの場合: 3 × 4 = □
+        operand1 = randomInt(2, 9);
+        operand2 = randomInt(2, 9);
+        answer = null;
+      } else {
+        // 答えから逆算
+        const validProducts = [];
+        for (let a = 2; a <= 9; a++) {
+          for (let b = 2; b <= 9; b++) {
+            validProducts.push({ a, b, product: a * b });
+          }
+        }
+        
+        const selected = validProducts[randomInt(0, validProducts.length - 1)];
+        
+        if (missingPosition === 'operand1') {
+          // □ × 4 = 12
+          operand1 = null;
+          operand2 = selected.b;
+          answer = selected.product;
+        } else {
+          // 3 × □ = 12
+          operand1 = selected.a;
+          operand2 = null;
+          answer = selected.product;
+        }
+      }
+      
+      key = `${operand1}×${operand2}=${answer}`;
+      
+      if (!usedCombinations.has(key)) {
+        usedCombinations.add(key);
+        break;
+      }
+      
+      attempts++;
+    } while (attempts < maxAttempts);
+    
+    problems.push({
+      id: generateId(),
+      type: 'basic',
+      operation: 'multiplication',
+      operand1,
+      operand2,
+      answer,
+      missingPosition,
+    });
+  }
+  
   return problems;
 }

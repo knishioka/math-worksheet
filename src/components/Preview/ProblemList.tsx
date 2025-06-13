@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Problem, LayoutColumns, FractionProblem, DecimalProblem, MixedNumberProblem } from '../../types';
+import type { Problem, LayoutColumns, FractionProblem, DecimalProblem, MixedNumberProblem, BasicProblem } from '../../types';
 import { MathFraction, MathDecimal, MathMixedNumber } from '../Math/MathExpression';
 
 interface ProblemListProps {
@@ -154,19 +154,27 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
   }
 
   // 基本的な問題の場合（整数）
+  const basicProblem = problem as BasicProblem;
+  const shouldShowAnswerBlank = !basicProblem.missingPosition || basicProblem.missingPosition === 'answer';
+  
   return (
     <div className="problem-text space-y-1">
       <div className="text-xs text-gray-600">({number})</div>
       <div className="flex items-baseline space-x-2">
-        <span className="font-mono text-lg">{problem.operand1 ?? '□'}</span>
+        <span className="font-mono text-lg">{basicProblem.operand1 ?? '□'}</span>
         <span className="font-mono text-lg">{operationSymbol}</span>
-        <span className="font-mono text-lg">{problem.operand2 ?? '□'}</span>
+        <span className="font-mono text-lg">{basicProblem.operand2 ?? '□'}</span>
         <span className="font-mono text-lg">=</span>
-        {showAnswer ? (
+        {basicProblem.missingPosition && basicProblem.missingPosition !== 'answer' ? (
+          // 虫食い算で答えの位置が空欄でない場合
+          <span className="font-mono text-lg">{basicProblem.answer}</span>
+        ) : showAnswer && shouldShowAnswerBlank ? (
+          // 答えを表示する場合
           <span className="font-mono text-lg text-red-600 font-bold">
             {formatAnswer(problem)}
           </span>
         ) : (
+          // 答えを隠す場合
           <span className="inline-block w-16 border-b border-black mx-1 align-bottom" style={{ height: '1.5rem' }} />
         )}
       </div>
@@ -177,6 +185,36 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
 function formatAnswer(problem: Problem): string {
   if ('answer' in problem && problem.answer === null) {
     return '□';
+  }
+  
+  if (problem.type === 'basic') {
+    const basicProblem = problem as BasicProblem;
+    
+    // 虫食い算で答えの位置でない場合、実際の計算結果を表示
+    if (basicProblem.missingPosition && basicProblem.missingPosition !== 'answer' && 
+        basicProblem.operand1 !== null && basicProblem.operand2 !== null) {
+      switch (basicProblem.operation) {
+        case 'addition':
+          return (basicProblem.operand1 + basicProblem.operand2).toString();
+        case 'subtraction':
+          return (basicProblem.operand1 - basicProblem.operand2).toString();
+        case 'multiplication':
+          return (basicProblem.operand1 * basicProblem.operand2).toString();
+        case 'division':
+          const quotient = Math.floor(basicProblem.operand1 / basicProblem.operand2);
+          const remainder = basicProblem.operand1 % basicProblem.operand2;
+          if (remainder === 0) {
+            return quotient.toString();
+          } else {
+            return `${quotient}あまり${remainder}`;
+          }
+      }
+    }
+    
+    // 通常の問題またはanswerがnullでない場合
+    if (basicProblem.answer !== null) {
+      return basicProblem.answer.toString();
+    }
   }
   
   if (problem.operation === 'division' && 'operand1' in problem && 'operand2' in problem && 
