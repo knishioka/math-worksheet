@@ -10,6 +10,11 @@ export type Grade = 1 | 2 | 3 | 4 | 5 | 6;
 
 export type LayoutColumns = 1 | 2 | 3;
 
+// 計算パターンの型をインポート
+export type { CalculationPattern } from './calculation-patterns';
+export { PATTERNS_BY_GRADE, PATTERN_LABELS, PATTERN_DESCRIPTIONS } from './calculation-patterns';
+import type { CalculationPattern } from './calculation-patterns';
+
 export interface BasicProblem {
   id: string;
   type: 'basic';
@@ -85,6 +90,7 @@ export interface WorksheetSettings {
   grade: Grade;
   problemType: ProblemType;
   operation: Operation;
+  calculationPattern?: CalculationPattern;
   problemCount: number;
   layoutColumns: LayoutColumns;
   includeCarryOver?: boolean;

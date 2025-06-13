@@ -5,12 +5,18 @@ import { generateMultiplicationProblems, generateGradeMultiplicationProblems } f
 import { generateDivisionProblems, generateGradeDivisionProblems } from './division';
 import { generateGradeFractionProblems } from './fraction';
 import { generateGradeDecimalProblems } from './decimal';
+import { generatePatternProblems } from './pattern-generators';
 
 /**
  * Main problem generator that routes to appropriate operation generator
  */
 export function generateProblems(settings: WorksheetSettings): Problem[] {
-  const { operation, problemType, problemCount, grade } = settings;
+  const { operation, problemType, problemCount, grade, calculationPattern } = settings;
+
+  // 計算パターンが選択されている場合は、パターンベースの生成を使用
+  if (problemType === 'basic' && calculationPattern) {
+    return generatePatternProblems(settings, problemCount);
+  }
 
   // 問題タイプ別の処理
   if (problemType === 'fraction') {
@@ -177,3 +183,4 @@ export * from './multiplication';
 export * from './division';
 export * from './fraction';
 export * from './decimal';
+export * from './pattern-generators';

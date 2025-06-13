@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Header } from './components/Layout/Header';
 import { Container } from './components/Layout/Container';
 import { ProblemTypeSelector } from './components/ProblemGenerator/ProblemTypeSelector';
+import { CalculationPatternSelector } from './components/ProblemGenerator/CalculationPatternSelector';
 import { SettingsPanel } from './components/ProblemGenerator/SettingsPanel';
 import { GenerateButton } from './components/ProblemGenerator/GenerateButton';
 import { WorksheetPreview } from './components/Preview/WorksheetPreview';
@@ -60,11 +61,22 @@ function App(): React.ReactElement {
                     grade={settings.grade}
                     operation={settings.operation}
                     problemType={settings.problemType}
-                    onGradeChange={(grade) => updateSettings({ grade })}
+                    onGradeChange={(grade) => updateSettings({ grade, calculationPattern: undefined })}
                     onOperationChange={(operation) => updateSettings({ operation })}
                     onProblemTypeChange={(problemType) => updateSettings({ problemType })}
                   />
                 </div>
+
+                {/* Calculation Pattern Selection */}
+                {settings.problemType === 'basic' && (
+                  <div className="mb-6">
+                    <CalculationPatternSelector
+                      grade={settings.grade}
+                      selectedPattern={settings.calculationPattern}
+                      onPatternChange={(calculationPattern) => updateSettings({ calculationPattern })}
+                    />
+                  </div>
+                )}
 
                 {/* Layout and Count Settings */}
                 <div className="mb-6">

@@ -18,6 +18,8 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
   onOperationChange,
   onProblemTypeChange,
 }) => {
+  // 基本計算のみ表示し、演算選択は計算パターンで行う
+  const showBasicOnly = true;
   // Check which operations are available for the current grade
   const isOperationAvailable = React.useCallback((op: Operation): boolean => {
     if (grade === 1 && (op === 'multiplication' || op === 'division')) {
@@ -74,61 +76,16 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
         </select>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          計算の種類
-        </label>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => onOperationChange('addition')}
-            className={`px-4 py-2 text-sm font-medium rounded-md border ${
-              operation === 'addition'
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            たし算
-          </button>
-          <button
-            type="button"
-            onClick={() => onOperationChange('subtraction')}
-            className={`px-4 py-2 text-sm font-medium rounded-md border ${
-              operation === 'subtraction'
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            ひき算
-          </button>
-          {isOperationAvailable('multiplication') && (
-            <button
-              type="button"
-              onClick={() => onOperationChange('multiplication')}
-              className={`px-4 py-2 text-sm font-medium rounded-md border ${
-                operation === 'multiplication'
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              かけ算
-            </button>
-          )}
-          {isOperationAvailable('division') && (
-            <button
-              type="button"
-              onClick={() => onOperationChange('division')}
-              className={`px-4 py-2 text-sm font-medium rounded-md border ${
-                operation === 'division'
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              わり算
-            </button>
-          )}
+      {!showBasicOnly && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            計算の種類
+          </label>
+          <p className="text-sm text-gray-600 mb-4">
+            基本計算を選択して、次のステップで詳細な計算パターンを選んでください。
+          </p>
         </div>
-      </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -143,7 +100,7 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
               onChange={(e) => onProblemTypeChange(e.target.value as ProblemType)}
               className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
             />
-            <span className="ml-2 text-sm text-gray-700">基本計算（整数）</span>
+            <span className="ml-2 text-sm text-gray-700">基本計算</span>
           </label>
           {isProblemTypeAvailable('fraction') && (
             <label className="flex items-center">
