@@ -17,9 +17,9 @@ interface SettingsPanelProps {
 
 // 列数に応じた最大問題数を定義
 const MAX_PROBLEMS_PER_COLUMN: Record<LayoutColumns, number> = {
-  1: 20, // 1列の場合は最大20問
-  2: 30, // 2列の場合は最大30問（15問×2列）
-  3: 42, // 3列の場合は最大42問（14問×3列）
+  1: 10, // 1列の場合は最大10問
+  2: 20, // 2列の場合は最大20問（10問×2列）
+  3: 30, // 3列の場合は最大30問（10問×3列）
 };
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({

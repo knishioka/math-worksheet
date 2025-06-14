@@ -56,9 +56,36 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
       const gridStyle = `display: grid; grid-template-columns: repeat(${columns}, 1fr); gap: 24px 32px;`;
       problemsHTML += `<div style="${gridStyle}">`;
       
-      worksheet.problems.forEach((problem, pIndex) => {
+      // 縦順に並び替えた問題配列を作成
+      const reorderedProblems: (typeof worksheet.problems[0] | null)[] = [];
+      const rowCount = Math.ceil(worksheet.problems.length / columns);
+      
+      for (let col = 0; col < columns; col++) {
+        for (let row = 0; row < rowCount; row++) {
+          const originalIndex = row + col * rowCount;
+          const newIndex = row * columns + col;
+          
+          if (originalIndex < worksheet.problems.length) {
+            reorderedProblems[newIndex] = worksheet.problems[originalIndex];
+          } else {
+            reorderedProblems[newIndex] = null;
+          }
+        }
+      }
+      
+      reorderedProblems.forEach((problem, index) => {
+        if (!problem) {
+          problemsHTML += `<div style="margin-bottom: 16px;"></div>`;
+          return;
+        }
+        
+        // 元のインデックスを計算（縦順の番号）
+        const col = index % columns;
+        const row = Math.floor(index / columns);
+        const originalNumber = col * rowCount + row + 1;
+        
         problemsHTML += `<div style="margin-bottom: 16px;">`;
-        problemsHTML += `<div style="font-size: 12px; color: #666;">(${pIndex + 1})</div>`;
+        problemsHTML += `<div style="font-size: 12px; color: #666;">(${originalNumber})</div>`;
         problemsHTML += '<div style="font-family: monospace; font-size: 18px; margin-top: 4px;">';
         
         if (problem.type === 'basic') {

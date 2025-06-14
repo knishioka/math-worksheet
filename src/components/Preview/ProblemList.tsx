@@ -28,17 +28,46 @@ export const ProblemList: React.FC<ProblemListProps> = ({
     3: 'grid-cols-3',
   }[layoutColumns];
 
+  // 縦順に並び替えた問題配列を作成
+  const reorderedProblems: (Problem | null)[] = [];
+  const rowCount = Math.ceil(problems.length / layoutColumns);
+  
+  for (let col = 0; col < layoutColumns; col++) {
+    for (let row = 0; row < rowCount; row++) {
+      const originalIndex = row + col * rowCount;
+      const newIndex = row * layoutColumns + col;
+      
+      if (originalIndex < problems.length) {
+        reorderedProblems[newIndex] = problems[originalIndex];
+      } else {
+        reorderedProblems[newIndex] = null;
+      }
+    }
+  }
+
   return (
     <div className={`grid ${gridCols} gap-x-3 gap-y-2 print:gap-y-1 avoid-break`}>
-      {problems.map((problem, index) => (
-        <div key={problem.id} className="avoid-break">
-          <ProblemItem
-            problem={problem}
-            number={index + 1}
-            showAnswer={showAnswers}
-          />
-        </div>
-      ))}
+      {reorderedProblems.map((problem, index) => {
+        if (!problem) {
+          // 空のセルを配置（レイアウトを保つため）
+          return <div key={`empty-${index}`} className="avoid-break" />;
+        }
+        
+        // 元のインデックスを計算（縦順から横順へ）
+        const col = index % layoutColumns;
+        const row = Math.floor(index / layoutColumns);
+        const originalNumber = col * rowCount + row + 1;
+        
+        return (
+          <div key={problem.id} className="avoid-break">
+            <ProblemItem
+              problem={problem}
+              number={originalNumber}
+              showAnswer={showAnswers}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 };
