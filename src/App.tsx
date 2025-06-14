@@ -45,7 +45,8 @@ function App(): React.ReactElement {
   const canGenerate = settings.grade && settings.operation && settings.problemCount > 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+    <div className="min-h-screen bg-gray-50 no-print">
       <Header />
       <main className="py-8">
         <Container>
@@ -139,6 +140,7 @@ function App(): React.ReactElement {
         </Container>
       </main>
     </div>
+    </>
   );
 }
 

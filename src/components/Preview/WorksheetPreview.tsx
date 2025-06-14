@@ -20,15 +20,11 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
 
   const handleMultiPagePrint = useCallback((pageCount: number) => {
     if (!worksheetData) return;
-
-    console.log('Generating multiple pages:', pageCount);
-    console.log('Settings:', worksheetData.settings);
     
     // 複数ページ分のワークシートを生成
     const worksheets: WorksheetData[] = [];
     for (let i = 0; i < pageCount; i++) {
       const newProblems = generateProblems(worksheetData.settings);
-      console.log(`Page ${i + 1} problems:`, newProblems.length);
       worksheets.push({
         settings: worksheetData.settings,
         problems: newProblems,
@@ -36,7 +32,6 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
       });
     }
     
-    console.log('Total worksheets generated:', worksheets.length);
     setMultiPageWorksheets(worksheets);
     
     // 印刷ダイアログを開く前に少し待機

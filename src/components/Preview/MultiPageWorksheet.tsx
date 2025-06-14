@@ -12,13 +12,9 @@ export const MultiPageWorksheet: React.FC<MultiPageWorksheetProps> = ({
   worksheets,
   showAnswers,
 }) => {
-  console.log('MultiPageWorksheet rendering, worksheets:', worksheets.length);
-  
   return (
     <div id="multi-page-print" className="multi-page-container">
-      {worksheets.map((worksheet, index) => {
-        console.log(`Rendering page ${index + 1}, problems:`, worksheet.problems.length);
-        return (
+      {worksheets.map((worksheet, index) => (
         <div
           key={index}
           style={{ 
@@ -56,8 +52,7 @@ export const MultiPageWorksheet: React.FC<MultiPageWorksheetProps> = ({
             )}
           </div>
         </div>
-        );
-      })}
+      ))}
     </div>
   );
 };
