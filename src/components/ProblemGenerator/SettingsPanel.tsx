@@ -97,10 +97,40 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <p className="text-xs text-gray-500 mt-1">
           ※ {layoutColumns}列の場合、最大{maxProblems}問まで入ります
         </p>
-        {isWordProblem && recommendedCount && (
-          <p className="text-xs text-blue-600 mt-1">
-            💡 文章問題は{recommendedCount}問がA4用紙1枚に最適です
-          </p>
+        {isWordProblem && (
+          <div className="mt-2 p-2 bg-blue-50 rounded-md border border-blue-200">
+            <p className="text-xs text-blue-700 font-medium mb-2">
+              💡 文章問題の推奨問題数 (A4用紙1枚に最適)
+            </p>
+            <div className="grid grid-cols-3 gap-1">
+              {([1, 2, 3] as const).map((cols) => {
+                const isCurrentLayout = layoutColumns === cols;
+                const isSelected = problemCount === WORD_PROBLEM_RECOMMENDED[cols];
+                return (
+                  <button
+                    key={cols}
+                    type="button"
+                    onClick={() => onProblemCountChange(WORD_PROBLEM_RECOMMENDED[cols])}
+                    className={`px-2 py-1 text-xs rounded border relative ${
+                      isSelected
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : isCurrentLayout
+                        ? 'bg-blue-100 text-blue-700 border-blue-400 hover:bg-blue-200 ring-2 ring-blue-300'
+                        : 'bg-white text-blue-600 border-blue-300 hover:bg-blue-50'
+                    }`}
+                  >
+                    {cols}列: {WORD_PROBLEM_RECOMMENDED[cols]}問
+                    {isCurrentLayout && (
+                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full"></span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-blue-600 mt-1">
+              🎯 現在のレイアウト({layoutColumns}列)の推奨: {WORD_PROBLEM_RECOMMENDED[layoutColumns]}問
+            </p>
+          </div>
         )}
       </div>
       
