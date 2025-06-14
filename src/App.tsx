@@ -1,10 +1,9 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Header } from './components/Layout/Header';
 import { Container } from './components/Layout/Container';
 import { ProblemTypeSelector } from './components/ProblemGenerator/ProblemTypeSelector';
 import { CalculationPatternSelector } from './components/ProblemGenerator/CalculationPatternSelector';
 import { SettingsPanel } from './components/ProblemGenerator/SettingsPanel';
-import { GenerateButton } from './components/ProblemGenerator/GenerateButton';
 import { WorksheetPreview } from './components/Preview/WorksheetPreview';
 import { useProblemStore } from './stores/problemStore';
 import { generateProblems } from './lib/generators';
@@ -26,9 +25,6 @@ function App(): React.ReactElement {
     try {
       setIsGenerating(true);
       
-      // Simulate loading time for better UX
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
       const generatedProblems = generateProblems(settings);
       setProblems(generatedProblems);
       
@@ -36,13 +32,17 @@ function App(): React.ReactElement {
       setWorksheetData(newWorksheetData);
     } catch (error) {
       console.error('Failed to generate problems:', error);
-      // TODO: Add error handling UI
     } finally {
       setIsGenerating(false);
     }
   }, [settings, setProblems, getWorksheetData]);
 
-  const canGenerate = settings.grade && settings.operation && settings.problemCount > 0;
+  // 設定変更時に自動で問題を生成
+  useEffect(() => {
+    if (settings.grade && settings.operation && settings.problemCount > 0) {
+      handleGenerate();
+    }
+  }, [settings.grade, settings.operation, settings.problemType, settings.calculationPattern, settings.problemCount, settings.layoutColumns, handleGenerate]);
 
   return (
     <>
@@ -84,28 +84,22 @@ function App(): React.ReactElement {
                   <SettingsPanel
                     problemCount={settings.problemCount}
                     layoutColumns={settings.layoutColumns}
-                    includeCarryOver={settings.includeCarryOver}
-                    operation={settings.operation}
-                    minNumber={settings.minNumber}
-                    maxNumber={settings.maxNumber}
                     onProblemCountChange={(problemCount) => updateSettings({ problemCount })}
                     onLayoutColumnsChange={(layoutColumns) => updateSettings({ layoutColumns })}
-                    onIncludeCarryOverChange={
-                      (settings.operation === 'addition' || settings.operation === 'subtraction')
-                        ? (includeCarryOver: boolean): void => updateSettings({ includeCarryOver })
-                        : undefined
-                    }
-                    onMinNumberChange={(minNumber) => updateSettings({ minNumber })}
-                    onMaxNumberChange={(maxNumber) => updateSettings({ maxNumber })}
                   />
                 </div>
 
-                {/* Generate Button */}
-                <GenerateButton
-                  onGenerate={handleGenerate}
-                  isLoading={isGenerating}
-                  disabled={!canGenerate}
-                />
+                {isGenerating && (
+                  <div className="mb-6 text-center">
+                    <div className="inline-flex items-center px-4 py-2 text-sm text-blue-600">
+                      <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      問題を生成中...
+                    </div>
+                  </div>
+                )}
 
                 {/* Export Controls */}
                 {worksheetData && (

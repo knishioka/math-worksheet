@@ -94,9 +94,6 @@ export interface WorksheetSettings {
   calculationPattern?: CalculationPattern;
   problemCount: number;
   layoutColumns: LayoutColumns;
-  includeCarryOver?: boolean;
-  minNumber?: number;
-  maxNumber?: number;
   title?: string;
   studentName?: string;
   date?: string;

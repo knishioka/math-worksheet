@@ -16,9 +16,6 @@ const defaultSettings: WorksheetSettings = {
   operation: 'addition',
   problemCount: 10,
   layoutColumns: 1,
-  includeCarryOver: false,
-  minNumber: 1,
-  maxNumber: 10,
 };
 
 export const useProblemStore = create<ProblemStore>((set, get) => ({
