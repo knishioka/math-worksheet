@@ -14,8 +14,8 @@ const defaultSettings: WorksheetSettings = {
   grade: 1,
   problemType: 'basic',
   operation: 'addition',
-  problemCount: 10,
-  layoutColumns: 1,
+  problemCount: 20,
+  layoutColumns: 2,
 };
 
 export const useProblemStore = create<ProblemStore>((set, get) => ({

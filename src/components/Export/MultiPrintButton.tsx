@@ -96,7 +96,20 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
           problemsHTML += `${operand1} ${operator} ${operand2} = `;
           
           if (problem.missingPosition && problem.missingPosition !== 'answer') {
-            problemsHTML += problem.answer;
+            // 虫食い算で答えの位置が空欄でない場合
+            if (showAnswers) {
+              problemsHTML += `<span style="color: red; font-weight: bold;">${problem.answer}</span>`;
+            } else {
+              problemsHTML += problem.answer;
+            }
+          } else if (problem.missingPosition === 'answer') {
+            // 虫食い算で答えが空欄の場合
+            if (showAnswers) {
+              const calculatedAnswer = calculateMissingAnswer(problem);
+              problemsHTML += `<span style="color: red; font-weight: bold;">${calculatedAnswer}</span>`;
+            } else {
+              problemsHTML += '<span style="display: inline-block; width: 32px; height: 32px; border: 2px solid #333; background-color: #f9f9f9; vertical-align: middle;"></span>';
+            }
           } else if (showAnswers && problem.answer !== null) {
             problemsHTML += `<span style="color: red; font-weight: bold;">${problem.answer}</span>`;
           } else {
@@ -184,6 +197,35 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
     </button>
   );
 };
+
+function calculateMissingAnswer(problem: any): string {
+  // 虫食い算で答えが空欄の場合、operand1とoperand2から答えを計算
+  if (problem.operand1 !== null && problem.operand2 !== null) {
+    switch (problem.operation) {
+      case 'addition':
+        return (problem.operand1 + problem.operand2).toString();
+      case 'subtraction':
+        return (problem.operand1 - problem.operand2).toString();
+      case 'multiplication':
+        return (problem.operand1 * problem.operand2).toString();
+      case 'division':
+        const quotient = Math.floor(problem.operand1 / problem.operand2);
+        const remainder = problem.operand1 % problem.operand2;
+        if (remainder === 0) {
+          return quotient.toString();
+        } else {
+          return `${quotient}あまり${remainder}`;
+        }
+    }
+  }
+  
+  // fallback
+  if (problem.answer !== null) {
+    return problem.answer.toString();
+  }
+  
+  return '';
+}
 
 function getOperationName(operation: string): string {
   switch (operation) {

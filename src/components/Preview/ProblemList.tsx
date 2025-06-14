@@ -205,12 +205,22 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
         <span className="font-mono text-lg">=</span>
         {basicProblem.missingPosition && basicProblem.missingPosition !== 'answer' ? (
           // 虫食い算で答えの位置が空欄でない場合
-          <span className="font-mono text-lg">{basicProblem.answer}</span>
-        ) : basicProblem.missingPosition === 'answer' && basicProblem.answer === null ? (
+          showAnswer ? (
+            <span className="font-mono text-lg text-red-600 font-bold">{basicProblem.answer}</span>
+          ) : (
+            <span className="font-mono text-lg">{basicProblem.answer}</span>
+          )
+        ) : basicProblem.missingPosition === 'answer' ? (
           // 虫食い算で答えが空欄の場合
-          <MissingNumberBox />
-        ) : showAnswer && shouldShowAnswerBlank ? (
-          // 答えを表示する場合
+          showAnswer ? (
+            <span className="font-mono text-lg text-red-600 font-bold">
+              {formatMissingAnswer(basicProblem)}
+            </span>
+          ) : (
+            <MissingNumberBox />
+          )
+        ) : showAnswer ? (
+          // 通常問題で答えを表示する場合
           <span className="font-mono text-lg text-red-600 font-bold">
             {formatAnswer(problem)}
           </span>
@@ -222,6 +232,35 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
     </div>
   );
 };
+
+function formatMissingAnswer(basicProblem: BasicProblem): string {
+  // 虫食い算で答えが空欄の場合、operand1とoperand2から答えを計算
+  if (basicProblem.operand1 !== null && basicProblem.operand2 !== null) {
+    switch (basicProblem.operation) {
+      case 'addition':
+        return (basicProblem.operand1 + basicProblem.operand2).toString();
+      case 'subtraction':
+        return (basicProblem.operand1 - basicProblem.operand2).toString();
+      case 'multiplication':
+        return (basicProblem.operand1 * basicProblem.operand2).toString();
+      case 'division':
+        const quotient = Math.floor(basicProblem.operand1 / basicProblem.operand2);
+        const remainder = basicProblem.operand1 % basicProblem.operand2;
+        if (remainder === 0) {
+          return quotient.toString();
+        } else {
+          return `${quotient}あまり${remainder}`;
+        }
+    }
+  }
+  
+  // operandがnullの場合やanswerが設定されている場合はそれを返す
+  if (basicProblem.answer !== null) {
+    return basicProblem.answer.toString();
+  }
+  
+  return '';
+}
 
 function formatAnswer(problem: Problem): string {
   if ('answer' in problem && problem.answer === null) {
