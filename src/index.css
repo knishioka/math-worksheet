@@ -35,18 +35,18 @@
       @apply text-black bg-white;
     }
 
-    /* Hide everything by default */
-    body > * {
+    /* Hide everything except root by default */
+    body > *:not(#root) {
+      display: none !important;
+    }
+    
+    /* Hide non-print elements in root */
+    #root > *:not(.multi-page-container) .no-print {
       display: none !important;
     }
 
-    /* Show only the print container */
-    #print-container {
-      display: block !important;
-    }
-
     /* Show the printable worksheet if printing normally */
-    #printable-worksheet {
+    #printable-worksheet:not(.hidden-for-multi) {
       display: block !important;
       border: none !important;
       box-shadow: none !important;
@@ -58,6 +58,11 @@
       position: static !important;
       left: auto !important;
       top: auto !important;
+    }
+    
+    /* When multi-page is active, hide single page */
+    .multi-page-active #printable-worksheet {
+      display: none !important;
     }
     
     /* Adjust padding for print */
@@ -96,9 +101,19 @@
   .print-only {
     display: none;
   }
+  
+  /* Multi-page container is hidden by default */
+  .multi-page-container {
+    display: none;
+  }
 
   @media print {
     .print-only {
+      display: block !important;
+    }
+    
+    /* Show multi-page container when printing */
+    .multi-page-container {
       display: block !important;
     }
   }

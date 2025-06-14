@@ -21,10 +21,14 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
   const handleMultiPagePrint = useCallback((pageCount: number) => {
     if (!worksheetData) return;
 
+    console.log('Generating multiple pages:', pageCount);
+    console.log('Settings:', worksheetData.settings);
+    
     // 複数ページ分のワークシートを生成
     const worksheets: WorksheetData[] = [];
     for (let i = 0; i < pageCount; i++) {
       const newProblems = generateProblems(worksheetData.settings);
+      console.log(`Page ${i + 1} problems:`, newProblems.length);
       worksheets.push({
         settings: worksheetData.settings,
         problems: newProblems,
@@ -32,23 +36,19 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
       });
     }
     
+    console.log('Total worksheets generated:', worksheets.length);
     setMultiPageWorksheets(worksheets);
     
     // 印刷ダイアログを開く前に少し待機
     setTimeout(() => {
-      // 単一ページのワークシートを一時的に隠す
-      const singlePageWorksheet = document.getElementById('printable-worksheet');
-      if (singlePageWorksheet) {
-        singlePageWorksheet.style.display = 'none';
-      }
+      // 複数ページ印刷モードを有効化
+      document.body.classList.add('multi-page-active');
       
       window.print();
       
       // 印刷後に復元
       setTimeout(() => {
-        if (singlePageWorksheet) {
-          singlePageWorksheet.style.display = '';
-        }
+        document.body.classList.remove('multi-page-active');
         setMultiPageWorksheets([]);
       }, 1000);
     }, 100);
@@ -155,12 +155,10 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
 
     {/* Multi-page worksheets for printing */}
     {multiPageWorksheets.length > 0 && (
-      <div style={{ position: 'fixed', left: '-9999px', top: 0 }}>
-        <MultiPageWorksheet
-          worksheets={multiPageWorksheets}
-          showAnswers={showAnswers}
-        />
-      </div>
+      <MultiPageWorksheet
+        worksheets={multiPageWorksheets}
+        showAnswers={showAnswers}
+      />
     )}
   </>
   );
