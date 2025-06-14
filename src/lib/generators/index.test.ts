@@ -168,8 +168,6 @@ describe('validateSettings', () => {
       operation: 'addition',
       problemCount: 20,
       layoutColumns: 2,
-      minNumber: 1,
-      maxNumber: 100,
     };
 
     const result = validateSettings(settings);
@@ -223,22 +221,6 @@ describe('validateSettings', () => {
     expect(result.errors).toContain('Grade must be between 1 and 6');
   });
 
-  it('should detect invalid number range', () => {
-    const settings: WorksheetSettings = {
-      grade: 3,
-      problemType: 'basic',
-      operation: 'addition',
-      problemCount: 20,
-      layoutColumns: 2,
-      minNumber: 100,
-      maxNumber: 10,
-    };
-
-    const result = validateSettings(settings);
-    
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain('Minimum number cannot be greater than maximum number');
-  });
 
   it('should detect invalid layout columns', () => {
     const settings: WorksheetSettings = {

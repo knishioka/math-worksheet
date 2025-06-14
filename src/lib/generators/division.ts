@@ -19,11 +19,15 @@ export function generateDivisionProblem(
   settings: WorksheetSettings,
   options: DivisionOptions = {}
 ): BasicProblem {
+  // 学年に応じたデフォルト値を設定
+  const defaultMaxDividend = settings.grade <= 3 ? 50 : settings.grade <= 4 ? 100 : 200;
+  const defaultMaxDivisor = settings.grade <= 3 ? 5 : settings.grade <= 4 ? 9 : 12;
+  
   const {
     minDividend = 2,
-    maxDividend = settings.maxNumber || 100,
+    maxDividend = defaultMaxDividend,
     minDivisor = 2,
-    maxDivisor = 12,
+    maxDivisor = defaultMaxDivisor,
     allowRemainder = true,
     exactDivisionOnly = false,
     maxQuotient = 100,

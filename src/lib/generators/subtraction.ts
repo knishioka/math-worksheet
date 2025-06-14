@@ -17,10 +17,13 @@ export function generateSubtractionProblem(
   settings: WorksheetSettings,
   options: SubtractionOptions = {}
 ): BasicProblem {
+  // 学年に応じたデフォルト値を設定
+  const defaultMax = settings.grade <= 1 ? 10 : settings.grade <= 2 ? 20 : 100;
+  
   const {
-    minNumber = settings.minNumber || 1,
-    maxNumber = settings.maxNumber || 10,
-    includeBorrow = settings.includeCarryOver, // Use carryOver setting for borrow
+    minNumber = 1,
+    maxNumber = defaultMax,
+    includeBorrow = false,
     excludeBorrow = false,
     digitCount,
     allowNegative = false,

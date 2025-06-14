@@ -16,10 +16,13 @@ export function generateAdditionProblem(
   settings: WorksheetSettings,
   options: AdditionOptions = {}
 ): BasicProblem {
+  // 学年に応じたデフォルト値を設定
+  const defaultMax = settings.grade <= 1 ? 10 : settings.grade <= 2 ? 20 : 100;
+  
   const {
-    minNumber = settings.minNumber || 1,
-    maxNumber = settings.maxNumber || 10,
-    includeCarryOver = settings.includeCarryOver,
+    minNumber = 1,
+    maxNumber = defaultMax,
+    includeCarryOver = false,
     excludeCarryOver = false,
     digitCount,
   } = options;

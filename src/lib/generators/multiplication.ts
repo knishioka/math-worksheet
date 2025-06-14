@@ -18,9 +18,12 @@ export function generateMultiplicationProblem(
   settings: WorksheetSettings,
   options: MultiplicationOptions = {}
 ): BasicProblem {
+  // 学年に応じたデフォルト値を設定
+  const defaultMax = settings.grade <= 2 ? 5 : settings.grade <= 3 ? 9 : 12;
+  
   const {
-    minNumber = settings.minNumber || 1,
-    maxNumber = settings.maxNumber || 10,
+    minNumber = 1,
+    maxNumber = defaultMax,
     includeZero = false,
     includeOne = true,
     timesTableFocus,

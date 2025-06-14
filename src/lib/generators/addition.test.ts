@@ -9,8 +9,6 @@ describe('generateAdditionProblem', () => {
     operation: 'addition',
     problemCount: 1,
     layoutColumns: 1,
-    minNumber: 1,
-    maxNumber: 10,
   };
 
   it('should generate a valid addition problem', () => {
@@ -70,8 +68,6 @@ describe('generateAdditionProblems', () => {
     operation: 'addition',
     problemCount: 10,
     layoutColumns: 2,
-    minNumber: 1,
-    maxNumber: 20,
   };
 
   it('should generate the requested number of problems', () => {

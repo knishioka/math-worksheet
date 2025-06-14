@@ -162,9 +162,6 @@ export function validateSettings(settings: WorksheetSettings): { valid: boolean;
     errors.push('Grade must be between 1 and 6');
   }
 
-  if (settings.minNumber && settings.maxNumber && settings.minNumber > settings.maxNumber) {
-    errors.push('Minimum number cannot be greater than maximum number');
-  }
 
   if (settings.layoutColumns < 1 || settings.layoutColumns > 3) {
     errors.push('Layout columns must be between 1 and 3');
