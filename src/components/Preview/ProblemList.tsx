@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Problem, LayoutColumns, FractionProblem, DecimalProblem, MixedNumberProblem, BasicProblem } from '../../types';
 import { MathFraction, MathDecimal, MathMixedNumber } from '../Math/MathExpression';
+import { MissingNumberBox } from '../Math/MissingNumberBox';
 
 interface ProblemListProps {
   problems: Problem[];
@@ -160,14 +161,25 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
   return (
     <div className="problem-text space-y-1">
       <div className="text-xs text-gray-600">({number})</div>
-      <div className="flex items-baseline space-x-2">
-        <span className="font-mono text-lg">{basicProblem.operand1 ?? '□'}</span>
+      <div className="flex items-center space-x-2">
+        {basicProblem.operand1 !== null ? (
+          <span className="font-mono text-lg">{basicProblem.operand1}</span>
+        ) : (
+          <MissingNumberBox />
+        )}
         <span className="font-mono text-lg">{operationSymbol}</span>
-        <span className="font-mono text-lg">{basicProblem.operand2 ?? '□'}</span>
+        {basicProblem.operand2 !== null ? (
+          <span className="font-mono text-lg">{basicProblem.operand2}</span>
+        ) : (
+          <MissingNumberBox />
+        )}
         <span className="font-mono text-lg">=</span>
         {basicProblem.missingPosition && basicProblem.missingPosition !== 'answer' ? (
           // 虫食い算で答えの位置が空欄でない場合
           <span className="font-mono text-lg">{basicProblem.answer}</span>
+        ) : basicProblem.missingPosition === 'answer' && basicProblem.answer === null ? (
+          // 虫食い算で答えが空欄の場合
+          <MissingNumberBox />
         ) : showAnswer && shouldShowAnswerBlank ? (
           // 答えを表示する場合
           <span className="font-mono text-lg text-red-600 font-bold">
@@ -184,7 +196,7 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
 
 function formatAnswer(problem: Problem): string {
   if ('answer' in problem && problem.answer === null) {
-    return '□';
+    return '';
   }
   
   if (problem.type === 'basic') {

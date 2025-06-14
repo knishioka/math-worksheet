@@ -125,7 +125,17 @@
 @media print {
   math {
     page-break-inside: avoid;
-    color: black \!important;
+    color: black !important;
     font-size: inherit;
+  }
+  
+  /* 虫食い算の四角を印刷時に見やすく */
+  .missing-number-box {
+    width: 2rem !important;
+    height: 2rem !important;
+    border: 2px solid #333 !important;
+    background-color: white !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
   }
 }
