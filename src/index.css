@@ -119,11 +119,11 @@
   
   /* 虫食い算の四角を印刷時に見やすく */
   .missing-number-box {
-    width: 2rem !important;
-    height: 2rem !important;
-    border: 2px solid #333 !important;
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    border: 1.5px solid #333 !important;
     background-color: white !important;
     display: inline-block !important;
-    vertical-align: middle !important;
+    vertical-align: text-bottom !important;
   }
 }

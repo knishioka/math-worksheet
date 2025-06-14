@@ -9,9 +9,9 @@ export const MissingNumberBox: React.FC<MissingNumberBoxProps> = ({ className = 
     <span 
       className={`missing-number-box inline-block border-2 border-gray-400 rounded ${className}`}
       style={{ 
-        width: '2.5rem', 
-        height: '2.5rem',
-        verticalAlign: 'middle',
+        width: '1.75rem', 
+        height: '1.75rem',
+        verticalAlign: 'text-bottom',
         backgroundColor: '#f9f9f9'
       }}
     />

@@ -50,9 +50,10 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
     let problemsHTML = '<div style="margin-top: 24px;">';
     const columns = worksheet.settings.layoutColumns || 2;
     
-    // 文章問題の場合は間隔を調整
+    // 文章問題や虫食い算の場合は間隔を調整
     const hasWordProblems = worksheet.problems.some(p => p.type === 'word');
-    const rowGap = hasWordProblems ? '12px' : '24px';
+    const hasMissingNumbers = worksheet.problems.some(p => p.type === 'basic' && p.missingPosition);
+    const rowGap = hasWordProblems ? '12px' : hasMissingNumbers ? '18px' : '24px';
     const colGap = hasWordProblems ? '20px' : '32px';
     const gridStyle = `display: grid; grid-template-columns: repeat(${columns}, 1fr); gap: ${rowGap} ${colGap};`;
     problemsHTML += `<div style="${gridStyle}">`;
@@ -76,7 +77,7 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
     
     reorderedProblems.forEach((problem, index) => {
       if (!problem) {
-        const marginBottom = hasWordProblems ? '8px' : '16px';
+        const marginBottom = hasWordProblems ? '8px' : hasMissingNumbers ? '12px' : '16px';
         problemsHTML += `<div style="margin-bottom: ${marginBottom};"></div>`;
         return;
       }
@@ -86,7 +87,7 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
       const row = Math.floor(index / columns);
       const originalNumber = col * rowCount + row + 1;
       
-      const marginBottom = hasWordProblems ? '8px' : '16px';
+      const marginBottom = hasWordProblems ? '8px' : hasMissingNumbers ? '12px' : '16px';
       problemsHTML += `<div style="margin-bottom: ${marginBottom};">`;
       problemsHTML += `<div style="font-size: 12px; color: #666;">(${originalNumber})</div>`;
       
@@ -149,7 +150,7 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
           const missingOperand1 = calculateMissingOperand1(basicProblem);
           problemsHTML += `<span style="color: red; font-weight: bold;">${missingOperand1}</span>`;
         } else {
-          problemsHTML += '<span style="display: inline-block; width: 32px; height: 32px; border: 2px solid #333; background-color: #f9f9f9; vertical-align: middle;"></span>';
+          problemsHTML += '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
         }
         
         problemsHTML += ` ${operator} `;
@@ -161,7 +162,7 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
           const missingOperand2 = calculateMissingOperand2(basicProblem);
           problemsHTML += `<span style="color: red; font-weight: bold;">${missingOperand2}</span>`;
         } else {
-          problemsHTML += '<span style="display: inline-block; width: 32px; height: 32px; border: 2px solid #333; background-color: #f9f9f9; vertical-align: middle;"></span>';
+          problemsHTML += '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
         }
         
         problemsHTML += ' = ';
@@ -173,7 +174,7 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
             const calculatedAnswer = calculateMissingAnswer(basicProblem);
             problemsHTML += `<span style="color: red; font-weight: bold;">${calculatedAnswer}</span>`;
           } else {
-            problemsHTML += '<span style="display: inline-block; width: 32px; height: 32px; border: 2px solid #333; background-color: #f9f9f9; vertical-align: middle;"></span>';
+            problemsHTML += '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
           }
         } else if (showAnswers && basicProblem.missingPosition) {
           // 虫食い算で答えの位置が空欄でない場合、通常の色で答えを表示
