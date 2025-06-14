@@ -88,7 +88,26 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
         problemsHTML += `<div style="font-size: 12px; color: #666;">(${originalNumber})</div>`;
         problemsHTML += '<div style="font-family: monospace; font-size: 18px; margin-top: 4px;">';
         
-        if (problem.type === 'basic') {
+        if (problem.type === 'word') {
+          // 文章問題の表示
+          problemsHTML += `<div style="font-size: 14px; line-height: 1.5;">`;
+          problemsHTML += problem.problemText;
+          problemsHTML += '</div>';
+          problemsHTML += '<div style="margin-top: 8px;">';
+          if (showAnswers) {
+            problemsHTML += `<span style="color: red; font-weight: bold;">答え: ${problem.answer}`;
+            if (problem.unit) {
+              problemsHTML += problem.unit;
+            }
+            problemsHTML += '</span>';
+          } else {
+            problemsHTML += '答え: <span style="display: inline-block; width: 96px; border-bottom: 1px solid black; margin: 0 4px;"></span>';
+            if (problem.unit) {
+              problemsHTML += `<span style="font-size: 14px;">${problem.unit}</span>`;
+            }
+          }
+          problemsHTML += '</div>';
+        } else if (problem.type === 'basic') {
           const operator = getOperatorSymbol(problem.operation);
           
           // operand1の表示

@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Problem, LayoutColumns, FractionProblem, DecimalProblem, MixedNumberProblem, BasicProblem } from '../../types';
+import type { Problem, LayoutColumns, FractionProblem, DecimalProblem, MixedNumberProblem, BasicProblem, WordProblem } from '../../types';
 import { MathFraction, MathDecimal, MathMixedNumber } from '../Math/MathExpression';
 import { MissingNumberBox } from '../Math/MissingNumberBox';
 
@@ -177,6 +177,31 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
             />
           ) : (
             <span className="inline-block w-16 border-b border-black mx-1 align-bottom" style={{ height: '1.5rem' }} />
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 文章問題の場合
+  if (problem.type === 'word') {
+    const wordProblem = problem as WordProblem;
+    return (
+      <div className="problem-text space-y-1">
+        <div className="text-xs text-gray-600">({number})</div>
+        <div className="space-y-2">
+          <div className="text-sm">{wordProblem.problemText}</div>
+          {showAnswer ? (
+            <div className="text-red-600 font-bold">
+              答え: {wordProblem.answer}
+              {wordProblem.unit && wordProblem.unit}
+            </div>
+          ) : (
+            <div className="flex items-baseline">
+              <span className="text-sm mr-2">答え:</span>
+              <span className="inline-block w-24 border-b border-black mx-1" style={{ height: '1.5rem' }} />
+              {wordProblem.unit && <span className="text-sm ml-1">{wordProblem.unit}</span>}
+            </div>
           )}
         </div>
       </div>

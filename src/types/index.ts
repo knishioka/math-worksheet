@@ -85,7 +85,17 @@ export interface MissingNumberProblem {
   missingPosition: 'operand1' | 'operand2' | 'answer';
 }
 
-export type Problem = BasicProblem | FractionProblem | DecimalProblem | MixedNumberProblem | HissanProblem | MissingNumberProblem;
+export interface WordProblem {
+  id: string;
+  type: 'word';
+  operation: Operation;
+  problemText: string;
+  answer: number | string;
+  unit?: string;
+  showCalculation?: boolean;
+}
+
+export type Problem = BasicProblem | FractionProblem | DecimalProblem | MixedNumberProblem | HissanProblem | MissingNumberProblem | WordProblem;
 
 export interface WorksheetSettings {
   grade: Grade;

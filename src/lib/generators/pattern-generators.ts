@@ -1,4 +1,4 @@
-import type { BasicProblem, FractionProblem, WorksheetSettings, Problem } from '../../types';
+import type { BasicProblem, FractionProblem, WordProblem, WorksheetSettings, Problem } from '../../types';
 import { generateId, randomInt } from '../utils/math';
 
 /**
@@ -1468,8 +1468,8 @@ function generateFracSimplify(_settings: WorksheetSettings, count: number): Frac
 }
 
 // 5年生: 百分率の基本
-function generatePercentBasic(_settings: WorksheetSettings, count: number): BasicProblem[] {
-  const problems: BasicProblem[] = [];
+function generatePercentBasic(_settings: WorksheetSettings, count: number): WordProblem[] {
+  const problems: WordProblem[] = [];
   
   for (let i = 0; i < count; i++) {
     const patternType = randomInt(0, 2);
@@ -1479,11 +1479,11 @@ function generatePercentBasic(_settings: WorksheetSettings, count: number): Basi
       const percent = randomInt(1, 20) * 5; // 5%, 10%, 15%...100%
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'word',
         operation: 'division',
-        operand1: percent,
-        operand2: 100,
+        problemText: `${percent}%を小数で表すと？`,
         answer: percent / 100,
+        showCalculation: true,
       });
     } else if (patternType === 1) {
       // ある数の○%を求める
@@ -1491,11 +1491,11 @@ function generatePercentBasic(_settings: WorksheetSettings, count: number): Basi
       const percent = randomInt(1, 10) * 10; // 10%, 20%...100%
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'word',
         operation: 'multiplication',
-        operand1: base,
-        operand2: percent / 100,
+        problemText: `${base}の${percent}%は？`,
         answer: base * percent / 100,
+        showCalculation: true,
       });
     } else {
       // ○は△の何%かを求める
@@ -1503,11 +1503,12 @@ function generatePercentBasic(_settings: WorksheetSettings, count: number): Basi
       const whole = randomInt(part + 10, 100);
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'word',
         operation: 'division',
-        operand1: part,
-        operand2: whole,
+        problemText: `${part}は${whole}の何%？`,
         answer: (part / whole) * 100,
+        unit: '%',
+        showCalculation: true,
       });
     }
   }
@@ -1516,8 +1517,8 @@ function generatePercentBasic(_settings: WorksheetSettings, count: number): Basi
 }
 
 // 5年生: 面積・体積
-function generateAreaVolume(_settings: WorksheetSettings, count: number): BasicProblem[] {
-  const problems: BasicProblem[] = [];
+function generateAreaVolume(_settings: WorksheetSettings, count: number): WordProblem[] {
+  const problems: WordProblem[] = [];
   
   for (let i = 0; i < count; i++) {
     const shapeType = randomInt(0, 3);
@@ -1528,11 +1529,12 @@ function generateAreaVolume(_settings: WorksheetSettings, count: number): BasicP
       const width = randomInt(2, 20);
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'word',
         operation: 'multiplication',
-        operand1: length,
-        operand2: width,
+        problemText: `たて${length}cm、よこ${width}cmの長方形の面積は？`,
         answer: length * width,
+        unit: 'cm²',
+        showCalculation: true,
       });
     } else if (shapeType === 1) {
       // 三角形の面積（底辺×高さ÷2）
@@ -1540,11 +1542,12 @@ function generateAreaVolume(_settings: WorksheetSettings, count: number): BasicP
       const height = randomInt(2, 16);
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'word',
         operation: 'division',
-        operand1: base * height,
-        operand2: 2,
+        problemText: `底辺${base}cm、高さ${height}cmの三角形の面積は？`,
         answer: (base * height) / 2,
+        unit: 'cm²',
+        showCalculation: true,
       });
     } else if (shapeType === 2) {
       // 直方体の体積
@@ -1553,22 +1556,24 @@ function generateAreaVolume(_settings: WorksheetSettings, count: number): BasicP
       const height = randomInt(2, 10);
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'word',
         operation: 'multiplication',
-        operand1: length * width,
-        operand2: height,
+        problemText: `たて${length}cm、よこ${width}cm、高さ${height}cmの直方体の体積は？`,
         answer: length * width * height,
+        unit: 'cm³',
+        showCalculation: true,
       });
     } else {
       // 立方体の体積
       const side = randomInt(2, 10);
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'word',
         operation: 'multiplication',
-        operand1: side * side,
-        operand2: side,
+        problemText: `1辺が${side}cmの立方体の体積は？`,
         answer: side * side * side,
+        unit: 'cm³',
+        showCalculation: true,
       });
     }
   }
@@ -1652,8 +1657,8 @@ function generateFracDiv(_settings: WorksheetSettings, count: number): FractionP
 }
 
 // 6年生: 比と比例
-function generateRatioProportion(_settings: WorksheetSettings, count: number): BasicProblem[] {
-  const problems: BasicProblem[] = [];
+function generateRatioProportion(_settings: WorksheetSettings, count: number): WordProblem[] {
+  const problems: WordProblem[] = [];
   
   function gcd(a: number, b: number): number {
     return b === 0 ? a : gcd(b, a % b);
@@ -1663,21 +1668,22 @@ function generateRatioProportion(_settings: WorksheetSettings, count: number): B
     const patternType = randomInt(0, 2);
     
     if (patternType === 0) {
-      // 比の値を求める (a:b = a/b)
-      const a = randomInt(2, 20);
-      const b = randomInt(2, 20);
+      // 比を簡単にする
+      const factor = randomInt(2, 5);
+      const a = randomInt(2, 10) * factor;
+      const b = randomInt(2, 10) * factor;
       const g = gcd(a, b);
       
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'word',
         operation: 'division',
-        operand1: a / g,
-        operand2: b / g,
-        answer: a / b,
+        problemText: `${a}:${b}をもっとも簡単な整数の比に直すと？`,
+        answer: `${a/g}:${b/g}`,
+        showCalculation: true,
       });
     } else {
-      // 比例式を解く (a:b = c:x)
+      // 比例式を解く
       const a = randomInt(2, 10);
       const b = randomInt(2, 10);
       const c = randomInt(2, 10);
@@ -1685,11 +1691,11 @@ function generateRatioProportion(_settings: WorksheetSettings, count: number): B
       
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'word',
         operation: 'multiplication',
-        operand1: b * c,
-        operand2: 1 / a,
+        problemText: `${a}:${b} = ${c}:□ の□にあてはまる数は？`,
         answer: x,
+        showCalculation: true,
       });
     }
   }
@@ -1698,47 +1704,50 @@ function generateRatioProportion(_settings: WorksheetSettings, count: number): B
 }
 
 // 6年生: 速さ・時間・距離
-function generateSpeedTimeDistance(_settings: WorksheetSettings, count: number): BasicProblem[] {
-  const problems: BasicProblem[] = [];
+function generateSpeedTimeDistance(_settings: WorksheetSettings, count: number): WordProblem[] {
+  const problems: WordProblem[] = [];
   
   for (let i = 0; i < count; i++) {
     const problemType = randomInt(0, 3);
     
     if (problemType === 0) {
       // 速さを求める（距離÷時間）
-      const distance = randomInt(10, 100) * 10; // 100km, 200km...
+      const distance = randomInt(10, 50) * 10; // 100km, 200km...
       const time = randomInt(2, 10); // 2時間, 3時間...
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'word',
         operation: 'division',
-        operand1: distance,
-        operand2: time,
+        problemText: `${distance}kmを${time}時間で走る車の時速は？`,
         answer: distance / time,
+        unit: 'km/時',
+        showCalculation: true,
       });
     } else if (problemType === 1) {
       // 時間を求める（距離÷速さ）
-      const distance = randomInt(10, 100) * 10;
-      const speed = randomInt(20, 80);
+      const distance = randomInt(10, 50) * 10;
+      const speed = randomInt(40, 80);
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'word',
         operation: 'division',
-        operand1: distance,
-        operand2: speed,
-        answer: distance / speed,
+        problemText: `時速${speed}kmで${distance}km走るのにかかる時間は？`,
+        answer: Math.round(distance / speed * 10) / 10,
+        unit: '時間',
+        showCalculation: true,
       });
     } else {
       // 距離を求める（速さ×時間）
-      const speed = randomInt(20, 80);
-      const time = randomInt(2, 10);
+      const speed = randomInt(40, 80);
+      const time = randomInt(2, 8);
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'word',
         operation: 'multiplication',
-        operand1: speed,
-        operand2: time,
+        problemText: `時速${speed}kmで${time}時間走ったときの距離は？`,
         answer: speed * time,
+        unit: 'km',
+        showCalculation: true,
       });
     }
   }
@@ -1747,8 +1756,8 @@ function generateSpeedTimeDistance(_settings: WorksheetSettings, count: number):
 }
 
 // 6年生: 複雑な計算
-function generateComplexCalc(_settings: WorksheetSettings, count: number): BasicProblem[] {
-  const problems: BasicProblem[] = [];
+function generateComplexCalc(_settings: WorksheetSettings, count: number): WordProblem[] {
+  const problems: WordProblem[] = [];
   
   for (let i = 0; i < count; i++) {
     const patternType = randomInt(0, 3);
@@ -1758,43 +1767,42 @@ function generateComplexCalc(_settings: WorksheetSettings, count: number): Basic
       const a = randomInt(10, 50);
       const b = randomInt(2, 10);
       const c = randomInt(5, 20);
-      // a + b × c の形
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'word',
         operation: 'addition',
-        operand1: a,
-        operand2: b * c,
+        problemText: `${a} + ${b} × ${c} = ？`,
         answer: a + b * c,
+        showCalculation: true,
       });
     } else if (patternType === 1) {
-      // 四則混合（小数）
-      const a = Math.floor(randomInt(10, 99)) / 10;
-      const b = Math.floor(randomInt(10, 99)) / 10;
-      const c = Math.floor(randomInt(2, 20)) / 10;
-      // (a + b) × c の形
+      // 割合の応用問題
+      const original = randomInt(5, 20) * 100;
+      const percent = randomInt(2, 4) * 10;
+      const discounted = original * (100 - percent) / 100;
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'word',
         operation: 'multiplication',
-        operand1: a + b,
-        operand2: c,
-        answer: Math.round((a + b) * c * 100) / 100,
+        problemText: `${original}円の商品を${percent}%引きで買うと何円？`,
+        answer: discounted,
+        unit: '円',
+        showCalculation: true,
       });
     } else {
-      // 四則混合（分数）
-      const num1 = randomInt(1, 9);
-      const denom1 = randomInt(2, 10);
-      const multiplier = randomInt(2, 5);
-      
-      // 分数 × 整数 の形
+      // 単位の変換を含む問題
+      const meters = randomInt(2, 20) * 100;
+      const minutes = randomInt(2, 10);
+      const speedMPerMin = meters / minutes;
+      const speedKmPerHour = speedMPerMin * 60 / 1000;
       problems.push({
         id: generateId(),
-        type: 'basic',
-        operation: 'multiplication',
-        operand1: num1 / denom1,
-        operand2: multiplier,
-        answer: (num1 * multiplier) / denom1,
+        type: 'word',
+        operation: 'division',
+        problemText: `${meters}mを${minutes}分で歩く人の時速は？`,
+        answer: Math.round(speedKmPerHour * 10) / 10,
+        unit: 'km/時',
+        showCalculation: true,
       });
     }
   }
