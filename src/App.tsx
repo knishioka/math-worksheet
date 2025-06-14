@@ -85,6 +85,7 @@ function App(): React.ReactElement {
                     problemCount={settings.problemCount}
                     layoutColumns={settings.layoutColumns}
                     problemType={settings.problemType}
+                    calculationPattern={settings.calculationPattern}
                     onProblemCountChange={(problemCount) => updateSettings({ problemCount })}
                     onLayoutColumnsChange={(layoutColumns) => updateSettings({ layoutColumns })}
                   />

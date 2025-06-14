@@ -1,10 +1,11 @@
 import React from 'react';
-import type { LayoutColumns, ProblemType } from '../../types';
+import type { LayoutColumns, ProblemType, CalculationPattern } from '../../types';
 
 interface SettingsPanelProps {
   problemCount: number;
   layoutColumns: LayoutColumns;
   problemType?: ProblemType;
+  calculationPattern?: CalculationPattern;
   onProblemCountChange: (count: number) => void;
   onLayoutColumnsChange: (columns: LayoutColumns) => void;
 }
@@ -23,16 +24,30 @@ const WORD_PROBLEM_RECOMMENDED: Record<LayoutColumns, number> = {
   3: 24, // 3列の場合は24問を推奨
 };
 
+// 文章問題を生成する計算パターン
+const WORD_PROBLEM_PATTERNS: CalculationPattern[] = [
+  'percent-basic',       // 百分率
+  'area-volume',         // 面積・体積
+  'ratio-proportion',    // 比と比例
+  'speed-time-distance', // 速さ・時間・距離
+  'complex-calc'         // 複雑な計算
+];
+
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   problemCount,
   layoutColumns,
   problemType,
+  calculationPattern,
   onProblemCountChange,
   onLayoutColumnsChange,
 }) => {
   // 列数に応じた最大問題数を取得
   const maxProblems = MAX_PROBLEMS_PER_COLUMN[layoutColumns];
-  const isWordProblem = problemType === 'word';
+  
+  // 文章問題かどうかを判定：問題タイプが'word'または、基本計算で文章問題パターンが選択されている場合
+  const isWordProblem = problemType === 'word' || 
+    (problemType === 'basic' && calculationPattern && WORD_PROBLEM_PATTERNS.includes(calculationPattern));
+  
   const recommendedCount = isWordProblem ? WORD_PROBLEM_RECOMMENDED[layoutColumns] : undefined;
   
   // 現在の問題数が最大値を超えている場合は調整
