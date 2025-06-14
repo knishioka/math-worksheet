@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import type { WorksheetData } from '../../types';
 import { ProblemList } from './ProblemList';
 import { PrintButton } from '../Export/PrintButton';
+import { MultiPagePrintDialog } from './MultiPagePrintDialog';
+import { MultiPageWorksheet } from './MultiPageWorksheet';
+import { generateProblems } from '../../lib/generators';
 
 interface WorksheetPreviewProps {
   worksheetData?: WorksheetData;
@@ -12,6 +15,34 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
   worksheetData,
   showAnswers = false,
 }) => {
+  const [isMultiPageDialogOpen, setIsMultiPageDialogOpen] = useState(false);
+  const [multiPageWorksheets, setMultiPageWorksheets] = useState<WorksheetData[]>([]);
+
+  const handleMultiPagePrint = useCallback((pageCount: number) => {
+    if (!worksheetData) return;
+
+    // 複数ページ分のワークシートを生成
+    const worksheets: WorksheetData[] = [];
+    for (let i = 0; i < pageCount; i++) {
+      const newProblems = generateProblems(worksheetData.settings);
+      worksheets.push({
+        settings: worksheetData.settings,
+        problems: newProblems,
+        generatedAt: new Date(),
+      });
+    }
+    
+    setMultiPageWorksheets(worksheets);
+    
+    // 印刷ダイアログを開く前に少し待機
+    setTimeout(() => {
+      window.print();
+      // 印刷後にデータをクリア
+      setTimeout(() => {
+        setMultiPageWorksheets([]);
+      }, 1000);
+    }, 100);
+  }, [worksheetData]);
   if (!worksheetData) {
     return (
       <div className="bg-white border border-gray-200 rounded-lg p-8 min-h-96 flex items-center justify-center">
@@ -29,6 +60,7 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
   const { settings, problems, generatedAt } = worksheetData;
 
   return (
+    <>
     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
       {/* Worksheet Header */}
       <div className="p-6 border-b border-gray-200 bg-gray-50 no-print">
@@ -83,14 +115,42 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
         </div>
       </div>
 
-      {/* Print Button - Below problems */}
+      {/* Print Buttons - Below problems */}
       <div className="p-6 pt-0 no-print">
-        <PrintButton
-          worksheetTitle={`${settings.grade}年生${getOperationName(settings.operation)}プリント`}
-          elementId="printable-worksheet"
-        />
+        <div className="flex items-center gap-4">
+          <PrintButton
+            worksheetTitle={`${settings.grade}年生${getOperationName(settings.operation)}プリント`}
+            elementId="printable-worksheet"
+          />
+          <button
+            onClick={() => setIsMultiPageDialogOpen(true)}
+            className="flex items-center px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            複数枚印刷
+          </button>
+        </div>
       </div>
     </div>
+
+    {/* Multi-page print dialog */}
+    <MultiPagePrintDialog
+      isOpen={isMultiPageDialogOpen}
+      onClose={() => setIsMultiPageDialogOpen(false)}
+      onPrint={handleMultiPagePrint}
+      settings={settings}
+    />
+
+    {/* Multi-page worksheets for printing */}
+    {multiPageWorksheets.length > 0 && (
+      <MultiPageWorksheet
+        worksheets={multiPageWorksheets}
+        showAnswers={showAnswers}
+      />
+    )}
+  </>
   );
 };
 

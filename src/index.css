@@ -52,6 +52,11 @@
       box-shadow: none !important;
     }
     
+    /* Show multi-page print content */
+    #multi-page-print {
+      display: block !important;
+    }
+    
     /* Adjust padding for print */
     .print\:p-2 {
       padding: 0.5rem !important;
@@ -71,6 +76,10 @@
 
     .page-break {
       page-break-after: always;
+    }
+    
+    .page-break-before {
+      page-break-before: always;
     }
 
     .avoid-break {
