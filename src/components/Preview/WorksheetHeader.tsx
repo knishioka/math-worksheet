@@ -10,10 +10,7 @@ interface WorksheetHeaderProps {
 }
 
 export const WorksheetHeader: React.FC<WorksheetHeaderProps> = ({
-  title,
-  studentName,
   date,
-  generatedAt,
   grade,
   operation,
 }) => {

@@ -13,12 +13,16 @@ export const MultiPageWorksheet: React.FC<MultiPageWorksheetProps> = ({
   showAnswers,
 }) => {
   return (
-    <div id="multi-page-print" className="print-only">
+    <div id="multi-page-print">
       {worksheets.map((worksheet, index) => (
         <div
           key={index}
-          className={index > 0 ? 'page-break-before' : ''}
-          style={{ pageBreakBefore: index > 0 ? 'always' : 'auto' }}
+          style={{ 
+            pageBreakBefore: index > 0 ? 'always' : 'auto',
+            pageBreakAfter: index < worksheets.length - 1 ? 'always' : 'auto',
+            minHeight: '100vh',
+            position: 'relative'
+          }}
         >
           <div className="bg-white p-8 max-w-4xl mx-auto">
             <WorksheetHeader

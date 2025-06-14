@@ -52,9 +52,12 @@
       box-shadow: none !important;
     }
     
-    /* Show multi-page print content */
+    /* Show multi-page print content when available */
     #multi-page-print {
       display: block !important;
+      position: static !important;
+      left: auto !important;
+      top: auto !important;
     }
     
     /* Adjust padding for print */
@@ -91,7 +94,7 @@
 @layer components {
   /* Print visibility controls */
   .print-only {
-    @apply hidden;
+    display: none;
   }
 
   @media print {

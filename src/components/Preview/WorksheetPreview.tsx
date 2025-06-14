@@ -36,9 +36,19 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
     
     // 印刷ダイアログを開く前に少し待機
     setTimeout(() => {
+      // 単一ページのワークシートを一時的に隠す
+      const singlePageWorksheet = document.getElementById('printable-worksheet');
+      if (singlePageWorksheet) {
+        singlePageWorksheet.style.display = 'none';
+      }
+      
       window.print();
-      // 印刷後にデータをクリア
+      
+      // 印刷後に復元
       setTimeout(() => {
+        if (singlePageWorksheet) {
+          singlePageWorksheet.style.display = '';
+        }
         setMultiPageWorksheets([]);
       }, 1000);
     }, 100);
@@ -145,10 +155,12 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
 
     {/* Multi-page worksheets for printing */}
     {multiPageWorksheets.length > 0 && (
-      <MultiPageWorksheet
-        worksheets={multiPageWorksheets}
-        showAnswers={showAnswers}
-      />
+      <div style={{ position: 'fixed', left: '-9999px', top: 0 }}>
+        <MultiPageWorksheet
+          worksheets={multiPageWorksheets}
+          showAnswers={showAnswers}
+        />
+      </div>
     )}
   </>
   );
