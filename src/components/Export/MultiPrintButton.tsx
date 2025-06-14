@@ -1,5 +1,5 @@
 import React from 'react';
-import type { WorksheetData } from '../../types';
+import type { WorksheetData, BasicProblem } from '../../types';
 
 interface MultiPrintButtonProps {
   id?: string;
@@ -89,20 +89,34 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
         problemsHTML += '<div style="font-family: monospace; font-size: 18px; margin-top: 4px;">';
         
         if (problem.type === 'basic') {
-          const operand1 = problem.operand1 !== null ? problem.operand1 : '□';
-          const operand2 = problem.operand2 !== null ? problem.operand2 : '□';
           const operator = getOperatorSymbol(problem.operation);
           
-          problemsHTML += `${operand1} ${operator} ${operand2} = `;
+          // operand1の表示
+          if (problem.operand1 !== null) {
+            problemsHTML += problem.operand1;
+          } else if (showAnswers) {
+            const missingOperand1 = calculateMissingOperand1(problem);
+            problemsHTML += `<span style="color: red; font-weight: bold;">${missingOperand1}</span>`;
+          } else {
+            problemsHTML += '<span style="display: inline-block; width: 32px; height: 32px; border: 2px solid #333; background-color: #f9f9f9; vertical-align: middle;"></span>';
+          }
           
-          if (problem.missingPosition && problem.missingPosition !== 'answer') {
-            // 虫食い算で答えの位置が空欄でない場合
-            if (showAnswers) {
-              problemsHTML += `<span style="color: red; font-weight: bold;">${problem.answer}</span>`;
-            } else {
-              problemsHTML += problem.answer;
-            }
-          } else if (problem.missingPosition === 'answer') {
+          problemsHTML += ` ${operator} `;
+          
+          // operand2の表示
+          if (problem.operand2 !== null) {
+            problemsHTML += problem.operand2;
+          } else if (showAnswers) {
+            const missingOperand2 = calculateMissingOperand2(problem);
+            problemsHTML += `<span style="color: red; font-weight: bold;">${missingOperand2}</span>`;
+          } else {
+            problemsHTML += '<span style="display: inline-block; width: 32px; height: 32px; border: 2px solid #333; background-color: #f9f9f9; vertical-align: middle;"></span>';
+          }
+          
+          problemsHTML += ' = ';
+          
+          // 答えの表示
+          if (problem.missingPosition === 'answer') {
             // 虫食い算で答えが空欄の場合
             if (showAnswers) {
               const calculatedAnswer = calculateMissingAnswer(problem);
@@ -110,6 +124,9 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
             } else {
               problemsHTML += '<span style="display: inline-block; width: 32px; height: 32px; border: 2px solid #333; background-color: #f9f9f9; vertical-align: middle;"></span>';
             }
+          } else if (showAnswers && problem.missingPosition) {
+            // 虫食い算で答えの位置が空欄でない場合、通常の色で答えを表示
+            problemsHTML += `<span style="font-family: monospace; font-size: 18px;">${problem.answer}</span>`;
           } else if (showAnswers && problem.answer !== null) {
             problemsHTML += `<span style="color: red; font-weight: bold;">${problem.answer}</span>`;
           } else {
@@ -198,7 +215,41 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
   );
 };
 
-function calculateMissingAnswer(problem: any): string {
+function calculateMissingOperand1(problem: BasicProblem): string {
+  // operand1が空欄の虫食い算の場合、答えとoperand2から逆算
+  if (problem.answer !== null && problem.operand2 !== null) {
+    switch (problem.operation) {
+      case 'addition':
+        return (problem.answer - problem.operand2).toString();
+      case 'subtraction':
+        return (problem.answer + problem.operand2).toString();
+      case 'multiplication':
+        return (problem.answer / problem.operand2).toString();
+      case 'division':
+        return (problem.answer * problem.operand2).toString();
+    }
+  }
+  return '';
+}
+
+function calculateMissingOperand2(problem: BasicProblem): string {
+  // operand2が空欄の虫食い算の場合、答えとoperand1から逆算
+  if (problem.answer !== null && problem.operand1 !== null) {
+    switch (problem.operation) {
+      case 'addition':
+        return (problem.answer - problem.operand1).toString();
+      case 'subtraction':
+        return (problem.operand1 - problem.answer).toString();
+      case 'multiplication':
+        return (problem.answer / problem.operand1).toString();
+      case 'division':
+        return (problem.operand1 / problem.answer).toString();
+    }
+  }
+  return '';
+}
+
+function calculateMissingAnswer(problem: BasicProblem): string {
   // 虫食い算で答えが空欄の場合、operand1とoperand2から答えを計算
   if (problem.operand1 !== null && problem.operand2 !== null) {
     switch (problem.operation) {
@@ -208,7 +259,7 @@ function calculateMissingAnswer(problem: any): string {
         return (problem.operand1 - problem.operand2).toString();
       case 'multiplication':
         return (problem.operand1 * problem.operand2).toString();
-      case 'division':
+      case 'division': {
         const quotient = Math.floor(problem.operand1 / problem.operand2);
         const remainder = problem.operand1 % problem.operand2;
         if (remainder === 0) {
@@ -216,6 +267,7 @@ function calculateMissingAnswer(problem: any): string {
         } else {
           return `${quotient}あまり${remainder}`;
         }
+      }
     }
   }
   

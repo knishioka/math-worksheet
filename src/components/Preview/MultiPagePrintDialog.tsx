@@ -18,7 +18,7 @@ export const MultiPagePrintDialog: React.FC<MultiPagePrintDialogProps> = ({
 
   if (!isOpen) return null;
 
-  const handlePrint = () => {
+  const handlePrint = (): void => {
     onPrint(pageCount);
     onClose();
   };
