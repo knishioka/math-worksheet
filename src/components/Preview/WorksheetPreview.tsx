@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import type { WorksheetData, WorksheetSettings } from '../../types';
 import { ProblemList } from './ProblemList';
-import { PrintButton } from '../Export/PrintButton';
+import { SinglePrintButton } from '../Export/SinglePrintButton';
 import { MultiPagePrintDialog } from './MultiPagePrintDialog';
 import { MultiPrintButton } from '../Export/MultiPrintButton';
 import { generateProblems } from '../../lib/generators';
@@ -118,9 +118,9 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
       {/* Print Buttons - Below problems */}
       <div className="p-6 pt-0 no-print">
         <div className="flex items-center gap-4">
-          <PrintButton
-            worksheetTitle={`${settings.grade}年生${getOperationName(settings.operation)}プリント`}
-            elementId="printable-worksheet"
+          <SinglePrintButton
+            worksheet={worksheetData}
+            showAnswers={showAnswers}
           />
           <button
             onClick={() => setIsMultiPageDialogOpen(true)}
