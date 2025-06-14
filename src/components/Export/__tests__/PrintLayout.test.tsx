@@ -1,5 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
 import type { WorksheetData, BasicProblem, FractionProblem, WordProblem } from '../../../types';
 
 // PrintLayoutのDOM構造をテストするヘルパー関数
@@ -197,10 +196,11 @@ function calculateAnswer(problem: BasicProblem): string {
       return (problem.operand1 - problem.operand2).toString();
     case 'multiplication':
       return (problem.operand1 * problem.operand2).toString();
-    case 'division':
+    case 'division': {
       const quotient = Math.floor(problem.operand1 / problem.operand2);
       const remainder = problem.operand1 % problem.operand2;
       return remainder === 0 ? quotient.toString() : `${quotient}あまり${remainder}`;
+    }
     default:
       return '';
   }
