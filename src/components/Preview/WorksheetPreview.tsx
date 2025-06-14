@@ -3,7 +3,7 @@ import type { WorksheetData } from '../../types';
 import { ProblemList } from './ProblemList';
 import { PrintButton } from '../Export/PrintButton';
 import { MultiPagePrintDialog } from './MultiPagePrintDialog';
-import { MultiPageWorksheet } from './MultiPageWorksheet';
+import { MultiPrintButton } from '../Export/MultiPrintButton';
 import { generateProblems } from '../../lib/generators';
 
 interface WorksheetPreviewProps {
@@ -33,19 +33,14 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
     }
     
     setMultiPageWorksheets(worksheets);
+    setIsMultiPageDialogOpen(false);
     
-    // 印刷ダイアログを開く前に少し待機
+    // 印刷処理は別のタイミングで実行
     setTimeout(() => {
-      // 複数ページ印刷モードを有効化
-      document.body.classList.add('multi-page-active');
-      
-      window.print();
-      
-      // 印刷後に復元
-      setTimeout(() => {
-        document.body.classList.remove('multi-page-active');
-        setMultiPageWorksheets([]);
-      }, 1000);
+      const printButton = document.getElementById('multi-print-trigger');
+      if (printButton) {
+        printButton.click();
+      }
     }, 100);
   }, [worksheetData]);
   if (!worksheetData) {
@@ -150,10 +145,14 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
 
     {/* Multi-page worksheets for printing */}
     {multiPageWorksheets.length > 0 && (
-      <MultiPageWorksheet
-        worksheets={multiPageWorksheets}
-        showAnswers={showAnswers}
-      />
+      <div style={{ display: 'none' }}>
+        <MultiPrintButton
+          id="multi-print-trigger"
+          worksheets={multiPageWorksheets}
+          showAnswers={showAnswers}
+          onPrint={() => setMultiPageWorksheets([])}
+        />
+      </div>
     )}
   </>
   );

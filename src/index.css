@@ -40,28 +40,6 @@
       display: none !important;
     }
     
-    /* Hide multi-page container when not active */
-    body:not(.multi-page-active) .multi-page-container {
-      display: none !important;
-    }
-
-    /* Show the printable worksheet for normal printing */
-    body:not(.multi-page-active) #printable-worksheet {
-      display: block !important;
-      border: none !important;
-      box-shadow: none !important;
-    }
-    
-    /* Show multi-page print content when multi-page is active */
-    body.multi-page-active .multi-page-container {
-      display: block !important;
-    }
-    
-    /* Hide single page worksheet when multi-page is active */
-    body.multi-page-active #printable-worksheet {
-      display: none !important;
-    }
-    
     /* Adjust padding for print */
     .print\:p-2 {
       padding: 0.5rem !important;
@@ -94,19 +72,9 @@
   .print-only {
     display: none;
   }
-  
-  /* Multi-page container is hidden by default */
-  .multi-page-container {
-    display: none;
-  }
 
   @media print {
     .print-only {
-      display: block !important;
-    }
-    
-    /* Show multi-page container when printing */
-    .multi-page-container {
       display: block !important;
     }
   }
