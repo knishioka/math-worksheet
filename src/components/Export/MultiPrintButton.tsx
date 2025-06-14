@@ -53,7 +53,12 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
       // 問題部分
       let problemsHTML = '<div style="margin-top: 24px;">';
       const columns = worksheet.settings.layoutColumns || 2;
-      const gridStyle = `display: grid; grid-template-columns: repeat(${columns}, 1fr); gap: 24px 32px;`;
+      
+      // 文章問題の場合は間隔を調整
+      const hasWordProblems = worksheet.problems.some(p => p.type === 'word');
+      const rowGap = hasWordProblems ? '12px' : '24px';
+      const colGap = hasWordProblems ? '20px' : '32px';
+      const gridStyle = `display: grid; grid-template-columns: repeat(${columns}, 1fr); gap: ${rowGap} ${colGap};`;
       problemsHTML += `<div style="${gridStyle}">`;
       
       // 縦順に並び替えた問題配列を作成
@@ -75,7 +80,8 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
       
       reorderedProblems.forEach((problem, index) => {
         if (!problem) {
-          problemsHTML += `<div style="margin-bottom: 16px;"></div>`;
+          const marginBottom = hasWordProblems ? '8px' : '16px';
+          problemsHTML += `<div style="margin-bottom: ${marginBottom};"></div>`;
           return;
         }
         
@@ -84,16 +90,19 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
         const row = Math.floor(index / columns);
         const originalNumber = col * rowCount + row + 1;
         
-        problemsHTML += `<div style="margin-bottom: 16px;">`;
+        const marginBottom = hasWordProblems ? '8px' : '16px';
+        problemsHTML += `<div style="margin-bottom: ${marginBottom};">`;
         problemsHTML += `<div style="font-size: 12px; color: #666;">(${originalNumber})</div>`;
-        problemsHTML += '<div style="font-family: monospace; font-size: 18px; margin-top: 4px;">';
+        
+        const fontSize = (problem.type === 'word') ? '16px' : '18px';
+        problemsHTML += `<div style="font-family: monospace; font-size: ${fontSize}; margin-top: 4px;">`;
         
         if (problem.type === 'word') {
-          // 文章問題の表示
-          problemsHTML += `<div style="font-size: 14px; line-height: 1.5;">`;
+          // 文章問題の表示 - よりコンパクトに
+          problemsHTML += `<div style="font-size: 12px; line-height: 1.3;">`;
           problemsHTML += problem.problemText;
           problemsHTML += '</div>';
-          problemsHTML += '<div style="margin-top: 8px;">';
+          problemsHTML += '<div style="margin-top: 6px;">';
           if (showAnswers) {
             problemsHTML += `<span style="color: red; font-weight: bold;">答え: ${problem.answer}`;
             if (problem.unit) {

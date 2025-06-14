@@ -84,6 +84,7 @@ function App(): React.ReactElement {
                   <SettingsPanel
                     problemCount={settings.problemCount}
                     layoutColumns={settings.layoutColumns}
+                    problemType={settings.problemType}
                     onProblemCountChange={(problemCount) => updateSettings({ problemCount })}
                     onLayoutColumnsChange={(layoutColumns) => updateSettings({ layoutColumns })}
                   />
