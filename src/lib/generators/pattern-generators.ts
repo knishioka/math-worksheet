@@ -1,4 +1,4 @@
-import type { BasicProblem, WorksheetSettings } from '../../types';
+import type { BasicProblem, FractionProblem, WorksheetSettings, Problem } from '../../types';
 import { generateId, randomInt } from '../utils/math';
 
 /**
@@ -7,7 +7,7 @@ import { generateId, randomInt } from '../utils/math';
 export function generatePatternProblems(
   settings: WorksheetSettings,
   count: number
-): BasicProblem[] {
+): Problem[] {
   const pattern = settings.calculationPattern;
   
   if (!pattern) {
@@ -927,8 +927,8 @@ function generateSubDecSimple(_settings: WorksheetSettings, count: number): Basi
 }
 
 // 3年生: 同分母分数の加減算
-function generateFracSameDenom(_settings: WorksheetSettings, count: number): BasicProblem[] {
-  const problems: BasicProblem[] = [];
+function generateFracSameDenom(_settings: WorksheetSettings, count: number): FractionProblem[] {
+  const problems: FractionProblem[] = [];
   
   for (let i = 0; i < count; i++) {
     const isAddition = Math.random() < 0.5;
@@ -940,11 +940,15 @@ function generateFracSameDenom(_settings: WorksheetSettings, count: number): Bas
       
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'fraction',
         operation: 'addition',
-        operand1: numerator1 / denominator,
-        operand2: numerator2 / denominator,
-        answer: (numerator1 + numerator2) / denominator,
+        numerator1: numerator1,
+        denominator1: denominator,
+        numerator2: numerator2,
+        denominator2: denominator,
+        answerNumerator: numerator1 + numerator2,
+        answerDenominator: denominator,
+        simplified: true,
       });
     } else {
       const numerator1 = randomInt(2, denominator - 1);
@@ -952,11 +956,15 @@ function generateFracSameDenom(_settings: WorksheetSettings, count: number): Bas
       
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'fraction',
         operation: 'subtraction',
-        operand1: numerator1 / denominator,
-        operand2: numerator2 / denominator,
-        answer: (numerator1 - numerator2) / denominator,
+        numerator1: numerator1,
+        denominator1: denominator,
+        numerator2: numerator2,
+        denominator2: denominator,
+        answerNumerator: numerator1 - numerator2,
+        answerDenominator: denominator,
+        simplified: true,
       });
     }
   }
@@ -1197,8 +1205,8 @@ function generateDivDecInt(_settings: WorksheetSettings, count: number): BasicPr
 }
 
 // 4年生: 帯分数の計算
-function generateFracMixedNumber(_settings: WorksheetSettings, count: number): BasicProblem[] {
-  const problems: BasicProblem[] = [];
+function generateFracMixedNumber(_settings: WorksheetSettings, count: number): Problem[] {
+  const problems: Problem[] = [];
   
   for (let i = 0; i < count; i++) {
     const isAddition = Math.random() < 0.5;
@@ -1216,11 +1224,17 @@ function generateFracMixedNumber(_settings: WorksheetSettings, count: number): B
       
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'mixed',
         operation: 'addition',
-        operand1: whole1 + numerator1 / denominator,
-        operand2: whole2 + numerator2 / denominator,
-        answer: answerWhole + answerNumerator / denominator,
+        whole1: whole1,
+        numerator1: numerator1,
+        denominator1: denominator,
+        whole2: whole2,
+        numerator2: numerator2,
+        denominator2: denominator,
+        answerWhole: answerWhole,
+        answerNumerator: answerNumerator,
+        answerDenominator: denominator,
       });
     } else {
       const whole1 = randomInt(2, 8);
@@ -1237,11 +1251,17 @@ function generateFracMixedNumber(_settings: WorksheetSettings, count: number): B
       
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'mixed',
         operation: 'subtraction',
-        operand1: whole1 + numerator1 / denominator,
-        operand2: whole2 + numerator2 / denominator,
-        answer: answerWhole + answerNumerator / denominator,
+        whole1: whole1,
+        numerator1: numerator1,
+        denominator1: denominator,
+        whole2: whole2,
+        numerator2: numerator2,
+        denominator2: denominator,
+        answerWhole: answerWhole,
+        answerNumerator: answerNumerator,
+        answerDenominator: denominator,
       });
     }
   }
@@ -1300,9 +1320,17 @@ function generateDivDecDec(_settings: WorksheetSettings, count: number): BasicPr
     const maxAttempts = 50;
 
     do {
-      operand2 = Math.floor(randomInt(10, 99)) / 10;
+      // 割り切れるように商を先に決める
       const quotient = Math.floor(randomInt(10, 99)) / 10;
-      operand1 = Math.round(operand2 * quotient * 10) / 10;
+      operand2 = Math.floor(randomInt(10, 99)) / 10;
+      
+      // operand1 = operand2 × quotientで割り切れるようにする
+      operand1 = Math.round(operand2 * quotient * 100) / 100;
+      
+      // 小数点以下の桁数を適切に調整
+      if (operand1.toString().split('.')[1]?.length > 2) {
+        operand1 = Math.round(operand1 * 100) / 100;
+      }
       
       key = `${operand1}÷${operand2}`;
       
@@ -1320,7 +1348,7 @@ function generateDivDecDec(_settings: WorksheetSettings, count: number): BasicPr
       operation: 'division',
       operand1,
       operand2,
-      answer: Math.round(operand1 / operand2 * 10) / 10,
+      answer: Math.round(operand1 / operand2 * 100) / 100,
     });
   }
 
@@ -1328,8 +1356,8 @@ function generateDivDecDec(_settings: WorksheetSettings, count: number): BasicPr
 }
 
 // 5年生: 異分母分数の加減算
-function generateFracDifferentDenom(_settings: WorksheetSettings, count: number): BasicProblem[] {
-  const problems: BasicProblem[] = [];
+function generateFracDifferentDenom(_settings: WorksheetSettings, count: number): FractionProblem[] {
+  const problems: FractionProblem[] = [];
   
   // 最大公約数を求める
   function gcd(a: number, b: number): number {
@@ -1366,11 +1394,15 @@ function generateFracDifferentDenom(_settings: WorksheetSettings, count: number)
       
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'fraction',
         operation: 'addition',
-        operand1: numerator1 / denominator1,
-        operand2: numerator2 / denominator2,
-        answer: (answerNum / g) / (commonDenom / g),
+        numerator1: numerator1,
+        denominator1: denominator1,
+        numerator2: numerator2,
+        denominator2: denominator2,
+        answerNumerator: answerNum / g,
+        answerDenominator: commonDenom / g,
+        simplified: true,
       });
     } else {
       const numerator1 = randomInt(1, denominator1 - 1);
@@ -1387,15 +1419,19 @@ function generateFracDifferentDenom(_settings: WorksheetSettings, count: number)
       const answerNum = convertedNum1 - convertedNum2;
       
       // 約分
-      const g = gcd(answerNum, commonDenom);
+      const g = answerNum === 0 ? 1 : gcd(answerNum, commonDenom);
       
       problems.push({
         id: generateId(),
-        type: 'basic',
+        type: 'fraction',
         operation: 'subtraction',
-        operand1: numerator1 / denominator1,
-        operand2: numerator2 / denominator2,
-        answer: answerNum === 0 ? 0 : (answerNum / g) / (commonDenom / g),
+        numerator1: numerator1,
+        denominator1: denominator1,
+        numerator2: numerator2,
+        denominator2: denominator2,
+        answerNumerator: answerNum === 0 ? 0 : answerNum / g,
+        answerDenominator: answerNum === 0 ? 1 : commonDenom / g,
+        simplified: true,
       });
     }
   }
@@ -1404,8 +1440,8 @@ function generateFracDifferentDenom(_settings: WorksheetSettings, count: number)
 }
 
 // 5年生: 分数の約分
-function generateFracSimplify(_settings: WorksheetSettings, count: number): BasicProblem[] {
-  const problems: BasicProblem[] = [];
+function generateFracSimplify(_settings: WorksheetSettings, count: number): FractionProblem[] {
+  const problems: FractionProblem[] = [];
   
   for (let i = 0; i < count; i++) {
     // 約分できる分数を生成
@@ -1418,11 +1454,13 @@ function generateFracSimplify(_settings: WorksheetSettings, count: number): Basi
     
     problems.push({
       id: generateId(),
-      type: 'basic',
-      operation: 'division', // 約分は除算として扱う
-      operand1: numerator,
-      operand2: denominator,
-      answer: simplifiedNum / simplifiedDenom,
+      type: 'fraction',
+      operation: 'division', // 約分問題
+      numerator1: numerator,
+      denominator1: denominator,
+      answerNumerator: simplifiedNum,
+      answerDenominator: simplifiedDenom,
+      simplified: true,
     });
   }
 
@@ -1539,8 +1577,8 @@ function generateAreaVolume(_settings: WorksheetSettings, count: number): BasicP
 }
 
 // 6年生: 分数×分数
-function generateFracMult(_settings: WorksheetSettings, count: number): BasicProblem[] {
-  const problems: BasicProblem[] = [];
+function generateFracMult(_settings: WorksheetSettings, count: number): FractionProblem[] {
+  const problems: FractionProblem[] = [];
   
   function gcd(a: number, b: number): number {
     return b === 0 ? a : gcd(b, a % b);
@@ -1560,11 +1598,15 @@ function generateFracMult(_settings: WorksheetSettings, count: number): BasicPro
     
     problems.push({
       id: generateId(),
-      type: 'basic',
+      type: 'fraction',
       operation: 'multiplication',
-      operand1: numerator1 / denominator1,
-      operand2: numerator2 / denominator2,
-      answer: (answerNum / g) / (answerDenom / g),
+      numerator1: numerator1,
+      denominator1: denominator1,
+      numerator2: numerator2,
+      denominator2: denominator2,
+      answerNumerator: answerNum / g,
+      answerDenominator: answerDenom / g,
+      simplified: true,
     });
   }
 
@@ -1572,8 +1614,8 @@ function generateFracMult(_settings: WorksheetSettings, count: number): BasicPro
 }
 
 // 6年生: 分数÷分数
-function generateFracDiv(_settings: WorksheetSettings, count: number): BasicProblem[] {
-  const problems: BasicProblem[] = [];
+function generateFracDiv(_settings: WorksheetSettings, count: number): FractionProblem[] {
+  const problems: FractionProblem[] = [];
   
   function gcd(a: number, b: number): number {
     return b === 0 ? a : gcd(b, a % b);
@@ -1594,11 +1636,15 @@ function generateFracDiv(_settings: WorksheetSettings, count: number): BasicProb
     
     problems.push({
       id: generateId(),
-      type: 'basic',
+      type: 'fraction',
       operation: 'division',
-      operand1: numerator1 / denominator1,
-      operand2: numerator2 / denominator2,
-      answer: (answerNum / g) / (answerDenom / g),
+      numerator1: numerator1,
+      denominator1: denominator1,
+      numerator2: numerator2,
+      denominator2: denominator2,
+      answerNumerator: answerNum / g,
+      answerDenominator: answerDenom / g,
+      simplified: true,
     });
   }
 

@@ -1,10 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import type { WorksheetData } from '../../types';
+import type { WorksheetData, WorksheetSettings } from '../../types';
 import { ProblemList } from './ProblemList';
 import { PrintButton } from '../Export/PrintButton';
 import { MultiPagePrintDialog } from './MultiPagePrintDialog';
 import { MultiPrintButton } from '../Export/MultiPrintButton';
 import { generateProblems } from '../../lib/generators';
+import { PATTERN_LABELS } from '../../types/calculation-patterns';
 
 interface WorksheetPreviewProps {
   worksheetData?: WorksheetData;
@@ -66,8 +67,7 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
       <div className="p-6 border-b border-gray-200 bg-gray-50 no-print">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-black">
-            プレビュー - {getOperationName(settings.operation)}
-            ({settings.grade}年生)
+            プレビュー - {getPreviewTitle(settings)}
           </h2>
           <div className="text-sm text-gray-500">
             {problems.length}問 • {settings.layoutColumns}列レイアウト
@@ -171,6 +171,30 @@ function getOperationName(operation: string): string {
     default:
       return '計算';
   }
+}
+
+function getPreviewTitle(settings: WorksheetSettings): string {
+  const grade = `${settings.grade}年生`;
+  
+  // 計算パターンがある場合は、パターンのラベルを表示
+  if (settings.calculationPattern) {
+    const patternLabel = PATTERN_LABELS[settings.calculationPattern];
+    if (patternLabel) {
+      return `${patternLabel} (${grade})`;
+    }
+  }
+  
+  // 問題タイプによって適切なタイトルを生成
+  if (settings.problemType === 'fraction') {
+    return `分数の${getOperationName(settings.operation)} (${grade})`;
+  } else if (settings.problemType === 'decimal') {
+    return `小数の${getOperationName(settings.operation)} (${grade})`;
+  } else if (settings.problemType === 'mixed') {
+    return `帯分数の${getOperationName(settings.operation)} (${grade})`;
+  }
+  
+  // デフォルトは演算名
+  return `${getOperationName(settings.operation)} (${grade})`;
 }
 
 function formatDate(date: Date): string {
