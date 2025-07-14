@@ -92,7 +92,7 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
               名前：<span className="inline-block w-32 border-b border-black mx-1" style={{ height: '1.2rem' }} />
             </div>
             <div className="text-sm text-center">
-              {settings.grade}年生 {getOperationName(settings.operation)}
+              {getPreviewTitle(settings)}
             </div>
             <div className="text-sm text-right flex items-baseline justify-end">
               点数：<span className="inline-block w-16 border-b border-black mx-1" style={{ height: '1.2rem' }} />点
