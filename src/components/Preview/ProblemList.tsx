@@ -215,131 +215,47 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
     <div className="problem-text space-y-1">
       <div className="text-xs text-gray-600">({number})</div>
       <div className="flex items-center space-x-2">
-        {basicProblem.operand1 !== null ? (
-          <span className="font-mono text-lg">{basicProblem.operand1}</span>
-        ) : showAnswer ? (
-          // 虫食い算のoperand1が空欄で解答表示の場合、赤文字で答えを表示
-          <span className="font-mono text-lg text-red-600 font-bold">
-            {getMissingOperand1(basicProblem)}
-          </span>
-        ) : (
+        {basicProblem.missingPosition === 'operand1' ? (
+          // 虫食い算でoperand1が虫食いの場合
           <MissingNumberBox />
+        ) : (
+          // 通常の数値表示
+          <span className="font-mono text-lg">{basicProblem.operand1}</span>
         )}
         <span className="font-mono text-lg">{operationSymbol}</span>
-        {basicProblem.operand2 !== null ? (
-          <span className="font-mono text-lg">{basicProblem.operand2}</span>
-        ) : showAnswer ? (
-          // 虫食い算のoperand2が空欄で解答表示の場合、赤文字で答えを表示
-          <span className="font-mono text-lg text-red-600 font-bold">
-            {getMissingOperand2(basicProblem)}
-          </span>
-        ) : (
+        {basicProblem.missingPosition === 'operand2' ? (
+          // 虫食い算でoperand2が虫食いの場合
           <MissingNumberBox />
+        ) : (
+          // 通常の数値表示
+          <span className="font-mono text-lg">{basicProblem.operand2}</span>
         )}
         <span className="font-mono text-lg">=</span>
-        {basicProblem.missingPosition === 'answer' ? (
-          // 虫食い算で答えが空欄の場合
+        {basicProblem.missingPosition === 'answer' || !basicProblem.missingPosition ? (
+          // 答えが虫食いの場合、または虫食いでない通常問題の場合
           showAnswer ? (
-            // 虫食い算で答えが空欄の場合、赤文字で答えを表示
             <span className="font-mono text-lg text-red-600 font-bold">
-              {formatMissingAnswer(basicProblem)}
+              {formatAnswer(problem)}
             </span>
           ) : (
-            <MissingNumberBox />
+            <span className="inline-block w-16 border-b border-black mx-1 align-bottom" style={{ height: '1.5rem' }} />
           )
-        ) : showAnswer && basicProblem.missingPosition ? (
-          // 虫食い算で答えの位置が空欄でない場合、通常の色で答えを表示
-          <span className="font-mono text-lg">
-            {formatAnswer(problem)}
-          </span>
-        ) : showAnswer ? (
-          // 通常問題で答えを表示する場合
-          <span className="font-mono text-lg text-red-600 font-bold">
-            {formatAnswer(problem)}
-          </span>
         ) : (
-          // 答えを隠す場合
-          <span className="inline-block w-16 border-b border-black mx-1 align-bottom" style={{ height: '1.5rem' }} />
+          // 虫食い算で答えが虫食いでない場合（operand1またはoperand2が虫食い）、答えを問題として表示
+          <span className="font-mono text-lg">{basicProblem.answer}</span>
         )}
       </div>
     </div>
   );
 };
 
-function getMissingOperand1(basicProblem: BasicProblem): string {
-  // operand1が空欄の虫食い算の場合、答えとoperand2から逆算
-  if (basicProblem.answer !== null && basicProblem.operand2 !== null) {
-    switch (basicProblem.operation) {
-      case 'addition':
-        return (basicProblem.answer - basicProblem.operand2).toString();
-      case 'subtraction':
-        return (basicProblem.answer + basicProblem.operand2).toString();
-      case 'multiplication':
-        return (basicProblem.answer / basicProblem.operand2).toString();
-      case 'division':
-        return (basicProblem.answer * basicProblem.operand2).toString();
-    }
-  }
-  return '';
-}
-
-function getMissingOperand2(basicProblem: BasicProblem): string {
-  // operand2が空欄の虫食い算の場合、答えとoperand1から逆算
-  if (basicProblem.answer !== null && basicProblem.operand1 !== null) {
-    switch (basicProblem.operation) {
-      case 'addition':
-        return (basicProblem.answer - basicProblem.operand1).toString();
-      case 'subtraction':
-        return (basicProblem.operand1 - basicProblem.answer).toString();
-      case 'multiplication':
-        return (basicProblem.answer / basicProblem.operand1).toString();
-      case 'division':
-        return (basicProblem.operand1 / basicProblem.answer).toString();
-    }
-  }
-  return '';
-}
-
-function formatMissingAnswer(basicProblem: BasicProblem): string {
-  // 虫食い算で答えが空欄の場合、operand1とoperand2から答えを計算
-  if (basicProblem.operand1 !== null && basicProblem.operand2 !== null) {
-    switch (basicProblem.operation) {
-      case 'addition':
-        return (basicProblem.operand1 + basicProblem.operand2).toString();
-      case 'subtraction':
-        return (basicProblem.operand1 - basicProblem.operand2).toString();
-      case 'multiplication':
-        return (basicProblem.operand1 * basicProblem.operand2).toString();
-      case 'division': {
-        const quotient = Math.floor(basicProblem.operand1 / basicProblem.operand2);
-        const remainder = basicProblem.operand1 % basicProblem.operand2;
-        if (remainder === 0) {
-          return quotient.toString();
-        } else {
-          return `${quotient}あまり${remainder}`;
-        }
-      }
-    }
-  }
-  
-  // operandがnullの場合やanswerが設定されている場合はそれを返す
-  if (basicProblem.answer !== null) {
-    return basicProblem.answer.toString();
-  }
-  
-  return '';
-}
 
 function formatAnswer(problem: Problem): string {
-  if ('answer' in problem && problem.answer === null) {
-    return '';
-  }
-  
   if (problem.type === 'basic') {
     const basicProblem = problem as BasicProblem;
     
-    // 虫食い算で答えの位置でない場合、実際の計算結果を表示
-    if (basicProblem.missingPosition && basicProblem.missingPosition !== 'answer' && 
+    // 虫食い算で答えが虫食いの場合、operand1とoperand2から計算
+    if (basicProblem.missingPosition === 'answer' && 
         basicProblem.operand1 !== null && basicProblem.operand2 !== null) {
       switch (basicProblem.operation) {
         case 'addition':
@@ -360,22 +276,17 @@ function formatAnswer(problem: Problem): string {
       }
     }
     
-    // 通常の問題またはanswerがnullでない場合
+    // 通常の問題またはanswerが設定されている場合
     if (basicProblem.answer !== null) {
+      // わり算の余りがある場合の処理
+      if (basicProblem.operation === 'division' && 
+          basicProblem.operand1 !== null && basicProblem.operand2 !== null) {
+        const remainder = basicProblem.operand1 % basicProblem.operand2;
+        if (remainder !== 0) {
+          return `${basicProblem.answer}あまり${remainder}`;
+        }
+      }
       return basicProblem.answer.toString();
-    }
-  }
-  
-  if (problem.operation === 'division' && 'operand1' in problem && 'operand2' in problem && 
-      problem.operand1 !== null && problem.operand2 !== null) {
-    // For division, check if there's a remainder
-    const quotient = Math.floor(problem.operand1 / problem.operand2);
-    const remainder = problem.operand1 % problem.operand2;
-    
-    if (remainder === 0) {
-      return quotient.toString();
-    } else {
-      return `${quotient}あまり${remainder}`;
     }
   }
   
