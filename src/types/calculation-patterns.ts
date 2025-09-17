@@ -17,6 +17,7 @@ export type CalculationPattern =
   | 'add-double-digit-carry'        // 2桁＋2桁（繰り上がりあり）
   | 'sub-double-digit-no-borrow'    // 2桁－2桁（繰り下がりなし）
   | 'sub-double-digit-borrow'       // 2桁－2桁（繰り下がりあり）
+  | 'add-sub-double-mixed'          // 2桁の足し算・引き算混合（繰り上がり/下がり混在）
   | 'mult-single-digit'             // 九九（1×1〜9×9）
   | 'add-hundreds-simple'           // 100単位の簡単な計算
   | 'add-double-missing'            // 2桁の虫食い算（たし算）
@@ -75,6 +76,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'add-double-digit-carry',
     'sub-double-digit-no-borrow',
     'sub-double-digit-borrow',
+    'add-sub-double-mixed',
     'mult-single-digit',
     'add-hundreds-simple',
     'add-double-missing',
@@ -135,6 +137,7 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'add-double-digit-carry': '2桁のたし算（繰り上がりあり）',
   'sub-double-digit-no-borrow': '2桁のひき算（繰り下がりなし）',
   'sub-double-digit-borrow': '2桁のひき算（繰り下がりあり）',
+  'add-sub-double-mixed': '2桁のたし算・ひき算混合',
   'mult-single-digit': '九九（かけ算）',
   'add-hundreds-simple': '100単位の計算',
   'add-double-missing': '2桁たし算の虫食い算',
@@ -194,6 +197,7 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'add-double-digit-carry': '67＋58などの繰り上がりのあるたし算',
   'sub-double-digit-no-borrow': '86－32などの繰り下がりのないひき算',
   'sub-double-digit-borrow': '72－38などの繰り下がりのあるひき算',
+  'add-sub-double-mixed': 'たし算・ひき算の混合（繰り上がり/下がり混在）',
   'mult-single-digit': '1×1から9×9までの九九',
   'add-hundreds-simple': '300＋200などの100単位の計算',
   'add-double-missing': '□＋23＝45 のような2桁の虫食い算',
