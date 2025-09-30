@@ -6,6 +6,7 @@ import { MultiPagePrintDialog } from './MultiPagePrintDialog';
 import { MultiPrintButton } from '../Export/MultiPrintButton';
 import { generateProblems } from '../../lib/generators';
 import { PATTERN_LABELS } from '../../types/calculation-patterns';
+import { getOperationName } from '../../lib/utils/formatting';
 
 interface WorksheetPreviewProps {
   worksheetData?: WorksheetData;
@@ -157,26 +158,6 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
   </>
   );
 };
-
-function getOperationName(operation: string, calculationPattern?: string): string {
-  // 混合パターンの場合は特別な表示
-  if (calculationPattern === 'add-sub-mixed-basic' || calculationPattern === 'add-sub-double-mixed') {
-    return 'たし算・ひき算';
-  }
-
-  switch (operation) {
-    case 'addition':
-      return 'たし算';
-    case 'subtraction':
-      return 'ひき算';
-    case 'multiplication':
-      return 'かけ算';
-    case 'division':
-      return 'わり算';
-    default:
-      return '計算';
-  }
-}
 
 function getPreviewTitle(settings: WorksheetSettings): string {
   const grade = `${settings.grade}年生`;

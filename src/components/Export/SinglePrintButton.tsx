@@ -1,5 +1,14 @@
 import React from 'react';
 import type { WorksheetData, BasicProblem } from '../../types';
+import {
+  getOperationName,
+  getOperatorSymbol,
+} from '../../lib/utils/formatting';
+import {
+  calculateMissingOperand1,
+  calculateMissingOperand2,
+  calculateMissingAnswer,
+} from '../../lib/utils/missing-number-calculator';
 
 interface SinglePrintButtonProps {
   id?: string;
@@ -277,101 +286,4 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
   );
 };
 
-function calculateMissingOperand1(problem: BasicProblem): string {
-  // operand1が空欄の虫食い算の場合、答えとoperand2から逆算
-  if (problem.answer !== null && problem.operand2 !== null) {
-    switch (problem.operation) {
-      case 'addition':
-        return (problem.answer - problem.operand2).toString();
-      case 'subtraction':
-        return (problem.answer + problem.operand2).toString();
-      case 'multiplication':
-        return (problem.answer / problem.operand2).toString();
-      case 'division':
-        return (problem.answer * problem.operand2).toString();
-    }
-  }
-  return '';
-}
-
-function calculateMissingOperand2(problem: BasicProblem): string {
-  // operand2が空欄の虫食い算の場合、答えとoperand1から逆算
-  if (problem.answer !== null && problem.operand1 !== null) {
-    switch (problem.operation) {
-      case 'addition':
-        return (problem.answer - problem.operand1).toString();
-      case 'subtraction':
-        return (problem.operand1 - problem.answer).toString();
-      case 'multiplication':
-        return (problem.answer / problem.operand1).toString();
-      case 'division':
-        return (problem.operand1 / problem.answer).toString();
-    }
-  }
-  return '';
-}
-
-function calculateMissingAnswer(problem: BasicProblem): string {
-  // 虫食い算で答えが空欄の場合、operand1とoperand2から答えを計算
-  if (problem.operand1 !== null && problem.operand2 !== null) {
-    switch (problem.operation) {
-      case 'addition':
-        return (problem.operand1 + problem.operand2).toString();
-      case 'subtraction':
-        return (problem.operand1 - problem.operand2).toString();
-      case 'multiplication':
-        return (problem.operand1 * problem.operand2).toString();
-      case 'division': {
-        const quotient = Math.floor(problem.operand1 / problem.operand2);
-        const remainder = problem.operand1 % problem.operand2;
-        if (remainder === 0) {
-          return quotient.toString();
-        } else {
-          return `${quotient}あまり${remainder}`;
-        }
-      }
-    }
-  }
-  
-  // fallback
-  if (problem.answer !== null) {
-    return problem.answer.toString();
-  }
-  
-  return '';
-}
-
-function getOperationName(operation: string, calculationPattern?: string): string {
-  // 混合パターンの場合は特別な表示
-  if (calculationPattern === 'add-sub-mixed-basic' || calculationPattern === 'add-sub-double-mixed') {
-    return 'たし算・ひき算';
-  }
-
-  switch (operation) {
-    case 'addition':
-      return 'たし算';
-    case 'subtraction':
-      return 'ひき算';
-    case 'multiplication':
-      return 'かけ算';
-    case 'division':
-      return 'わり算';
-    default:
-      return '計算';
-  }
-}
-
-function getOperatorSymbol(operation: string): string {
-  switch (operation) {
-    case 'addition':
-      return '+';
-    case 'subtraction':
-      return '-';
-    case 'multiplication':
-      return '×';
-    case 'division':
-      return '÷';
-    default:
-      return '';
-  }
-}
+// 共通ユーティリティ関数は src/lib/utils/ からインポート済み
