@@ -4,7 +4,14 @@ export type Operation =
   | 'multiplication'
   | 'division';
 
-export type ProblemType = 'basic' | 'fraction' | 'decimal' | 'mixed' | 'hissan' | 'missing' | 'word';
+export type ProblemType =
+  | 'basic'
+  | 'fraction'
+  | 'decimal'
+  | 'mixed'
+  | 'hissan'
+  | 'missing'
+  | 'word';
 
 export type Grade = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -12,7 +19,11 @@ export type LayoutColumns = 1 | 2 | 3;
 
 // 計算パターンの型をインポート
 export type { CalculationPattern } from './calculation-patterns';
-export { PATTERNS_BY_GRADE, PATTERN_LABELS, PATTERN_DESCRIPTIONS } from './calculation-patterns';
+export {
+  PATTERNS_BY_GRADE,
+  PATTERN_LABELS,
+  PATTERN_DESCRIPTIONS,
+} from './calculation-patterns';
 import type { CalculationPattern } from './calculation-patterns';
 
 export interface BasicProblem {
@@ -95,7 +106,14 @@ export interface WordProblem {
   showCalculation?: boolean;
 }
 
-export type Problem = BasicProblem | FractionProblem | DecimalProblem | MixedNumberProblem | HissanProblem | MissingNumberProblem | WordProblem;
+export type Problem =
+  | BasicProblem
+  | FractionProblem
+  | DecimalProblem
+  | MixedNumberProblem
+  | HissanProblem
+  | MissingNumberProblem
+  | WordProblem;
 
 export interface WorksheetSettings {
   grade: Grade;

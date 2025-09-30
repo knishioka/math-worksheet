@@ -1,4 +1,8 @@
-import type { FractionProblem, MixedNumberProblem, WorksheetSettings } from '../../types';
+import type {
+  FractionProblem,
+  MixedNumberProblem,
+  WorksheetSettings,
+} from '../../types';
 import { randomInt, generateId } from '../utils/math';
 
 export interface FractionOptions {
@@ -30,7 +34,10 @@ function lcm(a: number, b: number): number {
 /**
  * 分数を約分
  */
-function simplifyFraction(numerator: number, denominator: number): [number, number] {
+function simplifyFraction(
+  numerator: number,
+  denominator: number
+): [number, number] {
   const divisor = gcd(numerator, denominator);
   return [numerator / divisor, denominator / divisor];
 }
@@ -38,7 +45,10 @@ function simplifyFraction(numerator: number, denominator: number): [number, numb
 /**
  * 仮分数を帯分数に変換
  */
-function toMixedNumber(numerator: number, denominator: number): [number, number, number] {
+function toMixedNumber(
+  numerator: number,
+  denominator: number
+): [number, number, number] {
   const whole = Math.floor(numerator / denominator);
   const remainingNumerator = numerator % denominator;
   return [whole, remainingNumerator, denominator];
@@ -48,8 +58,10 @@ function toMixedNumber(numerator: number, denominator: number): [number, number,
  * 分数の足し算
  */
 function addFractions(
-  num1: number, den1: number,
-  num2: number, den2: number
+  num1: number,
+  den1: number,
+  num2: number,
+  den2: number
 ): [number, number] {
   const commonDen = lcm(den1, den2);
   const newNum1 = num1 * (commonDen / den1);
@@ -61,13 +73,15 @@ function addFractions(
  * 分数の引き算
  */
 function subtractFractions(
-  num1: number, den1: number,
-  num2: number, den2: number
+  num1: number,
+  den1: number,
+  num2: number,
+  den2: number
 ): [number, number] {
   const commonDen = lcm(den1, den2);
   const newNum1 = num1 * (commonDen / den1);
   const newNum2 = num2 * (commonDen / den2);
-  
+
   // 負の結果を避けるため、必要に応じて順序を入れ替え
   if (newNum1 < newNum2) {
     return simplifyFraction(newNum2 - newNum1, commonDen);
@@ -79,8 +93,10 @@ function subtractFractions(
  * 分数の掛け算
  */
 function multiplyFractions(
-  num1: number, den1: number,
-  num2: number, den2: number
+  num1: number,
+  den1: number,
+  num2: number,
+  den2: number
 ): [number, number] {
   return simplifyFraction(num1 * num2, den1 * den2);
 }
@@ -89,8 +105,10 @@ function multiplyFractions(
  * 分数の割り算
  */
 function divideFractions(
-  num1: number, den1: number,
-  num2: number, den2: number
+  num1: number,
+  den1: number,
+  num2: number,
+  den2: number
 ): [number, number] {
   return simplifyFraction(num1 * den2, den1 * num2);
 }
@@ -110,18 +128,21 @@ export function generateFractionProblem(
     commonDenominator = false,
   } = options;
 
-  let numerator1: number = 1, denominator1: number = 2;
-  let numerator2: number = 1, denominator2: number = 2;
-  let answerNumerator: number = 1, answerDenominator: number = 2;
-  
+  let numerator1: number = 1,
+    denominator1: number = 2;
+  let numerator2: number = 1,
+    denominator2: number = 2;
+  let answerNumerator: number = 1,
+    answerDenominator: number = 2;
+
   let attempts = 0;
   const maxAttempts = 100;
 
   while (attempts < maxAttempts) {
     // 第1の分数を生成
     denominator1 = randomInt(2, maxDenominator);
-    numerator1 = allowImproper 
-      ? randomInt(1, maxNumerator) 
+    numerator1 = allowImproper
+      ? randomInt(1, maxNumerator)
       : randomInt(1, denominator1 - 1);
 
     // 第2の分数を生成
@@ -130,8 +151,8 @@ export function generateFractionProblem(
     } else {
       denominator2 = randomInt(2, maxDenominator);
     }
-    numerator2 = allowImproper 
-      ? randomInt(1, maxNumerator) 
+    numerator2 = allowImproper
+      ? randomInt(1, maxNumerator)
       : randomInt(1, denominator2 - 1);
 
     attempts++;
@@ -140,22 +161,34 @@ export function generateFractionProblem(
     switch (settings.operation) {
       case 'addition':
         [answerNumerator, answerDenominator] = addFractions(
-          numerator1, denominator1, numerator2, denominator2
+          numerator1,
+          denominator1,
+          numerator2,
+          denominator2
         );
         break;
       case 'subtraction':
         [answerNumerator, answerDenominator] = subtractFractions(
-          numerator1, denominator1, numerator2, denominator2
+          numerator1,
+          denominator1,
+          numerator2,
+          denominator2
         );
         break;
       case 'multiplication':
         [answerNumerator, answerDenominator] = multiplyFractions(
-          numerator1, denominator1, numerator2, denominator2
+          numerator1,
+          denominator1,
+          numerator2,
+          denominator2
         );
         break;
       case 'division':
         [answerNumerator, answerDenominator] = divideFractions(
-          numerator1, denominator1, numerator2, denominator2
+          numerator1,
+          denominator1,
+          numerator2,
+          denominator2
         );
         break;
       default:
@@ -165,9 +198,13 @@ export function generateFractionProblem(
     // 制約チェック
     if (requireSimplification) {
       // 約分が必要な問題を求める場合
-      const [origNum, origDen] = settings.operation === 'addition' 
-        ? [numerator1 * denominator2 + numerator2 * denominator1, denominator1 * denominator2]
-        : [answerNumerator, answerDenominator];
+      const [origNum, origDen] =
+        settings.operation === 'addition'
+          ? [
+              numerator1 * denominator2 + numerator2 * denominator1,
+              denominator1 * denominator2,
+            ]
+          : [answerNumerator, answerDenominator];
       if (gcd(origNum, origDen) === 1) continue;
     }
 
@@ -258,16 +295,12 @@ export function generateGradeFractionProblems(
     case 3: {
       // 3年生: 単位分数、同分母分数の加減
       const operation = Math.random() < 0.5 ? 'addition' : 'subtraction';
-      return generateFractionProblems(
-        { ...baseSettings, operation },
-        count,
-        {
-          maxNumerator: 6,
-          maxDenominator: 8,
-          commonDenominator: true,
-          allowImproper: false,
-        }
-      );
+      return generateFractionProblems({ ...baseSettings, operation }, count, {
+        maxNumerator: 6,
+        maxDenominator: 8,
+        commonDenominator: true,
+        allowImproper: false,
+      });
     }
 
     case 4: {
@@ -303,8 +336,9 @@ export function generateGradeFractionProblems(
 
     case 6: {
       // 6年生: 分数の乗除、複雑な計算
-      const operations: Array<'addition' | 'subtraction' | 'multiplication' | 'division'> = 
-        ['addition', 'subtraction', 'multiplication', 'division'];
+      const operations: Array<
+        'addition' | 'subtraction' | 'multiplication' | 'division'
+      > = ['addition', 'subtraction', 'multiplication', 'division'];
       const op6 = operations[Math.floor(Math.random() * operations.length)];
       return generateFractionProblems(
         { ...baseSettings, operation: op6 },
@@ -336,9 +370,7 @@ export function generateMixedNumberProblem(
   settings: WorksheetSettings,
   options: FractionOptions = {}
 ): MixedNumberProblem {
-  const {
-    maxDenominator = 8,
-  } = options;
+  const { maxDenominator = 8 } = options;
 
   // 帯分数を生成
   const whole1 = randomInt(1, 3);
@@ -358,20 +390,31 @@ export function generateMixedNumberProblem(
   switch (settings.operation) {
     case 'addition':
       [resultNum, resultDen] = addFractions(
-        improperNum1, denominator1, improperNum2, denominator2
+        improperNum1,
+        denominator1,
+        improperNum2,
+        denominator2
       );
       break;
     case 'subtraction':
       [resultNum, resultDen] = subtractFractions(
-        improperNum1, denominator1, improperNum2, denominator2
+        improperNum1,
+        denominator1,
+        improperNum2,
+        denominator2
       );
       break;
     default:
-      throw new Error(`Unsupported operation for mixed numbers: ${settings.operation}`);
+      throw new Error(
+        `Unsupported operation for mixed numbers: ${settings.operation}`
+      );
   }
 
   // 帯分数に変換
-  const [answerWhole, answerNumerator, answerDenominator] = toMixedNumber(resultNum, resultDen);
+  const [answerWhole, answerNumerator, answerDenominator] = toMixedNumber(
+    resultNum,
+    resultDen
+  );
 
   return {
     id: generateId(),

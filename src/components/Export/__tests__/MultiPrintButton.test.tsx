@@ -78,8 +78,10 @@ describe('MultiPrintButton', () => {
     window.print = originalPrint;
     document.title = originalTitle;
     // 追加された要素をクリーンアップ
-    document.querySelectorAll('style').forEach(el => el.remove());
-    document.querySelectorAll('#multi-print-container').forEach(el => el.remove());
+    document.querySelectorAll('style').forEach((el) => el.remove());
+    document
+      .querySelectorAll('#multi-print-container')
+      .forEach((el) => el.remove());
   });
 
   it('should render multi print button', () => {
@@ -204,11 +206,7 @@ describe('MultiPrintButton', () => {
 
   it('should handle empty worksheets array', () => {
     render(
-      <MultiPrintButton
-        worksheets={[]}
-        showAnswers={false}
-        onPrint={vi.fn()}
-      />
+      <MultiPrintButton worksheets={[]} showAnswers={false} onPrint={vi.fn()} />
     );
 
     const button = screen.getByRole('button');
@@ -266,7 +264,7 @@ describe('MultiPrintButton', () => {
       expect(document.querySelector('#multi-print-container')).toBeNull();
       // スタイル要素も削除されていることを確認
       const styles = document.querySelectorAll('style');
-      const printStyles = Array.from(styles).filter(style => 
+      const printStyles = Array.from(styles).filter((style) =>
         style.textContent?.includes('@media print')
       );
       expect(printStyles.length).toBe(0);

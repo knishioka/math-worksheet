@@ -1,10 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import type { WorksheetData, BasicProblem, FractionProblem, WordProblem } from '../../../types';
+import type {
+  WorksheetData,
+  BasicProblem,
+  FractionProblem,
+  WordProblem,
+} from '../../../types';
 
 // PrintLayoutのDOM構造をテストするヘルパー関数
-function createPrintDOM(worksheet: WorksheetData, showAnswers: boolean): HTMLElement {
+function createPrintDOM(
+  worksheet: WorksheetData,
+  showAnswers: boolean
+): HTMLElement {
   const container = document.createElement('div');
-  
+
   // ヘッダー
   const header = document.createElement('div');
   header.innerHTML = `
@@ -23,26 +31,26 @@ function createPrintDOM(worksheet: WorksheetData, showAnswers: boolean): HTMLEle
     </div>
   `;
   container.appendChild(header);
-  
+
   // 問題部分
   const problemsContainer = document.createElement('div');
   problemsContainer.style.marginTop = '24px';
-  
+
   const columns = worksheet.settings.layoutColumns || 2;
   const gridContainer = document.createElement('div');
   gridContainer.style.display = 'grid';
   gridContainer.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
   gridContainer.style.gap = '24px 32px';
-  
+
   // 縦順に並び替え
-  const reorderedProblems: (typeof worksheet.problems[0] | null)[] = [];
+  const reorderedProblems: ((typeof worksheet.problems)[0] | null)[] = [];
   const rowCount = Math.ceil(worksheet.problems.length / columns);
-  
+
   for (let col = 0; col < columns; col++) {
     for (let row = 0; row < rowCount; row++) {
       const originalIndex = row + col * rowCount;
       const newIndex = row * columns + col;
-      
+
       if (originalIndex < worksheet.problems.length) {
         reorderedProblems[newIndex] = worksheet.problems[originalIndex];
       } else {
@@ -50,58 +58,62 @@ function createPrintDOM(worksheet: WorksheetData, showAnswers: boolean): HTMLEle
       }
     }
   }
-  
+
   reorderedProblems.forEach((problem, index) => {
     const problemDiv = document.createElement('div');
     problemDiv.style.marginBottom = '16px';
-    
+
     if (!problem) {
       gridContainer.appendChild(problemDiv);
       return;
     }
-    
+
     // 元のインデックスを計算
     const col = index % columns;
     const row = Math.floor(index / columns);
     const originalNumber = col * rowCount + row + 1;
-    
+
     const numberDiv = document.createElement('div');
     numberDiv.style.fontSize = '12px';
     numberDiv.style.color = '#666';
     numberDiv.textContent = `(${originalNumber})`;
     problemDiv.appendChild(numberDiv);
-    
+
     const contentDiv = document.createElement('div');
     contentDiv.style.fontFamily = 'monospace';
     contentDiv.style.fontSize = '18px';
     contentDiv.style.marginTop = '4px';
-    
+
     if (problem.type === 'word') {
       const wordProblem = problem as WordProblem;
       contentDiv.innerHTML = `
         <div style="font-size: 14px;">${wordProblem.problemText}</div>
         <div style="margin-top: 8px;">
-          ${showAnswers 
-            ? `<span style="color: red; font-weight: bold;">答え: ${wordProblem.answer}${wordProblem.unit || ''}</span>`
-            : `答え: <span style="display: inline-block; width: 96px; border-bottom: 1px solid black; margin: 0 4px;"></span>${wordProblem.unit ? `<span style="font-size: 14px;">${wordProblem.unit}</span>` : ''}`
+          ${
+            showAnswers
+              ? `<span style="color: red; font-weight: bold;">答え: ${wordProblem.answer}${wordProblem.unit || ''}</span>`
+              : `答え: <span style="display: inline-block; width: 96px; border-bottom: 1px solid black; margin: 0 4px;"></span>${wordProblem.unit ? `<span style="font-size: 14px;">${wordProblem.unit}</span>` : ''}`
           }
         </div>
       `;
     } else if (problem.type === 'fraction') {
       const fractionProblem = problem as FractionProblem;
-      contentDiv.innerHTML = renderFractionProblem(fractionProblem, showAnswers);
+      contentDiv.innerHTML = renderFractionProblem(
+        fractionProblem,
+        showAnswers
+      );
     } else if (problem.type === 'basic') {
       const basicProblem = problem as BasicProblem;
       contentDiv.innerHTML = renderBasicProblem(basicProblem, showAnswers);
     }
-    
+
     problemDiv.appendChild(contentDiv);
     gridContainer.appendChild(problemDiv);
   });
-  
+
   problemsContainer.appendChild(gridContainer);
   container.appendChild(problemsContainer);
-  
+
   return container;
 }
 
@@ -115,24 +127,31 @@ function getOperationName(operation: string): string {
   return names[operation] || '計算';
 }
 
-function renderFractionProblem(problem: FractionProblem, showAnswers: boolean): string {
+function renderFractionProblem(
+  problem: FractionProblem,
+  showAnswers: boolean
+): string {
   const frac1 = `${problem.numerator1}/${problem.denominator1}`;
-  const frac2 = problem.numerator2 !== undefined && problem.denominator2 !== undefined
-    ? `${problem.numerator2}/${problem.denominator2}`
-    : '';
+  const frac2 =
+    problem.numerator2 !== undefined && problem.denominator2 !== undefined
+      ? `${problem.numerator2}/${problem.denominator2}`
+      : '';
   const answer = `${problem.answerNumerator}/${problem.answerDenominator}`;
   const operator = getOperatorSymbol(problem.operation);
-  
+
   if (showAnswers) {
     return `${frac1} ${operator} ${frac2} = <span style="color: red; font-weight: bold;">${answer}</span>`;
   }
   return `${frac1} ${operator} ${frac2} = <span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>`;
 }
 
-function renderBasicProblem(problem: BasicProblem, showAnswers: boolean): string {
+function renderBasicProblem(
+  problem: BasicProblem,
+  showAnswers: boolean
+): string {
   const operator = getOperatorSymbol(problem.operation);
   let html = '';
-  
+
   // operand1
   if (problem.operand1 !== null) {
     html += problem.operand1;
@@ -140,39 +159,44 @@ function renderBasicProblem(problem: BasicProblem, showAnswers: boolean): string
     const answer = problem.answer! - problem.operand2!;
     html += `<span style="color: red; font-weight: bold;">${answer}</span>`;
   } else {
-    html += '<span style="display: inline-block; width: 32px; height: 32px; border: 2px solid #333; background-color: #f9f9f9;"></span>';
+    html +=
+      '<span style="display: inline-block; width: 32px; height: 32px; border: 2px solid #333; background-color: #f9f9f9;"></span>';
   }
-  
+
   html += ` ${operator} `;
-  
+
   // operand2
   if (problem.operand2 !== null) {
     html += problem.operand2;
   } else if (showAnswers && problem.missingPosition === 'operand2') {
-    const answer = problem.operation === 'subtraction' 
-      ? problem.operand1! - problem.answer!
-      : problem.answer! - problem.operand1!;
+    const answer =
+      problem.operation === 'subtraction'
+        ? problem.operand1! - problem.answer!
+        : problem.answer! - problem.operand1!;
     html += `<span style="color: red; font-weight: bold;">${answer}</span>`;
   } else {
-    html += '<span style="display: inline-block; width: 32px; height: 32px; border: 2px solid #333; background-color: #f9f9f9;"></span>';
+    html +=
+      '<span style="display: inline-block; width: 32px; height: 32px; border: 2px solid #333; background-color: #f9f9f9;"></span>';
   }
-  
+
   html += ' = ';
-  
+
   // answer
   if (problem.missingPosition === 'answer') {
     if (showAnswers) {
       const answer = calculateAnswer(problem);
       html += `<span style="color: red; font-weight: bold;">${answer}</span>`;
     } else {
-      html += '<span style="display: inline-block; width: 32px; height: 32px; border: 2px solid #333; background-color: #f9f9f9;"></span>';
+      html +=
+        '<span style="display: inline-block; width: 32px; height: 32px; border: 2px solid #333; background-color: #f9f9f9;"></span>';
     }
   } else if (showAnswers && problem.answer !== null) {
     html += `<span style="color: red; font-weight: bold;">${problem.answer}</span>`;
   } else {
-    html += '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
+    html +=
+      '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
   }
-  
+
   return html;
 }
 
@@ -188,7 +212,7 @@ function getOperatorSymbol(operation: string): string {
 
 function calculateAnswer(problem: BasicProblem): string {
   if (problem.operand1 === null || problem.operand2 === null) return '';
-  
+
   switch (problem.operation) {
     case 'addition':
       return (problem.operand1 + problem.operand2).toString();
@@ -199,7 +223,9 @@ function calculateAnswer(problem: BasicProblem): string {
     case 'division': {
       const quotient = Math.floor(problem.operand1 / problem.operand2);
       const remainder = problem.operand1 % problem.operand2;
-      return remainder === 0 ? quotient.toString() : `${quotient}あまり${remainder}`;
+      return remainder === 0
+        ? quotient.toString()
+        : `${quotient}あまり${remainder}`;
     }
     default:
       return '';
@@ -216,26 +242,68 @@ describe('PrintLayout', () => {
       layoutColumns: 2,
     },
     problems: [
-      { id: '1', type: 'basic', operation: 'addition', operand1: 5, operand2: 3, answer: 8 },
-      { id: '2', type: 'basic', operation: 'addition', operand1: 7, operand2: 2, answer: 9 },
-      { id: '3', type: 'basic', operation: 'addition', operand1: 4, operand2: 6, answer: 10 },
-      { id: '4', type: 'basic', operation: 'addition', operand1: 8, operand2: 1, answer: 9 },
-      { id: '5', type: 'basic', operation: 'addition', operand1: 3, operand2: 4, answer: 7 },
-      { id: '6', type: 'basic', operation: 'addition', operand1: 6, operand2: 2, answer: 8 },
+      {
+        id: '1',
+        type: 'basic',
+        operation: 'addition',
+        operand1: 5,
+        operand2: 3,
+        answer: 8,
+      },
+      {
+        id: '2',
+        type: 'basic',
+        operation: 'addition',
+        operand1: 7,
+        operand2: 2,
+        answer: 9,
+      },
+      {
+        id: '3',
+        type: 'basic',
+        operation: 'addition',
+        operand1: 4,
+        operand2: 6,
+        answer: 10,
+      },
+      {
+        id: '4',
+        type: 'basic',
+        operation: 'addition',
+        operand1: 8,
+        operand2: 1,
+        answer: 9,
+      },
+      {
+        id: '5',
+        type: 'basic',
+        operation: 'addition',
+        operand1: 3,
+        operand2: 4,
+        answer: 7,
+      },
+      {
+        id: '6',
+        type: 'basic',
+        operation: 'addition',
+        operand1: 6,
+        operand2: 2,
+        answer: 8,
+      },
     ],
     generatedAt: new Date('2024-01-01'),
   };
 
   it('should create correct print layout structure', () => {
     const printDOM = createPrintDOM(mockWorksheet, false);
-    
+
     // ヘッダーが存在することを確認
     const header = printDOM.querySelector('div[style*="border-bottom"]');
     expect(header).toBeTruthy();
-    
+
     // 学年と演算が正しく表示されることを確認
     expect(printDOM.textContent).toContain('3年生 たし算');
-    
+
     // 名前欄と点数欄が存在することを確認
     expect(printDOM.textContent).toContain('名前：');
     expect(printDOM.textContent).toContain('点数：');
@@ -243,11 +311,12 @@ describe('PrintLayout', () => {
 
   it('should arrange problems in vertical order for multi-column layout', () => {
     const printDOM = createPrintDOM(mockWorksheet, false);
-    
+
     // 問題番号を取得
-    const problemNumbers = Array.from(printDOM.querySelectorAll('div[style*="color: #666"]'))
-      .map(el => el.textContent);
-    
+    const problemNumbers = Array.from(
+      printDOM.querySelectorAll('div[style*="color: #666"]')
+    ).map((el) => el.textContent);
+
     // 2列レイアウトの場合、縦順になっているか確認
     // 期待される順序: (1), (4), (2), (5), (3), (6)
     expect(problemNumbers).toEqual(['(1)', '(4)', '(2)', '(5)', '(3)', '(6)']);
@@ -255,7 +324,7 @@ describe('PrintLayout', () => {
 
   it('should show answers in red when showAnswers is true', () => {
     const printDOM = createPrintDOM(mockWorksheet, true);
-    
+
     // 赤色の答えが表示されているか確認
     const redAnswers = printDOM.querySelectorAll('span[style*="color: red"]');
     expect(redAnswers.length).toBeGreaterThan(0);
@@ -263,9 +332,11 @@ describe('PrintLayout', () => {
 
   it('should show answer lines when showAnswers is false', () => {
     const printDOM = createPrintDOM(mockWorksheet, false);
-    
+
     // 答えの下線が表示されているか確認
-    const answerLines = printDOM.querySelectorAll('span[style*="border-bottom: 1px solid black"]');
+    const answerLines = printDOM.querySelectorAll(
+      'span[style*="border-bottom: 1px solid black"]'
+    );
     expect(answerLines.length).toBeGreaterThan(mockWorksheet.problems.length); // 名前欄、点数欄も含む
   });
 
@@ -274,11 +345,13 @@ describe('PrintLayout', () => {
       ...mockWorksheet,
       settings: { ...mockWorksheet.settings, layoutColumns: 3 as const },
     };
-    
+
     const printDOM = createPrintDOM(threeColumnWorksheet, false);
-    
+
     // グリッドが3列になっているか確認
-    const grid = printDOM.querySelector('div[style*="grid-template-columns: repeat(3"]');
+    const grid = printDOM.querySelector(
+      'div[style*="grid-template-columns: repeat(3"]'
+    );
     expect(grid).toBeTruthy();
   });
 
@@ -300,9 +373,9 @@ describe('PrintLayout', () => {
         },
       ],
     };
-    
+
     const printDOM = createPrintDOM(fractionWorksheet, false);
-    
+
     // 分数が正しく表示されているか確認
     expect(printDOM.textContent).toContain('1/2');
     expect(printDOM.textContent).toContain('1/3');
@@ -323,11 +396,13 @@ describe('PrintLayout', () => {
         },
       ],
     };
-    
+
     const printDOM = createPrintDOM(wordWorksheet, false);
-    
+
     // 文章問題が正しく表示されているか確認
-    expect(printDOM.textContent).toContain('たて5cm、よこ3cmの長方形の面積は？');
+    expect(printDOM.textContent).toContain(
+      'たて5cm、よこ3cmの長方形の面積は？'
+    );
     expect(printDOM.textContent).toContain('cm²');
   });
 
@@ -346,11 +421,13 @@ describe('PrintLayout', () => {
         },
       ],
     };
-    
+
     const printDOM = createPrintDOM(missingNumberWorksheet, false);
-    
+
     // 虫食い算の四角が表示されているか確認
-    const squares = printDOM.querySelectorAll('span[style*="border: 2px solid #333"]');
+    const squares = printDOM.querySelectorAll(
+      'span[style*="border: 2px solid #333"]'
+    );
     expect(squares.length).toBe(1);
   });
 
@@ -369,9 +446,9 @@ describe('PrintLayout', () => {
         },
       ],
     };
-    
+
     const printDOM = createPrintDOM(missingNumberWorksheet, true);
-    
+
     // 虫食い算の答え（5）が赤で表示されているか確認
     const redAnswer = printDOM.querySelector('span[style*="color: red"]');
     expect(redAnswer?.textContent).toBe('5');
@@ -393,9 +470,9 @@ describe('PrintLayout', () => {
         },
       ],
     };
-    
+
     const printDOM = createPrintDOM(divisionWorksheet, true);
-    
+
     // あまりのある割り算が正しく表示されているか確認
     expect(printDOM.textContent).toContain('3あまり2');
   });

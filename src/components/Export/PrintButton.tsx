@@ -20,14 +20,14 @@ export const PrintButton: React.FC<PrintButtonProps> = ({
       // Hide all elements except the target element for printing
       const allElements = document.body.querySelectorAll('body > *');
       const targetElement = document.getElementById(elementId);
-      
+
       if (targetElement) {
         // Create a temporary container
         const printContent = targetElement.cloneNode(true) as HTMLElement;
         const printContainer = document.createElement('div');
         printContainer.id = 'print-container';
         printContainer.appendChild(printContent);
-        
+
         // Add print-specific styles
         const styleEl = document.createElement('style');
         styleEl.textContent = `
@@ -46,23 +46,23 @@ export const PrintButton: React.FC<PrintButtonProps> = ({
           }
         `;
         document.head.appendChild(styleEl);
-        
+
         // Hide all body children
-        allElements.forEach(el => {
+        allElements.forEach((el) => {
           (el as HTMLElement).style.display = 'none';
         });
-        
+
         // Add print container
         document.body.appendChild(printContainer);
-        
+
         // Print
         window.print();
-        
+
         // Restore visibility
-        allElements.forEach(el => {
+        allElements.forEach((el) => {
           (el as HTMLElement).style.display = '';
         });
-        
+
         // Remove print container and style
         printContainer.remove();
         styleEl.remove();

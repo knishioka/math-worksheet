@@ -20,7 +20,7 @@ export function generateMultiplicationProblem(
 ): BasicProblem {
   // 学年に応じたデフォルト値を設定
   const defaultMax = settings.grade <= 2 ? 5 : settings.grade <= 3 ? 9 : 12;
-  
+
   const {
     minNumber = 1,
     maxNumber = defaultMax,
@@ -41,7 +41,7 @@ export function generateMultiplicationProblem(
       // Focus on specific times table
       operand1 = timesTableFocus;
       operand2 = randomInt(minNumber, maxNumber);
-      
+
       // Sometimes swap to get variety (e.g., both 3x4 and 4x3)
       if (Math.random() < 0.5) {
         [operand1, operand2] = [operand2, operand1];
@@ -107,9 +107,10 @@ export function generateMultiplicationProblems(
 
     do {
       problem = generateMultiplicationProblem(settings, options);
-      const key = problem.operand1 !== null && problem.operand2 !== null 
-        ? `${Math.min(problem.operand1, problem.operand2)}x${Math.max(problem.operand1, problem.operand2)}`
-        : `${problem.operand1}x${problem.operand2}`;
+      const key =
+        problem.operand1 !== null && problem.operand2 !== null
+          ? `${Math.min(problem.operand1, problem.operand2)}x${Math.max(problem.operand1, problem.operand2)}`
+          : `${problem.operand1}x${problem.operand2}`;
 
       if (!usedCombinations.has(key)) {
         usedCombinations.add(key);
@@ -153,16 +154,16 @@ export function generateGradeMultiplicationProblems(
         includeOne: true,
         includeZero: false,
         maxAnswer: 81,
-        timesTableFocus: Math.random() < 0.5 ? randomInt(2, 9) : undefined,  // 時々特定の段にフォーカス
+        timesTableFocus: Math.random() < 0.5 ? randomInt(2, 9) : undefined, // 時々特定の段にフォーカス
       });
 
     case 3: {
       // 3年生: 2桁×1桁、3桁×1桁の筆算
-      const use2Digit = Math.random() < 0.7;  // 70%の確率で2桁×1桁
+      const use2Digit = Math.random() < 0.7; // 70%の確率で2桁×1桁
       if (use2Digit) {
         return Array.from({ length: count }, () => {
-          const operand1 = randomInt(10, 99);  // 2桁
-          const operand2 = randomInt(1, 9);    // 1桁
+          const operand1 = randomInt(10, 99); // 2桁
+          const operand2 = randomInt(1, 9); // 1桁
           return {
             id: generateId(),
             type: 'basic' as const,
@@ -174,8 +175,8 @@ export function generateGradeMultiplicationProblems(
         });
       } else {
         return Array.from({ length: count }, () => {
-          const operand1 = randomInt(100, 999);  // 3桁
-          const operand2 = randomInt(1, 9);      // 1桁
+          const operand1 = randomInt(100, 999); // 3桁
+          const operand2 = randomInt(1, 9); // 1桁
           return {
             id: generateId(),
             type: 'basic' as const,
@@ -236,13 +237,13 @@ export function generateTimesTableProblems(
     }
 
     const key = `${Math.min(operand1, operand2)}x${Math.max(operand1, operand2)}`;
-    
+
     // Avoid duplicates, but allow them if we can't generate enough unique ones
     if (usedCombinations.has(key) && usedCombinations.size < 20) {
       i--;
       continue;
     }
-    
+
     usedCombinations.add(key);
 
     problems.push({
@@ -280,7 +281,7 @@ export function generateEducationalMultiplicationProblems(
         const easyTables = [1, 2, 5, 10];
         const table = easyTables[Math.floor(Math.random() * easyTables.length)];
         const other = randomInt(1, 12);
-        
+
         return {
           id: generateId(),
           type: 'basic' as const,
@@ -297,7 +298,7 @@ export function generateEducationalMultiplicationProblems(
         const hardTables = [6, 7, 8, 9];
         const table = hardTables[Math.floor(Math.random() * hardTables.length)];
         const other = randomInt(1, 12);
-        
+
         return {
           id: generateId(),
           type: 'basic' as const,
@@ -323,7 +324,7 @@ export function generateEducationalMultiplicationProblems(
         const other = randomInt(1, 20);
         const operand1 = Math.random() < 0.5 ? special : other;
         const operand2 = operand1 === special ? other : special;
-        
+
         return {
           id: generateId(),
           type: 'basic' as const,

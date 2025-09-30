@@ -31,13 +31,13 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
     // 印刷用コンテナを作成
     const printContainer = document.createElement('div');
     printContainer.id = 'single-print-container';
-    
+
     // ページ全体のスタイル設定
     const pageDiv = document.createElement('div');
     pageDiv.style.minHeight = '100vh';
     pageDiv.style.position = 'relative';
     pageDiv.style.padding = '20mm';
-    
+
     // ヘッダー部分
     const headerHTML = `
       <div style="border-bottom: 1px solid #ccc; padding-bottom: 12px; margin-bottom: 16px;">
@@ -54,28 +54,34 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
         </div>
       </div>
     `;
-    
+
     // 問題部分
     let problemsHTML = '<div style="margin-top: 24px;">';
     const columns = worksheet.settings.layoutColumns || 2;
-    
+
     // 文章問題や虫食い算の場合は間隔を調整
-    const hasWordProblems = worksheet.problems.some(p => p.type === 'word');
-    const hasMissingNumbers = worksheet.problems.some(p => p.type === 'basic' && p.missingPosition);
-    const rowGap = hasWordProblems ? '12px' : hasMissingNumbers ? '18px' : '24px';
+    const hasWordProblems = worksheet.problems.some((p) => p.type === 'word');
+    const hasMissingNumbers = worksheet.problems.some(
+      (p) => p.type === 'basic' && p.missingPosition
+    );
+    const rowGap = hasWordProblems
+      ? '12px'
+      : hasMissingNumbers
+        ? '18px'
+        : '24px';
     const colGap = hasWordProblems ? '20px' : '32px';
     const gridStyle = `display: grid; grid-template-columns: repeat(${columns}, 1fr); gap: ${rowGap} ${colGap};`;
     problemsHTML += `<div style="${gridStyle}">`;
-    
+
     // 縦順に並び替えた問題配列を作成
-    const reorderedProblems: (typeof worksheet.problems[0] | null)[] = [];
+    const reorderedProblems: ((typeof worksheet.problems)[0] | null)[] = [];
     const rowCount = Math.ceil(worksheet.problems.length / columns);
-    
+
     for (let col = 0; col < columns; col++) {
       for (let row = 0; row < rowCount; row++) {
         const originalIndex = row + col * rowCount;
         const newIndex = row * columns + col;
-        
+
         if (originalIndex < worksheet.problems.length) {
           reorderedProblems[newIndex] = worksheet.problems[originalIndex];
         } else {
@@ -83,26 +89,34 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
         }
       }
     }
-    
+
     reorderedProblems.forEach((problem, index) => {
       if (!problem) {
-        const marginBottom = hasWordProblems ? '8px' : hasMissingNumbers ? '12px' : '16px';
+        const marginBottom = hasWordProblems
+          ? '8px'
+          : hasMissingNumbers
+            ? '12px'
+            : '16px';
         problemsHTML += `<div style="margin-bottom: ${marginBottom};"></div>`;
         return;
       }
-      
+
       // 元のインデックスを計算（縦順の番号）
       const col = index % columns;
       const row = Math.floor(index / columns);
       const originalNumber = col * rowCount + row + 1;
-      
-      const marginBottom = hasWordProblems ? '8px' : hasMissingNumbers ? '12px' : '16px';
+
+      const marginBottom = hasWordProblems
+        ? '8px'
+        : hasMissingNumbers
+          ? '12px'
+          : '16px';
       problemsHTML += `<div style="margin-bottom: ${marginBottom};">`;
       problemsHTML += `<div style="font-size: 12px; color: #666;">(${originalNumber})</div>`;
-      
-      const fontSize = (problem.type === 'word') ? '16px' : '18px';
+
+      const fontSize = problem.type === 'word' ? '16px' : '18px';
       problemsHTML += `<div style="font-family: monospace; font-size: ${fontSize}; margin-top: 4px;">`;
-      
+
       if (problem.type === 'word') {
         // 文章問題の表示 - よりコンパクトに
         problemsHTML += `<div style="font-size: 12px; line-height: 1.3;">`;
@@ -116,7 +130,8 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
           }
           problemsHTML += '</span>';
         } else {
-          problemsHTML += '答え: <span style="display: inline-block; width: 96px; border-bottom: 1px solid black; margin: 0 4px;"></span>';
+          problemsHTML +=
+            '答え: <span style="display: inline-block; width: 96px; border-bottom: 1px solid black; margin: 0 4px;"></span>';
           if (problem.unit) {
             problemsHTML += `<span style="font-size: 14px;">${problem.unit}</span>`;
           }
@@ -130,28 +145,32 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
         problemsHTML += `<span style="display: block; padding: 0 4px;">${problem.denominator1}</span>`;
         problemsHTML += `</span>`;
         problemsHTML += ` ${operator} `;
-        
-        if (problem.numerator2 !== undefined && problem.denominator2 !== undefined) {
+
+        if (
+          problem.numerator2 !== undefined &&
+          problem.denominator2 !== undefined
+        ) {
           problemsHTML += `<span style="display: inline-block; text-align: center; vertical-align: middle;">`;
           problemsHTML += `<span style="display: block; border-bottom: 1px solid black; padding: 0 4px;">${problem.numerator2}</span>`;
           problemsHTML += `<span style="display: block; padding: 0 4px;">${problem.denominator2}</span>`;
           problemsHTML += `</span>`;
         }
-        
+
         problemsHTML += ' = ';
-        
+
         if (showAnswers) {
           problemsHTML += `<span style="color: red; font-weight: bold; display: inline-block; text-align: center; vertical-align: middle;">`;
           problemsHTML += `<span style="display: block; border-bottom: 1px solid red; padding: 0 4px;">${problem.answerNumerator}</span>`;
           problemsHTML += `<span style="display: block; padding: 0 4px;">${problem.answerDenominator}</span>`;
           problemsHTML += `</span>`;
         } else {
-          problemsHTML += '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
+          problemsHTML +=
+            '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
         }
       } else if (problem.type === 'basic') {
         const basicProblem = problem as BasicProblem;
         const operator = getOperatorSymbol(problem.operation);
-        
+
         // operand1の表示
         if (basicProblem.operand1 !== null) {
           problemsHTML += basicProblem.operand1;
@@ -159,11 +178,12 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
           const missingOperand1 = calculateMissingOperand1(basicProblem);
           problemsHTML += `<span style="color: red; font-weight: bold;">${missingOperand1}</span>`;
         } else {
-          problemsHTML += '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
+          problemsHTML +=
+            '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
         }
-        
+
         problemsHTML += ` ${operator} `;
-        
+
         // operand2の表示
         if (basicProblem.operand2 !== null) {
           problemsHTML += basicProblem.operand2;
@@ -171,11 +191,12 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
           const missingOperand2 = calculateMissingOperand2(basicProblem);
           problemsHTML += `<span style="color: red; font-weight: bold;">${missingOperand2}</span>`;
         } else {
-          problemsHTML += '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
+          problemsHTML +=
+            '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
         }
-        
+
         problemsHTML += ' = ';
-        
+
         // 答えの表示
         if (basicProblem.missingPosition === 'answer') {
           // 虫食い算で答えが空欄の場合
@@ -183,7 +204,8 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
             const calculatedAnswer = calculateMissingAnswer(basicProblem);
             problemsHTML += `<span style="color: red; font-weight: bold;">${calculatedAnswer}</span>`;
           } else {
-            problemsHTML += '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
+            problemsHTML +=
+              '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
           }
         } else if (showAnswers && basicProblem.missingPosition) {
           // 虫食い算で答えの位置が空欄でない場合、通常の色で答えを表示
@@ -191,15 +213,16 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
         } else if (showAnswers && basicProblem.answer !== null) {
           problemsHTML += `<span style="color: red; font-weight: bold;">${basicProblem.answer}</span>`;
         } else {
-          problemsHTML += '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
+          problemsHTML +=
+            '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
         }
       }
-      
+
       problemsHTML += '</div></div>';
     });
-    
+
     problemsHTML += '</div></div>';
-    
+
     // フッター（答え表示時）
     let footerHTML = '';
     if (showAnswers) {
@@ -209,10 +232,10 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
         </div>
       `;
     }
-    
+
     pageDiv.innerHTML = headerHTML + problemsHTML + footerHTML;
     printContainer.appendChild(pageDiv);
-    
+
     // スタイルを追加
     const styleEl = document.createElement('style');
     styleEl.textContent = `
@@ -231,29 +254,29 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
       }
     `;
     document.head.appendChild(styleEl);
-    
+
     // 既存の要素を非表示
     const allElements = document.body.querySelectorAll('body > *');
-    allElements.forEach(el => {
+    allElements.forEach((el) => {
       (el as HTMLElement).style.display = 'none';
     });
-    
+
     // 印刷用コンテナを追加
     document.body.appendChild(printContainer);
-    
+
     // 印刷
     window.print();
-    
+
     // 元に戻す
-    allElements.forEach(el => {
+    allElements.forEach((el) => {
       (el as HTMLElement).style.display = '';
     });
-    
+
     // クリーンアップ
     printContainer.remove();
     styleEl.remove();
     document.title = originalTitle;
-    
+
     // コールバック
     if (onPrint) {
       onPrint();

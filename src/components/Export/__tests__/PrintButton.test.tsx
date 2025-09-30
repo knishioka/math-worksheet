@@ -18,8 +18,8 @@ describe('PrintButton', () => {
     window.print = originalPrint;
     document.title = originalTitle;
     // 追加された要素をクリーンアップ
-    document.querySelectorAll('style').forEach(el => el.remove());
-    document.querySelectorAll('#print-container').forEach(el => el.remove());
+    document.querySelectorAll('style').forEach((el) => el.remove());
+    document.querySelectorAll('#print-container').forEach((el) => el.remove());
   });
 
   it('should render print button', () => {
@@ -64,7 +64,7 @@ describe('PrintButton', () => {
     fireEvent.click(button);
 
     expect(window.print).toHaveBeenCalled();
-    
+
     // クリーンアップ
     testElement.remove();
   });
@@ -100,7 +100,7 @@ describe('PrintButton', () => {
     expect(window.print).toHaveBeenCalled();
     // 印刷用の一時的な要素が削除されていることを確認
     expect(document.querySelector('#print-container')).toBeNull();
-    
+
     // クリーンアップ
     testElement.remove();
   });
@@ -122,7 +122,7 @@ describe('PrintButton', () => {
 
     // 他の要素の表示が復元されていることを確認
     expect(otherElement.style.display).toBe('');
-    
+
     // クリーンアップ
     testElement.remove();
     otherElement.remove();

@@ -57,7 +57,9 @@ export function generateDecimalProblem(
     wholeNumberRange = [0, 99],
   } = options;
 
-  let operand1: number = 0, operand2: number = 0, answer: number = 0;
+  let operand1: number = 0,
+    operand2: number = 0,
+    answer: number = 0;
   let attempts = 0;
   const maxAttempts = 100;
 
@@ -73,7 +75,7 @@ export function generateDecimalProblem(
         // 加減算: 比較的簡単な小数を生成
         operand1 = generateDecimal(minValue, maxValue, places1);
         operand2 = generateDecimal(minValue, maxValue, places2);
-        
+
         if (settings.operation === 'addition') {
           answer = operand1 + operand2;
         } else {
@@ -83,7 +85,7 @@ export function generateDecimalProblem(
           }
           answer = operand1 - operand2;
         }
-        
+
         // 答えを適切な桁数に丸める
         answer = roundToDecimalPlaces(answer, maxPlaces);
         break;
@@ -99,7 +101,7 @@ export function generateDecimalProblem(
           operand1 = generateDecimal(0.1, 9.9, places1);
           operand2 = generateDecimal(0.1, 9.9, places2);
         }
-        
+
         answer = operand1 * operand2;
         answer = roundToDecimalPlaces(answer, maxDecimalPlaces);
         break;
@@ -115,7 +117,7 @@ export function generateDecimalProblem(
           operand1 = generateDecimal(1.0, 99.9, places1);
           operand2 = randomInt(2, 9);
         }
-        
+
         answer = operand1 / operand2;
         answer = roundToDecimalPlaces(answer, maxDecimalPlaces);
         break;
@@ -127,7 +129,8 @@ export function generateDecimalProblem(
     attempts++;
 
     // 制約チェック
-    if (!allowZero && (operand1 === 0 || operand2 === 0 || answer === 0)) continue;
+    if (!allowZero && (operand1 === 0 || operand2 === 0 || answer === 0))
+      continue;
     if (answer < 0) continue;
     if (answer > 1000) continue; // 答えが大きすぎる場合は再生成
 
@@ -242,9 +245,11 @@ export function generateGradeDecimalProblems(
 
     case 5: {
       // 5年生: 小数×小数、小数÷小数
-      const operations5: Array<'addition' | 'subtraction' | 'multiplication' | 'division'> = 
-        ['addition', 'subtraction', 'multiplication', 'division'];
-      const operation5 = operations5[Math.floor(Math.random() * operations5.length)];
+      const operations5: Array<
+        'addition' | 'subtraction' | 'multiplication' | 'division'
+      > = ['addition', 'subtraction', 'multiplication', 'division'];
+      const operation5 =
+        operations5[Math.floor(Math.random() * operations5.length)];
       return generateDecimalProblems(
         { ...baseSettings, operation: operation5 },
         count,
@@ -261,9 +266,11 @@ export function generateGradeDecimalProblems(
 
     case 6: {
       // 6年生: より複雑な小数計算
-      const operations6: Array<'addition' | 'subtraction' | 'multiplication' | 'division'> = 
-        ['addition', 'subtraction', 'multiplication', 'division'];
-      const operation6 = operations6[Math.floor(Math.random() * operations6.length)];
+      const operations6: Array<
+        'addition' | 'subtraction' | 'multiplication' | 'division'
+      > = ['addition', 'subtraction', 'multiplication', 'division'];
+      const operation6 =
+        operations6[Math.floor(Math.random() * operations6.length)];
       return generateDecimalProblems(
         { ...baseSettings, operation: operation6 },
         count,
@@ -294,7 +301,11 @@ export function generateGradeDecimalProblems(
  */
 export function generateEducationalDecimalProblems(
   count: number,
-  pattern: 'simple-addition' | 'simple-subtraction' | 'multiply-by-integer' | 'divide-by-integer'
+  pattern:
+    | 'simple-addition'
+    | 'simple-subtraction'
+    | 'multiply-by-integer'
+    | 'divide-by-integer'
 ): DecimalProblem[] {
   const baseSettings: WorksheetSettings = {
     grade: 3,

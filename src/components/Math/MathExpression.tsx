@@ -3,14 +3,18 @@ import React from 'react';
 // MathMLサポート検出
 function supportsMathML(): boolean {
   if (typeof window === 'undefined') return false;
-  
+
   const div = document.createElement('div');
   div.innerHTML = '<math><mspace height="23px" width="77px"></mspace></math>';
   document.body.appendChild(div);
-  const box = (div.firstChild?.firstChild as HTMLElement)?.getBoundingClientRect();
+  const box = (
+    div.firstChild?.firstChild as HTMLElement
+  )?.getBoundingClientRect();
   document.body.removeChild(div);
-  
-  return box ? Math.abs(box.height - 23) <= 1 && Math.abs(box.width - 77) <= 1 : false;
+
+  return box
+    ? Math.abs(box.height - 23) <= 1 && Math.abs(box.width - 77) <= 1
+    : false;
 }
 
 // 分数コンポーネント
@@ -20,12 +24,14 @@ interface MathFractionProps {
   className?: string;
 }
 
-export const MathFraction: React.FC<MathFractionProps> = ({ 
-  numerator, 
-  denominator, 
-  className = '' 
+export const MathFraction: React.FC<MathFractionProps> = ({
+  numerator,
+  denominator,
+  className = '',
 }) => {
-  const [hasMathMLSupport, setHasMathMLSupport] = React.useState<boolean | null>(null);
+  const [hasMathMLSupport, setHasMathMLSupport] = React.useState<
+    boolean | null
+  >(null);
 
   React.useEffect(() => {
     setHasMathMLSupport(supportsMathML());
@@ -33,14 +39,21 @@ export const MathFraction: React.FC<MathFractionProps> = ({
 
   // MathMLサポート検出中
   if (hasMathMLSupport === null) {
-    return <span className={className}>{numerator}/{denominator}</span>;
+    return (
+      <span className={className}>
+        {numerator}/{denominator}
+      </span>
+    );
   }
 
   // MathMLサポートあり
   if (hasMathMLSupport) {
-    return React.createElement('math', 
-      { xmlns: "http://www.w3.org/1998/Math/MathML", className },
-      React.createElement('mfrac', {},
+    return React.createElement(
+      'math',
+      { xmlns: 'http://www.w3.org/1998/Math/MathML', className },
+      React.createElement(
+        'mfrac',
+        {},
         React.createElement('mn', {}, numerator),
         React.createElement('mn', {}, denominator)
       )
@@ -53,9 +66,7 @@ export const MathFraction: React.FC<MathFractionProps> = ({
       <span className="block border-b border-black px-1 text-sm leading-tight">
         {numerator}
       </span>
-      <span className="block px-1 text-sm leading-tight">
-        {denominator}
-      </span>
+      <span className="block px-1 text-sm leading-tight">{denominator}</span>
     </span>
   );
 };
@@ -72,9 +83,11 @@ export const MathMixedNumber: React.FC<MathMixedNumberProps> = ({
   whole,
   numerator,
   denominator,
-  className = ''
+  className = '',
 }) => {
-  const [hasMathMLSupport, setHasMathMLSupport] = React.useState<boolean | null>(null);
+  const [hasMathMLSupport, setHasMathMLSupport] = React.useState<
+    boolean | null
+  >(null);
 
   React.useEffect(() => {
     setHasMathMLSupport(supportsMathML());
@@ -82,16 +95,25 @@ export const MathMixedNumber: React.FC<MathMixedNumberProps> = ({
 
   // MathMLサポート検出中
   if (hasMathMLSupport === null) {
-    return <span className={className}>{whole} {numerator}/{denominator}</span>;
+    return (
+      <span className={className}>
+        {whole} {numerator}/{denominator}
+      </span>
+    );
   }
 
   // MathMLサポートあり
   if (hasMathMLSupport) {
-    return React.createElement('math',
-      { xmlns: "http://www.w3.org/1998/Math/MathML", className },
-      React.createElement('mrow', {},
+    return React.createElement(
+      'math',
+      { xmlns: 'http://www.w3.org/1998/Math/MathML', className },
+      React.createElement(
+        'mrow',
+        {},
         React.createElement('mn', {}, whole),
-        React.createElement('mfrac', {},
+        React.createElement(
+          'mfrac',
+          {},
           React.createElement('mn', {}, numerator),
           React.createElement('mn', {}, denominator)
         )
@@ -107,9 +129,7 @@ export const MathMixedNumber: React.FC<MathMixedNumberProps> = ({
         <span className="block border-b border-black px-1 text-sm leading-tight">
           {numerator}
         </span>
-        <span className="block px-1 text-sm leading-tight">
-          {denominator}
-        </span>
+        <span className="block px-1 text-sm leading-tight">{denominator}</span>
       </span>
     </span>
   );
@@ -121,11 +141,13 @@ interface MathDecimalProps {
   className?: string;
 }
 
-export const MathDecimal: React.FC<MathDecimalProps> = ({ 
-  value, 
-  className = '' 
+export const MathDecimal: React.FC<MathDecimalProps> = ({
+  value,
+  className = '',
 }) => {
-  const [hasMathMLSupport, setHasMathMLSupport] = React.useState<boolean | null>(null);
+  const [hasMathMLSupport, setHasMathMLSupport] = React.useState<
+    boolean | null
+  >(null);
 
   React.useEffect(() => {
     setHasMathMLSupport(supportsMathML());
@@ -140,8 +162,9 @@ export const MathDecimal: React.FC<MathDecimalProps> = ({
 
   // MathMLサポートあり
   if (hasMathMLSupport) {
-    return React.createElement('math',
-      { xmlns: "http://www.w3.org/1998/Math/MathML", className },
+    return React.createElement(
+      'math',
+      { xmlns: 'http://www.w3.org/1998/Math/MathML', className },
       React.createElement('mn', {}, formattedValue)
     );
   }
@@ -160,9 +183,11 @@ interface MathExpressionProps {
 export const MathExpression: React.FC<MathExpressionProps> = ({
   children,
   display = false,
-  className = ''
+  className = '',
 }) => {
-  const [hasMathMLSupport, setHasMathMLSupport] = React.useState<boolean | null>(null);
+  const [hasMathMLSupport, setHasMathMLSupport] = React.useState<
+    boolean | null
+  >(null);
 
   React.useEffect(() => {
     setHasMathMLSupport(supportsMathML());
@@ -174,11 +199,12 @@ export const MathExpression: React.FC<MathExpressionProps> = ({
   }
 
   // MathMLサポートあり
-  return React.createElement('math',
+  return React.createElement(
+    'math',
     {
-      xmlns: "http://www.w3.org/1998/Math/MathML",
+      xmlns: 'http://www.w3.org/1998/Math/MathML',
       display: display ? 'block' : 'inline',
-      className
+      className,
     },
     children
   );

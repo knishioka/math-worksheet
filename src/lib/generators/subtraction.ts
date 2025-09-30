@@ -19,7 +19,7 @@ export function generateSubtractionProblem(
 ): BasicProblem {
   // 学年に応じたデフォルト値を設定
   const defaultMax = settings.grade <= 1 ? 10 : settings.grade <= 2 ? 20 : 100;
-  
+
   const {
     minNumber = 1,
     maxNumber = defaultMax,
@@ -131,7 +131,7 @@ export function generateGradeSubtractionProblems(
         minNumber: 1,
         maxNumber: 100,
         // ランダムに繰り下がりあり・なしを混在
-        includeBorrow: Math.random() < 0.3,  // 30%の確率で繰り下がりあり
+        includeBorrow: Math.random() < 0.3, // 30%の確率で繰り下がりあり
         allowNegative: false,
       });
 

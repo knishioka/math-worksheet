@@ -18,7 +18,7 @@ export function generateAdditionProblem(
 ): BasicProblem {
   // 学年に応じたデフォルト値を設定
   const defaultMax = settings.grade <= 1 ? 10 : settings.grade <= 2 ? 20 : 100;
-  
+
   const {
     minNumber = 1,
     maxNumber = defaultMax,
@@ -125,7 +125,7 @@ export function generateGradeAdditionProblems(
         minNumber: 1,
         maxNumber: 100,
         // ランダムに繰り上がりあり・なしを混在
-        includeCarryOver: Math.random() < 0.3,  // 30%の確率で繰り上がりあり
+        includeCarryOver: Math.random() < 0.3, // 30%の確率で繰り上がりあり
       });
 
     case 2:

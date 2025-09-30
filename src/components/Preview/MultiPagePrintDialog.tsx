@@ -27,7 +27,7 @@ export const MultiPagePrintDialog: React.FC<MultiPagePrintDialogProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 no-print">
       <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
         <h2 className="text-xl font-bold mb-4">複数枚印刷</h2>
-        
+
         <div className="mb-4">
           <p className="text-sm text-gray-600 mb-2">
             同じ設定で異なる問題を複数枚生成して印刷します。

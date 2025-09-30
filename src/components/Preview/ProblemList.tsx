@@ -1,6 +1,18 @@
 import React from 'react';
-import type { Problem, LayoutColumns, FractionProblem, DecimalProblem, MixedNumberProblem, BasicProblem, WordProblem } from '../../types';
-import { MathFraction, MathDecimal, MathMixedNumber } from '../Math/MathExpression';
+import type {
+  Problem,
+  LayoutColumns,
+  FractionProblem,
+  DecimalProblem,
+  MixedNumberProblem,
+  BasicProblem,
+  WordProblem,
+} from '../../types';
+import {
+  MathFraction,
+  MathDecimal,
+  MathMixedNumber,
+} from '../Math/MathExpression';
 import { MissingNumberBox } from '../Math/MissingNumberBox';
 
 interface ProblemListProps {
@@ -31,12 +43,12 @@ export const ProblemList: React.FC<ProblemListProps> = ({
   // 縦順に並び替えた問題配列を作成
   const reorderedProblems: (Problem | null)[] = [];
   const rowCount = Math.ceil(problems.length / layoutColumns);
-  
+
   for (let col = 0; col < layoutColumns; col++) {
     for (let row = 0; row < rowCount; row++) {
       const originalIndex = row + col * rowCount;
       const newIndex = row * layoutColumns + col;
-      
+
       if (originalIndex < problems.length) {
         reorderedProblems[newIndex] = problems[originalIndex];
       } else {
@@ -46,18 +58,20 @@ export const ProblemList: React.FC<ProblemListProps> = ({
   }
 
   return (
-    <div className={`grid ${gridCols} gap-x-3 gap-y-2 print:gap-y-1 avoid-break`}>
+    <div
+      className={`grid ${gridCols} gap-x-3 gap-y-2 print:gap-y-1 avoid-break`}
+    >
       {reorderedProblems.map((problem, index) => {
         if (!problem) {
           // 空のセルを配置（レイアウトを保つため）
           return <div key={`empty-${index}`} className="avoid-break" />;
         }
-        
+
         // 元のインデックスを計算（縦順から横順へ）
         const col = index % layoutColumns;
         const row = Math.floor(index / layoutColumns);
         const originalNumber = col * rowCount + row + 1;
-        
+
         return (
           <div key={problem.id} className="avoid-break">
             <ProblemItem
@@ -97,26 +111,30 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
       <div className="problem-text space-y-1">
         <div className="text-xs text-gray-600">({number})</div>
         <div className="flex items-center space-x-2">
-          <MathFraction 
-            numerator={fractionProblem.numerator1} 
-            denominator={fractionProblem.denominator1} 
+          <MathFraction
+            numerator={fractionProblem.numerator1}
+            denominator={fractionProblem.denominator1}
           />
           <span className="font-mono text-lg">{operationSymbol}</span>
-          {fractionProblem.numerator2 !== undefined && fractionProblem.denominator2 !== undefined && (
-            <MathFraction 
-              numerator={fractionProblem.numerator2} 
-              denominator={fractionProblem.denominator2} 
-            />
-          )}
+          {fractionProblem.numerator2 !== undefined &&
+            fractionProblem.denominator2 !== undefined && (
+              <MathFraction
+                numerator={fractionProblem.numerator2}
+                denominator={fractionProblem.denominator2}
+              />
+            )}
           <span className="font-mono text-lg">=</span>
           {showAnswer ? (
-            <MathFraction 
-              numerator={fractionProblem.answerNumerator} 
+            <MathFraction
+              numerator={fractionProblem.answerNumerator}
               denominator={fractionProblem.answerDenominator}
               className="text-red-600 font-bold"
             />
           ) : (
-            <span className="inline-block w-16 border-b border-black mx-1 align-bottom" style={{ height: '1.5rem' }} />
+            <span
+              className="inline-block w-16 border-b border-black mx-1 align-bottom"
+              style={{ height: '1.5rem' }}
+            />
           )}
         </div>
       </div>
@@ -135,12 +153,15 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
           <MathDecimal value={decimalProblem.operand2} />
           <span className="font-mono text-lg">=</span>
           {showAnswer ? (
-            <MathDecimal 
+            <MathDecimal
               value={decimalProblem.answer}
               className="text-red-600 font-bold"
             />
           ) : (
-            <span className="inline-block w-16 border-b border-black mx-1 align-bottom" style={{ height: '1.5rem' }} />
+            <span
+              className="inline-block w-16 border-b border-black mx-1 align-bottom"
+              style={{ height: '1.5rem' }}
+            />
           )}
         </div>
       </div>
@@ -154,29 +175,34 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
       <div className="problem-text space-y-1">
         <div className="text-xs text-gray-600">({number})</div>
         <div className="flex items-center space-x-2">
-          <MathMixedNumber 
-            whole={mixedProblem.whole1} 
-            numerator={mixedProblem.numerator1} 
-            denominator={mixedProblem.denominator1} 
+          <MathMixedNumber
+            whole={mixedProblem.whole1}
+            numerator={mixedProblem.numerator1}
+            denominator={mixedProblem.denominator1}
           />
           <span className="font-mono text-lg">{operationSymbol}</span>
-          {mixedProblem.whole2 !== undefined && mixedProblem.numerator2 !== undefined && mixedProblem.denominator2 !== undefined && (
-            <MathMixedNumber 
-              whole={mixedProblem.whole2} 
-              numerator={mixedProblem.numerator2} 
-              denominator={mixedProblem.denominator2} 
-            />
-          )}
+          {mixedProblem.whole2 !== undefined &&
+            mixedProblem.numerator2 !== undefined &&
+            mixedProblem.denominator2 !== undefined && (
+              <MathMixedNumber
+                whole={mixedProblem.whole2}
+                numerator={mixedProblem.numerator2}
+                denominator={mixedProblem.denominator2}
+              />
+            )}
           <span className="font-mono text-lg">=</span>
           {showAnswer ? (
-            <MathMixedNumber 
-              whole={mixedProblem.answerWhole} 
-              numerator={mixedProblem.answerNumerator} 
+            <MathMixedNumber
+              whole={mixedProblem.answerWhole}
+              numerator={mixedProblem.answerNumerator}
               denominator={mixedProblem.answerDenominator}
               className="text-red-600 font-bold"
             />
           ) : (
-            <span className="inline-block w-16 border-b border-black mx-1 align-bottom" style={{ height: '1.5rem' }} />
+            <span
+              className="inline-block w-16 border-b border-black mx-1 align-bottom"
+              style={{ height: '1.5rem' }}
+            />
           )}
         </div>
       </div>
@@ -199,8 +225,13 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
           ) : (
             <div className="flex items-baseline">
               <span className="text-sm mr-2">答え:</span>
-              <span className="inline-block w-24 border-b border-black mx-1" style={{ height: '1.5rem' }} />
-              {wordProblem.unit && <span className="text-sm ml-1">{wordProblem.unit}</span>}
+              <span
+                className="inline-block w-24 border-b border-black mx-1"
+                style={{ height: '1.5rem' }}
+              />
+              {wordProblem.unit && (
+                <span className="text-sm ml-1">{wordProblem.unit}</span>
+              )}
             </div>
           )}
         </div>
@@ -210,7 +241,7 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
 
   // 基本的な問題の場合（整数）
   const basicProblem = problem as BasicProblem;
-  
+
   return (
     <div className="problem-text space-y-1">
       <div className="text-xs text-gray-600">({number})</div>
@@ -231,14 +262,18 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
           <span className="font-mono text-lg">{basicProblem.operand2}</span>
         )}
         <span className="font-mono text-lg">=</span>
-        {basicProblem.missingPosition === 'answer' || !basicProblem.missingPosition ? (
+        {basicProblem.missingPosition === 'answer' ||
+        !basicProblem.missingPosition ? (
           // 答えが虫食いの場合、または虫食いでない通常問題の場合
           showAnswer ? (
             <span className="font-mono text-lg text-red-600 font-bold">
               {formatAnswer(problem)}
             </span>
           ) : (
-            <span className="inline-block w-16 border-b border-black mx-1 align-bottom" style={{ height: '1.5rem' }} />
+            <span
+              className="inline-block w-16 border-b border-black mx-1 align-bottom"
+              style={{ height: '1.5rem' }}
+            />
           )
         ) : (
           // 虫食い算で答えが虫食いでない場合（operand1またはoperand2が虫食い）、答えを問題として表示
@@ -249,14 +284,16 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
   );
 };
 
-
 function formatAnswer(problem: Problem): string {
   if (problem.type === 'basic') {
     const basicProblem = problem as BasicProblem;
-    
+
     // 虫食い算で答えが虫食いの場合、operand1とoperand2から計算
-    if (basicProblem.missingPosition === 'answer' && 
-        basicProblem.operand1 !== null && basicProblem.operand2 !== null) {
+    if (
+      basicProblem.missingPosition === 'answer' &&
+      basicProblem.operand1 !== null &&
+      basicProblem.operand2 !== null
+    ) {
       switch (basicProblem.operation) {
         case 'addition':
           return (basicProblem.operand1 + basicProblem.operand2).toString();
@@ -265,7 +302,9 @@ function formatAnswer(problem: Problem): string {
         case 'multiplication':
           return (basicProblem.operand1 * basicProblem.operand2).toString();
         case 'division': {
-          const quotient = Math.floor(basicProblem.operand1 / basicProblem.operand2);
+          const quotient = Math.floor(
+            basicProblem.operand1 / basicProblem.operand2
+          );
           const remainder = basicProblem.operand1 % basicProblem.operand2;
           if (remainder === 0) {
             return quotient.toString();
@@ -275,12 +314,15 @@ function formatAnswer(problem: Problem): string {
         }
       }
     }
-    
+
     // 通常の問題またはanswerが設定されている場合
     if (basicProblem.answer !== null) {
       // わり算の余りがある場合の処理
-      if (basicProblem.operation === 'division' && 
-          basicProblem.operand1 !== null && basicProblem.operand2 !== null) {
+      if (
+        basicProblem.operation === 'division' &&
+        basicProblem.operand1 !== null &&
+        basicProblem.operand2 !== null
+      ) {
         const remainder = basicProblem.operand1 % basicProblem.operand2;
         if (remainder !== 0) {
           return `${basicProblem.answer}あまり${remainder}`;
@@ -289,10 +331,10 @@ function formatAnswer(problem: Problem): string {
       return basicProblem.answer.toString();
     }
   }
-  
+
   if ('answer' in problem && problem.answer !== null) {
     return problem.answer.toString();
   }
-  
+
   return '';
 }

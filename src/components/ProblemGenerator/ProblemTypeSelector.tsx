@@ -21,26 +21,32 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
   // 基本計算のみ表示し、演算選択は計算パターンで行う
   const showBasicOnly = true;
   // Check which operations are available for the current grade
-  const isOperationAvailable = React.useCallback((op: Operation): boolean => {
-    if (grade === 1 && (op === 'multiplication' || op === 'division')) {
-      return false;
-    }
-    if (grade === 2 && op === 'division') {
-      return false;
-    }
-    return true;
-  }, [grade]);
+  const isOperationAvailable = React.useCallback(
+    (op: Operation): boolean => {
+      if (grade === 1 && (op === 'multiplication' || op === 'division')) {
+        return false;
+      }
+      if (grade === 2 && op === 'division') {
+        return false;
+      }
+      return true;
+    },
+    [grade]
+  );
 
   // Check which problem types are available for the current grade
-  const isProblemTypeAvailable = React.useCallback((type: ProblemType): boolean => {
-    if (type === 'fraction') {
-      return grade >= 2; // 2年生以降で分数を学習
-    }
-    if (type === 'decimal') {
-      return grade >= 3; // 3年生以降で小数を学習
-    }
-    return true;
-  }, [grade]);
+  const isProblemTypeAvailable = React.useCallback(
+    (type: ProblemType): boolean => {
+      if (type === 'fraction') {
+        return grade >= 2; // 2年生以降で分数を学習
+      }
+      if (type === 'decimal') {
+        return grade >= 3; // 3年生以降で小数を学習
+      }
+      return true;
+    },
+    [grade]
+  );
 
   // If current operation is not available for the new grade, switch to addition
   React.useEffect(() => {
@@ -55,7 +61,7 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
       onProblemTypeChange('basic');
     }
   }, [grade, problemType, isProblemTypeAvailable, onProblemTypeChange]);
-  
+
   return (
     <div className="space-y-6">
       <div>
@@ -97,7 +103,9 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
               type="radio"
               value="basic"
               checked={problemType === 'basic'}
-              onChange={(e) => onProblemTypeChange(e.target.value as ProblemType)}
+              onChange={(e) =>
+                onProblemTypeChange(e.target.value as ProblemType)
+              }
               className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
             />
             <span className="ml-2 text-sm text-gray-700">基本計算</span>
@@ -108,7 +116,9 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
                 type="radio"
                 value="fraction"
                 checked={problemType === 'fraction'}
-                onChange={(e) => onProblemTypeChange(e.target.value as ProblemType)}
+                onChange={(e) =>
+                  onProblemTypeChange(e.target.value as ProblemType)
+                }
                 className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
               />
               <span className="ml-2 text-sm text-gray-700">分数</span>
@@ -120,7 +130,9 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
                 type="radio"
                 value="decimal"
                 checked={problemType === 'decimal'}
-                onChange={(e) => onProblemTypeChange(e.target.value as ProblemType)}
+                onChange={(e) =>
+                  onProblemTypeChange(e.target.value as ProblemType)
+                }
                 className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
               />
               <span className="ml-2 text-sm text-gray-700">小数</span>
@@ -131,7 +143,9 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
               type="radio"
               value="hissan"
               checked={problemType === 'hissan'}
-              onChange={(e) => onProblemTypeChange(e.target.value as ProblemType)}
+              onChange={(e) =>
+                onProblemTypeChange(e.target.value as ProblemType)
+              }
               className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
             />
             <span className="ml-2 text-sm text-gray-700">筆算（未実装）</span>
@@ -150,7 +164,6 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
     </div>
   );
 };
-
 
 function getProblemTypeDescription(problemType: ProblemType): string {
   switch (problemType) {
@@ -173,7 +186,11 @@ function getProblemTypeDescription(problemType: ProblemType): string {
   }
 }
 
-function getGradeProblemTypeDescription(grade: Grade, problemType: ProblemType, operation: Operation): string {
+function getGradeProblemTypeDescription(
+  grade: Grade,
+  problemType: ProblemType,
+  operation: Operation
+): string {
   if (problemType === 'fraction') {
     const fractionDescriptions: Record<Grade, string> = {
       1: '（この学年では分数を学習しません）',
@@ -185,7 +202,7 @@ function getGradeProblemTypeDescription(grade: Grade, problemType: ProblemType, 
     };
     return fractionDescriptions[grade];
   }
-  
+
   if (problemType === 'decimal') {
     const decimalDescriptions: Record<Grade, string> = {
       1: '（この学年では小数を学習しません）',
@@ -197,16 +214,21 @@ function getGradeProblemTypeDescription(grade: Grade, problemType: ProblemType, 
     };
     return decimalDescriptions[grade];
   }
-  
+
   // 従来の基本計算の説明
   return getGradeOperationDescription(grade, operation);
 }
 
-function getGradeOperationDescription(grade: Grade, operation: Operation): string {
+function getGradeOperationDescription(
+  grade: Grade,
+  operation: Operation
+): string {
   const descriptions: Record<Grade, Partial<Record<Operation, string>>> = {
     1: {
-      addition: '1〜100の範囲でのたし算。繰り上がりのある計算は2学期後半から学習します。',
-      subtraction: '1〜100の範囲でのひき算。繰り下がりのある計算は2学期後半から学習します。',
+      addition:
+        '1〜100の範囲でのたし算。繰り上がりのある計算は2学期後半から学習します。',
+      subtraction:
+        '1〜100の範囲でのひき算。繰り下がりのある計算は2学期後半から学習します。',
     },
     2: {
       addition: '2桁の数の筆算。繰り上がりのある計算を含みます。',

@@ -20,9 +20,11 @@ export function generateDivisionProblem(
   options: DivisionOptions = {}
 ): BasicProblem {
   // 学年に応じたデフォルト値を設定
-  const defaultMaxDividend = settings.grade <= 3 ? 50 : settings.grade <= 4 ? 100 : 200;
-  const defaultMaxDivisor = settings.grade <= 3 ? 5 : settings.grade <= 4 ? 9 : 12;
-  
+  const defaultMaxDividend =
+    settings.grade <= 3 ? 50 : settings.grade <= 4 ? 100 : 200;
+  const defaultMaxDivisor =
+    settings.grade <= 3 ? 5 : settings.grade <= 4 ? 9 : 12;
+
   const {
     minDividend = 2,
     maxDividend = defaultMaxDividend,
@@ -68,9 +70,10 @@ export function generateDivisionProblem(
 
   // For basic problems, we typically show the quotient as the answer
   // For problems with remainder, the answer would be represented differently
-  const answer = allowRemainder && remainder > 0 
-    ? quotient // We'll handle remainder display in the UI
-    : quotient;
+  const answer =
+    allowRemainder && remainder > 0
+      ? quotient // We'll handle remainder display in the UI
+      : quotient;
 
   return {
     id: generateId(),
@@ -201,13 +204,13 @@ export function generateTimesTableDivisionProblems(
     const quotient = multiplier;
 
     const key = `${dividend}÷${divisor}`;
-    
+
     // Avoid duplicates, but allow them if we can't generate enough unique ones
     if (usedCombinations.has(key) && usedCombinations.size < maxMultiplier) {
       i--;
       continue;
     }
-    
+
     usedCombinations.add(key);
 
     problems.push({
@@ -228,7 +231,11 @@ export function generateTimesTableDivisionProblems(
  */
 export function generateEducationalDivisionProblems(
   count: number,
-  pattern: 'no-remainder' | 'with-remainder' | 'single-digit-divisor' | 'equal-sharing'
+  pattern:
+    | 'no-remainder'
+    | 'with-remainder'
+    | 'single-digit-divisor'
+    | 'equal-sharing'
 ): BasicProblem[] {
   const baseSettings: WorksheetSettings = {
     grade: 3,
@@ -287,7 +294,10 @@ export function generateEducationalDivisionProblems(
 /**
  * Calculate remainder for division problems
  */
-export function getDivisionRemainder(dividend: number, divisor: number): number {
+export function getDivisionRemainder(
+  dividend: number,
+  divisor: number
+): number {
   return dividend % divisor;
 }
 

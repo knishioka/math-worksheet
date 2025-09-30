@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { generateAdditionProblem, generateAdditionProblems, generateGradeAdditionProblems } from './addition';
+import {
+  generateAdditionProblem,
+  generateAdditionProblems,
+  generateGradeAdditionProblems,
+} from './addition';
 import type { WorksheetSettings } from '../../types';
 
 describe('generateAdditionProblem', () => {
@@ -13,7 +17,7 @@ describe('generateAdditionProblem', () => {
 
   it('should generate a valid addition problem', () => {
     const problem = generateAdditionProblem(baseSettings);
-    
+
     expect(problem.type).toBe('basic');
     expect(problem.operation).toBe('addition');
     expect(problem.operand1).not.toBeNull();
@@ -22,7 +26,9 @@ describe('generateAdditionProblem', () => {
     expect(problem.operand2).not.toBeNull();
     expect(problem.operand2!).toBeGreaterThanOrEqual(1);
     expect(problem.operand2!).toBeLessThanOrEqual(10);
-    expect(problem.answer).toBe((problem.operand1 ?? 0) + (problem.operand2 ?? 0));
+    expect(problem.answer).toBe(
+      (problem.operand1 ?? 0) + (problem.operand2 ?? 0)
+    );
     expect(problem.id).toBeDefined();
   });
 
@@ -32,7 +38,7 @@ describe('generateAdditionProblem', () => {
       minNumber: 5,
       maxNumber: 9,
     });
-    
+
     expect(problemWithCarryOver.carryOver).toBe(true);
   });
 
@@ -42,7 +48,7 @@ describe('generateAdditionProblem', () => {
       minNumber: 1,
       maxNumber: 4,
     });
-    
+
     expect(problemWithoutCarryOver.carryOver).toBe(false);
   });
 
@@ -51,7 +57,7 @@ describe('generateAdditionProblem', () => {
       minNumber: 5,
       maxNumber: 15,
     });
-    
+
     expect(problem.operand1).not.toBeNull();
     expect(problem.operand1!).toBeGreaterThanOrEqual(5);
     expect(problem.operand1!).toBeLessThanOrEqual(15);
@@ -77,20 +83,22 @@ describe('generateAdditionProblems', () => {
 
   it('should generate unique problems', () => {
     const problems = generateAdditionProblems(baseSettings, 10);
-    const combinations = problems.map(p => `${p.operand1}+${p.operand2}`);
+    const combinations = problems.map((p) => `${p.operand1}+${p.operand2}`);
     const uniqueCombinations = new Set(combinations);
-    
+
     // Should have mostly unique combinations (allowing for some duplicates due to randomness)
     expect(uniqueCombinations.size).toBeGreaterThan(5);
   });
 
   it('should generate problems with consistent settings', () => {
     const problems = generateAdditionProblems(baseSettings, 5);
-    
-    problems.forEach(problem => {
+
+    problems.forEach((problem) => {
       expect(problem.type).toBe('basic');
       expect(problem.operation).toBe('addition');
-      expect(problem.answer).toBe((problem.operand1 ?? 0) + (problem.operand2 ?? 0));
+      expect(problem.answer).toBe(
+        (problem.operand1 ?? 0) + (problem.operand2 ?? 0)
+      );
     });
   });
 });
@@ -98,8 +106,8 @@ describe('generateAdditionProblems', () => {
 describe('generateGradeAdditionProblems', () => {
   it('should generate appropriate problems for grade 1', () => {
     const problems = generateGradeAdditionProblems(1, 10);
-    
-    problems.forEach(problem => {
+
+    problems.forEach((problem) => {
       expect(problem.operand1).not.toBeNull();
       expect(problem.operand1!).toBeLessThanOrEqual(100);
       expect(problem.operand2).not.toBeNull();
@@ -110,8 +118,8 @@ describe('generateGradeAdditionProblems', () => {
 
   it('should generate appropriate problems for grade 2', () => {
     const problems = generateGradeAdditionProblems(2, 10);
-    
-    problems.forEach(problem => {
+
+    problems.forEach((problem) => {
       expect(problem.operand1).not.toBeNull();
       expect(problem.operand1!).toBeGreaterThanOrEqual(10);
       expect(problem.operand1!).toBeLessThanOrEqual(99);
@@ -124,8 +132,8 @@ describe('generateGradeAdditionProblems', () => {
 
   it('should generate appropriate problems for grade 3', () => {
     const problems = generateGradeAdditionProblems(3, 10);
-    
-    problems.forEach(problem => {
+
+    problems.forEach((problem) => {
       expect(problem.operand1).not.toBeNull();
       expect(problem.operand1!).toBeGreaterThanOrEqual(100);
       expect(problem.operand1!).toBeLessThanOrEqual(9999);
@@ -138,8 +146,8 @@ describe('generateGradeAdditionProblems', () => {
 
   it('should generate problems for higher grades', () => {
     const problems = generateGradeAdditionProblems(5, 5);
-    
-    problems.forEach(problem => {
+
+    problems.forEach((problem) => {
       expect(problem.operand1).not.toBeNull();
       expect(problem.operand1!).toBeGreaterThanOrEqual(100);
       expect(problem.operand2).not.toBeNull();
@@ -149,9 +157,9 @@ describe('generateGradeAdditionProblems', () => {
 
   it('should handle invalid grade gracefully', () => {
     const problems = generateGradeAdditionProblems(10, 5);
-    
+
     expect(problems).toHaveLength(5);
-    problems.forEach(problem => {
+    problems.forEach((problem) => {
       expect(problem.type).toBe('basic');
       expect(problem.operation).toBe('addition');
     });

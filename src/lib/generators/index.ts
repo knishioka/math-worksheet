@@ -1,8 +1,20 @@
 import type { Problem, WorksheetSettings, Operation } from '../../types';
-import { generateAdditionProblems, generateGradeAdditionProblems } from './addition';
-import { generateSubtractionProblems, generateGradeSubtractionProblems } from './subtraction';
-import { generateMultiplicationProblems, generateGradeMultiplicationProblems } from './multiplication';
-import { generateDivisionProblems, generateGradeDivisionProblems } from './division';
+import {
+  generateAdditionProblems,
+  generateGradeAdditionProblems,
+} from './addition';
+import {
+  generateSubtractionProblems,
+  generateGradeSubtractionProblems,
+} from './subtraction';
+import {
+  generateMultiplicationProblems,
+  generateGradeMultiplicationProblems,
+} from './multiplication';
+import {
+  generateDivisionProblems,
+  generateGradeDivisionProblems,
+} from './division';
 import { generateGradeFractionProblems } from './fraction';
 import { generateGradeDecimalProblems } from './decimal';
 import { generatePatternProblems } from './pattern-generators';
@@ -11,7 +23,8 @@ import { generatePatternProblems } from './pattern-generators';
  * Main problem generator that routes to appropriate operation generator
  */
 export function generateProblems(settings: WorksheetSettings): Problem[] {
-  const { operation, problemType, problemCount, grade, calculationPattern } = settings;
+  const { operation, problemType, problemCount, grade, calculationPattern } =
+    settings;
 
   // 計算パターンが選択されている場合は、パターンベースの生成を使用
   if (problemType === 'basic' && calculationPattern) {
@@ -22,7 +35,7 @@ export function generateProblems(settings: WorksheetSettings): Problem[] {
   if (problemType === 'fraction') {
     return generateGradeFractionProblems(grade, problemCount);
   }
-  
+
   if (problemType === 'decimal') {
     return generateGradeDecimalProblems(grade, problemCount);
   }
@@ -31,16 +44,16 @@ export function generateProblems(settings: WorksheetSettings): Problem[] {
   switch (operation) {
     case 'addition':
       return generateGradeAdditionProblems(grade, problemCount);
-    
+
     case 'subtraction':
       return generateGradeSubtractionProblems(grade, problemCount);
-    
+
     case 'multiplication':
       return generateGradeMultiplicationProblems(grade, problemCount);
-    
+
     case 'division':
       return generateGradeDivisionProblems(grade, problemCount);
-    
+
     default:
       throw new Error(`Unsupported operation: ${operation}`);
   }
@@ -53,15 +66,17 @@ export function generateMixedProblems(
   settings: WorksheetSettings,
   operations: Operation[]
 ): Problem[] {
-  const problemsPerOperation = Math.floor(settings.problemCount / operations.length);
+  const problemsPerOperation = Math.floor(
+    settings.problemCount / operations.length
+  );
   const remainingProblems = settings.problemCount % operations.length;
-  
+
   const allProblems: Problem[] = [];
 
   operations.forEach((operation, index) => {
     const count = problemsPerOperation + (index < remainingProblems ? 1 : 0);
     const operationSettings = { ...settings, operation };
-    
+
     const problems = generateProblems(operationSettings);
     allProblems.push(...problems.slice(0, count));
   });
@@ -94,26 +109,34 @@ export function generateCustomProblems(
         maxNumber: customOptions.maxNumber,
         includeCarryOver: customOptions.includeCarryOver,
       });
-    
+
     case 'subtraction':
-      return generateSubtractionProblems(customSettings, settings.problemCount, {
-        minNumber: customOptions.minNumber,
-        maxNumber: customOptions.maxNumber,
-        includeBorrow: customOptions.includeCarryOver,
-      });
-    
+      return generateSubtractionProblems(
+        customSettings,
+        settings.problemCount,
+        {
+          minNumber: customOptions.minNumber,
+          maxNumber: customOptions.maxNumber,
+          includeBorrow: customOptions.includeCarryOver,
+        }
+      );
+
     case 'multiplication':
-      return generateMultiplicationProblems(customSettings, settings.problemCount, {
-        minNumber: customOptions.minNumber,
-        maxNumber: customOptions.maxNumber,
-      });
-    
+      return generateMultiplicationProblems(
+        customSettings,
+        settings.problemCount,
+        {
+          minNumber: customOptions.minNumber,
+          maxNumber: customOptions.maxNumber,
+        }
+      );
+
     case 'division':
       return generateDivisionProblems(customSettings, settings.problemCount, {
         minDividend: customOptions.minNumber,
         maxDividend: customOptions.maxNumber,
       });
-    
+
     default:
       throw new Error(`Unsupported operation: ${customOptions.operation}`);
   }
@@ -147,7 +170,10 @@ function shuffleArray<T>(array: T[]): T[] {
 /**
  * Validate problem settings
  */
-export function validateSettings(settings: WorksheetSettings): { valid: boolean; errors: string[] } {
+export function validateSettings(settings: WorksheetSettings): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
 
   if (settings.problemCount <= 0) {
@@ -161,7 +187,6 @@ export function validateSettings(settings: WorksheetSettings): { valid: boolean;
   if (settings.grade < 1 || settings.grade > 6) {
     errors.push('Grade must be between 1 and 6');
   }
-
 
   if (settings.layoutColumns < 1 || settings.layoutColumns > 3) {
     errors.push('Layout columns must be between 1 and 3');

@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { generateProblems, generateMixedProblems, validateSettings } from './index';
+import {
+  generateProblems,
+  generateMixedProblems,
+  validateSettings,
+} from './index';
 import type { WorksheetSettings, Operation } from '../../types';
 
 describe('generateProblems', () => {
@@ -13,9 +17,9 @@ describe('generateProblems', () => {
     };
 
     const problems = generateProblems(settings);
-    
+
     expect(problems).toHaveLength(5);
-    problems.forEach(problem => {
+    problems.forEach((problem) => {
       expect(problem.operation).toBe('addition');
       expect(problem.type).toBe('basic');
     });
@@ -31,9 +35,9 @@ describe('generateProblems', () => {
     };
 
     const problems = generateProblems(settings);
-    
+
     expect(problems).toHaveLength(5);
-    problems.forEach(problem => {
+    problems.forEach((problem) => {
       expect(problem.operation).toBe('subtraction');
       expect(problem.type).toBe('basic');
     });
@@ -49,9 +53,9 @@ describe('generateProblems', () => {
     };
 
     const problems = generateProblems(settings);
-    
+
     expect(problems).toHaveLength(5);
-    problems.forEach(problem => {
+    problems.forEach((problem) => {
       expect(problem.operation).toBe('multiplication');
       expect(problem.type).toBe('basic');
     });
@@ -67,9 +71,9 @@ describe('generateProblems', () => {
     };
 
     const problems = generateProblems(settings);
-    
+
     expect(problems).toHaveLength(5);
-    problems.forEach(problem => {
+    problems.forEach((problem) => {
       expect(problem.operation).toBe('division');
       expect(problem.type).toBe('basic');
     });
@@ -84,7 +88,9 @@ describe('generateProblems', () => {
       layoutColumns: 2,
     };
 
-    expect(() => generateProblems(settings)).toThrow('Unsupported operation: invalid');
+    expect(() => generateProblems(settings)).toThrow(
+      'Unsupported operation: invalid'
+    );
   });
 });
 
@@ -98,13 +104,18 @@ describe('generateMixedProblems', () => {
       layoutColumns: 2,
     };
 
-    const problems = generateMixedProblems(settings, ['addition', 'subtraction']);
-    
+    const problems = generateMixedProblems(settings, [
+      'addition',
+      'subtraction',
+    ]);
+
     expect(problems).toHaveLength(10);
-    
-    const additionProblems = problems.filter(p => p.operation === 'addition');
-    const subtractionProblems = problems.filter(p => p.operation === 'subtraction');
-    
+
+    const additionProblems = problems.filter((p) => p.operation === 'addition');
+    const subtractionProblems = problems.filter(
+      (p) => p.operation === 'subtraction'
+    );
+
     expect(additionProblems.length).toBeGreaterThan(0);
     expect(subtractionProblems.length).toBeGreaterThan(0);
     expect(additionProblems.length + subtractionProblems.length).toBe(10);
@@ -119,17 +130,24 @@ describe('generateMixedProblems', () => {
       layoutColumns: 2,
     };
 
-    const problems = generateMixedProblems(settings, ['addition', 'subtraction', 'multiplication']);
-    
+    const problems = generateMixedProblems(settings, [
+      'addition',
+      'subtraction',
+      'multiplication',
+    ]);
+
     expect(problems).toHaveLength(12);
-    
-    const operationCounts = problems.reduce((counts, problem) => {
-      counts[problem.operation] = (counts[problem.operation] || 0) + 1;
-      return counts;
-    }, {} as Record<string, number>);
-    
+
+    const operationCounts = problems.reduce(
+      (counts, problem) => {
+        counts[problem.operation] = (counts[problem.operation] || 0) + 1;
+        return counts;
+      },
+      {} as Record<string, number>
+    );
+
     // Should have 4 problems of each operation (12 / 3 = 4)
-    Object.values(operationCounts).forEach(count => {
+    Object.values(operationCounts).forEach((count) => {
       expect(count).toBe(4);
     });
   });
@@ -143,17 +161,24 @@ describe('generateMixedProblems', () => {
       layoutColumns: 2,
     };
 
-    const problems = generateMixedProblems(settings, ['addition', 'subtraction', 'multiplication']);
-    
+    const problems = generateMixedProblems(settings, [
+      'addition',
+      'subtraction',
+      'multiplication',
+    ]);
+
     expect(problems).toHaveLength(10);
-    
-    const operationCounts = problems.reduce((counts, problem) => {
-      counts[problem.operation] = (counts[problem.operation] || 0) + 1;
-      return counts;
-    }, {} as Record<string, number>);
-    
+
+    const operationCounts = problems.reduce(
+      (counts, problem) => {
+        counts[problem.operation] = (counts[problem.operation] || 0) + 1;
+        return counts;
+      },
+      {} as Record<string, number>
+    );
+
     // Should have roughly 3-4 problems of each operation
-    Object.values(operationCounts).forEach(count => {
+    Object.values(operationCounts).forEach((count) => {
       expect(count).toBeGreaterThanOrEqual(3);
       expect(count).toBeLessThanOrEqual(4);
     });
@@ -171,7 +196,7 @@ describe('validateSettings', () => {
     };
 
     const result = validateSettings(settings);
-    
+
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
   });
@@ -186,7 +211,7 @@ describe('validateSettings', () => {
     };
 
     const result = validateSettings(settings);
-    
+
     expect(result.valid).toBe(false);
     expect(result.errors).toContain('Problem count must be greater than 0');
   });
@@ -201,7 +226,7 @@ describe('validateSettings', () => {
     };
 
     const result = validateSettings(settings);
-    
+
     expect(result.valid).toBe(false);
     expect(result.errors).toContain('Problem count should not exceed 100');
   });
@@ -216,11 +241,10 @@ describe('validateSettings', () => {
     };
 
     const result = validateSettings(settings);
-    
+
     expect(result.valid).toBe(false);
     expect(result.errors).toContain('Grade must be between 1 and 6');
   });
-
 
   it('should detect invalid layout columns', () => {
     const settings: WorksheetSettings = {
@@ -232,7 +256,7 @@ describe('validateSettings', () => {
     };
 
     const result = validateSettings(settings);
-    
+
     expect(result.valid).toBe(false);
     expect(result.errors).toContain('Layout columns must be between 1 and 3');
   });
@@ -247,7 +271,7 @@ describe('validateSettings', () => {
     };
 
     const result = validateSettings(settings);
-    
+
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(1);
   });

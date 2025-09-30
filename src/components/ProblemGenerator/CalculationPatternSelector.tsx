@@ -1,6 +1,10 @@
 import React from 'react';
 import type { Grade, CalculationPattern } from '../../types';
-import { PATTERNS_BY_GRADE, PATTERN_LABELS, PATTERN_DESCRIPTIONS } from '../../types';
+import {
+  PATTERNS_BY_GRADE,
+  PATTERN_LABELS,
+  PATTERN_DESCRIPTIONS,
+} from '../../types';
 
 interface CalculationPatternSelectorProps {
   grade: Grade;
@@ -8,12 +12,13 @@ interface CalculationPatternSelectorProps {
   onPatternChange: (pattern: CalculationPattern) => void;
 }
 
-export const CalculationPatternSelector: React.FC<CalculationPatternSelectorProps> = ({
-  grade,
-  selectedPattern,
-  onPatternChange,
-}) => {
-  const availablePatterns = React.useMemo(() => PATTERNS_BY_GRADE[grade] || [], [grade]);
+export const CalculationPatternSelector: React.FC<
+  CalculationPatternSelectorProps
+> = ({ grade, selectedPattern, onPatternChange }) => {
+  const availablePatterns = React.useMemo(
+    () => PATTERNS_BY_GRADE[grade] || [],
+    [grade]
+  );
 
   // 最初のパターンを自動選択
   React.useEffect(() => {
@@ -31,7 +36,7 @@ export const CalculationPatternSelector: React.FC<CalculationPatternSelectorProp
       <label className="block text-sm font-medium text-gray-700">
         計算の種類を選択
       </label>
-      
+
       <div className="space-y-2">
         {availablePatterns.map((pattern) => (
           <label
@@ -81,7 +86,8 @@ export const CalculationPatternSelector: React.FC<CalculationPatternSelectorProp
 
       <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-md">
         <p className="text-sm text-amber-800">
-          <strong>ヒント:</strong> 学年に応じた適切な難易度の問題が自動生成されます。
+          <strong>ヒント:</strong>{' '}
+          学年に応じた適切な難易度の問題が自動生成されます。
           まずは基本的な計算から始めることをおすすめします。
         </p>
       </div>
