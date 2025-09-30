@@ -1,5 +1,5 @@
 import React from 'react';
-import type { WorksheetData, BasicProblem } from '../../types';
+import type { WorksheetData } from '../../types';
 import {
   getOperationName,
   getOperatorSymbol,

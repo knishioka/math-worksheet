@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Problem, WorksheetSettings, WorksheetData } from '../types';
+import { APP_CONFIG } from '../config/constants';
 
 interface ProblemStore {
   settings: WorksheetSettings;
@@ -14,8 +15,8 @@ const defaultSettings: WorksheetSettings = {
   grade: 1,
   problemType: 'basic',
   operation: 'addition',
-  problemCount: 30,
-  layoutColumns: 3,
+  problemCount: APP_CONFIG.defaultProblemCount,
+  layoutColumns: APP_CONFIG.defaultLayoutColumns,
 };
 
 export const useProblemStore = create<ProblemStore>((set, get) => ({
