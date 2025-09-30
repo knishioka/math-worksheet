@@ -93,65 +93,6 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
         </div>
       )}
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          問題の形式
-        </label>
-        <div className="space-y-2">
-          <label className="flex items-center">
-            <input
-              type="radio"
-              value="basic"
-              checked={problemType === 'basic'}
-              onChange={(e) =>
-                onProblemTypeChange(e.target.value as ProblemType)
-              }
-              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-            />
-            <span className="ml-2 text-sm text-gray-700">基本計算</span>
-          </label>
-          {isProblemTypeAvailable('fraction') && (
-            <label className="flex items-center">
-              <input
-                type="radio"
-                value="fraction"
-                checked={problemType === 'fraction'}
-                onChange={(e) =>
-                  onProblemTypeChange(e.target.value as ProblemType)
-                }
-                className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-              />
-              <span className="ml-2 text-sm text-gray-700">分数</span>
-            </label>
-          )}
-          {isProblemTypeAvailable('decimal') && (
-            <label className="flex items-center">
-              <input
-                type="radio"
-                value="decimal"
-                checked={problemType === 'decimal'}
-                onChange={(e) =>
-                  onProblemTypeChange(e.target.value as ProblemType)
-                }
-                className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-              />
-              <span className="ml-2 text-sm text-gray-700">小数</span>
-            </label>
-          )}
-          <label className="flex items-center">
-            <input
-              type="radio"
-              value="hissan"
-              checked={problemType === 'hissan'}
-              onChange={(e) =>
-                onProblemTypeChange(e.target.value as ProblemType)
-              }
-              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-            />
-            <span className="ml-2 text-sm text-gray-700">筆算（未実装）</span>
-          </label>
-        </div>
-      </div>
 
       <div className="p-4 bg-blue-50 rounded-md">
         <h4 className="text-sm font-medium text-blue-900 mb-2">
