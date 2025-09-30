@@ -133,7 +133,7 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
         <div className="p-6 pt-0 no-print">
           <button
             onClick={() => setIsMultiPageDialogOpen(true)}
-            className="flex items-center px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+            className="w-full flex items-center justify-center px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
           >
             <svg
               className="w-5 h-5 mr-2"
