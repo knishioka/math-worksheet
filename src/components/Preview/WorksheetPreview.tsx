@@ -158,7 +158,12 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
   );
 };
 
-function getOperationName(operation: string): string {
+function getOperationName(operation: string, calculationPattern?: string): string {
+  // 混合パターンの場合は特別な表示
+  if (calculationPattern === 'add-sub-mixed-basic' || calculationPattern === 'add-sub-double-mixed') {
+    return 'たし算・ひき算';
+  }
+
   switch (operation) {
     case 'addition':
       return 'たし算';
@@ -175,7 +180,7 @@ function getOperationName(operation: string): string {
 
 function getPreviewTitle(settings: WorksheetSettings): string {
   const grade = `${settings.grade}年生`;
-  
+
   // 計算パターンがある場合は、パターンのラベルを表示
   if (settings.calculationPattern) {
     const patternLabel = PATTERN_LABELS[settings.calculationPattern];
@@ -183,18 +188,18 @@ function getPreviewTitle(settings: WorksheetSettings): string {
       return `${patternLabel} (${grade})`;
     }
   }
-  
+
   // 問題タイプによって適切なタイトルを生成
   if (settings.problemType === 'fraction') {
-    return `分数の${getOperationName(settings.operation)} (${grade})`;
+    return `分数の${getOperationName(settings.operation, settings.calculationPattern)} (${grade})`;
   } else if (settings.problemType === 'decimal') {
-    return `小数の${getOperationName(settings.operation)} (${grade})`;
+    return `小数の${getOperationName(settings.operation, settings.calculationPattern)} (${grade})`;
   } else if (settings.problemType === 'mixed') {
-    return `帯分数の${getOperationName(settings.operation)} (${grade})`;
+    return `帯分数の${getOperationName(settings.operation, settings.calculationPattern)} (${grade})`;
   }
-  
+
   // デフォルトは演算名
-  return `${getOperationName(settings.operation)} (${grade})`;
+  return `${getOperationName(settings.operation, settings.calculationPattern)} (${grade})`;
 }
 
 function formatDate(date: Date): string {

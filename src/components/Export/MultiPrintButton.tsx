@@ -41,7 +41,7 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
               名前：<span style="display: inline-block; width: 128px; border-bottom: 1px solid black; margin-left: 4px;"></span>
             </div>
             <div style="font-size: 14px; text-align: center;">
-              ${worksheet.settings.grade}年生 ${getOperationName(worksheet.settings.operation)}
+              ${worksheet.settings.grade}年生 ${getOperationName(worksheet.settings.operation, worksheet.settings.calculationPattern)}
             </div>
             <div style="font-size: 14px; text-align: right;">
               点数：<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>点
@@ -308,7 +308,12 @@ function calculateMissingAnswer(problem: BasicProblem): string {
   return '';
 }
 
-function getOperationName(operation: string): string {
+function getOperationName(operation: string, calculationPattern?: string): string {
+  // 混合パターンの場合は特別な表示
+  if (calculationPattern === 'add-sub-mixed-basic' || calculationPattern === 'add-sub-double-mixed') {
+    return 'たし算・ひき算';
+  }
+
   switch (operation) {
     case 'addition':
       return 'たし算';
