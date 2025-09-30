@@ -203,6 +203,131 @@ feat(generator): add multiplication problem generator
    npm run build
    ```
 
+## 🎨 プリントテンプレートシステム（2025年1月導入）
+
+### 概要
+問題タイプごとに最適化されたレイアウト設定を提供するテンプレートシステム。新しい問題タイプの追加時に一貫性のあるレイアウトを保証し、保守性を向上させます。
+
+### テンプレート定義
+`src/config/print-templates.ts`
+
+```typescript
+interface PrintTemplate {
+  type: ProblemType;              // 問題タイプ
+  displayName: string;            // 表示名
+  description: string;            // 説明
+  layout: {
+    rowGap: string;               // 行間隔
+    colGap: string;               // 列間隔
+    fontSize: string;             // フォントサイズ
+    minProblemHeight: string;     // 問題の最小高さ
+  };
+  recommendedCounts: Record<LayoutColumns, number>;  // 推奨問題数
+  maxCounts: Record<LayoutColumns, number>;          // 最大問題数
+  fitsInA4: {
+    threshold: Record<LayoutColumns, number>;        // A4 1枚に収まる閾値
+  };
+}
+```
+
+### 現在のテンプレート
+
+| 問題タイプ | rowGap | colGap | fontSize | 推奨問題数 (1/2/3列) |
+|-----------|--------|--------|----------|---------------------|
+| `basic` (基本計算) | 24px | 32px | 18px | 10/20/30 |
+| `fraction` (分数) | 24px | 32px | 18px | 10/18/27 |
+| `decimal` (小数) | 24px | 32px | 18px | 10/20/30 |
+| `mixed` (帯分数) | 24px | 32px | 18px | 8/16/24 |
+| `missing` (虫食い算) | 18px | 32px | 18px | 10/20/30 |
+| `word` (文章問題) | 12px | 20px | 16px | 8/16/24 |
+| `hissan` (筆算) | 40px | 32px | 18px | 6/12/18 |
+
+### 使用方法
+
+#### 1. テンプレートの取得
+```typescript
+import { getPrintTemplate, detectPrimaryProblemType } from '@/config/print-templates';
+
+// 問題タイプから直接取得
+const template = getPrintTemplate('word');
+
+// 問題配列から自動判定
+const primaryType = detectPrimaryProblemType(problems);
+const template = getPrintTemplate(primaryType);
+```
+
+#### 2. レイアウト設定の適用
+```typescript
+const { rowGap, colGap, fontSize } = template.layout;
+const gridStyle = `display: grid; gap: ${rowGap} ${colGap};`;
+```
+
+#### 3. 推奨問題数の取得
+```typescript
+const recommendedCount = template.recommendedCounts[layoutColumns];
+const maxCount = template.maxCounts[layoutColumns];
+```
+
+#### 4. A4判定
+```typescript
+import { fitsInA4 } from '@/config/print-templates';
+
+const willFit = fitsInA4('word', 2, 16); // true
+```
+
+### 新しい問題タイプの追加手順
+
+1. **型定義の追加** (`src/types/index.ts`)
+```typescript
+export type ProblemType =
+  | 'basic'
+  | 'fraction'
+  // ...
+  | 'new-type';  // 追加
+```
+
+2. **テンプレート定義の追加** (`src/config/print-templates.ts`)
+```typescript
+export const PRINT_TEMPLATES: Record<ProblemType, PrintTemplate> = {
+  // ... 既存のテンプレート
+  'new-type': {
+    type: 'new-type',
+    displayName: '新しい問題',
+    description: '新しい問題タイプの説明',
+    layout: {
+      rowGap: '24px',
+      colGap: '32px',
+      fontSize: '18px',
+      minProblemHeight: '50px',
+    },
+    recommendedCounts: { 1: 10, 2: 20, 3: 30 },
+    maxCounts: { 1: 10, 2: 20, 3: 30 },
+    fitsInA4: {
+      threshold: { 1: 10, 2: 20, 3: 30 },
+    },
+  },
+};
+```
+
+3. **問題生成ロジックの実装** (`src/lib/generators/`)
+4. **表示コンポーネントの実装** (`src/components/`)
+5. **テストの追加** (`*.test.ts`)
+
+### テンプレートの調整指針
+
+- **rowGap**: 問題の高さに応じて調整（高い問題ほど狭く）
+- **colGap**: 横幅の広い問題は広めに設定
+- **fontSize**: 問題の複雑さに応じて調整（文章問題は小さめ）
+- **推奨問題数**: A4用紙1枚に快適に収まる数
+- **最大問題数**: 物理的に収まる限界値
+
+### メリット
+
+1. **一貫性**: すべての問題タイプで統一されたレイアウトルール
+2. **保守性**: 1箇所の修正で全体に反映
+3. **拡張性**: 新しい問題タイプの追加が容易
+4. **テスト容易性**: テンプレートごとに独立してテスト可能
+
 ## 実装のコツ
 
 ### 問題生成ロジック（2024年12月アップデート）

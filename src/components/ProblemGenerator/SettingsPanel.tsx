@@ -4,6 +4,7 @@ import type {
   ProblemType,
   CalculationPattern,
 } from '../../types';
+import { getPrintTemplate } from '../../config/print-templates';
 
 interface SettingsPanelProps {
   problemCount: number;
@@ -13,20 +14,6 @@ interface SettingsPanelProps {
   onProblemCountChange: (count: number) => void;
   onLayoutColumnsChange: (columns: LayoutColumns) => void;
 }
-
-// 列数に応じた最大問題数を定義
-const MAX_PROBLEMS_PER_COLUMN: Record<LayoutColumns, number> = {
-  1: 10, // 1列の場合は最大10問
-  2: 20, // 2列の場合は最大20問（10問×2列）
-  3: 30, // 3列の場合は最大30問（10問×3列）
-};
-
-// 文章問題用の推奨問題数
-const WORD_PROBLEM_RECOMMENDED: Record<LayoutColumns, number> = {
-  1: 8, // 1列の場合は8問を推奨
-  2: 16, // 2列の場合は16問を推奨
-  3: 24, // 3列の場合は24問を推奨
-};
 
 // 文章問題を生成する計算パターン
 const WORD_PROBLEM_PATTERNS: CalculationPattern[] = [
@@ -45,9 +32,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   onProblemCountChange,
   onLayoutColumnsChange,
 }) => {
-  // 列数に応じた最大問題数を取得
-  const maxProblems = MAX_PROBLEMS_PER_COLUMN[layoutColumns];
-
   // 文章問題かどうかを判定：問題タイプが'word'または、基本計算で文章問題パターンが選択されている場合
   const isWordProblem =
     problemType === 'word' ||
@@ -55,9 +39,15 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       calculationPattern &&
       WORD_PROBLEM_PATTERNS.includes(calculationPattern));
 
-  const recommendedCount = isWordProblem
-    ? WORD_PROBLEM_RECOMMENDED[layoutColumns]
-    : undefined;
+  // 問題タイプに応じたテンプレートを取得
+  const effectiveProblemType: ProblemType = isWordProblem
+    ? 'word'
+    : problemType || 'basic';
+  const template = getPrintTemplate(effectiveProblemType);
+
+  // 列数に応じた最大問題数と推奨問題数を取得
+  const maxProblems = template.maxCounts[layoutColumns];
+  const recommendedCount = template.recommendedCounts[layoutColumns];
 
   // 現在の問題数が最大値を超えている場合は調整
   React.useEffect(() => {
@@ -123,20 +113,19 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         {isWordProblem && (
           <div className="mt-2 p-2 bg-blue-50 rounded-md border border-blue-200">
             <p className="text-xs text-blue-700 font-medium mb-2">
-              💡 文章問題の推奨問題数 (A4用紙1枚に最適)
+              💡 {template.displayName}の推奨問題数 (A4用紙1枚に最適)
             </p>
             <div className="grid grid-cols-3 gap-1">
               {([1, 2, 3] as const).map((cols) => {
+                const colTemplate = getPrintTemplate(effectiveProblemType);
+                const colRecommended = colTemplate.recommendedCounts[cols];
                 const isCurrentLayout = layoutColumns === cols;
-                const isSelected =
-                  problemCount === WORD_PROBLEM_RECOMMENDED[cols];
+                const isSelected = problemCount === colRecommended;
                 return (
                   <button
                     key={cols}
                     type="button"
-                    onClick={() =>
-                      onProblemCountChange(WORD_PROBLEM_RECOMMENDED[cols])
-                    }
+                    onClick={() => onProblemCountChange(colRecommended)}
                     className={`px-2 py-1 text-xs rounded border relative ${
                       isSelected
                         ? 'bg-blue-600 text-white border-blue-600'
@@ -145,7 +134,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                           : 'bg-white text-blue-600 border-blue-300 hover:bg-blue-50'
                     }`}
                   >
-                    {cols}列: {WORD_PROBLEM_RECOMMENDED[cols]}問
+                    {cols}列: {colRecommended}問
                     {isCurrentLayout && (
                       <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full"></span>
                     )}
@@ -154,8 +143,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               })}
             </div>
             <p className="text-xs text-blue-600 mt-1">
-              🎯 現在のレイアウト({layoutColumns}列)の推奨:{' '}
-              {WORD_PROBLEM_RECOMMENDED[layoutColumns]}問
+              🎯 現在のレイアウト({layoutColumns}列)の推奨: {recommendedCount}問
             </p>
           </div>
         )}
@@ -172,18 +160,15 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         >
           {problemCountOptions.map((count) => (
             <option key={count} value={count}>
-              {count}問
-              {isWordProblem && count === recommendedCount ? ' (推奨)' : ''}
+              {count}問{count === recommendedCount ? ' (推奨)' : ''}
             </option>
           ))}
         </select>
-        {isWordProblem &&
-          recommendedCount &&
-          problemCount > recommendedCount && (
-            <p className="text-xs text-amber-600 mt-1">
-              ⚠️ {problemCount}問だと2ページに分かれる可能性があります
-            </p>
-          )}
+        {problemCount > template.fitsInA4.threshold[layoutColumns] && (
+          <p className="text-xs text-amber-600 mt-1">
+            ⚠️ {problemCount}問だと2ページに分かれる可能性があります
+          </p>
+        )}
       </div>
     </div>
   );

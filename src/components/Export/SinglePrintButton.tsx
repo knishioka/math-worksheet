@@ -9,6 +9,10 @@ import {
   calculateMissingOperand2,
   calculateMissingAnswer,
 } from '../../lib/utils/missing-number-calculator';
+import {
+  detectPrimaryProblemType,
+  getPrintTemplate,
+} from '../../config/print-templates';
 
 interface SinglePrintButtonProps {
   id?: string;
@@ -59,17 +63,11 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
     let problemsHTML = '<div style="margin-top: 24px;">';
     const columns = worksheet.settings.layoutColumns || 2;
 
-    // 文章問題や虫食い算の場合は間隔を調整
-    const hasWordProblems = worksheet.problems.some((p) => p.type === 'word');
-    const hasMissingNumbers = worksheet.problems.some(
-      (p) => p.type === 'basic' && p.missingPosition
-    );
-    const rowGap = hasWordProblems
-      ? '12px'
-      : hasMissingNumbers
-        ? '18px'
-        : '24px';
-    const colGap = hasWordProblems ? '20px' : '32px';
+    // 問題タイプに応じたテンプレートを取得
+    const primaryType = detectPrimaryProblemType(worksheet.problems);
+    const template = getPrintTemplate(primaryType);
+    const { rowGap, colGap } = template.layout;
+
     const gridStyle = `display: grid; grid-template-columns: repeat(${columns}, 1fr); gap: ${rowGap} ${colGap};`;
     problemsHTML += `<div style="${gridStyle}">`;
 
@@ -92,12 +90,7 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
 
     reorderedProblems.forEach((problem, index) => {
       if (!problem) {
-        const marginBottom = hasWordProblems
-          ? '8px'
-          : hasMissingNumbers
-            ? '12px'
-            : '16px';
-        problemsHTML += `<div style="margin-bottom: ${marginBottom};"></div>`;
+        problemsHTML += `<div style="margin-bottom: 16px;"></div>`;
         return;
       }
 
@@ -106,15 +99,10 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
       const row = Math.floor(index / columns);
       const originalNumber = col * rowCount + row + 1;
 
-      const marginBottom = hasWordProblems
-        ? '8px'
-        : hasMissingNumbers
-          ? '12px'
-          : '16px';
-      problemsHTML += `<div style="margin-bottom: ${marginBottom};">`;
+      problemsHTML += `<div style="margin-bottom: 16px;">`;
       problemsHTML += `<div style="font-size: 12px; color: #666;">(${originalNumber})</div>`;
 
-      const fontSize = problem.type === 'word' ? '16px' : '18px';
+      const fontSize = template.layout.fontSize;
       problemsHTML += `<div style="font-family: monospace; font-size: ${fontSize}; margin-top: 4px;">`;
 
       if (problem.type === 'word') {
