@@ -24,6 +24,122 @@
     @apply text-black bg-white;
   }
 
+  /* 筆算（縦書き計算）のスタイル */
+  .hissan-container {
+    font-family: 'Courier New', monospace;
+    font-size: 24px;
+    display: inline-block;
+    text-align: right;
+    line-height: 1.4;
+    margin: 10px 0;
+  }
+
+  .hissan-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    min-height: 30px;
+  }
+
+  .hissan-digit {
+    display: inline-block;
+    width: 30px;
+    text-align: center;
+    padding: 2px 0;
+  }
+
+  .hissan-operator {
+    display: inline-block;
+    width: 30px;
+    text-align: right;
+    padding-right: 8px;
+    font-weight: bold;
+  }
+
+  .hissan-line {
+    border-bottom: 2px solid #000;
+    margin: 4px 0;
+    width: 100%;
+  }
+
+  .hissan-answer-box {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    border: 1.5px solid #333;
+    background-color: #f9f9f9;
+    margin: 0 1px;
+    vertical-align: middle;
+  }
+
+  /* 繰り上がり表示 */
+  .carry-row {
+    min-height: 20px;
+    font-size: 16px;
+  }
+
+  .carry {
+    color: #ff0000;
+    font-size: 16px;
+  }
+
+  /* 繰り下がり表示 */
+  .borrow-row {
+    min-height: 20px;
+    font-size: 14px;
+  }
+
+  .borrow {
+    color: #0066cc;
+    font-size: 14px;
+  }
+
+  /* 答えの強調表示 */
+  .answer-row .answer {
+    color: #ff0000;
+    font-weight: bold;
+  }
+
+  /* 部分積（かけ算用） */
+  .partial-product {
+    margin: 2px 0;
+  }
+
+  /* わり算専用スタイル */
+  .hissan-division {
+    display: inline-flex;
+    flex-direction: column;
+  }
+
+  .division-quotient {
+    text-align: right;
+    margin-bottom: 5px;
+    padding-left: 40px;
+    border-bottom: 2px solid #000;
+    min-width: 100px;
+    padding-bottom: 2px;
+  }
+
+  .division-layout {
+    display: flex;
+    align-items: center;
+  }
+
+  .division-divisor {
+    margin-right: 5px;
+    font-weight: bold;
+  }
+
+  .division-symbol {
+    font-size: 30px;
+    line-height: 1;
+    margin-right: 5px;
+  }
+
+  .division-dividend {
+    padding-top: 2px;
+  }
+
   /* Print styles */
   @media print {
     @page {
@@ -63,6 +179,21 @@
 
     .avoid-break {
       page-break-inside: avoid;
+    }
+
+    /* 筆算の印刷最適化 */
+    .hissan-container {
+      page-break-inside: avoid;
+      font-size: 20px;
+    }
+
+    .hissan-answer-box {
+      background-color: white;
+      border-color: #000;
+    }
+
+    .hissan-line {
+      border-color: #000;
     }
   }
 }

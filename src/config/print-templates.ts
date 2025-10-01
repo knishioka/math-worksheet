@@ -163,13 +163,13 @@ export const PRINT_TEMPLATES: Record<ProblemType, PrintTemplate> = {
     },
   },
 
-  // 筆算（未実装）
+  // 筆算
   hissan: {
     type: 'hissan',
     displayName: '筆算',
-    description: '筆算形式。縦書きのため大きなスペースが必要。',
+    description: '筆算形式。縦書きのため大きなスペースが必要。lineHeight: 1.2で最適化。',
     layout: {
-      rowGap: '40px',
+      rowGap: '32px',
       colGap: '32px',
       fontSize: '18px',
       minProblemHeight: '100px',
@@ -180,9 +180,9 @@ export const PRINT_TEMPLATES: Record<ProblemType, PrintTemplate> = {
       3: 18,
     },
     maxCounts: {
-      1: 8,
-      2: 16,
-      3: 24,
+      1: 6,
+      2: 12,
+      3: 18,
     },
     fitsInA4: {
       threshold: {

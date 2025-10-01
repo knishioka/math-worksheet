@@ -4,8 +4,10 @@ import type {
   WordProblem,
   WorksheetSettings,
   Problem,
+  HissanProblem,
 } from '../../types';
 import { generateId, randomInt } from '../utils/math';
+import { generateHissanProblem } from './hissan';
 
 /**
  * 計算パターンに基づいて問題を生成
@@ -64,6 +66,10 @@ export function generatePatternProblems(
       return generateSubDoubleMissing(settings, count);
     case 'mult-single-missing':
       return generateMultSingleMissing(settings, count);
+    case 'hissan-add-double':
+      return generateHissanAddDouble(settings, count);
+    case 'hissan-sub-double':
+      return generateHissanSubDouble(settings, count);
 
     // 3年生のパターン
     case 'add-triple-digit':
@@ -80,6 +86,12 @@ export function generatePatternProblems(
       return generateSubDecSimple(settings, count);
     case 'frac-same-denom':
       return generateFracSameDenom(settings, count);
+    case 'hissan-add-triple':
+      return generateHissanAddTriple(settings, count);
+    case 'hissan-sub-triple':
+      return generateHissanSubTriple(settings, count);
+    case 'hissan-mult-basic':
+      return generateHissanMultBasic(settings, count);
 
     // 4年生のパターン
     case 'add-large-numbers':
@@ -96,6 +108,10 @@ export function generatePatternProblems(
       return generateDivDecInt(settings, count);
     case 'frac-mixed-number':
       return generateFracMixedNumber(settings, count);
+    case 'hissan-mult-advanced':
+      return generateHissanMultAdvanced(settings, count);
+    case 'hissan-div-basic':
+      return generateHissanDivBasic(settings, count);
 
     // 5年生のパターン
     case 'mult-dec-dec':
@@ -2329,5 +2345,146 @@ function generateMultSingleMissing(
     });
   }
 
+  return problems;
+}
+
+// ==================== 筆算パターン ====================
+
+/**
+ * 2桁のたし算の筆算
+ */
+function generateHissanAddDouble(
+  settings: WorksheetSettings,
+  count: number
+): HissanProblem[] {
+  const problems: HissanProblem[] = [];
+  for (let i = 0; i < count; i++) {
+    problems.push(
+      generateHissanProblem({
+        grade: settings.grade,
+        operation: 'addition',
+        showCarry: false,
+      })
+    );
+  }
+  return problems;
+}
+
+/**
+ * 2桁のひき算の筆算
+ */
+function generateHissanSubDouble(
+  settings: WorksheetSettings,
+  count: number
+): HissanProblem[] {
+  const problems: HissanProblem[] = [];
+  for (let i = 0; i < count; i++) {
+    problems.push(
+      generateHissanProblem({
+        grade: settings.grade,
+        operation: 'subtraction',
+        showCarry: false,
+      })
+    );
+  }
+  return problems;
+}
+
+/**
+ * 3桁のたし算の筆算
+ */
+function generateHissanAddTriple(
+  settings: WorksheetSettings,
+  count: number
+): HissanProblem[] {
+  const problems: HissanProblem[] = [];
+  for (let i = 0; i < count; i++) {
+    problems.push(
+      generateHissanProblem({
+        grade: settings.grade,
+        operation: 'addition',
+        showCarry: false,
+      })
+    );
+  }
+  return problems;
+}
+
+/**
+ * 3桁のひき算の筆算
+ */
+function generateHissanSubTriple(
+  settings: WorksheetSettings,
+  count: number
+): HissanProblem[] {
+  const problems: HissanProblem[] = [];
+  for (let i = 0; i < count; i++) {
+    problems.push(
+      generateHissanProblem({
+        grade: settings.grade,
+        operation: 'subtraction',
+        showCarry: false,
+      })
+    );
+  }
+  return problems;
+}
+
+/**
+ * 2桁×1桁のかけ算の筆算
+ */
+function generateHissanMultBasic(
+  settings: WorksheetSettings,
+  count: number
+): HissanProblem[] {
+  const problems: HissanProblem[] = [];
+  for (let i = 0; i < count; i++) {
+    problems.push(
+      generateHissanProblem({
+        grade: settings.grade,
+        operation: 'multiplication',
+        showPartialProducts: false,
+      })
+    );
+  }
+  return problems;
+}
+
+/**
+ * 3桁×2桁のかけ算の筆算
+ */
+function generateHissanMultAdvanced(
+  settings: WorksheetSettings,
+  count: number
+): HissanProblem[] {
+  const problems: HissanProblem[] = [];
+  for (let i = 0; i < count; i++) {
+    problems.push(
+      generateHissanProblem({
+        grade: settings.grade,
+        operation: 'multiplication',
+        showPartialProducts: false,
+      })
+    );
+  }
+  return problems;
+}
+
+/**
+ * わり算の筆算
+ */
+function generateHissanDivBasic(
+  settings: WorksheetSettings,
+  count: number
+): HissanProblem[] {
+  const problems: HissanProblem[] = [];
+  for (let i = 0; i < count; i++) {
+    problems.push(
+      generateHissanProblem({
+        grade: settings.grade,
+        operation: 'division',
+      })
+    );
+  }
   return problems;
 }

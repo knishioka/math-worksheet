@@ -44,8 +44,10 @@ export interface HissanProblem {
   operand1: number;
   operand2: number;
   answer: number;
-  showProcess?: boolean;
-  carryOverDisplay?: boolean;
+  showProcess?: boolean; // 計算過程を表示するか
+  showCarry?: boolean; // 繰り上がり・繰り下がりを表示するか
+  showPartialProducts?: boolean; // 部分積を表示するか（かけ算）
+  remainder?: number; // 余り（わり算）
 }
 
 export interface FractionProblem {

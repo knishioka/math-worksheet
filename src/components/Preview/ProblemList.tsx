@@ -7,13 +7,14 @@ import type {
   MixedNumberProblem,
   BasicProblem,
   WordProblem,
+  HissanProblem,
 } from '../../types';
+import { MathDecimal, MathMixedNumber } from '../Math/MathExpression';
 import {
-  MathFraction,
-  MathDecimal,
-  MathMixedNumber,
-} from '../Math/MathExpression';
-import { MissingNumberBox } from '../Math/MissingNumberBox';
+  calculateMissingOperand1,
+  calculateMissingOperand2,
+  calculateMissingAnswer,
+} from '../../lib/utils/missing-number-calculator';
 
 interface ProblemListProps {
   problems: Problem[];
@@ -108,32 +109,94 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
   if (problem.type === 'fraction') {
     const fractionProblem = problem as FractionProblem;
     return (
-      <div className="problem-text space-y-1">
-        <div className="text-xs text-gray-600">({number})</div>
-        <div className="flex items-center space-x-2">
-          <MathFraction
-            numerator={fractionProblem.numerator1}
-            denominator={fractionProblem.denominator1}
-          />
-          <span className="font-mono text-lg">{operationSymbol}</span>
+      <div className="problem-text" style={{ marginBottom: '16px' }}>
+        <div style={{ fontSize: '12px', color: '#666' }}>({number})</div>
+        <div
+          style={{
+            fontFamily: 'monospace',
+            fontSize: '18px',
+            marginTop: '4px',
+          }}
+        >
+          {/* 分子1 */}
+          <span
+            style={{
+              display: 'inline-block',
+              textAlign: 'center',
+              verticalAlign: 'middle',
+            }}
+          >
+            <span
+              style={{
+                display: 'block',
+                borderBottom: '1px solid black',
+                padding: '0 4px',
+              }}
+            >
+              {fractionProblem.numerator1}
+            </span>
+            <span style={{ display: 'block', padding: '0 4px' }}>
+              {fractionProblem.denominator1}
+            </span>
+          </span>
+          {' ' + operationSymbol + ' '}
+          {/* 分子2 */}
           {fractionProblem.numerator2 !== undefined &&
             fractionProblem.denominator2 !== undefined && (
-              <MathFraction
-                numerator={fractionProblem.numerator2}
-                denominator={fractionProblem.denominator2}
-              />
+              <span
+                style={{
+                  display: 'inline-block',
+                  textAlign: 'center',
+                  verticalAlign: 'middle',
+                }}
+              >
+                <span
+                  style={{
+                    display: 'block',
+                    borderBottom: '1px solid black',
+                    padding: '0 4px',
+                  }}
+                >
+                  {fractionProblem.numerator2}
+                </span>
+                <span style={{ display: 'block', padding: '0 4px' }}>
+                  {fractionProblem.denominator2}
+                </span>
+              </span>
             )}
-          <span className="font-mono text-lg">=</span>
+          {' = '}
+          {/* 答え */}
           {showAnswer ? (
-            <MathFraction
-              numerator={fractionProblem.answerNumerator}
-              denominator={fractionProblem.answerDenominator}
-              className="text-red-600 font-bold"
-            />
+            <span
+              style={{
+                color: 'red',
+                fontWeight: 'bold',
+                display: 'inline-block',
+                textAlign: 'center',
+                verticalAlign: 'middle',
+              }}
+            >
+              <span
+                style={{
+                  display: 'block',
+                  borderBottom: '1px solid red',
+                  padding: '0 4px',
+                }}
+              >
+                {fractionProblem.answerNumerator}
+              </span>
+              <span style={{ display: 'block', padding: '0 4px' }}>
+                {fractionProblem.answerDenominator}
+              </span>
+            </span>
           ) : (
             <span
-              className="inline-block w-16 border-b border-black mx-1 align-bottom"
-              style={{ height: '1.5rem' }}
+              style={{
+                display: 'inline-block',
+                width: '64px',
+                borderBottom: '1px solid black',
+                marginLeft: '4px',
+              }}
             />
           )}
         </div>
@@ -213,27 +276,181 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
   if (problem.type === 'word') {
     const wordProblem = problem as WordProblem;
     return (
-      <div className="problem-text space-y-1">
-        <div className="text-xs text-gray-600">({number})</div>
-        <div className="space-y-2">
-          <div className="text-sm">{wordProblem.problemText}</div>
+      <div className="problem-text" style={{ marginBottom: '16px' }}>
+        <div style={{ fontSize: '12px', color: '#666' }}>({number})</div>
+        <div style={{ fontSize: '12px', lineHeight: '1.3' }}>
+          {wordProblem.problemText}
+        </div>
+        <div style={{ marginTop: '6px' }}>
           {showAnswer ? (
-            <div className="text-red-600 font-bold">
+            <span style={{ color: 'red', fontWeight: 'bold' }}>
               答え: {wordProblem.answer}
               {wordProblem.unit && wordProblem.unit}
-            </div>
+            </span>
           ) : (
-            <div className="flex items-baseline">
-              <span className="text-sm mr-2">答え:</span>
+            <>
+              答え:{' '}
               <span
-                className="inline-block w-24 border-b border-black mx-1"
-                style={{ height: '1.5rem' }}
+                style={{
+                  display: 'inline-block',
+                  width: '96px',
+                  borderBottom: '1px solid black',
+                  margin: '0 4px',
+                }}
               />
               {wordProblem.unit && (
-                <span className="text-sm ml-1">{wordProblem.unit}</span>
+                <span style={{ fontSize: '14px' }}>{wordProblem.unit}</span>
               )}
-            </div>
+            </>
           )}
+        </div>
+      </div>
+    );
+  }
+
+  // 筆算問題の場合
+  if (problem.type === 'hissan') {
+    const hissanProblem = problem as HissanProblem;
+    const operator = {
+      addition: '+',
+      subtraction: '−',
+      multiplication: '×',
+      division: '÷',
+    }[hissanProblem.operation];
+
+    const digits1 = hissanProblem.operand1.toString().split('');
+    const digits2 = hissanProblem.operand2.toString().split('');
+    const maxLength = Math.max(digits1.length, digits2.length);
+
+    const paddedDigits1 = Array(maxLength - digits1.length)
+      .fill('')
+      .concat(digits1);
+    const paddedDigits2 = Array(maxLength - digits2.length)
+      .fill('')
+      .concat(digits2);
+
+    const answerDigits =
+      showAnswer && hissanProblem.answer
+        ? hissanProblem.answer.toString().split('')
+        : [];
+
+    return (
+      <div className="problem-text" style={{ marginBottom: '16px' }}>
+        <div style={{ fontSize: '12px', color: '#666' }}>({number})</div>
+        <div
+          style={{
+            fontFamily: "'Courier New', monospace",
+            fontSize: '18px',
+            display: 'inline-block',
+            textAlign: 'right',
+            lineHeight: '1.2',
+            margin: '10px 0',
+          }}
+        >
+          {/* 1つ目の数 */}
+          <div style={{ whiteSpace: 'nowrap' }}>
+            {paddedDigits1.map((d, i) => (
+              <span
+                key={i}
+                style={{
+                  display: 'inline-block',
+                  width: '30px',
+                  textAlign: 'center',
+                }}
+              >
+                {d === '' ? '\u00A0' : d}
+              </span>
+            ))}
+          </div>
+
+          {/* 演算子と2つ目の数 */}
+          <div style={{ whiteSpace: 'nowrap' }}>
+            {/* 演算子を数字の左に配置（digits2の長さに応じて左側にパディング） */}
+            {Array(maxLength - digits2.length).fill('').map((_, i) => (
+              <span
+                key={`pad-${i}`}
+                style={{
+                  display: 'inline-block',
+                  width: '30px',
+                  textAlign: 'center',
+                }}
+              >
+                {'\u00A0'}
+              </span>
+            ))}
+            <span
+              style={{
+                display: 'inline-block',
+                width: '30px',
+                textAlign: 'center',
+              }}
+            >
+              {operator}
+            </span>
+            {paddedDigits2.map((d, i) => (
+              <span
+                key={i}
+                style={{
+                  display: 'inline-block',
+                  width: '30px',
+                  textAlign: 'center',
+                }}
+              >
+                {d === '' ? '\u00A0' : d}
+              </span>
+            ))}
+          </div>
+
+          {/* 横線 */}
+          <div
+            style={{
+              borderTop: '2px solid black',
+              margin: '2px 0',
+              width: `${maxLength * 30 + 30}px`,
+            }}
+          />
+
+          {/* 答え */}
+          <div style={{ whiteSpace: 'nowrap' }}>
+            {showAnswer && hissanProblem.answer ? (
+              <>
+                {Array(maxLength + 1 - answerDigits.length)
+                  .fill('')
+                  .concat(answerDigits)
+                  .map((d, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        display: 'inline-block',
+                        width: '30px',
+                        textAlign: 'center',
+                        color: 'red',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {d === '' ? '\u00A0' : d}
+                    </span>
+                  ))}
+              </>
+            ) : (
+              <>
+                {Array(maxLength + 1)
+                  .fill(0)
+                  .map((_, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        display: 'inline-block',
+                        width: '30px',
+                        height: '30px',
+                        border: '1px solid #ccc',
+                        margin: '0 2px',
+                      }}
+                    />
+                  ))}
+              </>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -243,98 +460,93 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
   const basicProblem = problem as BasicProblem;
 
   return (
-    <div className="problem-text space-y-1">
-      <div className="text-xs text-gray-600">({number})</div>
-      <div className="flex items-center space-x-2">
-        {basicProblem.missingPosition === 'operand1' ? (
-          // 虫食い算でoperand1が虫食いの場合
-          <MissingNumberBox />
+    <div className="problem-text" style={{ marginBottom: '16px' }}>
+      <div style={{ fontSize: '12px', color: '#666' }}>({number})</div>
+      <div
+        style={{
+          fontFamily: 'monospace',
+          fontSize: '18px',
+          marginTop: '4px',
+        }}
+      >
+        {/* operand1 */}
+        {basicProblem.operand1 !== null ? (
+          basicProblem.operand1
+        ) : showAnswer ? (
+          <span style={{ color: 'red', fontWeight: 'bold' }}>
+            {calculateMissingOperand1(basicProblem)}
+          </span>
         ) : (
-          // 通常の数値表示
-          <span className="font-mono text-lg">{basicProblem.operand1}</span>
+          <span
+            style={{
+              display: 'inline-block',
+              width: '24px',
+              height: '24px',
+              border: '1.5px solid #333',
+              backgroundColor: '#f9f9f9',
+              verticalAlign: 'text-bottom',
+            }}
+          />
         )}
-        <span className="font-mono text-lg">{operationSymbol}</span>
-        {basicProblem.missingPosition === 'operand2' ? (
-          // 虫食い算でoperand2が虫食いの場合
-          <MissingNumberBox />
+        {' ' + operationSymbol + ' '}
+        {/* operand2 */}
+        {basicProblem.operand2 !== null ? (
+          basicProblem.operand2
+        ) : showAnswer ? (
+          <span style={{ color: 'red', fontWeight: 'bold' }}>
+            {calculateMissingOperand2(basicProblem)}
+          </span>
         ) : (
-          // 通常の数値表示
-          <span className="font-mono text-lg">{basicProblem.operand2}</span>
+          <span
+            style={{
+              display: 'inline-block',
+              width: '24px',
+              height: '24px',
+              border: '1.5px solid #333',
+              backgroundColor: '#f9f9f9',
+              verticalAlign: 'text-bottom',
+            }}
+          />
         )}
-        <span className="font-mono text-lg">=</span>
-        {basicProblem.missingPosition === 'answer' ||
-        !basicProblem.missingPosition ? (
-          // 答えが虫食いの場合、または虫食いでない通常問題の場合
+        {' = '}
+        {/* 答え */}
+        {basicProblem.missingPosition === 'answer' ? (
           showAnswer ? (
-            <span className="font-mono text-lg text-red-600 font-bold">
-              {formatAnswer(problem)}
+            <span style={{ color: 'red', fontWeight: 'bold' }}>
+              {calculateMissingAnswer(basicProblem)}
             </span>
           ) : (
             <span
-              className="inline-block w-16 border-b border-black mx-1 align-bottom"
-              style={{ height: '1.5rem' }}
+              style={{
+                display: 'inline-block',
+                width: '24px',
+                height: '24px',
+                border: '1.5px solid #333',
+                backgroundColor: '#f9f9f9',
+                verticalAlign: 'text-bottom',
+              }}
             />
           )
+        ) : showAnswer && basicProblem.missingPosition ? (
+          <span style={{ fontFamily: 'monospace', fontSize: '18px' }}>
+            {basicProblem.answer}
+          </span>
+        ) : showAnswer && basicProblem.answer !== null ? (
+          <span style={{ color: 'red', fontWeight: 'bold' }}>
+            {basicProblem.answer}
+          </span>
         ) : (
-          // 虫食い算で答えが虫食いでない場合（operand1またはoperand2が虫食い）、答えを問題として表示
-          <span className="font-mono text-lg">{basicProblem.answer}</span>
+          <span
+            style={{
+              display: 'inline-block',
+              width: '64px',
+              borderBottom: '1px solid black',
+              marginLeft: '4px',
+            }}
+          />
         )}
       </div>
     </div>
   );
 };
 
-function formatAnswer(problem: Problem): string {
-  if (problem.type === 'basic') {
-    const basicProblem = problem as BasicProblem;
-
-    // 虫食い算で答えが虫食いの場合、operand1とoperand2から計算
-    if (
-      basicProblem.missingPosition === 'answer' &&
-      basicProblem.operand1 !== null &&
-      basicProblem.operand2 !== null
-    ) {
-      switch (basicProblem.operation) {
-        case 'addition':
-          return (basicProblem.operand1 + basicProblem.operand2).toString();
-        case 'subtraction':
-          return (basicProblem.operand1 - basicProblem.operand2).toString();
-        case 'multiplication':
-          return (basicProblem.operand1 * basicProblem.operand2).toString();
-        case 'division': {
-          const quotient = Math.floor(
-            basicProblem.operand1 / basicProblem.operand2
-          );
-          const remainder = basicProblem.operand1 % basicProblem.operand2;
-          if (remainder === 0) {
-            return quotient.toString();
-          } else {
-            return `${quotient}あまり${remainder}`;
-          }
-        }
-      }
-    }
-
-    // 通常の問題またはanswerが設定されている場合
-    if (basicProblem.answer !== null) {
-      // わり算の余りがある場合の処理
-      if (
-        basicProblem.operation === 'division' &&
-        basicProblem.operand1 !== null &&
-        basicProblem.operand2 !== null
-      ) {
-        const remainder = basicProblem.operand1 % basicProblem.operand2;
-        if (remainder !== 0) {
-          return `${basicProblem.answer}あまり${remainder}`;
-        }
-      }
-      return basicProblem.answer.toString();
-    }
-  }
-
-  if ('answer' in problem && problem.answer !== null) {
-    return problem.answer.toString();
-  }
-
-  return '';
-}

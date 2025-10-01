@@ -119,6 +119,64 @@ describe('generateFractionProblem', () => {
 - ✅ **複数ブラウザ**: Chrome, Firefox, Safari, Edge対応
 - ✅ **学年別カリキュラム**: 6学年すべての問題生成確認
 
+#### Playwright MCP による動作確認（必須）
+
+**重要**: レイアウト変更やUI実装が完了したら、**必ずPlaywright MCPで動作確認**してください。
+
+##### 確認手順
+
+1. **開発サーバーが起動していることを確認**
+   ```bash
+   npm run dev  # http://localhost:5174/ で起動
+   ```
+
+2. **Playwright MCPでブラウザ操作**
+   ```typescript
+   // 1. ページを開く
+   await mcp__playwright__browser_navigate({ url: 'http://localhost:5174/' });
+
+   // 2. 学年を選択（例: 2年生）
+   await mcp__playwright__browser_select_option({
+     element: '学年 combobox',
+     values: ['2年生']
+   });
+
+   // 3. 問題タイプを選択（例: 筆算）
+   await mcp__playwright__browser_click({
+     element: '2桁のたし算の筆算 container'
+   });
+
+   // 4. スクリーンショットを撮影
+   await mcp__playwright__browser_take_screenshot({
+     filename: 'hissan-layout-check.png',
+     type: 'png'
+   });
+   ```
+
+3. **確認項目**
+   - UIが期待通りに表示されているか
+   - 問題数の選択肢が正しいか（問題タイプごとの最大値）
+   - レイアウトが崩れていないか
+   - 印刷プレビューが正常に開くか
+
+4. **トラブルシューティング**
+   ```bash
+   # Playwright MCPがエラーになる場合
+   # 1. Playwrightプロセスをクリーンアップ
+   pkill -f "playwright"
+
+   # 2. Claude Codeを再起動
+   # 3. 再度Playwright MCPで確認
+   ```
+
+##### 確認が必須なケース
+- ✅ レイアウト変更（列数、行間、フォントサイズなど）
+- ✅ 新しい問題タイプの追加
+- ✅ print-templates.tsの設定変更
+- ✅ 問題数の最大値変更
+- ✅ 印刷機能の修正
+- ✅ UIコンポーネントの修正
+
 ### Lint規約
 
 #### ESLint設定

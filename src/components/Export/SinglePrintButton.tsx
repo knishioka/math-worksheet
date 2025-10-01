@@ -1,5 +1,5 @@
 import React from 'react';
-import type { WorksheetData, BasicProblem } from '../../types';
+import type { WorksheetData, BasicProblem, HissanProblem } from '../../types';
 import {
   getOperationName,
   getOperatorSymbol,
@@ -155,6 +155,59 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
           problemsHTML +=
             '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
         }
+      } else if (problem.type === 'hissan') {
+        // 筆算問題の表示
+        const hissanProblem = problem as HissanProblem;
+        const operator = getOperatorSymbol(problem.operation);
+
+        // 筆算のHTML生成
+        const digits1 = hissanProblem.operand1.toString().split('');
+        const digits2 = hissanProblem.operand2.toString().split('');
+        const maxLength = Math.max(digits1.length, digits2.length);
+
+        // パディング
+        const paddedDigits1 = Array(maxLength - digits1.length).fill('&nbsp;').concat(digits1);
+        const paddedDigits2 = Array(maxLength - digits2.length).fill('&nbsp;').concat(digits2);
+
+        const answerDigits = showAnswers && hissanProblem.answer
+          ? hissanProblem.answer.toString().split('')
+          : [];
+
+        problemsHTML += '<div style="font-family: \'Courier New\', monospace; display: inline-block; text-align: right; line-height: 1.4; margin: 10px 0;">';
+
+        // 1つ目の数
+        problemsHTML += '<div style="white-space: nowrap;">';
+        paddedDigits1.forEach(d => {
+          problemsHTML += `<span style="display: inline-block; width: 30px; text-align: center;">${d}</span>`;
+        });
+        problemsHTML += '</div>';
+
+        // 演算子と2つ目の数
+        problemsHTML += '<div style="white-space: nowrap;">';
+        problemsHTML += `<span style="display: inline-block; width: 30px; text-align: center;">${operator}</span>`;
+        paddedDigits2.slice(1).forEach(d => {
+          problemsHTML += `<span style="display: inline-block; width: 30px; text-align: center;">${d}</span>`;
+        });
+        problemsHTML += '</div>';
+
+        // 横線
+        problemsHTML += `<div style="border-top: 2px solid black; margin: 2px 0; width: ${maxLength * 30 + 30}px;"></div>`;
+
+        // 答え
+        problemsHTML += '<div style="white-space: nowrap;">';
+        if (showAnswers && hissanProblem.answer) {
+          const paddedAnswer = Array(maxLength + 1 - answerDigits.length).fill('&nbsp;').concat(answerDigits);
+          paddedAnswer.forEach(d => {
+            problemsHTML += `<span style="display: inline-block; width: 30px; text-align: center; color: red; font-weight: bold;">${d}</span>`;
+          });
+        } else {
+          for (let i = 0; i <= maxLength; i++) {
+            problemsHTML += '<span style="display: inline-block; width: 30px; height: 30px; border: 1px solid #ccc; margin: 0 2px;"></span>';
+          }
+        }
+        problemsHTML += '</div>';
+
+        problemsHTML += '</div>';
       } else if (problem.type === 'basic') {
         const basicProblem = problem as BasicProblem;
         const operator = getOperatorSymbol(problem.operation);

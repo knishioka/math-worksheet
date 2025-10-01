@@ -23,6 +23,8 @@ export type CalculationPattern =
   | 'add-double-missing' // 2桁の虫食い算（たし算）
   | 'sub-double-missing' // 2桁の虫食い算（ひき算）
   | 'mult-single-missing' // 九九の虫食い算
+  | 'hissan-add-double' // 2桁のたし算の筆算
+  | 'hissan-sub-double' // 2桁のひき算の筆算
 
   // 3年生のパターン
   | 'add-triple-digit' // 3桁の足し算
@@ -32,6 +34,9 @@ export type CalculationPattern =
   | 'add-dec-simple' // 小数のたし算（0.1の位まで）
   | 'sub-dec-simple' // 小数のひき算（0.1の位まで）
   | 'frac-same-denom' // 同分母分数の加減
+  | 'hissan-add-triple' // 3桁のたし算の筆算
+  | 'hissan-sub-triple' // 3桁のひき算の筆算
+  | 'hissan-mult-basic' // 2桁×1桁のかけ算の筆算
 
   // 4年生のパターン
   | 'add-large-numbers' // 大きな数の足し算
@@ -41,6 +46,8 @@ export type CalculationPattern =
   | 'mult-dec-int' // 整数×小数
   | 'div-dec-int' // 整数÷小数
   | 'frac-mixed-number' // 帯分数の計算
+  | 'hissan-mult-advanced' // 3桁×2桁のかけ算の筆算
+  | 'hissan-div-basic' // わり算の筆算
 
   // 5年生のパターン
   | 'mult-dec-dec' // 小数×小数
@@ -82,6 +89,8 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'add-double-missing',
     'sub-double-missing',
     'mult-single-missing',
+    'hissan-add-double',
+    'hissan-sub-double',
   ],
   3: [
     'add-triple-digit',
@@ -91,6 +100,9 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'add-dec-simple',
     'sub-dec-simple',
     'frac-same-denom',
+    'hissan-add-triple',
+    'hissan-sub-triple',
+    'hissan-mult-basic',
   ],
   4: [
     'add-large-numbers',
@@ -100,6 +112,8 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'mult-dec-int',
     'div-dec-int',
     'frac-mixed-number',
+    'hissan-mult-advanced',
+    'hissan-div-basic',
   ],
   5: [
     'mult-dec-dec',
@@ -143,6 +157,8 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'add-double-missing': '2桁たし算の虫食い算',
   'sub-double-missing': '2桁ひき算の虫食い算',
   'mult-single-missing': '九九の虫食い算',
+  'hissan-add-double': '2桁のたし算の筆算',
+  'hissan-sub-double': '2桁のひき算の筆算',
 
   // 3年生
   'add-triple-digit': '3桁のたし算',
@@ -152,6 +168,9 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'add-dec-simple': '小数のたし算',
   'sub-dec-simple': '小数のひき算',
   'frac-same-denom': '同じ分母の分数',
+  'hissan-add-triple': '3桁のたし算の筆算',
+  'hissan-sub-triple': '3桁のひき算の筆算',
+  'hissan-mult-basic': '2桁×1桁のかけ算の筆算',
 
   // 4年生
   'add-large-numbers': '大きな数のたし算',
@@ -161,6 +180,8 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'mult-dec-int': '整数×小数',
   'div-dec-int': '整数÷小数',
   'frac-mixed-number': '帯分数の計算',
+  'hissan-mult-advanced': '3桁×2桁のかけ算の筆算',
+  'hissan-div-basic': 'わり算の筆算',
 
   // 5年生
   'mult-dec-dec': '小数×小数',
@@ -203,6 +224,8 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'add-double-missing': '□＋23＝45 のような2桁の虫食い算',
   'sub-double-missing': '56－□＝23 のような2桁の虫食い算',
   'mult-single-missing': '□×3＝12 のような九九の虫食い算',
+  'hissan-add-double': '2桁＋2桁の筆算形式',
+  'hissan-sub-double': '2桁－2桁の筆算形式',
 
   // 3年生
   'add-triple-digit': '234＋567などの3桁のたし算',
@@ -212,6 +235,9 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'add-dec-simple': '1.2＋0.5などの小数のたし算',
   'sub-dec-simple': '3.5－1.2などの小数のひき算',
   'frac-same-denom': '2/5＋1/5などの同じ分母の分数',
+  'hissan-add-triple': '3桁＋3桁の筆算形式',
+  'hissan-sub-triple': '3桁－3桁の筆算形式',
+  'hissan-mult-basic': '2桁×1桁の筆算形式（例：34×6）',
 
   // 4年生
   'add-large-numbers': '1234＋5678などの大きな数のたし算',
@@ -221,6 +247,8 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'mult-dec-int': '25×2.3などの整数×小数',
   'div-dec-int': '7.2÷2.4などの整数÷小数',
   'frac-mixed-number': '1と2/3＋2と1/4などの帯分数',
+  'hissan-mult-advanced': '3桁×2桁の筆算形式（例：234×56）',
+  'hissan-div-basic': 'わり算の筆算形式（例：84÷7）',
 
   // 5年生
   'mult-dec-dec': '1.2×3.4などの小数同士のかけ算',
