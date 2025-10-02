@@ -24,6 +24,17 @@ const WORD_PROBLEM_PATTERNS: CalculationPattern[] = [
   'complex-calc', // 複雑な計算
 ];
 
+// 筆算を生成する計算パターン
+const HISSAN_PATTERNS: CalculationPattern[] = [
+  'hissan-add-double', // 2桁のたし算の筆算
+  'hissan-sub-double', // 2桁のひき算の筆算
+  'hissan-add-triple', // 3桁のたし算の筆算
+  'hissan-sub-triple', // 3桁のひき算の筆算
+  'hissan-mult-basic', // 2桁×1桁のかけ算の筆算
+  'hissan-mult-advanced', // 3桁×2桁のかけ算の筆算
+  'hissan-div-basic', // わり算の筆算
+];
+
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   problemCount,
   layoutColumns,
@@ -39,10 +50,19 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       calculationPattern &&
       WORD_PROBLEM_PATTERNS.includes(calculationPattern));
 
+  // 筆算かどうかを判定
+  const isHissan =
+    problemType === 'hissan' ||
+    (problemType === 'basic' &&
+      calculationPattern &&
+      HISSAN_PATTERNS.includes(calculationPattern));
+
   // 問題タイプに応じたテンプレートを取得
   const effectiveProblemType: ProblemType = isWordProblem
     ? 'word'
-    : problemType || 'basic';
+    : isHissan
+      ? 'hissan'
+      : problemType || 'basic';
   const template = getPrintTemplate(effectiveProblemType);
 
   // 列数に応じた最大問題数と推奨問題数を取得
