@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { Problem, WorksheetSettings, WorksheetData } from '../types';
 import { APP_CONFIG } from '../config/constants';
 
@@ -19,22 +20,30 @@ const defaultSettings: WorksheetSettings = {
   layoutColumns: APP_CONFIG.defaultLayoutColumns,
 };
 
-export const useProblemStore = create<ProblemStore>((set, get) => ({
-  settings: defaultSettings,
-  problems: [],
+export const useProblemStore = create<ProblemStore>()(
+  persist(
+    (set, get) => ({
+      settings: defaultSettings,
+      problems: [],
 
-  updateSettings: (newSettings): void =>
-    set((state) => ({
-      settings: { ...state.settings, ...newSettings },
-    })),
+      updateSettings: (newSettings): void =>
+        set((state) => ({
+          settings: { ...state.settings, ...newSettings },
+        })),
 
-  setProblems: (problems): void => set({ problems }),
+      setProblems: (problems): void => set({ problems }),
 
-  clearProblems: (): void => set({ problems: [] }),
+      clearProblems: (): void => set({ problems: [] }),
 
-  getWorksheetData: (): WorksheetData => ({
-    settings: get().settings,
-    problems: get().problems,
-    generatedAt: new Date(),
-  }),
-}));
+      getWorksheetData: (): WorksheetData => ({
+        settings: get().settings,
+        problems: get().problems,
+        generatedAt: new Date(),
+      }),
+    }),
+    {
+      name: 'math-worksheet-settings',
+      partialPersist: (state) => ({ settings: state.settings }),
+    }
+  )
+);
