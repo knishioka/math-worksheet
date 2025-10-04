@@ -69,12 +69,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const maxProblems = template.maxCounts[layoutColumns];
   const recommendedCount = template.recommendedCounts[layoutColumns];
 
-  // 現在の問題数が最大値を超えている場合は調整
+  // 問題タイプまたは列数が変更されたときに推奨問題数を自動選択
   React.useEffect(() => {
-    if (problemCount > maxProblems) {
-      onProblemCountChange(maxProblems);
-    }
-  }, [layoutColumns, maxProblems, problemCount, onProblemCountChange]);
+    onProblemCountChange(recommendedCount);
+  }, [effectiveProblemType, layoutColumns, recommendedCount, onProblemCountChange]);
 
   // 列数に応じた問題数の選択肢を生成
   // 推奨問題数をステップとして使用し、最大値まで生成
