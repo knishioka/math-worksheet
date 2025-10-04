@@ -2439,13 +2439,20 @@ function generateHissanMultBasic(
 ): HissanProblem[] {
   const problems: HissanProblem[] = [];
   for (let i = 0; i < count; i++) {
-    problems.push(
-      generateHissanProblem({
-        grade: settings.grade,
-        operation: 'multiplication',
-        showPartialProducts: false,
-      })
-    );
+    // 2桁×1桁のかけ算の筆算
+    const operand1 = Math.floor(Math.random() * 90) + 10; // 10-99
+    const operand2 = Math.floor(Math.random() * 9) + 1;   // 1-9
+    const answer = operand1 * operand2;
+
+    problems.push({
+      id: generateId(),
+      type: 'hissan',
+      operation: 'multiplication',
+      operand1,
+      operand2,
+      answer,
+      showPartialProducts: false,
+    });
   }
   return problems;
 }
