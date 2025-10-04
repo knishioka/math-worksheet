@@ -77,9 +77,15 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   }, [layoutColumns, maxProblems, problemCount, onProblemCountChange]);
 
   // 列数に応じた問題数の選択肢を生成
+  // 推奨問題数をステップとして使用し、最大値まで生成
   const problemCountOptions = [];
-  for (let i = 5; i <= maxProblems; i += 5) {
+  const step = recommendedCount;
+  for (let i = step; i <= maxProblems; i += step) {
     problemCountOptions.push(i);
+  }
+  // 最大値が選択肢に含まれていない場合は追加
+  if (!problemCountOptions.includes(maxProblems)) {
+    problemCountOptions.push(maxProblems);
   }
 
   return (
