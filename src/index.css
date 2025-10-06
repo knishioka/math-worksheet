@@ -144,7 +144,7 @@
   @media print {
     @page {
       size: A4;
-      margin: 10mm 15mm;
+      margin: 0;
     }
 
     body {
