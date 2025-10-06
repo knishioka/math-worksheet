@@ -21,6 +21,7 @@ import { WordProblemEnComponent } from '../Math/WordProblemEn';
 import { PATTERN_LABELS } from '../../types/calculation-patterns';
 import { getOperationName } from '../../lib/utils/formatting';
 import { getPrintTemplate } from '../../config/print-templates';
+import { estimateA4Fit } from '../../lib/utils/print-validator';
 
 interface ProblemListProps {
   problems: Problem[];
@@ -130,8 +131,45 @@ export const ProblemList: React.FC<ProblemListProps> = ({
     return `${topMargin}mm 15mm ${bottomMargin}mm`;
   };
 
+  // A4サイズオーバーフロー判定
+  const a4FitResult = estimateA4Fit(
+    problems.length,
+    layoutColumns,
+    settings.problemType === 'word-en' ? 'word-en' : settings.problemType
+  );
+
   return (
-    <div className="flex justify-center py-8 bg-gray-100">
+    <div className="flex flex-col items-center py-8 bg-gray-100">
+      {/* A4オーバーフロー警告 */}
+      {!a4FitResult.fits && (
+        <div
+          style={{
+            backgroundColor: '#fef2f2',
+            border: '2px solid #ef4444',
+            borderRadius: '8px',
+            padding: '12px 16px',
+            marginBottom: '16px',
+            maxWidth: '210mm',
+            width: '100%',
+            boxSizing: 'border-box',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '20px' }}>⚠️</span>
+            <div>
+              <div style={{ color: '#dc2626', fontWeight: 'bold', fontSize: '14px' }}>
+                A4サイズを超えています
+              </div>
+              <div style={{ color: '#991b1b', fontSize: '12px', marginTop: '4px' }}>
+                推定高さ: {a4FitResult.estimatedHeight.toFixed(0)}mm（A4: {a4FitResult.a4Height}mm）
+                <br />
+                問題数を減らすか、列数を増やしてください。
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* A4用紙風のコンテナ */}
       <div
         className="bg-white"
@@ -141,6 +179,7 @@ export const ProblemList: React.FC<ProblemListProps> = ({
           padding: calculatePadding(),
           boxSizing: 'border-box',
           boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15), 0 0 10px rgba(0, 0, 0, 0.05)',
+          border: !a4FitResult.fits ? '3px solid #ef4444' : 'none',
         }}
       >
         {/* ヘッダー */}
@@ -409,15 +448,17 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
     );
   }
 
-  // 英語文章問題の場合
+  // 英語文章問題の場合 - 問題番号を横並びに
   if (problem.type === 'word-en') {
     const wordProblemEn = problem as WordProblemEn;
     return (
-      <div className="problem-item" style={{ marginBottom: '16px' }}>
-        <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>
+      <div className="problem-item" style={{ marginBottom: '16px', display: 'flex', gap: '8px' }}>
+        <div style={{ fontSize: '12px', color: '#666', flexShrink: 0 }}>
           ({number})
         </div>
-        <WordProblemEnComponent problem={wordProblemEn} showAnswer={showAnswer} />
+        <div style={{ flex: 1 }}>
+          <WordProblemEnComponent problem={wordProblemEn} showAnswer={showAnswer} />
+        </div>
       </div>
     );
   }

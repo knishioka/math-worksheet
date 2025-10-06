@@ -128,10 +128,14 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
         // 問題タイプに応じて余白を調整（word-enは狭め）
         const problemMargin = problem.type === 'word-en' ? '6px' : '12px';
         problemsHTML += `<div style="margin-bottom: ${problemMargin};">`;
-        problemsHTML += `<div style="font-size: 12px; color: #666;">(${originalNumber})</div>`;
 
         const fontSize = template.layout.fontSize;
-        problemsHTML += `<div style="font-family: monospace; font-size: ${fontSize}; margin-top: 4px;">`;
+
+        // word-enの場合は問題番号を横並びにするため、後で出力
+        if (problem.type !== 'word-en') {
+          problemsHTML += `<div style="font-size: 12px; color: #666;">(${originalNumber})</div>`;
+          problemsHTML += `<div style="font-family: monospace; font-size: ${fontSize}; margin-top: 4px;">`;
+        }
 
         if (problem.type === 'word') {
           // 文章問題の表示 - よりコンパクトに
@@ -242,9 +246,11 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
             problemsHTML += '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
           }
         } else if (problem.type === 'word-en') {
-          // 英語文章問題の表示
+          // 英語文章問題の表示 - 問題番号を横並びに
           const wordProblemEn = problem as WordProblemEn;
-          problemsHTML += `<div style="font-size: ${fontSize}; line-height: 1.4; color: #000; text-align: left;">`;
+          problemsHTML += `<div style="display: flex; gap: 8px; font-size: ${fontSize}; line-height: 1.4; color: #000; text-align: left;">`;
+          problemsHTML += `<div style="font-size: 12px; color: #666; flex-shrink: 0;">(${originalNumber})</div>`;
+          problemsHTML += `<div style="flex: 1;">`;
           problemsHTML += `<div style="margin-bottom: 4px;">${wordProblemEn.problemText}</div>`;
           if (wordProblemEn.category === 'word-story') {
             problemsHTML += '<div style="margin-top: 4px; display: flex; align-items: flex-end; gap: 6px;">';
@@ -260,7 +266,8 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
             problemsHTML += '</div>';
             problemsHTML += '</div>';
           }
-          problemsHTML += '</div>';
+          problemsHTML += '</div>'; // flex: 1の閉じタグ
+          problemsHTML += '</div>'; // flexコンテナの閉じタグ
         } else if (problem.type === 'hissan') {
           // 筆算問題の表示
           const hissanProblem = problem as HissanProblem;
@@ -368,7 +375,12 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
           }
         }
 
-        problemsHTML += '</div></div>';
+        // word-enの場合は外側のdivのみを閉じ、それ以外は2つのdivを閉じる
+        if (problem.type === 'word-en') {
+          problemsHTML += '</div>'; // 130行目で開始したdiv (margin-bottom)
+        } else {
+          problemsHTML += '</div></div>'; // 137行目と130行目で開始した2つのdiv
+        }
       });
 
       problemsHTML += '</div></div>';
