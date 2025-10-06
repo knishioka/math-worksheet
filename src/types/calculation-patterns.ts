@@ -62,7 +62,10 @@ export type CalculationPattern =
   | 'frac-div' // 分数÷分数
   | 'ratio-proportion' // 比と比例
   | 'speed-time-distance' // 速さ・時間・距離
-  | 'complex-calc'; // 複雑な計算
+  | 'complex-calc' // 複雑な計算
+
+  // 英語文章問題（全学年対応）
+  | 'word-en'; // English word problems for international schools
 
 // 学年別の利用可能なパターン
 export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
@@ -77,6 +80,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'add-sub-mixed-basic',
     'add-single-missing',
     'sub-single-missing',
+    'word-en',
   ],
   2: [
     'add-double-digit-no-carry',
@@ -91,6 +95,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'mult-single-missing',
     'hissan-add-double',
     'hissan-sub-double',
+    'word-en',
   ],
   3: [
     'add-triple-digit',
@@ -103,6 +108,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'hissan-add-triple',
     'hissan-sub-triple',
     'hissan-mult-basic',
+    'word-en',
   ],
   4: [
     'add-large-numbers',
@@ -114,6 +120,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'frac-mixed-number',
     'hissan-mult-advanced',
     'hissan-div-basic',
+    'word-en',
   ],
   5: [
     'mult-dec-dec',
@@ -122,6 +129,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'frac-simplify',
     'percent-basic',
     'area-volume',
+    'word-en',
   ],
   6: [
     'frac-mult',
@@ -129,6 +137,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'ratio-proportion',
     'speed-time-distance',
     'complex-calc',
+    'word-en',
   ],
 };
 
@@ -197,6 +206,9 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'ratio-proportion': '比と比例',
   'speed-time-distance': '速さ・時間・距離',
   'complex-calc': '複雑な計算',
+
+  // 英語文章問題
+  'word-en': 'English Word Problems',
 };
 
 // パターンの説明
@@ -264,4 +276,7 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'ratio-proportion': '2:3の比の値や比例式',
   'speed-time-distance': '速さ・時間・距離の関係',
   'complex-calc': '12＋8×3－15÷5などの四則混合',
+
+  // 英語文章問題
+  'word-en': 'English word story problems for international school students (e.g., "Tom has 5 apples. He gets 3 more. How many apples does he have now?")',
 };

@@ -25,7 +25,8 @@ export const CalculationPatternSelector: React.FC<
     if (!selectedPattern && availablePatterns.length > 0) {
       onPatternChange(availablePatterns[0]);
     }
-  }, [selectedPattern, availablePatterns, onPatternChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPattern, availablePatterns]);
 
   if (availablePatterns.length === 0) {
     return null;

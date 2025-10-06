@@ -8,6 +8,7 @@ import type {
 } from '../../types';
 import { generateId, randomInt } from '../utils/math';
 import { generateHissanProblem } from './hissan';
+import { generateGradeEnWordProblems } from './word-problem-en';
 
 /**
  * 計算パターンに基づいて問題を生成
@@ -138,6 +139,10 @@ export function generatePatternProblems(
       return generateSpeedTimeDistance(settings, count);
     case 'complex-calc':
       return generateComplexCalc(settings, count);
+
+    // 英語文章問題（全学年対応）
+    case 'word-en':
+      return generateGradeEnWordProblems(settings.grade, count);
 
     default:
       throw new Error(`Pattern ${pattern} is not implemented yet`);
@@ -2434,7 +2439,7 @@ function generateHissanSubTriple(
  * 2桁×1桁のかけ算の筆算
  */
 function generateHissanMultBasic(
-  settings: WorksheetSettings,
+  _settings: WorksheetSettings,
   count: number
 ): HissanProblem[] {
   const problems: HissanProblem[] = [];

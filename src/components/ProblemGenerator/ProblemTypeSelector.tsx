@@ -53,14 +53,16 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
     if (!isOperationAvailable(operation)) {
       onOperationChange('addition');
     }
-  }, [grade, operation, isOperationAvailable, onOperationChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [grade, operation, isOperationAvailable]);
 
   // If current problem type is not available for the new grade, switch to basic
   React.useEffect(() => {
     if (!isProblemTypeAvailable(problemType)) {
       onProblemTypeChange('basic');
     }
-  }, [grade, problemType, isProblemTypeAvailable, onProblemTypeChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [grade, problemType, isProblemTypeAvailable]);
 
   return (
     <div className="space-y-6">

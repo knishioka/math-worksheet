@@ -49,6 +49,7 @@ function App(): React.ReactElement {
     if (settings.grade && settings.operation && settings.problemCount > 0) {
       handleGenerate();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     settings.grade,
     settings.operation,
@@ -56,7 +57,6 @@ function App(): React.ReactElement {
     settings.calculationPattern,
     settings.problemCount,
     settings.layoutColumns,
-    handleGenerate,
   ]);
 
   return (

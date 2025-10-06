@@ -22,16 +22,18 @@ describe('pattern-generators', () => {
         expect(problem.type).toBe('hissan');
         expect(problem.operation).toBe('multiplication');
 
-        // operand1 は 2桁（10-99）
-        expect(problem.operand1).toBeGreaterThanOrEqual(10);
-        expect(problem.operand1).toBeLessThanOrEqual(99);
+        if (problem.type === 'hissan') {
+          // operand1 は 2桁（10-99）
+          expect(problem.operand1).toBeGreaterThanOrEqual(10);
+          expect(problem.operand1).toBeLessThanOrEqual(99);
 
-        // operand2 は 1桁（1-9）
-        expect(problem.operand2).toBeGreaterThanOrEqual(1);
-        expect(problem.operand2).toBeLessThanOrEqual(9);
+          // operand2 は 1桁（1-9）
+          expect(problem.operand2!).toBeGreaterThanOrEqual(1);
+          expect(problem.operand2!).toBeLessThanOrEqual(9);
 
-        // 答えの検証
-        expect(problem.answer).toBe(problem.operand1 * problem.operand2);
+          // 答えの検証
+          expect(problem.answer).toBe(problem.operand1 * problem.operand2!);
+        }
       });
     });
 
@@ -40,7 +42,9 @@ describe('pattern-generators', () => {
 
       // すべて異なる問題かチェック（完全に同じ問題がないことを確認）
       const uniqueProblems = new Set(
-        problems.map((p) => `${p.operand1}×${p.operand2}`)
+        problems
+          .filter((p) => p.type === 'hissan')
+          .map((p) => `${p.operand1}×${p.operand2}`)
       );
 
       // 20問中、少なくとも15問は異なることを期待（ランダム性を考慮）
@@ -67,16 +71,18 @@ describe('pattern-generators', () => {
         expect(problem.type).toBe('hissan');
         expect(problem.operation).toBe('multiplication');
 
-        // operand1 は 3桁（100-999）
-        expect(problem.operand1).toBeGreaterThanOrEqual(100);
-        expect(problem.operand1).toBeLessThanOrEqual(999);
+        if (problem.type === 'hissan') {
+          // operand1 は 3桁（100-999）
+          expect(problem.operand1).toBeGreaterThanOrEqual(100);
+          expect(problem.operand1).toBeLessThanOrEqual(999);
 
-        // operand2 は 2桁（10-99）
-        expect(problem.operand2).toBeGreaterThanOrEqual(10);
-        expect(problem.operand2).toBeLessThanOrEqual(99);
+          // operand2 は 2桁（10-99）
+          expect(problem.operand2!).toBeGreaterThanOrEqual(10);
+          expect(problem.operand2!).toBeLessThanOrEqual(99);
 
-        // 答えの検証
-        expect(problem.answer).toBe(problem.operand1 * problem.operand2);
+          // 答えの検証
+          expect(problem.answer).toBe(problem.operand1 * problem.operand2!);
+        }
       });
     });
   });
@@ -100,14 +106,16 @@ describe('pattern-generators', () => {
         expect(problem.type).toBe('hissan');
         expect(problem.operation).toBe('addition');
 
-        // 両方とも 2桁（10-99）
-        expect(problem.operand1).toBeGreaterThanOrEqual(10);
-        expect(problem.operand1).toBeLessThanOrEqual(99);
-        expect(problem.operand2).toBeGreaterThanOrEqual(10);
-        expect(problem.operand2).toBeLessThanOrEqual(99);
+        if (problem.type === 'hissan') {
+          // 両方とも 2桁（10-99）
+          expect(problem.operand1).toBeGreaterThanOrEqual(10);
+          expect(problem.operand1).toBeLessThanOrEqual(99);
+          expect(problem.operand2!).toBeGreaterThanOrEqual(10);
+          expect(problem.operand2!).toBeLessThanOrEqual(99);
 
-        // 答えの検証
-        expect(problem.answer).toBe(problem.operand1 + problem.operand2);
+          // 答えの検証
+          expect(problem.answer).toBe(problem.operand1 + problem.operand2!);
+        }
       });
     });
   });
@@ -131,17 +139,19 @@ describe('pattern-generators', () => {
         expect(problem.type).toBe('hissan');
         expect(problem.operation).toBe('subtraction');
 
-        // 両方とも 2桁（10-99）
-        expect(problem.operand1).toBeGreaterThanOrEqual(10);
-        expect(problem.operand1).toBeLessThanOrEqual(99);
-        expect(problem.operand2).toBeGreaterThanOrEqual(10);
-        expect(problem.operand2).toBeLessThanOrEqual(99);
+        if (problem.type === 'hissan') {
+          // 両方とも 2桁（10-99）
+          expect(problem.operand1).toBeGreaterThanOrEqual(10);
+          expect(problem.operand1).toBeLessThanOrEqual(99);
+          expect(problem.operand2!).toBeGreaterThanOrEqual(10);
+          expect(problem.operand2!).toBeLessThanOrEqual(99);
 
-        // operand1 >= operand2
-        expect(problem.operand1).toBeGreaterThanOrEqual(problem.operand2);
+          // operand1 >= operand2
+          expect(problem.operand1).toBeGreaterThanOrEqual(problem.operand2!);
 
-        // 答えの検証
-        expect(problem.answer).toBe(problem.operand1 - problem.operand2);
+          // 答えの検証
+          expect(problem.answer).toBe(problem.operand1 - problem.operand2!);
+        }
       });
     });
   });

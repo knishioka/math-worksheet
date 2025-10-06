@@ -43,6 +43,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   onProblemCountChange,
   onLayoutColumnsChange,
 }) => {
+  // 英語文章問題かどうかを判定
+  const isWordEnProblem = calculationPattern === 'word-en';
+
   // 文章問題かどうかを判定：問題タイプが'word'または、基本計算で文章問題パターンが選択されている場合
   const isWordProblem =
     problemType === 'word' ||
@@ -58,11 +61,13 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       HISSAN_PATTERNS.includes(calculationPattern));
 
   // 問題タイプに応じたテンプレートを取得
-  const effectiveProblemType: ProblemType = isWordProblem
-    ? 'word'
-    : isHissan
-      ? 'hissan'
-      : problemType || 'basic';
+  const effectiveProblemType: ProblemType = isWordEnProblem
+    ? 'word-en'
+    : isWordProblem
+      ? 'word'
+      : isHissan
+        ? 'hissan'
+        : problemType || 'basic';
   const template = getPrintTemplate(effectiveProblemType);
 
   // 列数に応じた最大問題数と推奨問題数を取得
@@ -72,7 +77,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   // 問題タイプまたは列数が変更されたときに推奨問題数を自動選択
   React.useEffect(() => {
     onProblemCountChange(recommendedCount);
-  }, [effectiveProblemType, layoutColumns, recommendedCount, onProblemCountChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveProblemType, layoutColumns, recommendedCount]);
 
   // 列数に応じた問題数の選択肢を生成
   // 推奨問題数をステップとして使用し、最大値まで生成

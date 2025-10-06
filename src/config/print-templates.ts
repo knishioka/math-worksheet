@@ -252,6 +252,36 @@ export const PRINT_TEMPLATES: Record<ProblemType, PrintTemplate> = {
       },
     },
   },
+
+  // 英語文章問題
+  'word-en': {
+    type: 'word-en',
+    displayName: 'English Word Problems',
+    description: 'Word problems for international school students. Compact spacing for efficient layout.',
+    layout: {
+      rowGap: '8px',
+      colGap: '20px',
+      fontSize: '16px',
+      minProblemHeight: '80px',
+    },
+    recommendedCounts: {
+      1: 8,
+      2: 16,
+      3: 24,
+    },
+    maxCounts: {
+      1: 10,
+      2: 20,
+      3: 24,
+    },
+    fitsInA4: {
+      threshold: {
+        1: 8,
+        2: 16,
+        3: 24,
+      },
+    },
+  },
 };
 
 /**

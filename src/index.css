@@ -238,6 +238,7 @@
   .hissan-line {
     @apply border-b-2 border-black;
   }
+
 }
 
 /* MathML印刷最適化 */
@@ -257,4 +258,5 @@
     display: inline-block !important;
     vertical-align: text-bottom !important;
   }
+
 }

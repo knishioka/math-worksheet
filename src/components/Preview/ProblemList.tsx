@@ -7,6 +7,7 @@ import type {
   MixedNumberProblem,
   BasicProblem,
   WordProblem,
+  WordProblemEn,
   HissanProblem,
 } from '../../types';
 import { MathDecimal, MathMixedNumber } from '../Math/MathExpression';
@@ -15,6 +16,7 @@ import {
   calculateMissingOperand2,
   calculateMissingAnswer,
 } from '../../lib/utils/missing-number-calculator';
+import { WordProblemEnComponent } from '../Math/WordProblemEn';
 
 interface ProblemListProps {
   problems: Problem[];
@@ -304,6 +306,19 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
             </>
           )}
         </div>
+      </div>
+    );
+  }
+
+  // 英語文章問題の場合
+  if (problem.type === 'word-en') {
+    const wordProblemEn = problem as WordProblemEn;
+    return (
+      <div className="problem-item" style={{ marginBottom: '16px' }}>
+        <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>
+          ({number})
+        </div>
+        <WordProblemEnComponent problem={wordProblemEn} showAnswer={showAnswer} />
       </div>
     );
   }

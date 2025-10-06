@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { generateHissanProblem } from './hissan';
-import type { Grade, Operation } from '../../types';
 
 describe('generateHissanProblem', () => {
   describe('2桁×1桁のかけ算', () => {

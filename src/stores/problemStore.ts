@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Problem, WorksheetSettings, WorksheetData } from '../types';
@@ -26,16 +27,16 @@ export const useProblemStore = create<ProblemStore>()(
       settings: defaultSettings,
       problems: [],
 
-      updateSettings: (newSettings): void =>
+      updateSettings: (newSettings) =>
         set((state) => ({
           settings: { ...state.settings, ...newSettings },
         })),
 
-      setProblems: (problems): void => set({ problems }),
+      setProblems: (problems) => set({ problems }),
 
-      clearProblems: (): void => set({ problems: [] }),
+      clearProblems: () => set({ problems: [] }),
 
-      getWorksheetData: (): WorksheetData => ({
+      getWorksheetData: () => ({
         settings: get().settings,
         problems: get().problems,
         generatedAt: new Date(),
@@ -43,7 +44,7 @@ export const useProblemStore = create<ProblemStore>()(
     }),
     {
       name: 'math-worksheet-settings',
-      partialPersist: (state) => ({ settings: state.settings }),
+      partialize: (state) => ({ settings: state.settings }),
     }
   )
 );

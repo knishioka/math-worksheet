@@ -18,6 +18,7 @@ import {
 import { generateGradeFractionProblems } from './fraction';
 import { generateGradeDecimalProblems } from './decimal';
 import { generatePatternProblems } from './pattern-generators';
+import { generateGradeEnWordProblems } from './word-problem-en';
 
 /**
  * Main problem generator that routes to appropriate operation generator
@@ -38,6 +39,11 @@ export function generateProblems(settings: WorksheetSettings): Problem[] {
 
   if (problemType === 'decimal') {
     return generateGradeDecimalProblems(grade, problemCount);
+  }
+
+  if (problemType === 'word-en') {
+    // 英語文章問題
+    return generateGradeEnWordProblems(grade, problemCount);
   }
 
   // 従来の基本計算
@@ -206,3 +212,4 @@ export * from './division';
 export * from './fraction';
 export * from './decimal';
 export * from './pattern-generators';
+export * from './word-problem-en';

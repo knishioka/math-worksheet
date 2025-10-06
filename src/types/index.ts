@@ -11,9 +11,12 @@ export type ProblemType =
   | 'mixed'
   | 'hissan'
   | 'missing'
-  | 'word';
+  | 'word'
+  | 'word-en'; // 英語文章問題
 
 export type Grade = 1 | 2 | 3 | 4 | 5 | 6;
+
+export type Language = 'ja' | 'en';
 
 export type LayoutColumns = 1 | 2 | 3;
 
@@ -108,6 +111,18 @@ export interface WordProblem {
   showCalculation?: boolean;
 }
 
+export interface WordProblemEn {
+  id: string;
+  type: 'word-en';
+  operation: Operation;
+  problemText: string; // 英語の問題文
+  answer: number | string;
+  unit?: string;
+  category: 'missing-number' | 'word-story' | 'comparison';
+  showCalculation?: boolean;
+  language: 'en';
+}
+
 export type Problem =
   | BasicProblem
   | FractionProblem
@@ -115,7 +130,8 @@ export type Problem =
   | MixedNumberProblem
   | HissanProblem
   | MissingNumberProblem
-  | WordProblem;
+  | WordProblem
+  | WordProblemEn;
 
 export interface WorksheetSettings {
   grade: Grade;

@@ -1,5 +1,5 @@
 import React from 'react';
-import type { WorksheetData, HissanProblem } from '../../types';
+import type { WorksheetData, HissanProblem, WordProblemEn, FractionProblem, DecimalProblem, MixedNumberProblem } from '../../types';
 import {
   getOperationName,
   getOperatorSymbol,
@@ -44,7 +44,28 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
       }
       pageDiv.style.minHeight = '100vh';
       pageDiv.style.position = 'relative';
-      pageDiv.style.padding = '20mm';
+
+      // 問題数とタイプから動的に余白を計算
+      const primaryType = detectPrimaryProblemType(worksheet.problems);
+      const template = getPrintTemplate(primaryType);
+      const problemCount = worksheet.problems.length;
+      const columns = worksheet.settings.layoutColumns || 2;
+      const estimatedRows = Math.ceil(problemCount / columns);
+
+      // 問題タイプごとの推定高さ（mm）
+      const minProblemHeightMm = parseInt(template.layout.minProblemHeight) * 0.26; // px to mm (96dpi)
+      const rowGapMm = parseInt(template.layout.rowGap) * 0.26;
+
+      // 必要な高さを計算
+      const headerHeight = 25; // ヘッダー部分の高さ (mm)
+      const estimatedContentHeight = headerHeight + (minProblemHeightMm + rowGapMm) * estimatedRows;
+
+      // A4の高さは297mm、残りスペースを上下の余白として配分
+      const a4Height = 297;
+      const remainingSpace = a4Height - estimatedContentHeight;
+      const verticalMargin = Math.max(5, Math.min(15, remainingSpace / 2));
+
+      pageDiv.style.padding = `${verticalMargin}mm 15mm`;
 
       // ヘッダー部分
       const headerHTML = `
@@ -65,11 +86,8 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
 
       // 問題部分
       let problemsHTML = '<div style="margin-top: 24px;">';
-      const columns = worksheet.settings.layoutColumns || 2;
 
-      // 問題タイプに応じたテンプレートを取得
-      const primaryType = detectPrimaryProblemType(worksheet.problems);
-      const template = getPrintTemplate(primaryType);
+      // テンプレートの設定を使用
       const { rowGap, colGap } = template.layout;
 
       const gridStyle = `display: grid; grid-template-columns: repeat(${columns}, 1fr); gap: ${rowGap} ${colGap};`;
@@ -94,7 +112,7 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
 
       reorderedProblems.forEach((problem, index) => {
         if (!problem) {
-          problemsHTML += `<div style="margin-bottom: 16px;"></div>`;
+          problemsHTML += `<div style="margin-bottom: 12px;"></div>`;
           return;
         }
 
@@ -103,7 +121,9 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
         const row = Math.floor(index / columns);
         const originalNumber = col * rowCount + row + 1;
 
-        problemsHTML += `<div style="margin-bottom: 16px;">`;
+        // 問題タイプに応じて余白を調整（word-enは狭め）
+        const problemMargin = problem.type === 'word-en' ? '6px' : '12px';
+        problemsHTML += `<div style="margin-bottom: ${problemMargin};">`;
         problemsHTML += `<div style="font-size: 12px; color: #666;">(${originalNumber})</div>`;
 
         const fontSize = template.layout.fontSize;
@@ -127,6 +147,114 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
             if (problem.unit) {
               problemsHTML += `<span style="font-size: 14px;">${problem.unit}</span>`;
             }
+          }
+          problemsHTML += '</div>';
+        } else if (problem.type === 'fraction') {
+          // 分数問題の表示
+          const fractionProblem = problem as FractionProblem;
+          const operator = getOperatorSymbol(problem.operation);
+
+          // 分数1
+          problemsHTML += '<math xmlns="http://www.w3.org/1998/Math/MathML"><mfrac>';
+          problemsHTML += `<mn>${fractionProblem.numerator1}</mn>`;
+          problemsHTML += `<mn>${fractionProblem.denominator1}</mn>`;
+          problemsHTML += '</mfrac></math>';
+
+          problemsHTML += ` ${operator} `;
+
+          // 分数2
+          if (fractionProblem.numerator2 !== undefined && fractionProblem.denominator2 !== undefined) {
+            problemsHTML += '<math xmlns="http://www.w3.org/1998/Math/MathML"><mfrac>';
+            problemsHTML += `<mn>${fractionProblem.numerator2}</mn>`;
+            problemsHTML += `<mn>${fractionProblem.denominator2}</mn>`;
+            problemsHTML += '</mfrac></math>';
+          }
+
+          problemsHTML += ' = ';
+
+          // 答え
+          if (showAnswers) {
+            problemsHTML += '<math xmlns="http://www.w3.org/1998/Math/MathML"><mfrac>';
+            problemsHTML += `<mn style="color: red; font-weight: bold;">${fractionProblem.answerNumerator}</mn>`;
+            problemsHTML += `<mn style="color: red; font-weight: bold;">${fractionProblem.answerDenominator}</mn>`;
+            problemsHTML += '</mfrac></math>';
+          } else {
+            problemsHTML += '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
+          }
+        } else if (problem.type === 'decimal') {
+          // 小数問題の表示
+          const decimalProblem = problem as DecimalProblem;
+          const operator = getOperatorSymbol(problem.operation);
+
+          problemsHTML += `<math xmlns="http://www.w3.org/1998/Math/MathML"><mn>${decimalProblem.operand1}</mn></math>`;
+          problemsHTML += ` ${operator} `;
+          problemsHTML += `<math xmlns="http://www.w3.org/1998/Math/MathML"><mn>${decimalProblem.operand2}</mn></math>`;
+          problemsHTML += ' = ';
+
+          if (showAnswers) {
+            problemsHTML += `<math xmlns="http://www.w3.org/1998/Math/MathML"><mn style="color: red; font-weight: bold;">${decimalProblem.answer}</mn></math>`;
+          } else {
+            problemsHTML += '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
+          }
+        } else if (problem.type === 'mixed') {
+          // 帯分数問題の表示
+          const mixedProblem = problem as MixedNumberProblem;
+          const operator = getOperatorSymbol(problem.operation);
+
+          // 帯分数1
+          problemsHTML += '<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow>';
+          problemsHTML += `<mn>${mixedProblem.whole1}</mn>`;
+          problemsHTML += '<mfrac>';
+          problemsHTML += `<mn>${mixedProblem.numerator1}</mn>`;
+          problemsHTML += `<mn>${mixedProblem.denominator1}</mn>`;
+          problemsHTML += '</mfrac>';
+          problemsHTML += '</mrow></math>';
+
+          problemsHTML += ` ${operator} `;
+
+          // 帯分数2
+          if (mixedProblem.whole2 !== undefined && mixedProblem.numerator2 !== undefined && mixedProblem.denominator2 !== undefined) {
+            problemsHTML += '<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow>';
+            problemsHTML += `<mn>${mixedProblem.whole2}</mn>`;
+            problemsHTML += '<mfrac>';
+            problemsHTML += `<mn>${mixedProblem.numerator2}</mn>`;
+            problemsHTML += `<mn>${mixedProblem.denominator2}</mn>`;
+            problemsHTML += '</mfrac>';
+            problemsHTML += '</mrow></math>';
+          }
+
+          problemsHTML += ' = ';
+
+          // 答え
+          if (showAnswers) {
+            problemsHTML += '<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow>';
+            problemsHTML += `<mn style="color: red; font-weight: bold;">${mixedProblem.answerWhole}</mn>`;
+            problemsHTML += '<mfrac>';
+            problemsHTML += `<mn style="color: red; font-weight: bold;">${mixedProblem.answerNumerator}</mn>`;
+            problemsHTML += `<mn style="color: red; font-weight: bold;">${mixedProblem.answerDenominator}</mn>`;
+            problemsHTML += '</mfrac>';
+            problemsHTML += '</mrow></math>';
+          } else {
+            problemsHTML += '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
+          }
+        } else if (problem.type === 'word-en') {
+          // 英語文章問題の表示
+          const wordProblemEn = problem as WordProblemEn;
+          problemsHTML += `<div style="font-size: 13px; line-height: 1.4; color: #000; text-align: left;">`;
+          problemsHTML += `<div style="margin-bottom: 4px;">${wordProblemEn.problemText}</div>`;
+          if (wordProblemEn.category === 'word-story') {
+            problemsHTML += '<div style="margin-top: 4px; display: flex; align-items: flex-end; gap: 6px;">';
+            problemsHTML += '<span style="color: #000; font-size: 11px;">Answer:</span>';
+            problemsHTML += '<div style="border-bottom: 1.5px solid #000; min-width: 3.5rem; padding: 0 6px; height: 1.2em;">';
+            if (showAnswers) {
+              problemsHTML += `<span style="font-weight: 500; color: #000;">${wordProblemEn.answer}`;
+              if (wordProblemEn.unit) {
+                problemsHTML += ` ${wordProblemEn.unit}`;
+              }
+              problemsHTML += '</span>';
+            }
+            problemsHTML += '</div>';
+            problemsHTML += '</div>';
           }
           problemsHTML += '</div>';
         } else if (problem.type === 'hissan') {
