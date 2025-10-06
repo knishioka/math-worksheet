@@ -54,9 +54,9 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
       <div className="bg-white border border-gray-200 rounded-lg p-8 min-h-96 flex items-center justify-center">
         <div className="text-center text-gray-500">
           <div className="text-6xl mb-4">📝</div>
-          <h3 className="text-lg font-medium mb-2">プレビューエリア</h3>
+          <h3 className="text-lg font-medium mb-2">問題プレビューエリア</h3>
           <p className="text-sm">
-            左側の設定で問題を生成すると、ここにプレビューが表示されます
+            左側の設定で問題を生成すると、ここに問題プレビューが表示されます
           </p>
         </div>
       </div>
@@ -72,7 +72,7 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
         <div className="p-6 border-b border-gray-200 bg-gray-50 no-print">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-black">
-              プレビュー - {getPreviewTitle(settings)}
+              問題プレビュー - {getPreviewTitle(settings)}
             </h2>
             <div className="text-sm text-gray-500">
               {problems.length}問 • {settings.layoutColumns}列レイアウト
@@ -120,6 +120,7 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
               problems={problems}
               layoutColumns={settings.layoutColumns}
               showAnswers={showAnswers}
+              settings={settings}
             />
           </div>
 

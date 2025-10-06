@@ -9,6 +9,7 @@ import type {
   WordProblem,
   WordProblemEn,
   HissanProblem,
+  WorksheetSettings,
 } from '../../types';
 import { MathDecimal, MathMixedNumber } from '../Math/MathExpression';
 import {
@@ -17,22 +18,39 @@ import {
   calculateMissingAnswer,
 } from '../../lib/utils/missing-number-calculator';
 import { WordProblemEnComponent } from '../Math/WordProblemEn';
+import { PATTERN_LABELS } from '../../types/calculation-patterns';
+import { getOperationName } from '../../lib/utils/formatting';
 
 interface ProblemListProps {
   problems: Problem[];
   layoutColumns: LayoutColumns;
   showAnswers?: boolean;
+  settings: WorksheetSettings;
 }
 
 export const ProblemList: React.FC<ProblemListProps> = ({
   problems,
   layoutColumns,
   showAnswers = false,
+  settings,
 }) => {
   if (problems.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        設定を確認して「問題を生成」ボタンをクリックしてください
+      <div className="flex justify-center py-8 bg-gray-100">
+        <div
+          className="bg-white flex items-center justify-center"
+          style={{
+            width: '210mm',
+            minHeight: '297mm',
+            padding: '15mm',
+            boxSizing: 'border-box',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15), 0 0 10px rgba(0, 0, 0, 0.05)',
+          }}
+        >
+          <div className="text-center text-gray-500">
+            設定を確認して「問題を生成」ボタンをクリックしてください
+          </div>
+        </div>
       </div>
     );
   }
@@ -60,11 +78,60 @@ export const ProblemList: React.FC<ProblemListProps> = ({
     }
   }
 
+  // ヘッダータイトルを生成
+  const getPreviewTitle = (): string => {
+    const grade = `${settings.grade}年生`;
+
+    if (settings.calculationPattern) {
+      const patternLabel = PATTERN_LABELS[settings.calculationPattern];
+      if (patternLabel) {
+        return `${grade} ${patternLabel}`;
+      }
+    }
+
+    if (settings.problemType === 'fraction') {
+      return `${grade} 分数の${getOperationName(settings.operation, settings.calculationPattern)}`;
+    } else if (settings.problemType === 'decimal') {
+      return `${grade} 小数の${getOperationName(settings.operation, settings.calculationPattern)}`;
+    } else if (settings.problemType === 'mixed') {
+      return `${grade} 帯分数の${getOperationName(settings.operation, settings.calculationPattern)}`;
+    }
+
+    return `${grade} ${getOperationName(settings.operation, settings.calculationPattern)}`;
+  };
+
   return (
-    <div
-      className={`grid ${gridCols} gap-x-3 gap-y-2 print:gap-y-1 avoid-break`}
-    >
-      {reorderedProblems.map((problem, index) => {
+    <div className="flex justify-center py-8 bg-gray-100">
+      {/* A4用紙風のコンテナ */}
+      <div
+        className="bg-white"
+        style={{
+          width: '210mm',
+          minHeight: '297mm',
+          padding: '15mm',
+          boxSizing: 'border-box',
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15), 0 0 10px rgba(0, 0, 0, 0.05)',
+        }}
+      >
+        {/* ヘッダー */}
+        <div style={{ borderBottom: '1px solid #ccc', paddingBottom: '12px', marginBottom: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '12px' }}>
+            <div style={{ fontSize: '14px' }}>
+              名前：<span style={{ display: 'inline-block', width: '128px', borderBottom: '1px solid black', marginLeft: '4px' }}></span>
+            </div>
+            <div style={{ fontSize: '14px', textAlign: 'center' }}>
+              {getPreviewTitle()}
+            </div>
+            <div style={{ fontSize: '14px', textAlign: 'right' }}>
+              点数：<span style={{ display: 'inline-block', width: '64px', borderBottom: '1px solid black', marginLeft: '4px' }}></span>点
+            </div>
+          </div>
+        </div>
+
+        <div
+          className={`grid ${gridCols} gap-x-3 gap-y-2 print:gap-y-1 avoid-break`}
+        >
+          {reorderedProblems.map((problem, index) => {
         if (!problem) {
           // 空のセルを配置（レイアウトを保つため）
           return <div key={`empty-${index}`} className="avoid-break" />;
@@ -85,6 +152,8 @@ export const ProblemList: React.FC<ProblemListProps> = ({
           </div>
         );
       })}
+        </div>
+      </div>
     </div>
   );
 };

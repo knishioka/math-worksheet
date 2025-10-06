@@ -81,7 +81,9 @@ export const SIMPLE_ADDITION_STORIES: WordStoryTemplate[] = [
       const name = getRandomName();
       const item = getRandomItem(true);
       const initial = randomInt(grade === 1 ? 10 : 15, grade === 1 ? 20 : 100);
-      const removed = randomInt(2, grade === 1 ? 5 : 30);
+      // Ensure removed is less than initial to avoid negative answers
+      const maxRemoved = Math.min(grade === 1 ? 5 : 30, initial - 1);
+      const removed = randomInt(2, maxRemoved);
       const answer = initial - removed;
 
       return {
@@ -497,7 +499,9 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
       const name2 = getRandomName();
       const item = getRandomItem(true);
       const count1 = randomInt(20, grade >= 5 ? 100 : 50);
-      const fewer = randomInt(5, grade >= 5 ? 30 : 15);
+      // Ensure fewer is less than count1 to avoid negative answers
+      const maxFewer = Math.min(grade >= 5 ? 30 : 15, count1 - 1);
+      const fewer = randomInt(5, maxFewer);
       const answer = count1 - fewer;
 
       return {
