@@ -99,7 +99,7 @@ export const SIMPLE_ADDITION_STORIES: WordStoryTemplate[] = [
 ];
 
 /**
- * Grade 2: Multi-step and categorization problems
+ * Grade 2-4: Multi-step and categorization problems
  */
 export const MULTI_STEP_STORIES: WordStoryTemplate[] = [
   {
@@ -117,8 +117,8 @@ export const MULTI_STEP_STORIES: WordStoryTemplate[] = [
         operation: 'addition' as Operation,
       };
     },
-    minGrade: 2,
-    maxGrade: 3,
+    minGrade: 3,
+    maxGrade: 4,
     category: 'word-story',
   },
   {
@@ -372,6 +372,7 @@ export const DIVISION_STORIES: WordStoryTemplate[] = [
 
 /**
  * Grade 1-2: Number sequence and order problems
+ * These are basic problems suitable only for grades 1-2
  */
 export const NUMBER_SEQUENCE_STORIES: WordStoryTemplate[] = [
   {
@@ -386,7 +387,7 @@ export const NUMBER_SEQUENCE_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 1,
-    maxGrade: 3,
+    maxGrade: 2,
     category: 'word-story',
   },
   {
@@ -401,7 +402,7 @@ export const NUMBER_SEQUENCE_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 1,
-    maxGrade: 3,
+    maxGrade: 2,
     category: 'word-story',
   },
   {
@@ -417,7 +418,7 @@ export const NUMBER_SEQUENCE_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 1,
-    maxGrade: 3,
+    maxGrade: 2,
     category: 'word-story',
   },
   {
@@ -433,7 +434,7 @@ export const NUMBER_SEQUENCE_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 1,
-    maxGrade: 3,
+    maxGrade: 2,
     category: 'word-story',
   },
   {
@@ -449,7 +450,7 @@ export const NUMBER_SEQUENCE_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 1,
-    maxGrade: 3,
+    maxGrade: 2,
     category: 'word-story',
   },
   {
@@ -465,7 +466,7 @@ export const NUMBER_SEQUENCE_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 1,
-    maxGrade: 3,
+    maxGrade: 2,
     category: 'word-story',
   },
 ];

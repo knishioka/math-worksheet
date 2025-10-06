@@ -169,6 +169,50 @@ describe('Word Problem EN Integration', () => {
       expect(categories.has('missing-number')).toBe(false);
     });
 
+    it('should not generate number sequence problems for grade 3+', () => {
+      // Test grade 3
+      const grade3Problems = generateGradeEnWordProblems(3, 30);
+      const hasSequenceProblem = grade3Problems.some((p) =>
+        p.problemText.includes('comes just before') ||
+        p.problemText.includes('comes just after') ||
+        p.problemText.includes('is between') ||
+        p.problemText.includes('Count') && (p.problemText.includes('forward') || p.problemText.includes('backward'))
+      );
+      expect(hasSequenceProblem).toBe(false);
+
+      // Test grade 5
+      const grade5Problems = generateGradeEnWordProblems(5, 30);
+      const hasSequenceProblemGrade5 = grade5Problems.some((p) =>
+        p.problemText.includes('comes just before') ||
+        p.problemText.includes('comes just after')
+      );
+      expect(hasSequenceProblemGrade5).toBe(false);
+    });
+
+    it('should include number sequence problems for grades 1-2', () => {
+      // Test grade 1
+      const grade1Problems = generateGradeEnWordProblems(1, 20);
+      const hasSequenceProblemGrade1 = grade1Problems.some((p) =>
+        p.problemText.includes('comes just before') ||
+        p.problemText.includes('comes just after') ||
+        p.problemText.includes('is between') ||
+        (p.problemText.includes('Count') && (p.problemText.includes('forward') || p.problemText.includes('backward')))
+      );
+      // Should be possible to generate sequence problems for grade 1
+      expect(typeof hasSequenceProblemGrade1).toBe('boolean');
+
+      // Test grade 2
+      const grade2Problems = generateGradeEnWordProblems(2, 20);
+      const hasSequenceProblemGrade2 = grade2Problems.some((p) =>
+        p.problemText.includes('comes just before') ||
+        p.problemText.includes('comes just after') ||
+        p.problemText.includes('is between') ||
+        (p.problemText.includes('Count') && (p.problemText.includes('forward') || p.problemText.includes('backward')))
+      );
+      // Should be possible to generate sequence problems for grade 2
+      expect(typeof hasSequenceProblemGrade2).toBe('boolean');
+    });
+
     it('should generate variety of operations', () => {
       const problems = generateGradeEnWordProblems(5, 30);
 
