@@ -1,8 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import type { WorksheetData, WorksheetSettings } from '../../types';
 import { ProblemList } from './ProblemList';
 import { MultiPagePrintDialog } from './MultiPagePrintDialog';
-import { MultiPrintButton } from '../Export/MultiPrintButton';
 import { generateProblems } from '../../lib/generators';
 import { PATTERN_LABELS } from '../../types/calculation-patterns';
 import { getOperationName } from '../../lib/utils/formatting';
@@ -20,6 +20,14 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
   const [multiPageWorksheets, setMultiPageWorksheets] = useState<
     WorksheetData[]
   >([]);
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+    documentTitle: worksheetData
+      ? `計算プリント_${worksheetData.settings.grade}年生`
+      : '計算プリント',
+  });
 
   const handleMultiPagePrint = useCallback(
     (pageCount: number) => {
@@ -41,13 +49,10 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
 
       // 印刷処理は別のタイミングで実行
       setTimeout(() => {
-        const printButton = document.getElementById('multi-print-trigger');
-        if (printButton) {
-          printButton.click();
-        }
+        handlePrint();
       }, 100);
     },
-    [worksheetData]
+    [worksheetData, handlePrint]
   );
   if (!worksheetData) {
     return (
@@ -64,6 +69,8 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
   }
 
   const { settings, problems, generatedAt } = worksheetData;
+
+  const worksheetsToDisplay = multiPageWorksheets.length > 0 ? multiPageWorksheets : [worksheetData];
 
   return (
     <>
@@ -89,45 +96,53 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
         </div>
 
         {/* Printable worksheet content */}
-        <div id="printable-worksheet">
-          {/* Print Header - Only visible when printing */}
-          <div className="print-only p-3 border-b border-gray-200">
-            <div className="grid grid-cols-3 gap-4 mb-3">
-              <div className="text-sm flex items-baseline">
-                名前：
-                <span
-                  className="inline-block w-32 border-b border-black mx-1"
-                  style={{ height: '1.2rem' }}
+        <div ref={printRef}>
+          {worksheetsToDisplay.map((worksheet, index) => (
+            <div
+              key={index}
+              className="print-page"
+              style={{ pageBreakAfter: index < worksheetsToDisplay.length - 1 ? 'always' : 'auto' }}
+            >
+              {/* Print Header - Only visible when printing */}
+              <div className="print-only p-3 border-b border-gray-200">
+                <div className="grid grid-cols-3 gap-4 mb-3">
+                  <div className="text-sm flex items-baseline">
+                    名前：
+                    <span
+                      className="inline-block w-32 border-b border-black mx-1"
+                      style={{ height: '1.2rem' }}
+                    />
+                  </div>
+                  <div className="text-sm text-center">
+                    {getPreviewTitle(worksheet.settings)}
+                  </div>
+                  <div className="text-sm text-right flex items-baseline justify-end">
+                    点数：
+                    <span
+                      className="inline-block w-16 border-b border-black mx-1"
+                      style={{ height: '1.2rem' }}
+                    />
+                    点
+                  </div>
+                </div>
+              </div>
+
+              {/* Problems Content */}
+              <div className="p-4 print:p-2">
+                <ProblemList
+                  problems={worksheet.problems}
+                  layoutColumns={worksheet.settings.layoutColumns}
+                  showAnswers={showAnswers}
+                  settings={worksheet.settings}
                 />
               </div>
-              <div className="text-sm text-center">
-                {getPreviewTitle(settings)}
-              </div>
-              <div className="text-sm text-right flex items-baseline justify-end">
-                点数：
-                <span
-                  className="inline-block w-16 border-b border-black mx-1"
-                  style={{ height: '1.2rem' }}
-                />
-                点
+
+              {/* Footer - Only visible when printing */}
+              <div className="print-only p-2 border-t border-gray-200 text-center text-xs text-gray-500">
+                計算プリント自動作成ツール
               </div>
             </div>
-          </div>
-
-          {/* Problems Content */}
-          <div className="p-4 print:p-2">
-            <ProblemList
-              problems={problems}
-              layoutColumns={settings.layoutColumns}
-              showAnswers={showAnswers}
-              settings={settings}
-            />
-          </div>
-
-          {/* Footer - Only visible when printing */}
-          <div className="print-only p-2 border-t border-gray-200 text-center text-xs text-gray-500">
-            計算プリント自動作成ツール
-          </div>
+          ))}
         </div>
 
         {/* Print Button - Below problems */}
@@ -161,18 +176,6 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
         onPrint={handleMultiPagePrint}
         settings={settings}
       />
-
-      {/* Multi-page worksheets for printing */}
-      {multiPageWorksheets.length > 0 && (
-        <div style={{ display: 'none' }}>
-          <MultiPrintButton
-            id="multi-print-trigger"
-            worksheets={multiPageWorksheets}
-            showAnswers={showAnswers}
-            onPrint={() => setMultiPageWorksheets([])}
-          />
-        </div>
-      )}
     </>
   );
 };

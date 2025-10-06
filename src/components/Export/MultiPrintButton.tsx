@@ -42,7 +42,6 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
       if (index > 0) {
         pageDiv.style.pageBreakBefore = 'always';
       }
-      pageDiv.style.minHeight = '100vh';
       pageDiv.style.position = 'relative';
 
       // 問題数とタイプから動的に余白を計算

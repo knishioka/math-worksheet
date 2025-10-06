@@ -210,6 +210,17 @@
     }
   }
 
+  /* Print page styling */
+  .print-page:not(:first-child) {
+    display: none; /* Hide extra pages in preview */
+  }
+
+  @media print {
+    .print-page:not(:first-child) {
+      display: block !important; /* Show all pages when printing */
+    }
+  }
+
   /* Problem styles for worksheets */
   .problem-text {
     @apply font-mono text-base;

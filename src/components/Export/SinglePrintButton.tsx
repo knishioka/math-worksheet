@@ -38,7 +38,6 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
 
     // ページ全体のスタイル設定
     const pageDiv = document.createElement('div');
-    pageDiv.style.minHeight = '100vh';
     pageDiv.style.position = 'relative';
     pageDiv.style.padding = '20mm';
 
