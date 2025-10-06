@@ -20,7 +20,7 @@ describe('Print Templates', () => {
       expect(template.displayName).toBe('English Word Problems');
       expect(template.layout.rowGap).toBe('8px');
       expect(template.layout.colGap).toBe('20px');
-      expect(template.layout.fontSize).toBe('16px');
+      expect(template.layout.fontSize).toBe('18px');
     });
 
     it('should have word-en recommended counts for all layouts', () => {

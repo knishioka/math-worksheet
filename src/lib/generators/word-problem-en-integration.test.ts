@@ -135,7 +135,7 @@ describe('Word Problem EN Integration', () => {
       // Verify layout settings are optimized for English word problems
       expect(template.layout.rowGap).toBe('8px');
       expect(template.layout.colGap).toBe('20px');
-      expect(template.layout.fontSize).toBe('16px');
+      expect(template.layout.fontSize).toBe('18px');
       expect(template.layout.minProblemHeight).toBe('80px');
     });
 

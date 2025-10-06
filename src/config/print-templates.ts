@@ -261,7 +261,7 @@ export const PRINT_TEMPLATES: Record<ProblemType, PrintTemplate> = {
     layout: {
       rowGap: '8px',
       colGap: '20px',
-      fontSize: '16px',
+      fontSize: '18px',
       minProblemHeight: '80px',
     },
     recommendedCounts: {

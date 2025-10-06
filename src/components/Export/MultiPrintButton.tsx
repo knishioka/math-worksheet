@@ -244,11 +244,11 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
         } else if (problem.type === 'word-en') {
           // 英語文章問題の表示
           const wordProblemEn = problem as WordProblemEn;
-          problemsHTML += `<div style="font-size: 13px; line-height: 1.4; color: #000; text-align: left;">`;
+          problemsHTML += `<div style="font-size: ${fontSize}; line-height: 1.4; color: #000; text-align: left;">`;
           problemsHTML += `<div style="margin-bottom: 4px;">${wordProblemEn.problemText}</div>`;
           if (wordProblemEn.category === 'word-story') {
             problemsHTML += '<div style="margin-top: 4px; display: flex; align-items: flex-end; gap: 6px;">';
-            problemsHTML += '<span style="color: #000; font-size: 11px;">Answer:</span>';
+            problemsHTML += '<span style="color: #000; font-size: 14px;">Answer:</span>';
             problemsHTML += '<div style="border-bottom: 1.5px solid #000; min-width: 3.5rem; padding: 0 6px; height: 1.2em;">';
             if (showAnswers) {
               problemsHTML += `<span style="font-weight: 500; color: #000;">${wordProblemEn.answer}`;
