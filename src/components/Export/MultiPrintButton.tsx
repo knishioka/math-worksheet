@@ -60,12 +60,16 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
       const headerHeight = 25; // ヘッダー部分の高さ (mm)
       const estimatedContentHeight = headerHeight + (minProblemHeightMm + rowGapMm) * estimatedRows;
 
-      // A4の高さは297mm、残りスペースを上下の余白として配分
+      // A4の高さは297mm、残りスペースを余白として配分
       const a4Height = 297;
       const remainingSpace = a4Height - estimatedContentHeight;
-      const verticalMargin = Math.max(5, Math.min(15, remainingSpace / 2));
 
-      pageDiv.style.padding = `${verticalMargin}mm 15mm`;
+      // 上の余白: 5mm〜15mm
+      const topMargin = Math.max(5, Math.min(15, remainingSpace * 0.6));
+      // 下の余白: 上の余白の半分（小さめに）
+      const bottomMargin = Math.max(5, topMargin * 0.5);
+
+      pageDiv.style.padding = `${topMargin}mm 15mm ${bottomMargin}mm`;
 
       // ヘッダー部分
       const headerHTML = `

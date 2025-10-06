@@ -20,6 +20,7 @@ import {
 import { WordProblemEnComponent } from '../Math/WordProblemEn';
 import { PATTERN_LABELS } from '../../types/calculation-patterns';
 import { getOperationName } from '../../lib/utils/formatting';
+import { getPrintTemplate } from '../../config/print-templates';
 
 interface ProblemListProps {
   problems: Problem[];
@@ -42,7 +43,7 @@ export const ProblemList: React.FC<ProblemListProps> = ({
           style={{
             width: '210mm',
             minHeight: '297mm',
-            padding: '15mm',
+            padding: '15mm 15mm 7.5mm', // 上15mm, 左右15mm, 下7.5mm (上の半分)
             boxSizing: 'border-box',
             boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15), 0 0 10px rgba(0, 0, 0, 0.05)',
           }}
@@ -100,6 +101,35 @@ export const ProblemList: React.FC<ProblemListProps> = ({
     return `${grade} ${getOperationName(settings.operation, settings.calculationPattern)}`;
   };
 
+  // 動的余白の計算（印刷プレビューと同じロジック）
+  const calculatePadding = (): string => {
+    const template = getPrintTemplate(
+      settings.problemType === 'word-en' ? 'word-en' : settings.problemType
+    );
+    const problemCount = problems.length;
+    const columns = layoutColumns;
+    const estimatedRows = Math.ceil(problemCount / columns);
+
+    // 問題タイプごとの推定高さ（mm）
+    const minProblemHeightMm = parseInt(template.layout.minProblemHeight) * 0.26;
+    const rowGapMm = parseInt(template.layout.rowGap) * 0.26;
+
+    // 必要な高さを計算
+    const headerHeight = 25; // ヘッダー部分の高さ (mm)
+    const estimatedContentHeight = headerHeight + (minProblemHeightMm + rowGapMm) * estimatedRows;
+
+    // A4の高さは297mm、残りスペースを余白として配分
+    const a4Height = 297;
+    const remainingSpace = a4Height - estimatedContentHeight;
+
+    // 上の余白: 5mm〜15mm
+    const topMargin = Math.max(5, Math.min(15, remainingSpace * 0.6));
+    // 下の余白: 上の余白の半分（小さめに）
+    const bottomMargin = Math.max(5, topMargin * 0.5);
+
+    return `${topMargin}mm 15mm ${bottomMargin}mm`;
+  };
+
   return (
     <div className="flex justify-center py-8 bg-gray-100">
       {/* A4用紙風のコンテナ */}
@@ -108,7 +138,7 @@ export const ProblemList: React.FC<ProblemListProps> = ({
         style={{
           width: '210mm',
           minHeight: '297mm',
-          padding: '15mm',
+          padding: calculatePadding(),
           boxSizing: 'border-box',
           boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15), 0 0 10px rgba(0, 0, 0, 0.05)',
         }}
