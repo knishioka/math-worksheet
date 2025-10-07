@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import type { WorksheetData, WorksheetSettings } from '../../types';
 import { ProblemList } from './ProblemList';
@@ -20,6 +20,7 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
   const [multiPageWorksheets, setMultiPageWorksheets] = useState<
     WorksheetData[]
   >([]);
+  const [shouldPrint, setShouldPrint] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({
@@ -27,7 +28,22 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
     documentTitle: worksheetData
       ? `計算プリント_${worksheetData.settings.grade}年生`
       : '計算プリント',
+    onAfterPrint: () => {
+      // 印刷後に複数ページの状態をクリア
+      setMultiPageWorksheets([]);
+      setShouldPrint(false);
+    },
   });
+
+  // 複数ページのワークシートが生成されたら印刷を実行
+  useEffect(() => {
+    if (shouldPrint && multiPageWorksheets.length > 0) {
+      // DOMが更新されるまで少し待つ
+      setTimeout(() => {
+        handlePrint();
+      }, 100);
+    }
+  }, [shouldPrint, multiPageWorksheets, handlePrint]);
 
   const handleMultiPagePrint = useCallback(
     (pageCount: number) => {
@@ -46,13 +62,9 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
 
       setMultiPageWorksheets(worksheets);
       setIsMultiPageDialogOpen(false);
-
-      // 印刷処理は別のタイミングで実行
-      setTimeout(() => {
-        handlePrint();
-      }, 100);
+      setShouldPrint(true);
     },
-    [worksheetData, handlePrint]
+    [worksheetData]
   );
   if (!worksheetData) {
     return (
