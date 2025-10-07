@@ -267,18 +267,18 @@ export const PRINT_TEMPLATES: Record<ProblemType, PrintTemplate> = {
     recommendedCounts: {
       1: 8,
       2: 16,
-      3: 24,
+      3: 18,
     },
     maxCounts: {
       1: 10,
       2: 20,
-      3: 24,
+      3: 18,
     },
     fitsInA4: {
       threshold: {
         1: 8,
         2: 16,
-        3: 24,
+        3: 18,
       },
     },
   },

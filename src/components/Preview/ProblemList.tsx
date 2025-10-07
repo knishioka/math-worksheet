@@ -28,14 +28,11 @@ interface ProblemListProps {
   layoutColumns: LayoutColumns;
   showAnswers?: boolean;
   settings: WorksheetSettings;
+  printMode?: boolean;
 }
 
-export const ProblemList: React.FC<ProblemListProps> = ({
-  problems,
-  layoutColumns,
-  showAnswers = false,
-  settings,
-}) => {
+export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
+  ({ problems, layoutColumns, showAnswers = false, settings, printMode = false }, ref) => {
   if (problems.length === 0) {
     return (
       <div className="flex justify-center py-8 bg-gray-100">
@@ -138,10 +135,11 @@ export const ProblemList: React.FC<ProblemListProps> = ({
     settings.problemType === 'word-en' ? 'word-en' : settings.problemType
   );
 
-  return (
-    <div className="flex flex-col items-center py-8 bg-gray-100">
+  // 印刷モードの場合は外側のラッパーを省略
+  const content = (
+    <>
       {/* A4オーバーフロー警告 */}
-      {!a4FitResult.fits && (
+      {!printMode && !a4FitResult.fits && (
         <div
           style={{
             backgroundColor: '#fef2f2',
@@ -172,14 +170,15 @@ export const ProblemList: React.FC<ProblemListProps> = ({
 
       {/* A4用紙風のコンテナ */}
       <div
+        ref={ref}
         className="bg-white"
         style={{
           width: '210mm',
           minHeight: '297mm',
           padding: calculatePadding(),
           boxSizing: 'border-box',
-          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15), 0 0 10px rgba(0, 0, 0, 0.05)',
-          border: !a4FitResult.fits ? '3px solid #ef4444' : 'none',
+          boxShadow: printMode ? 'none' : '0 10px 30px rgba(0, 0, 0, 0.15), 0 0 10px rgba(0, 0, 0, 0.05)',
+          border: !printMode && !a4FitResult.fits ? '3px solid #ef4444' : 'none',
         }}
       >
         {/* ヘッダー */}
@@ -223,9 +222,22 @@ export const ProblemList: React.FC<ProblemListProps> = ({
       })}
         </div>
       </div>
+    </>
+  );
+
+  // 印刷モードの場合は直接コンテンツを返す、プレビューモードの場合は外側のラッパーで囲む
+  if (printMode) {
+    return content;
+  }
+
+  return (
+    <div className="flex flex-col items-center py-8 bg-gray-100">
+      {content}
     </div>
   );
-};
+});
+
+ProblemList.displayName = 'ProblemList';
 
 interface ProblemItemProps {
   problem: Problem;

@@ -24,7 +24,7 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
   const printRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: worksheetData
       ? `計算プリント_${worksheetData.settings.grade}年生`
       : '計算プリント',
@@ -37,13 +37,14 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
 
   // 複数ページのワークシートが生成されたら印刷を実行
   useEffect(() => {
-    if (shouldPrint && multiPageWorksheets.length > 0) {
+    if (shouldPrint && multiPageWorksheets.length > 0 && printRef.current) {
       // DOMが更新されるまで少し待つ
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         handlePrint();
-      }, 100);
+      }, 200);
+      return () => clearTimeout(timer);
     }
-  }, [shouldPrint, multiPageWorksheets, handlePrint]);
+  }, [shouldPrint, multiPageWorksheets.length, handlePrint]);
 
   const handleMultiPagePrint = useCallback(
     (pageCount: number) => {
@@ -108,13 +109,24 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
         </div>
 
         {/* Printable worksheet content */}
-        <div ref={printRef}>
-          {worksheetsToDisplay.map((worksheet, index) => (
+        <div ref={printRef} style={{ background: 'white' }}>
+          {/* プレビュー表示: 最初のページのみ */}
+          {!shouldPrint && (
+            <ProblemList
+              problems={worksheetData.problems}
+              layoutColumns={worksheetData.settings.layoutColumns}
+              showAnswers={showAnswers}
+              settings={worksheetData.settings}
+              printMode={false}
+            />
+          )}
+
+          {/* 印刷用: 全ページ（画面には表示されない） */}
+          {shouldPrint && worksheetsToDisplay.map((worksheet, index) => (
             <div
               key={index}
               style={{
                 pageBreakAfter: index < worksheetsToDisplay.length - 1 ? 'always' : 'auto',
-                display: index === 0 || shouldPrint ? 'block' : 'none',
               }}
             >
               <ProblemList
@@ -122,6 +134,7 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
                 layoutColumns={worksheet.settings.layoutColumns}
                 showAnswers={showAnswers}
                 settings={worksheet.settings}
+                printMode={true}
               />
             </div>
           ))}
