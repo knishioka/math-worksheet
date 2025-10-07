@@ -472,6 +472,356 @@ export const NUMBER_SEQUENCE_STORIES: WordStoryTemplate[] = [
 ];
 
 /**
+ * Grade 2-5: Time problems
+ */
+export const TIME_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const startHour = randomInt(8, 15);
+      const duration = randomInt(1, grade <= 3 ? 3 : 5);
+      const answer = startHour + duration;
+
+      return {
+        text: `${name} starts playing at ${startHour}:00. ${name === 'Tom' || name === 'Sam' || name === 'Max' || name === 'Ben' || name === 'Jack' || name === 'Leo' || name === 'Noah' || name === 'Finn' ? 'He' : 'She'} plays for ${duration} ${duration === 1 ? 'hour' : 'hours'}. What time does ${name === 'Tom' || name === 'Sam' || name === 'Max' || name === 'Ben' || name === 'Jack' || name === 'Leo' || name === 'Noah' || name === 'Finn' ? 'he' : 'she'} finish?`,
+        answer,
+        operation: 'addition' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 5,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const startMinute = randomInt(10, grade <= 3 ? 30 : 45);
+      const duration = randomInt(5, grade <= 3 ? 15 : 30);
+      const answer = startMinute + duration;
+
+      return {
+        text: `${name} starts homework at ${startMinute} minutes past the hour. It takes ${duration} minutes. How many minutes past the hour does ${name === 'Tom' || name === 'Sam' || name === 'Max' || name === 'Ben' || name === 'Jack' || name === 'Leo' || name === 'Noah' || name === 'Finn' ? 'he' : 'she'} finish?`,
+        answer,
+        operation: 'addition' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 5,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const activity = ['a movie', 'a game', 'practice', 'class'][randomInt(0, 3)];
+      const duration = randomInt(grade <= 3 ? 30 : 45, grade <= 3 ? 90 : 120);
+      const passed = randomInt(10, duration - 10);
+      const answer = duration - passed;
+
+      return {
+        text: `${activity.charAt(0).toUpperCase() + activity.slice(1)} lasts ${duration} minutes. ${passed} minutes have passed. How many minutes are left?`,
+        answer,
+        operation: 'subtraction' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 5,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const timePerTask = randomInt(5, grade <= 3 ? 15 : 20);
+      const numTasks = randomInt(2, grade <= 3 ? 4 : 6);
+      const answer = timePerTask * numTasks;
+
+      return {
+        text: `${name} does ${numTasks} homework tasks. Each task takes ${timePerTask} minutes. How many minutes does ${name === 'Tom' || name === 'Sam' || name === 'Max' || name === 'Ben' || name === 'Jack' || name === 'Leo' || name === 'Noah' || name === 'Finn' ? 'he' : 'she'} spend on homework?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 3,
+    maxGrade: 5,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const totalMinutes = randomInt(grade <= 3 ? 30 : 60, grade <= 3 ? 60 : 120);
+      const numPeople = randomInt(2, grade <= 3 ? 5 : 6);
+      // Ensure division is exact
+      const minutesEach = Math.floor(totalMinutes / numPeople);
+      const actualTotal = minutesEach * numPeople;
+      const answer = minutesEach;
+
+      return {
+        text: `${numPeople} friends share ${actualTotal} minutes of play time equally. How many minutes does each friend get?`,
+        answer,
+        operation: 'division' as Operation,
+      };
+    },
+    minGrade: 3,
+    maxGrade: 5,
+    category: 'word-story',
+  },
+];
+
+/**
+ * Grade 2-5: Money problems
+ */
+export const MONEY_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const price = randomInt(grade <= 3 ? 5 : 10, grade <= 3 ? 50 : 75);
+      const paid = randomInt(price + 5, grade <= 3 ? 100 : 100);
+      const answer = paid - price;
+
+      return {
+        text: `${name} buys a toy for $${price}. ${name === 'Tom' || name === 'Sam' || name === 'Max' || name === 'Ben' || name === 'Jack' || name === 'Leo' || name === 'Noah' || name === 'Finn' ? 'He' : 'She'} pays with $${paid}. How much change does ${name === 'Tom' || name === 'Sam' || name === 'Max' || name === 'Ben' || name === 'Jack' || name === 'Leo' || name === 'Noah' || name === 'Finn' ? 'he' : 'she'} get?`,
+        answer,
+        operation: 'subtraction' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 5,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const saved = randomInt(grade <= 3 ? 10 : 20, grade <= 3 ? 50 : 80);
+      const earned = randomInt(grade <= 3 ? 5 : 10, grade <= 3 ? 30 : 40);
+      const answer = saved + earned;
+
+      return {
+        text: `${name} has $${saved} saved. ${name === 'Tom' || name === 'Sam' || name === 'Max' || name === 'Ben' || name === 'Jack' || name === 'Leo' || name === 'Noah' || name === 'Finn' ? 'He' : 'She'} earns $${earned} more. How much money does ${name === 'Tom' || name === 'Sam' || name === 'Max' || name === 'Ben' || name === 'Jack' || name === 'Leo' || name === 'Noah' || name === 'Finn' ? 'he' : 'she'} have now?`,
+        answer,
+        operation: 'addition' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 5,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const item = ['notebooks', 'pencils', 'erasers', 'rulers'][randomInt(0, 3)];
+      const price = randomInt(2, grade <= 3 ? 8 : 12);
+      const quantity = randomInt(2, grade <= 3 ? 6 : 9);
+      const answer = price * quantity;
+
+      return {
+        text: `Each ${item.replace('s', '')} costs $${price}. How much do ${quantity} ${item} cost in total?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 3,
+    maxGrade: 5,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const weeklyAmount = randomInt(grade <= 3 ? 5 : 10, grade <= 3 ? 15 : 20);
+      const weeks = randomInt(2, grade <= 3 ? 4 : 6);
+      const answer = weeklyAmount * weeks;
+
+      return {
+        text: `${name} gets $${weeklyAmount} allowance each week. How much does ${name === 'Tom' || name === 'Sam' || name === 'Max' || name === 'Ben' || name === 'Jack' || name === 'Leo' || name === 'Noah' || name === 'Finn' ? 'he' : 'she'} get in ${weeks} weeks?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 3,
+    maxGrade: 5,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const totalCost = randomInt(grade <= 3 ? 20 : 30, grade <= 3 ? 60 : 90);
+      const numFriends = randomInt(2, grade <= 3 ? 5 : 6);
+      // Ensure division is exact
+      const costEach = Math.floor(totalCost / numFriends);
+      const actualTotal = costEach * numFriends;
+      const answer = costEach;
+
+      return {
+        text: `${numFriends} friends share the cost of a gift that costs $${actualTotal}. How much does each friend pay?`,
+        answer,
+        operation: 'division' as Operation,
+      };
+    },
+    minGrade: 3,
+    maxGrade: 5,
+    category: 'word-story',
+  },
+];
+
+/**
+ * Grade 2-5: Measurement and distance problems
+ */
+export const MEASUREMENT_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const distance1 = randomInt(grade <= 3 ? 10 : 20, grade <= 3 ? 50 : 100);
+      const distance2 = randomInt(grade <= 3 ? 5 : 15, grade <= 3 ? 30 : 80);
+      const answer = distance1 + distance2;
+
+      return {
+        text: `${name} walks ${distance1} meters to school and then ${distance2} meters more to the library. How many meters does ${name === 'Tom' || name === 'Sam' || name === 'Max' || name === 'Ben' || name === 'Jack' || name === 'Leo' || name === 'Noah' || name === 'Finn' ? 'he' : 'she'} walk in total?`,
+        answer,
+        operation: 'addition' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 5,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const name1 = getRandomName();
+      const name2 = getRandomName();
+      const height1 = randomInt(grade <= 3 ? 100 : 120, grade <= 3 ? 130 : 150);
+      const difference = randomInt(5, grade <= 3 ? 15 : 25);
+      const answer = height1 - difference;
+
+      return {
+        text: `${name1} is ${height1} cm tall. ${name2} is ${difference} cm shorter than ${name1}. How tall is ${name2}?`,
+        answer,
+        operation: 'subtraction' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 5,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const item = ['rope', 'ribbon', 'string', 'wire'][randomInt(0, 3)];
+      const lengthEach = randomInt(grade <= 3 ? 5 : 10, grade <= 3 ? 20 : 30);
+      const numPieces = randomInt(2, grade <= 3 ? 5 : 8);
+      const answer = lengthEach * numPieces;
+
+      return {
+        text: `There are ${numPieces} pieces of ${item}. Each piece is ${lengthEach} cm long. What is the total length of all pieces?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 3,
+    maxGrade: 5,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const item = ['water', 'juice', 'milk', 'paint'][randomInt(0, 3)];
+      const totalML = randomInt(grade <= 3 ? 500 : 1000, grade <= 3 ? 1000 : 2000);
+      const numContainers = randomInt(2, grade <= 3 ? 5 : 10);
+      // Ensure division is exact
+      const mlEach = Math.floor(totalML / numContainers);
+      const actualTotal = mlEach * numContainers;
+      const answer = mlEach;
+
+      return {
+        text: `${actualTotal} ml of ${item} is poured equally into ${numContainers} containers. How much ${item} is in each container?`,
+        answer,
+        operation: 'division' as Operation,
+      };
+    },
+    minGrade: 3,
+    maxGrade: 5,
+    category: 'word-story',
+  },
+];
+
+/**
+ * Grade 3-6: Mixed operation problems
+ */
+export const MIXED_OPERATION_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const item = getRandomItem(true);
+      const boxCount = randomInt(2, grade <= 4 ? 5 : 8);
+      const perBox = randomInt(3, grade <= 4 ? 8 : 12);
+      const extra = randomInt(2, grade <= 4 ? 10 : 20);
+      const answer = boxCount * perBox + extra;
+
+      return {
+        text: `${name} has ${boxCount} boxes with ${perBox} ${item} in each box, plus ${extra} extra ${item}. How many ${item} does ${name === 'Tom' || name === 'Sam' || name === 'Max' || name === 'Ben' || name === 'Jack' || name === 'Leo' || name === 'Noah' || name === 'Finn' ? 'he' : 'she'} have in total?`,
+        answer,
+        operation: 'addition' as Operation,
+      };
+    },
+    minGrade: 3,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const item = getRandomItem(true);
+      const groups = randomInt(2, grade <= 4 ? 4 : 6);
+      const perGroup = randomInt(3, grade <= 4 ? 8 : 12);
+      const given = randomInt(2, grade <= 4 ? 10 : 15);
+      const answer = groups * perGroup - given;
+
+      return {
+        text: `${name} makes ${groups} groups of ${perGroup} ${item}. ${name === 'Tom' || name === 'Sam' || name === 'Max' || name === 'Ben' || name === 'Jack' || name === 'Leo' || name === 'Noah' || name === 'Finn' ? 'He' : 'She'} gives away ${given} ${item}. How many ${item} does ${name === 'Tom' || name === 'Sam' || name === 'Max' || name === 'Ben' || name === 'Jack' || name === 'Leo' || name === 'Noah' || name === 'Finn' ? 'he' : 'she'} have left?`,
+        answer,
+        operation: 'subtraction' as Operation,
+      };
+    },
+    minGrade: 3,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const price = randomInt(3, grade <= 4 ? 9 : 12);
+      const quantity = randomInt(2, grade <= 4 ? 6 : 8);
+      const totalCost = price * quantity;
+      const paid = Math.ceil(totalCost / 10) * 10 + randomInt(5, 20);
+      const answer = paid - totalCost;
+
+      return {
+        text: `${name} buys ${quantity} items at $${price} each. ${name === 'Tom' || name === 'Sam' || name === 'Max' || name === 'Ben' || name === 'Jack' || name === 'Leo' || name === 'Noah' || name === 'Finn' ? 'He' : 'She'} pays with $${paid}. How much change does ${name === 'Tom' || name === 'Sam' || name === 'Max' || name === 'Ben' || name === 'Jack' || name === 'Leo' || name === 'Noah' || name === 'Finn' ? 'he' : 'she'} get?`,
+        answer,
+        operation: 'subtraction' as Operation,
+      };
+    },
+    minGrade: 4,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const item = getRandomItem(true);
+      const initial = randomInt(grade <= 4 ? 20 : 40, grade <= 4 ? 50 : 80);
+      const groups = randomInt(2, grade <= 4 ? 4 : 6);
+      // Ensure division is exact
+      const given = Math.floor(initial / groups);
+      const actualInitial = given * groups;
+      const left = randomInt(2, grade <= 4 ? 10 : 15);
+      const totalGiven = actualInitial - left;
+      const answer = totalGiven / groups;
+
+      return {
+        text: `${name} had ${actualInitial} ${item}. After giving ${groups} friends equal amounts, ${name === 'Tom' || name === 'Sam' || name === 'Max' || name === 'Ben' || name === 'Jack' || name === 'Leo' || name === 'Noah' || name === 'Finn' ? 'he' : 'she'} has ${left} left. How many ${item} did each friend get?`,
+        answer,
+        operation: 'division' as Operation,
+      };
+    },
+    minGrade: 4,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+];
+
+/**
  * Grade 3+: Comparison problems
  */
 export const COMPARISON_STORIES: WordStoryTemplate[] = [
@@ -531,6 +881,10 @@ export function getStoriesForGrade(grade: number): WordStoryTemplate[] {
     ...MULTIPLICATION_STORIES,
     ...DIVISION_STORIES,
     ...COMPARISON_STORIES,
+    ...TIME_STORIES,
+    ...MONEY_STORIES,
+    ...MEASUREMENT_STORIES,
+    ...MIXED_OPERATION_STORIES,
   ];
 
   allStories.forEach((story) => {

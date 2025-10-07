@@ -5,6 +5,11 @@ import type {
   CalculationPattern,
 } from '../../types';
 import { getPrintTemplate } from '../../config/print-templates';
+import {
+  isWordEnProblem,
+  isWordProblem,
+  getEffectiveProblemType,
+} from '../../lib/utils/problem-type-detector';
 
 interface SettingsPanelProps {
   problemCount: number;
@@ -15,26 +20,6 @@ interface SettingsPanelProps {
   onLayoutColumnsChange: (columns: LayoutColumns) => void;
 }
 
-// 文章問題を生成する計算パターン
-const WORD_PROBLEM_PATTERNS: CalculationPattern[] = [
-  'percent-basic', // 百分率
-  'area-volume', // 面積・体積
-  'ratio-proportion', // 比と比例
-  'speed-time-distance', // 速さ・時間・距離
-  'complex-calc', // 複雑な計算
-];
-
-// 筆算を生成する計算パターン
-const HISSAN_PATTERNS: CalculationPattern[] = [
-  'hissan-add-double', // 2桁のたし算の筆算
-  'hissan-sub-double', // 2桁のひき算の筆算
-  'hissan-add-triple', // 3桁のたし算の筆算
-  'hissan-sub-triple', // 3桁のひき算の筆算
-  'hissan-mult-basic', // 2桁×1桁のかけ算の筆算
-  'hissan-mult-advanced', // 3桁×2桁のかけ算の筆算
-  'hissan-div-basic', // わり算の筆算
-];
-
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   problemCount,
   layoutColumns,
@@ -43,31 +28,12 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   onProblemCountChange,
   onLayoutColumnsChange,
 }) => {
-  // 英語文章問題かどうかを判定
-  const isWordEnProblem = calculationPattern === 'word-en';
+  // 問題タイプの判定
+  const isWordEn = isWordEnProblem(calculationPattern);
+  const isWord = isWordProblem(problemType, calculationPattern);
 
-  // 文章問題かどうかを判定：問題タイプが'word'または、基本計算で文章問題パターンが選択されている場合
-  const isWordProblem =
-    problemType === 'word' ||
-    (problemType === 'basic' &&
-      calculationPattern &&
-      WORD_PROBLEM_PATTERNS.includes(calculationPattern));
-
-  // 筆算かどうかを判定
-  const isHissan =
-    problemType === 'hissan' ||
-    (problemType === 'basic' &&
-      calculationPattern &&
-      HISSAN_PATTERNS.includes(calculationPattern));
-
-  // 問題タイプに応じたテンプレートを取得
-  const effectiveProblemType: ProblemType = isWordEnProblem
-    ? 'word-en'
-    : isWordProblem
-      ? 'word'
-      : isHissan
-        ? 'hissan'
-        : problemType || 'basic';
+  // 実効的な問題タイプを取得
+  const effectiveProblemType = getEffectiveProblemType(problemType, calculationPattern);
   const template = getPrintTemplate(effectiveProblemType);
 
   // 列数に応じた最大問題数と推奨問題数を取得
@@ -76,11 +42,11 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
   // 文章問題の場合は2列レイアウトを推奨デフォルトにする
   React.useEffect(() => {
-    if ((isWordProblem || isWordEnProblem) && layoutColumns !== 2) {
+    if ((isWord || isWordEn) && layoutColumns !== 2) {
       onLayoutColumnsChange(2);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isWordProblem, isWordEnProblem]);
+  }, [isWord, isWordEn]);
 
   // 問題タイプまたは列数が変更されたときに推奨問題数を自動選択
   React.useEffect(() => {
@@ -148,7 +114,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <p className="text-xs text-gray-500 mt-1">
           ※ {layoutColumns}列の場合、最大{maxProblems}問まで入ります
         </p>
-        {isWordProblem && (
+        {isWord && (
           <div className="mt-2 p-2 bg-blue-50 rounded-md border border-blue-200">
             <p className="text-xs text-blue-700 font-medium mb-2">
               💡 {template.displayName}の推奨問題数 (A4用紙1枚に最適)

@@ -88,7 +88,7 @@ describe('Word Problem EN Integration', () => {
         template.recommendedCounts[3]
       );
 
-      expect(problems).toHaveLength(24);
+      expect(problems).toHaveLength(template.recommendedCounts[3]);
       problems.forEach((problem) => {
         // Problems should be reasonably concise for narrow columns
         expect(problem.problemText.length).toBeLessThan(200);
@@ -113,11 +113,11 @@ describe('Word Problem EN Integration', () => {
     });
 
     it('should generate grade 6 problems with appropriate settings', () => {
-      const problems = generateGradeEnWordProblems(6, 24);
       const template = getPrintTemplate('word-en');
+      const problems = generateGradeEnWordProblems(6, template.recommendedCounts[3]);
 
-      expect(problems).toHaveLength(24);
-      expect(template.recommendedCounts[3]).toBe(24);
+      expect(problems).toHaveLength(template.recommendedCounts[3]);
+      expect(template.recommendedCounts[3]).toBe(18);
 
       // Grade 6 can have more complex problems
       const hasComplexProblem = problems.some((problem) => {

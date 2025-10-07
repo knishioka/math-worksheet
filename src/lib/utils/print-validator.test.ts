@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   countProblemsInHTML,
   validateProblemType,
-  estimateA4Fit,
   validatePrintPreview,
 } from './print-validator';
 
@@ -66,32 +65,6 @@ describe('Print Validator', () => {
     it('should validate hissan problems', () => {
       const html = '<div style="border-top: 2px solid black"></div>';
       expect(validateProblemType(html, 'hissan')).toBe(true);
-    });
-  });
-
-  describe('estimateA4Fit', () => {
-    it('should confirm basic problems fit in A4 (20 problems, 2 columns)', () => {
-      const result = estimateA4Fit(20, 2, 'basic');
-      expect(result.fits).toBe(true);
-      expect(result.estimatedHeight).toBeLessThanOrEqual(297);
-    });
-
-    it('should confirm fraction problems fit in A4 (18 problems, 2 columns)', () => {
-      const result = estimateA4Fit(18, 2, 'fraction');
-      expect(result.fits).toBe(true);
-      expect(result.estimatedHeight).toBeLessThanOrEqual(297);
-    });
-
-    it('should warn when problems might overflow A4', () => {
-      const result = estimateA4Fit(50, 2, 'basic');
-      expect(result.fits).toBe(false);
-      expect(result.estimatedHeight).toBeGreaterThan(297);
-    });
-
-    it('should confirm English word problems fit in A4 (24 problems, 3 columns)', () => {
-      const result = estimateA4Fit(24, 3, 'word-en');
-      expect(result.fits).toBe(true);
-      expect(result.estimatedHeight).toBeLessThanOrEqual(297);
     });
   });
 

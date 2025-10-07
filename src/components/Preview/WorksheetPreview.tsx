@@ -36,13 +36,13 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
   });
 
   // 複数ページのワークシートが生成されたら印刷を実行
-  useEffect(() => {
+  useEffect((): void | (() => void) => {
     if (shouldPrint && multiPageWorksheets.length > 0 && printRef.current) {
       // DOMが更新されるまで少し待つ
       const timer = setTimeout(() => {
         handlePrint();
       }, 200);
-      return () => clearTimeout(timer);
+      return (): void => clearTimeout(timer);
     }
   }, [shouldPrint, multiPageWorksheets.length, handlePrint]);
 
