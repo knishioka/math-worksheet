@@ -74,6 +74,14 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const maxProblems = template.maxCounts[layoutColumns];
   const recommendedCount = template.recommendedCounts[layoutColumns];
 
+  // 文章問題の場合は2列レイアウトを推奨デフォルトにする
+  React.useEffect(() => {
+    if ((isWordProblem || isWordEnProblem) && layoutColumns !== 2) {
+      onLayoutColumnsChange(2);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isWordProblem, isWordEnProblem]);
+
   // 問題タイプまたは列数が変更されたときに推奨問題数を自動選択
   React.useEffect(() => {
     onProblemCountChange(recommendedCount);
