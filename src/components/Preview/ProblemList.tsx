@@ -22,6 +22,38 @@ import { PATTERN_LABELS } from '../../types/calculation-patterns';
 import { getOperationName } from '../../lib/utils/formatting';
 import { getPrintTemplate } from '../../config/print-templates';
 import { estimateA4Fit } from '../../lib/utils/print-validator';
+import {
+  emptyA4ContainerStyle,
+  getA4ContainerStyle,
+  a4WarningContainerStyle,
+  a4WarningIconRowStyle,
+  a4WarningTitleStyle,
+  a4WarningMessageStyle,
+  headerBorderStyle,
+  headerGridStyle,
+  headerTextStyle,
+  headerCenterTextStyle,
+  headerRightTextStyle,
+  getUnderlineStyle,
+  problemNumberStyle,
+  problemItemStyle,
+  problemTextStyle,
+  wordProblemTextStyle,
+  wordProblemAnswerUnderlineStyle,
+  answerDisplayStyle,
+  answerUnderlineStyle,
+  missingNumberBoxStyle,
+  fractionContainerStyle,
+  fractionNumeratorStyle,
+  fractionDenominatorStyle,
+  fractionAnswerNumeratorStyle,
+  wordEnNumberStyle,
+  hissanContainerStyle,
+  hissanCellStyle,
+  hissanAnswerBoxStyle,
+  getHissanLineStyle,
+  SPACING,
+} from '../../config/styles';
 
 interface ProblemListProps {
   problems: Problem[];
@@ -38,13 +70,7 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
       <div className="flex justify-center py-8 bg-gray-100">
         <div
           className="bg-white flex items-center justify-center"
-          style={{
-            width: '210mm',
-            minHeight: '297mm',
-            padding: '15mm 15mm 7.5mm', // 上15mm, 左右15mm, 下7.5mm (上の半分)
-            boxSizing: 'border-box',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15), 0 0 10px rgba(0, 0, 0, 0.05)',
-          }}
+          style={emptyA4ContainerStyle}
         >
           <div className="text-center text-gray-500">
             設定を確認して「問題を生成」ボタンをクリックしてください
@@ -140,25 +166,14 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
     <>
       {/* A4オーバーフロー警告 */}
       {!printMode && !a4FitResult.fits && (
-        <div
-          style={{
-            backgroundColor: '#fef2f2',
-            border: '2px solid #ef4444',
-            borderRadius: '8px',
-            padding: '12px 16px',
-            marginBottom: '16px',
-            maxWidth: '210mm',
-            width: '100%',
-            boxSizing: 'border-box',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={a4WarningContainerStyle}>
+          <div style={a4WarningIconRowStyle}>
             <span style={{ fontSize: '20px' }}>⚠️</span>
             <div>
-              <div style={{ color: '#dc2626', fontWeight: 'bold', fontSize: '14px' }}>
+              <div style={a4WarningTitleStyle}>
                 A4サイズを超えています
               </div>
-              <div style={{ color: '#991b1b', fontSize: '12px', marginTop: '4px' }}>
+              <div style={a4WarningMessageStyle}>
                 推定高さ: {a4FitResult.estimatedHeight.toFixed(0)}mm（A4: {a4FitResult.a4Height}mm）
                 <br />
                 問題数を減らすか、列数を増やしてください。
@@ -172,26 +187,19 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
       <div
         ref={ref}
         className="bg-white"
-        style={{
-          width: '210mm',
-          minHeight: '297mm',
-          padding: calculatePadding(),
-          boxSizing: 'border-box',
-          boxShadow: printMode ? 'none' : '0 10px 30px rgba(0, 0, 0, 0.15), 0 0 10px rgba(0, 0, 0, 0.05)',
-          border: !printMode && !a4FitResult.fits ? '3px solid #ef4444' : 'none',
-        }}
+        style={getA4ContainerStyle(calculatePadding(), printMode, !a4FitResult.fits)}
       >
         {/* ヘッダー */}
-        <div style={{ borderBottom: '1px solid #ccc', paddingBottom: '12px', marginBottom: '16px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '12px' }}>
-            <div style={{ fontSize: '14px' }}>
-              名前：<span style={{ display: 'inline-block', width: '128px', borderBottom: '1px solid black', marginLeft: '4px' }}></span>
+        <div style={headerBorderStyle}>
+          <div style={headerGridStyle}>
+            <div style={headerTextStyle}>
+              名前：<span style={getUnderlineStyle('128px')}></span>
             </div>
-            <div style={{ fontSize: '14px', textAlign: 'center' }}>
+            <div style={headerCenterTextStyle}>
               {getPreviewTitle()}
             </div>
-            <div style={{ fontSize: '14px', textAlign: 'right' }}>
-              点数：<span style={{ display: 'inline-block', width: '64px', borderBottom: '1px solid black', marginLeft: '4px' }}></span>点
+            <div style={headerRightTextStyle}>
+              点数：<span style={getUnderlineStyle('64px')}></span>点
             </div>
           </div>
         </div>
@@ -261,33 +269,15 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
   if (problem.type === 'fraction') {
     const fractionProblem = problem as FractionProblem;
     return (
-      <div className="problem-text" style={{ marginBottom: '16px' }}>
-        <div style={{ fontSize: '12px', color: '#666' }}>({number})</div>
-        <div
-          style={{
-            fontFamily: 'monospace',
-            fontSize: '18px',
-            marginTop: '4px',
-          }}
-        >
+      <div className="problem-text" style={problemItemStyle}>
+        <div style={problemNumberStyle}>({number})</div>
+        <div style={problemTextStyle}>
           {/* 分子1 */}
-          <span
-            style={{
-              display: 'inline-block',
-              textAlign: 'center',
-              verticalAlign: 'middle',
-            }}
-          >
-            <span
-              style={{
-                display: 'block',
-                borderBottom: '1px solid black',
-                padding: '0 4px',
-              }}
-            >
+          <span style={fractionContainerStyle}>
+            <span style={fractionNumeratorStyle}>
               {fractionProblem.numerator1}
             </span>
-            <span style={{ display: 'block', padding: '0 4px' }}>
+            <span style={fractionDenominatorStyle}>
               {fractionProblem.denominator1}
             </span>
           </span>
@@ -295,23 +285,11 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
           {/* 分子2 */}
           {fractionProblem.numerator2 !== undefined &&
             fractionProblem.denominator2 !== undefined && (
-              <span
-                style={{
-                  display: 'inline-block',
-                  textAlign: 'center',
-                  verticalAlign: 'middle',
-                }}
-              >
-                <span
-                  style={{
-                    display: 'block',
-                    borderBottom: '1px solid black',
-                    padding: '0 4px',
-                  }}
-                >
+              <span style={fractionContainerStyle}>
+                <span style={fractionNumeratorStyle}>
                   {fractionProblem.numerator2}
                 </span>
-                <span style={{ display: 'block', padding: '0 4px' }}>
+                <span style={fractionDenominatorStyle}>
                   {fractionProblem.denominator2}
                 </span>
               </span>
@@ -321,35 +299,19 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
           {showAnswer ? (
             <span
               style={{
-                color: 'red',
-                fontWeight: 'bold',
-                display: 'inline-block',
-                textAlign: 'center',
-                verticalAlign: 'middle',
+                ...answerDisplayStyle,
+                ...fractionContainerStyle,
               }}
             >
-              <span
-                style={{
-                  display: 'block',
-                  borderBottom: '1px solid red',
-                  padding: '0 4px',
-                }}
-              >
+              <span style={fractionAnswerNumeratorStyle}>
                 {fractionProblem.answerNumerator}
               </span>
-              <span style={{ display: 'block', padding: '0 4px' }}>
+              <span style={fractionDenominatorStyle}>
                 {fractionProblem.answerDenominator}
               </span>
             </span>
           ) : (
-            <span
-              style={{
-                display: 'inline-block',
-                width: '64px',
-                borderBottom: '1px solid black',
-                marginLeft: '4px',
-              }}
-            />
+            <span style={answerUnderlineStyle} />
           )}
         </div>
       </div>
@@ -428,28 +390,21 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
   if (problem.type === 'word') {
     const wordProblem = problem as WordProblem;
     return (
-      <div className="problem-text" style={{ marginBottom: '16px' }}>
-        <div style={{ fontSize: '12px', color: '#666' }}>({number})</div>
-        <div style={{ fontSize: '12px', lineHeight: '1.3' }}>
+      <div className="problem-text" style={problemItemStyle}>
+        <div style={problemNumberStyle}>({number})</div>
+        <div style={wordProblemTextStyle}>
           {wordProblem.problemText}
         </div>
-        <div style={{ marginTop: '6px' }}>
+        <div style={{ marginTop: SPACING.gap.small }}>
           {showAnswer ? (
-            <span style={{ color: 'red', fontWeight: 'bold' }}>
+            <span style={answerDisplayStyle}>
               答え: {wordProblem.answer}
               {wordProblem.unit && wordProblem.unit}
             </span>
           ) : (
             <>
               答え:{' '}
-              <span
-                style={{
-                  display: 'inline-block',
-                  width: '96px',
-                  borderBottom: '1px solid black',
-                  margin: '0 4px',
-                }}
-              />
+              <span style={wordProblemAnswerUnderlineStyle} />
               {wordProblem.unit && (
                 <span style={{ fontSize: '14px' }}>{wordProblem.unit}</span>
               )}
@@ -464,8 +419,8 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
   if (problem.type === 'word-en') {
     const wordProblemEn = problem as WordProblemEn;
     return (
-      <div className="problem-item" style={{ marginBottom: '16px', display: 'flex', gap: '8px' }}>
-        <div style={{ fontSize: '12px', color: '#666', flexShrink: 0 }}>
+      <div className="problem-item" style={{ ...problemItemStyle, display: 'flex', gap: SPACING.gap.medium }}>
+        <div style={wordEnNumberStyle}>
           ({number})
         </div>
         <div style={{ flex: 1 }}>
@@ -502,29 +457,13 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
         : [];
 
     return (
-      <div className="problem-text" style={{ marginBottom: '16px' }}>
-        <div style={{ fontSize: '12px', color: '#666' }}>({number})</div>
-        <div
-          style={{
-            fontFamily: "'Courier New', monospace",
-            fontSize: '18px',
-            display: 'inline-block',
-            textAlign: 'right',
-            lineHeight: '1.2',
-            margin: '10px 0',
-          }}
-        >
+      <div className="problem-text" style={problemItemStyle}>
+        <div style={problemNumberStyle}>({number})</div>
+        <div style={hissanContainerStyle}>
           {/* 1つ目の数 */}
           <div style={{ whiteSpace: 'nowrap' }}>
             {paddedDigits1.map((d, i) => (
-              <span
-                key={i}
-                style={{
-                  display: 'inline-block',
-                  width: '30px',
-                  textAlign: 'center',
-                }}
-              >
+              <span key={i} style={hissanCellStyle}>
                 {d === '' ? '\u00A0' : d}
               </span>
             ))}
@@ -534,48 +473,22 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
           <div style={{ whiteSpace: 'nowrap' }}>
             {/* 演算子を数字の左に配置（digits2の長さに応じて左側にパディング） */}
             {Array(maxLength - digits2.length).fill('').map((_, i) => (
-              <span
-                key={`pad-${i}`}
-                style={{
-                  display: 'inline-block',
-                  width: '30px',
-                  textAlign: 'center',
-                }}
-              >
+              <span key={`pad-${i}`} style={hissanCellStyle}>
                 {'\u00A0'}
               </span>
             ))}
-            <span
-              style={{
-                display: 'inline-block',
-                width: '30px',
-                textAlign: 'center',
-              }}
-            >
+            <span style={hissanCellStyle}>
               {operator}
             </span>
             {paddedDigits2.map((d, i) => (
-              <span
-                key={i}
-                style={{
-                  display: 'inline-block',
-                  width: '30px',
-                  textAlign: 'center',
-                }}
-              >
+              <span key={i} style={hissanCellStyle}>
                 {d === '' ? '\u00A0' : d}
               </span>
             ))}
           </div>
 
           {/* 横線 */}
-          <div
-            style={{
-              borderTop: '2px solid black',
-              margin: '2px 0',
-              width: `${maxLength * 30 + 30}px`,
-            }}
-          />
+          <div style={getHissanLineStyle(maxLength)} />
 
           {/* 答え */}
           <div style={{ whiteSpace: 'nowrap' }}>
@@ -588,11 +501,8 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
                     <span
                       key={i}
                       style={{
-                        display: 'inline-block',
-                        width: '30px',
-                        textAlign: 'center',
-                        color: 'red',
-                        fontWeight: 'bold',
+                        ...hissanCellStyle,
+                        ...answerDisplayStyle,
                       }}
                     >
                       {d === '' ? '\u00A0' : d}
@@ -604,16 +514,7 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
                 {Array(maxLength + 1)
                   .fill(0)
                   .map((_, i) => (
-                    <span
-                      key={i}
-                      style={{
-                        display: 'inline-block',
-                        width: '30px',
-                        height: '30px',
-                        border: '1px solid #ccc',
-                        margin: '0 2px',
-                      }}
-                    />
+                    <span key={i} style={hissanAnswerBoxStyle} />
                   ))}
               </>
             )}
@@ -627,90 +528,51 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
   const basicProblem = problem as BasicProblem;
 
   return (
-    <div className="problem-text" style={{ marginBottom: '16px' }}>
-      <div style={{ fontSize: '12px', color: '#666' }}>({number})</div>
-      <div
-        style={{
-          fontFamily: 'monospace',
-          fontSize: '18px',
-          marginTop: '4px',
-        }}
-      >
+    <div className="problem-text" style={problemItemStyle}>
+      <div style={problemNumberStyle}>({number})</div>
+      <div style={problemTextStyle}>
         {/* operand1 */}
         {basicProblem.operand1 !== null ? (
           basicProblem.operand1
         ) : showAnswer ? (
-          <span style={{ color: 'red', fontWeight: 'bold' }}>
+          <span style={answerDisplayStyle}>
             {calculateMissingOperand1(basicProblem)}
           </span>
         ) : (
-          <span
-            style={{
-              display: 'inline-block',
-              width: '24px',
-              height: '24px',
-              border: '1.5px solid #333',
-              backgroundColor: '#f9f9f9',
-              verticalAlign: 'text-bottom',
-            }}
-          />
+          <span style={missingNumberBoxStyle} />
         )}
         {' ' + operationSymbol + ' '}
         {/* operand2 */}
         {basicProblem.operand2 !== null ? (
           basicProblem.operand2
         ) : showAnswer ? (
-          <span style={{ color: 'red', fontWeight: 'bold' }}>
+          <span style={answerDisplayStyle}>
             {calculateMissingOperand2(basicProblem)}
           </span>
         ) : (
-          <span
-            style={{
-              display: 'inline-block',
-              width: '24px',
-              height: '24px',
-              border: '1.5px solid #333',
-              backgroundColor: '#f9f9f9',
-              verticalAlign: 'text-bottom',
-            }}
-          />
+          <span style={missingNumberBoxStyle} />
         )}
         {' = '}
         {/* 答え */}
         {basicProblem.missingPosition === 'answer' ? (
           showAnswer ? (
-            <span style={{ color: 'red', fontWeight: 'bold' }}>
+            <span style={answerDisplayStyle}>
               {calculateMissingAnswer(basicProblem)}
             </span>
           ) : (
-            <span
-              style={{
-                display: 'inline-block',
-                width: '24px',
-                height: '24px',
-                border: '1.5px solid #333',
-                backgroundColor: '#f9f9f9',
-                verticalAlign: 'text-bottom',
-              }}
-            />
+            <span style={missingNumberBoxStyle} />
           )
-        ) : showAnswer && basicProblem.missingPosition ? (
+        ) : basicProblem.missingPosition ? (
+          // 虫食い算でoperand1またはoperand2が空白の場合、答えは常に表示
           <span style={{ fontFamily: 'monospace', fontSize: '18px' }}>
             {basicProblem.answer}
           </span>
         ) : showAnswer && basicProblem.answer !== null ? (
-          <span style={{ color: 'red', fontWeight: 'bold' }}>
+          <span style={answerDisplayStyle}>
             {basicProblem.answer}
           </span>
         ) : (
-          <span
-            style={{
-              display: 'inline-block',
-              width: '64px',
-              borderBottom: '1px solid black',
-              marginLeft: '4px',
-            }}
-          />
+          <span style={answerUnderlineStyle} />
         )}
       </div>
     </div>

@@ -155,4 +155,168 @@ describe('pattern-generators', () => {
       });
     });
   });
+
+  describe('Missing Number Problems (虫食い算)', () => {
+    describe('add-single-missing (1年生たし算虫食い算)', () => {
+      const settings: WorksheetSettings = {
+        grade: 1,
+        problemType: 'basic',
+        operation: 'addition',
+        problemCount: 20,
+        layoutColumns: 2,
+        calculationPattern: 'add-single-missing',
+      };
+
+      it('should only have operand1 or operand2 missing, never answer', () => {
+        const problems = generateProblems(settings);
+
+        expect(problems).toHaveLength(20);
+
+        problems.forEach((problem) => {
+          expect(problem.type).toBe('basic');
+          if (problem.type === 'basic') {
+            // missingPosition は 'operand1' または 'operand2' のみ
+            expect(['operand1', 'operand2']).toContain(problem.missingPosition);
+
+            // 答えは常に値がある
+            expect(problem.answer).not.toBeNull();
+            expect(typeof problem.answer).toBe('number');
+
+            // operand1 または operand2 のどちらか一方だけが null
+            const nullCount = [problem.operand1, problem.operand2].filter(v => v === null).length;
+            expect(nullCount).toBe(1);
+          }
+        });
+      });
+
+      it('should generate valid solvable problems', () => {
+        const problems = generateProblems(settings);
+
+        problems.forEach((problem) => {
+          if (problem.type === 'basic' && problem.answer !== null) {
+            // 問題が解答可能であることを確認
+            if (problem.operand1 === null && problem.operand2 !== null) {
+              expect(problem.answer - problem.operand2).toBeGreaterThanOrEqual(1);
+            } else if (problem.operand2 === null && problem.operand1 !== null) {
+              expect(problem.answer - problem.operand1).toBeGreaterThanOrEqual(1);
+            }
+          }
+        });
+      });
+    });
+
+    describe('sub-single-missing (1年生ひき算虫食い算)', () => {
+      const settings: WorksheetSettings = {
+        grade: 1,
+        problemType: 'basic',
+        operation: 'subtraction',
+        problemCount: 20,
+        layoutColumns: 2,
+        calculationPattern: 'sub-single-missing',
+      };
+
+      it('should only have operand1 or operand2 missing, never answer', () => {
+        const problems = generateProblems(settings);
+
+        expect(problems).toHaveLength(20);
+
+        problems.forEach((problem) => {
+          expect(problem.type).toBe('basic');
+          if (problem.type === 'basic') {
+            expect(['operand1', 'operand2']).toContain(problem.missingPosition);
+            expect(problem.answer).not.toBeNull();
+          }
+        });
+      });
+    });
+
+    describe('add-double-missing (2年生2桁たし算虫食い算)', () => {
+      const settings: WorksheetSettings = {
+        grade: 2,
+        problemType: 'basic',
+        operation: 'addition',
+        problemCount: 20,
+        layoutColumns: 2,
+        calculationPattern: 'add-double-missing',
+      };
+
+      it('should only have operand1 or operand2 missing, never answer', () => {
+        const problems = generateProblems(settings);
+
+        expect(problems).toHaveLength(20);
+
+        problems.forEach((problem) => {
+          expect(problem.type).toBe('basic');
+          if (problem.type === 'basic') {
+            expect(['operand1', 'operand2']).toContain(problem.missingPosition);
+            expect(problem.answer).not.toBeNull();
+
+            // 2桁の範囲確認
+            expect(problem.answer).toBeGreaterThanOrEqual(20);
+            expect(problem.answer).toBeLessThanOrEqual(99);
+          }
+        });
+      });
+    });
+
+    describe('sub-double-missing (2年生2桁ひき算虫食い算)', () => {
+      const settings: WorksheetSettings = {
+        grade: 2,
+        problemType: 'basic',
+        operation: 'subtraction',
+        problemCount: 20,
+        layoutColumns: 2,
+        calculationPattern: 'sub-double-missing',
+      };
+
+      it('should only have operand1 or operand2 missing, never answer', () => {
+        const problems = generateProblems(settings);
+
+        expect(problems).toHaveLength(20);
+
+        problems.forEach((problem) => {
+          expect(problem.type).toBe('basic');
+          if (problem.type === 'basic') {
+            expect(['operand1', 'operand2']).toContain(problem.missingPosition);
+            expect(problem.answer).not.toBeNull();
+          }
+        });
+      });
+    });
+
+    describe('mult-single-missing (2年生九九虫食い算)', () => {
+      const settings: WorksheetSettings = {
+        grade: 2,
+        problemType: 'basic',
+        operation: 'multiplication',
+        problemCount: 20,
+        layoutColumns: 2,
+        calculationPattern: 'mult-single-missing',
+      };
+
+      it('should only have operand1 or operand2 missing, never answer', () => {
+        const problems = generateProblems(settings);
+
+        expect(problems).toHaveLength(20);
+
+        problems.forEach((problem) => {
+          expect(problem.type).toBe('basic');
+          if (problem.type === 'basic') {
+            expect(['operand1', 'operand2']).toContain(problem.missingPosition);
+            expect(problem.answer).not.toBeNull();
+
+            // 九九の範囲確認
+            if (problem.operand1 !== null) {
+              expect(problem.operand1).toBeGreaterThanOrEqual(2);
+              expect(problem.operand1).toBeLessThanOrEqual(9);
+            }
+            if (problem.operand2 !== null) {
+              expect(problem.operand2).toBeGreaterThanOrEqual(2);
+              expect(problem.operand2).toBeLessThanOrEqual(9);
+            }
+          }
+        });
+      });
+    });
+  });
 });

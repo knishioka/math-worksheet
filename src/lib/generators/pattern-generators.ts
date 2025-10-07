@@ -2094,20 +2094,16 @@ function generateAddSingleMissing(
   for (let i = 0; i < count; i++) {
     // 答えが10以下になるようにする
     const answer = randomInt(3, 10);
-    const missingPosition = (['operand1', 'operand2', 'answer'] as const)[
-      randomInt(0, 2)
+    // 虫食い算では operand1 または operand2 のみを空白にする（答えを求める普通の計算問題は除外）
+    const missingPosition = (['operand1', 'operand2'] as const)[
+      randomInt(0, 1)
     ];
 
     let operand1: number | null = null;
     let operand2: number | null = null;
     let answerValue: number | null = answer;
 
-    if (missingPosition === 'answer') {
-      // □ の位置が答えの場合: 3 + 4 = □
-      operand1 = randomInt(1, answer - 1);
-      operand2 = answer - operand1;
-      answerValue = null;
-    } else if (missingPosition === 'operand1') {
+    if (missingPosition === 'operand1') {
       // □ の位置が最初の数の場合: □ + 3 = 7
       operand2 = randomInt(1, answer - 1);
       operand1 = null;
@@ -2142,20 +2138,16 @@ function generateSubSingleMissing(
   const problems: BasicProblem[] = [];
 
   for (let i = 0; i < count; i++) {
-    const missingPosition = (['operand1', 'operand2', 'answer'] as const)[
-      randomInt(0, 2)
+    // 虫食い算では operand1 または operand2 のみを空白にする（答えを求める普通の計算問題は除外）
+    const missingPosition = (['operand1', 'operand2'] as const)[
+      randomInt(0, 1)
     ];
 
     let operand1: number | null = null;
     let operand2: number | null = null;
     let answer: number | null = null;
 
-    if (missingPosition === 'answer') {
-      // □ の位置が答えの場合: 8 - 3 = □
-      operand1 = randomInt(4, 10);
-      operand2 = randomInt(1, operand1 - 1);
-      answer = null;
-    } else if (missingPosition === 'operand1') {
+    if (missingPosition === 'operand1') {
       // □ の位置が最初の数の場合: □ - 3 = 5
       answer = randomInt(1, 7);
       operand2 = randomInt(1, 3);
@@ -2192,20 +2184,16 @@ function generateAddDoubleMissing(
   for (let i = 0; i < count; i++) {
     // 答えが100以下になるようにする
     const answer = randomInt(20, 99);
-    const missingPosition = (['operand1', 'operand2', 'answer'] as const)[
-      randomInt(0, 2)
+    // 虫食い算では operand1 または operand2 のみを空白にする（答えを求める普通の計算問題は除外）
+    const missingPosition = (['operand1', 'operand2'] as const)[
+      randomInt(0, 1)
     ];
 
     let operand1: number | null = null;
     let operand2: number | null = null;
     let answerValue: number | null = answer;
 
-    if (missingPosition === 'answer') {
-      // □ の位置が答えの場合
-      operand1 = randomInt(10, Math.min(89, answer - 10));
-      operand2 = answer - operand1;
-      answerValue = null;
-    } else if (missingPosition === 'operand1') {
+    if (missingPosition === 'operand1') {
       // □ の位置が最初の数の場合
       operand2 = randomInt(10, Math.min(89, answer - 10));
       operand1 = null;
@@ -2239,20 +2227,16 @@ function generateSubDoubleMissing(
   const problems: BasicProblem[] = [];
 
   for (let i = 0; i < count; i++) {
-    const missingPosition = (['operand1', 'operand2', 'answer'] as const)[
-      randomInt(0, 2)
+    // 虫食い算では operand1 または operand2 のみを空白にする（答えを求める普通の計算問題は除外）
+    const missingPosition = (['operand1', 'operand2'] as const)[
+      randomInt(0, 1)
     ];
 
     let operand1: number | null = null;
     let operand2: number | null = null;
     let answer: number | null = null;
 
-    if (missingPosition === 'answer') {
-      // □ の位置が答えの場合
-      operand1 = randomInt(30, 99);
-      operand2 = randomInt(10, operand1 - 10);
-      answer = null;
-    } else if (missingPosition === 'operand1') {
+    if (missingPosition === 'operand1') {
       // □ の位置が最初の数の場合
       answer = randomInt(10, 80);
       operand2 = randomInt(10, 40);
@@ -2296,37 +2280,31 @@ function generateMultSingleMissing(
     const maxAttempts = 50;
 
     do {
-      missingPosition = (['operand1', 'operand2', 'answer'] as const)[
-        randomInt(0, 2)
+      // 虫食い算では operand1 または operand2 のみを空白にする（答えを求める普通の計算問題は除外）
+      missingPosition = (['operand1', 'operand2'] as const)[
+        randomInt(0, 1)
       ];
 
-      if (missingPosition === 'answer') {
-        // □ の位置が答えの場合: 3 × 4 = □
-        operand1 = randomInt(2, 9);
-        operand2 = randomInt(2, 9);
-        answer = null;
+      // 答えから逆算
+      const validProducts = [];
+      for (let a = 2; a <= 9; a++) {
+        for (let b = 2; b <= 9; b++) {
+          validProducts.push({ a, b, product: a * b });
+        }
+      }
+
+      const selected = validProducts[randomInt(0, validProducts.length - 1)];
+
+      if (missingPosition === 'operand1') {
+        // □ × 4 = 12
+        operand1 = null;
+        operand2 = selected.b;
+        answer = selected.product;
       } else {
-        // 答えから逆算
-        const validProducts = [];
-        for (let a = 2; a <= 9; a++) {
-          for (let b = 2; b <= 9; b++) {
-            validProducts.push({ a, b, product: a * b });
-          }
-        }
-
-        const selected = validProducts[randomInt(0, validProducts.length - 1)];
-
-        if (missingPosition === 'operand1') {
-          // □ × 4 = 12
-          operand1 = null;
-          operand2 = selected.b;
-          answer = selected.product;
-        } else {
-          // 3 × □ = 12
-          operand1 = selected.a;
-          operand2 = null;
-          answer = selected.product;
-        }
+        // 3 × □ = 12
+        operand1 = selected.a;
+        operand2 = null;
+        answer = selected.product;
       }
 
       key = `${operand1}×${operand2}=${answer}`;
