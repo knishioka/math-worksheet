@@ -112,47 +112,17 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
           {worksheetsToDisplay.map((worksheet, index) => (
             <div
               key={index}
-              className="print-page"
-              style={{ pageBreakAfter: index < worksheetsToDisplay.length - 1 ? 'always' : 'auto' }}
+              style={{
+                pageBreakAfter: index < worksheetsToDisplay.length - 1 ? 'always' : 'auto',
+                display: index === 0 || shouldPrint ? 'block' : 'none',
+              }}
             >
-              {/* Print Header - Only visible when printing */}
-              <div className="print-only p-3 border-b border-gray-200">
-                <div className="grid grid-cols-3 gap-4 mb-3">
-                  <div className="text-sm flex items-baseline">
-                    名前：
-                    <span
-                      className="inline-block w-32 border-b border-black mx-1"
-                      style={{ height: '1.2rem' }}
-                    />
-                  </div>
-                  <div className="text-sm text-center">
-                    {getPreviewTitle(worksheet.settings)}
-                  </div>
-                  <div className="text-sm text-right flex items-baseline justify-end">
-                    点数：
-                    <span
-                      className="inline-block w-16 border-b border-black mx-1"
-                      style={{ height: '1.2rem' }}
-                    />
-                    点
-                  </div>
-                </div>
-              </div>
-
-              {/* Problems Content */}
-              <div className="p-4 print:p-2">
-                <ProblemList
-                  problems={worksheet.problems}
-                  layoutColumns={worksheet.settings.layoutColumns}
-                  showAnswers={showAnswers}
-                  settings={worksheet.settings}
-                />
-              </div>
-
-              {/* Footer - Only visible when printing */}
-              <div className="print-only p-2 border-t border-gray-200 text-center text-xs text-gray-500">
-                計算プリント自動作成ツール
-              </div>
+              <ProblemList
+                problems={worksheet.problems}
+                layoutColumns={worksheet.settings.layoutColumns}
+                showAnswers={showAnswers}
+                settings={worksheet.settings}
+              />
             </div>
           ))}
         </div>
