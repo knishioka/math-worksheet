@@ -15,15 +15,15 @@ export const WordProblemEnComponent: React.FC<WordProblemEnProps> = ({
   showAnswer = false,
 }) => {
   return (
-    <div style={{ textAlign: 'left', fontSize: '18px', lineHeight: '1.6', color: '#000' }}>
-      <div style={{ marginBottom: '8px' }}>
+    <div style={{ textAlign: 'left', fontSize: '15px', lineHeight: '1.3', color: '#000' }}>
+      <div style={{ marginBottom: '2px' }}>
         {problem.problemText}
       </div>
 
       {problem.category === 'word-story' && (
-        <div style={{ marginTop: '12px', display: 'flex', alignItems: 'flex-end', gap: '8px' }}>
-          <span style={{ color: '#000', fontSize: '14px' }}>Answer:</span>
-          <div style={{ borderBottom: '2px solid #000', minWidth: '4rem', padding: '0 8px', height: '1.2em' }}>
+        <div style={{ marginTop: '4px', display: 'flex', alignItems: 'flex-end', gap: '6px' }}>
+          <span style={{ color: '#000', fontSize: '13px' }}>Answer:</span>
+          <div style={{ borderBottom: '1.5px solid #000', minWidth: '3.5rem', padding: '0 6px', height: '1.1em' }}>
             {showAnswer && (
               <span style={{ fontWeight: '500', color: '#000' }}>
                 {problem.answer}

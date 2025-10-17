@@ -257,12 +257,12 @@ export const PRINT_TEMPLATES: Record<ProblemType, PrintTemplate> = {
   'word-en': {
     type: 'word-en',
     displayName: 'English Word Problems',
-    description: 'Word problems for international school students. Compact spacing for efficient layout.',
+    description: 'Word problems for international school students. Ultra compact spacing for A4 fit.',
     layout: {
-      rowGap: '8px',
-      colGap: '20px',
-      fontSize: '18px',
-      minProblemHeight: '80px',
+      rowGap: '2px',
+      colGap: '16px',
+      fontSize: '15px',
+      minProblemHeight: '60px',
     },
     recommendedCounts: {
       1: 8,

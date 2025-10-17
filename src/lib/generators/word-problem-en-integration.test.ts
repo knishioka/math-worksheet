@@ -132,11 +132,11 @@ describe('Word Problem EN Integration', () => {
     it('should have appropriate spacing for English text', () => {
       const template = getPrintTemplate('word-en');
 
-      // Verify layout settings are optimized for English word problems
-      expect(template.layout.rowGap).toBe('8px');
-      expect(template.layout.colGap).toBe('20px');
-      expect(template.layout.fontSize).toBe('18px');
-      expect(template.layout.minProblemHeight).toBe('80px');
+      // Verify layout settings are optimized for ultra-compact English word problems
+      expect(template.layout.rowGap).toBe('2px');
+      expect(template.layout.colGap).toBe('16px');
+      expect(template.layout.fontSize).toBe('15px');
+      expect(template.layout.minProblemHeight).toBe('60px');
     });
 
     it('should have tighter spacing than Japanese word problems', () => {
@@ -147,8 +147,14 @@ describe('Word Problem EN Integration', () => {
       expect(parseInt(wordEnTemplate.layout.rowGap)).toBeLessThan(
         parseInt(wordTemplate.layout.rowGap)
       );
-      expect(wordEnTemplate.layout.colGap).toBe(wordTemplate.layout.colGap);
-      expect(wordEnTemplate.layout.minProblemHeight).toBe(wordTemplate.layout.minProblemHeight);
+      // word-en has tighter column spacing for compact layout
+      expect(parseInt(wordEnTemplate.layout.colGap)).toBeLessThan(
+        parseInt(wordTemplate.layout.colGap)
+      );
+      // word-en has smaller problem height for tighter fit
+      expect(parseInt(wordEnTemplate.layout.minProblemHeight)).toBeLessThan(
+        parseInt(wordTemplate.layout.minProblemHeight)
+      );
 
       // They should have the same recommended counts
       expect(wordEnTemplate.recommendedCounts[1]).toBe(8);

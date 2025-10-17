@@ -161,6 +161,16 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
     settings.problemType === 'word-en' ? 'word-en' : settings.problemType
   );
 
+  // テンプレートから gap を取得
+  const template = getPrintTemplate(
+    settings.problemType === 'word-en' ? 'word-en' : settings.problemType
+  );
+  const gridGapStyle: React.CSSProperties = {
+    display: 'grid',
+    rowGap: template.layout.rowGap,
+    columnGap: template.layout.colGap,
+  };
+
   // 印刷モードの場合は外側のラッパーを省略
   const content = (
     <>
@@ -205,7 +215,8 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
         </div>
 
         <div
-          className={`grid ${gridCols} gap-x-3 gap-y-2 print:gap-y-1 avoid-break`}
+          className={`${gridCols} avoid-break`}
+          style={gridGapStyle}
         >
           {reorderedProblems.map((problem, index) => {
         if (!problem) {

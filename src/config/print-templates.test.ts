@@ -18,9 +18,9 @@ describe('Print Templates', () => {
 
       expect(template.type).toBe('word-en');
       expect(template.displayName).toBe('English Word Problems');
-      expect(template.layout.rowGap).toBe('8px');
-      expect(template.layout.colGap).toBe('20px');
-      expect(template.layout.fontSize).toBe('18px');
+      expect(template.layout.rowGap).toBe('2px');
+      expect(template.layout.colGap).toBe('16px');
+      expect(template.layout.fontSize).toBe('15px');
     });
 
     it('should have word-en recommended counts for all layouts', () => {
@@ -69,7 +69,10 @@ describe('Print Templates', () => {
       expect(parseInt(wordEnTemplate.layout.rowGap)).toBeLessThan(
         parseInt(wordTemplate.layout.rowGap)
       );
-      expect(wordEnTemplate.layout.colGap).toBe(wordTemplate.layout.colGap);
+      // word-en has tighter column spacing than word for compact layout
+      expect(parseInt(wordEnTemplate.layout.colGap)).toBeLessThan(
+        parseInt(wordTemplate.layout.colGap)
+      );
     });
 
     it('should return template for all problem types', () => {
