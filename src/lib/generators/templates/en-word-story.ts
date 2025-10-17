@@ -822,7 +822,7 @@ export const MIXED_OPERATION_STORIES: WordStoryTemplate[] = [
 ];
 
 /**
- * Grade 3+: Comparison problems
+ * Grade 2+: Comparison problems (expanded)
  */
 export const COMPARISON_STORIES: WordStoryTemplate[] = [
   {
@@ -840,7 +840,7 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
         operation: 'addition' as Operation,
       };
     },
-    minGrade: 3,
+    minGrade: 2,
     maxGrade: 6,
     category: 'comparison',
   },
@@ -861,9 +861,318 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
         operation: 'subtraction' as Operation,
       };
     },
-    minGrade: 3,
+    minGrade: 2,
     maxGrade: 6,
     category: 'comparison',
+  },
+  {
+    generateProblem: (grade) => {
+      const name1 = getRandomName();
+      const name2 = getRandomName();
+      const item = getRandomItem(true);
+      const count2 = randomInt(10, grade >= 5 ? 60 : 30);
+      const more = randomInt(5, grade >= 5 ? 40 : 20);
+      const answer = count2 + more;
+
+      return {
+        text: `${name2} has ${count2} ${item}. ${name1} has ${more} more ${item} than ${name2}. How many ${item} does ${name1} have?`,
+        answer,
+        operation: 'addition' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 6,
+    category: 'comparison',
+  },
+  {
+    generateProblem: (grade) => {
+      const name1 = getRandomName();
+      const name2 = getRandomName();
+      const item = getRandomItem(true);
+      const count1 = randomInt(15, grade >= 5 ? 80 : 40);
+      const count2 = randomInt(10, count1 - 5);
+      const answer = count1 - count2;
+
+      return {
+        text: `${name1} has ${count1} ${item} and ${name2} has ${count2} ${item}. How many more ${item} does ${name1} have than ${name2}?`,
+        answer,
+        operation: 'subtraction' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 6,
+    category: 'comparison',
+  },
+  {
+    generateProblem: (grade) => {
+      const name1 = getRandomName();
+      const name2 = getRandomName();
+      const name3 = getRandomName();
+      const item = getRandomItem(true);
+      const count1 = randomInt(10, grade >= 5 ? 40 : 25);
+      const count2 = randomInt(8, grade >= 5 ? 35 : 20);
+      const count3 = randomInt(7, grade >= 5 ? 30 : 18);
+      const answer = count1 + count2 + count3;
+
+      return {
+        text: `${name1} has ${count1} ${item}, ${name2} has ${count2}, and ${name3} has ${count3}. How many ${item} do they have in total?`,
+        answer,
+        operation: 'addition' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 6,
+    category: 'comparison',
+  },
+  {
+    generateProblem: (grade) => {
+      const item = getRandomItem(true);
+      const container1 = ['basket', 'box', 'bag', 'jar'][randomInt(0, 3)];
+      const container2 = ['basket', 'box', 'bag', 'jar'][randomInt(0, 3)];
+      const count1 = randomInt(12, grade >= 5 ? 60 : 35);
+      const count2 = randomInt(8, count1 - 4);
+      const answer = count1 - count2;
+
+      return {
+        text: `There are ${count1} ${item} in a ${container1} and ${count2} ${item} in a ${container2}. How many more ${item} are in the ${container1}?`,
+        answer,
+        operation: 'subtraction' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 6,
+    category: 'comparison',
+  },
+];
+
+/**
+ * Grade 2+: Pattern and sequence problems (NEW)
+ */
+export const PATTERN_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: (grade) => {
+      const start = randomInt(grade <= 3 ? 2 : 5, grade <= 3 ? 10 : 20);
+      const step = randomInt(2, grade <= 3 ? 5 : 10);
+      const numSteps = randomInt(2, grade <= 3 ? 3 : 4);
+      const answer = start + step * numSteps;
+
+      return {
+        text: `A pattern starts at ${start} and goes up by ${step} each time: ${start}, ${start + step}, ${start + step * 2}, ... What is the number after ${numSteps} steps?`,
+        answer,
+        operation: 'addition' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const total = randomInt(grade <= 3 ? 20 : 40, grade <= 3 ? 40 : 80);
+      const step = randomInt(2, grade <= 3 ? 5 : 8);
+      const current = randomInt(step * 2, total - step * 2);
+      const answer = current + step;
+
+      return {
+        text: `A number pattern goes from 0 to ${total} by ${step}s. What comes after ${current}?`,
+        answer,
+        operation: 'addition' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+];
+
+/**
+ * Grade 2+: Shape and geometry problems (NEW)
+ */
+export const GEOMETRY_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: (grade) => {
+      const numShapes = randomInt(2, grade <= 3 ? 4 : 6);
+      const sidesPerShape = randomInt(3, grade <= 3 ? 4 : 6);
+      const answer = numShapes * sidesPerShape;
+
+      const shapeName = sidesPerShape === 3 ? 'triangle' : sidesPerShape === 4 ? 'square' : sidesPerShape === 5 ? 'pentagon' : 'hexagon';
+      const plural = numShapes === 1 ? shapeName : shapeName + 's';
+
+      return {
+        text: `There are ${numShapes} ${plural}. How many sides are there in total?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const length = randomInt(grade <= 3 ? 5 : 10, grade <= 3 ? 15 : 25);
+      const width = randomInt(grade <= 3 ? 3 : 8, grade <= 3 ? 12 : 20);
+      const answer = (length + width) * 2;
+
+      return {
+        text: `A rectangle is ${length} cm long and ${width} cm wide. What is the perimeter?`,
+        answer,
+        operation: 'addition' as Operation,
+      };
+    },
+    minGrade: 3,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const side = randomInt(grade <= 3 ? 5 : 8, grade <= 3 ? 12 : 18);
+      const answer = side * 4;
+
+      return {
+        text: `Each side of a square is ${side} cm. What is the perimeter of the square?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+];
+
+/**
+ * Grade 2+: Collection and grouping problems (NEW)
+ */
+export const COLLECTION_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const days = randomInt(2, grade <= 3 ? 5 : 7);
+      const perDay = randomInt(2, grade <= 3 ? 8 : 12);
+      const answer = days * perDay;
+
+      return {
+        text: `${name} collects ${perDay} shells every day. How many shells does ${name === 'Tom' || name === 'Sam' || name === 'Max' || name === 'Ben' || name === 'Jack' || name === 'Leo' || name === 'Noah' || name === 'Finn' ? 'he' : 'she'} have after ${days} days?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const item = getRandomItem(true);
+      const shelves = randomInt(2, grade <= 3 ? 4 : 6);
+      const perShelf = randomInt(grade <= 3 ? 5 : 8, grade <= 3 ? 12 : 18);
+      const answer = shelves * perShelf;
+
+      return {
+        text: `A library has ${shelves} shelves. Each shelf holds ${perShelf} ${item}. How many ${item} are there in total?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const item = getRandomItem(true);
+      const total = randomInt(grade <= 3 ? 20 : 40, grade <= 3 ? 50 : 100);
+      const redPercent = randomInt(20, 50);
+      const red = Math.floor(total * redPercent / 100);
+      const answer = total - red;
+
+      return {
+        text: `${name} has ${total} ${item}. ${red} are red and the rest are blue. How many blue ${item} are there?`,
+        answer,
+        operation: 'subtraction' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const item = getRandomItem(true);
+      const pages = randomInt(2, grade <= 3 ? 5 : 8);
+      const perPage = randomInt(grade <= 3 ? 4 : 6, grade <= 3 ? 9 : 12);
+      const answer = pages * perPage;
+
+      return {
+        text: `${name} has a collection album with ${pages} pages. Each page has ${perPage} ${item}. How many ${item} are in the album?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+];
+
+/**
+ * Grade 2+: Transportation and travel problems (NEW)
+ */
+export const TRAVEL_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: (grade) => {
+      const vehicle = ['bus', 'train', 'boat', 'plane'][randomInt(0, 3)];
+      const trips = randomInt(2, grade <= 3 ? 4 : 6);
+      const peoplePerTrip = randomInt(grade <= 3 ? 10 : 20, grade <= 3 ? 40 : 60);
+      const answer = trips * peoplePerTrip;
+
+      return {
+        text: `A ${vehicle} makes ${trips} trips. Each trip carries ${peoplePerTrip} people. How many people travel in total?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const to = randomInt(grade <= 3 ? 10 : 20, grade <= 3 ? 30 : 50);
+      const back = randomInt(grade <= 3 ? 8 : 15, grade <= 3 ? 25 : 45);
+      const answer = to + back;
+
+      return {
+        text: `${name} walks ${to} meters to the park and ${back} meters back home. How far does ${name === 'Tom' || name === 'Sam' || name === 'Max' || name === 'Ben' || name === 'Jack' || name === 'Leo' || name === 'Noah' || name === 'Finn' ? 'he' : 'she'} walk in total?`,
+        answer,
+        operation: 'addition' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const rows = randomInt(2, grade <= 3 ? 5 : 8);
+      const seatsPerRow = randomInt(grade <= 3 ? 4 : 6, grade <= 3 ? 8 : 12);
+      const empty = randomInt(2, grade <= 3 ? 5 : 10);
+      const total = rows * seatsPerRow;
+      const answer = total - empty;
+
+      return {
+        text: `A bus has ${rows} rows with ${seatsPerRow} seats in each row. ${empty} seats are empty. How many people are on the bus?`,
+        answer,
+        operation: 'subtraction' as Operation,
+      };
+    },
+    minGrade: 2,
+    maxGrade: 6,
+    category: 'word-story',
   },
 ];
 
@@ -885,6 +1194,10 @@ export function getStoriesForGrade(grade: number): WordStoryTemplate[] {
     ...MONEY_STORIES,
     ...MEASUREMENT_STORIES,
     ...MIXED_OPERATION_STORIES,
+    ...PATTERN_STORIES,
+    ...GEOMETRY_STORIES,
+    ...COLLECTION_STORIES,
+    ...TRAVEL_STORIES,
   ];
 
   allStories.forEach((story) => {

@@ -50,7 +50,8 @@ describe('English Word Problem Generator', () => {
 
       problems.forEach((problem) => {
         expect(problem.type).toBe('word-en');
-        expect(problem.category).toBe('word-story');
+        // Can be either word-story or comparison
+        expect(['word-story', 'comparison']).toContain(problem.category);
         expect(problem.language).toBe('en');
         expect(problem.problemText.length).toBeGreaterThan(20); // Real sentences
         expect(typeof problem.answer).toBe('number');
