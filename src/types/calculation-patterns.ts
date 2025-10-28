@@ -89,7 +89,65 @@ export type CalculationPattern =
   | 'unit-capacity-jap' // かさの単位変換（L, dL, mL）
   | 'unit-length-en' // Length unit conversion (m, cm, mm, km)
   | 'unit-weight-en' // Weight unit conversion (kg, g)
-  | 'unit-capacity-en'; // Capacity unit conversion (L, mL)
+  | 'unit-capacity-en' // Capacity unit conversion (L, mL)
+
+  // 買い物の計算（3-6年生）
+  | 'shopping-discount-jap' // 割引計算（日本円）
+  | 'shopping-budget-jap' // 予算内の買い物（日本円）
+  | 'shopping-comparison-jap' // 値段の比較（日本円）
+  | 'shopping-discount-en' // Discount calculation (RM)
+  | 'shopping-budget-en' // Shopping within budget (RM)
+  | 'shopping-comparison-en' // Price comparison (RM)
+
+  // 温度の計算（2-6年生）
+  | 'temperature-diff-jap' // 温度差の計算（日本語）
+  | 'temperature-conversion-jap' // 温度の変換（日本語、高学年）
+  | 'temperature-diff-en' // Temperature difference (English)
+  | 'temperature-conversion-en' // Temperature conversion (English)
+
+  // 距離と地図の計算（3-6年生）
+  | 'distance-walk-jap' // 歩く距離の計算（日本語）
+  | 'distance-map-scale-jap' // 地図の縮尺計算（日本語、高学年）
+  | 'distance-comparison-jap' // 距離の比較（日本語）
+  | 'distance-walk-en' // Walking distance (English)
+  | 'distance-map-scale-en' // Map scale calculation (English)
+  | 'distance-comparison-en' // Distance comparison (English)
+
+  // 料理の計算（3-6年生）
+  | 'cooking-ingredients-jap' // 材料の量の計算（日本語）
+  | 'cooking-time-jap' // 調理時間の計算（日本語）
+  | 'cooking-serving-jap' // 人数分の計算（日本語）
+  | 'cooking-ingredients-en' // Ingredient quantities (English)
+  | 'cooking-time-en' // Cooking time calculation (English)
+  | 'cooking-serving-en' // Serving size calculation (English)
+
+  // カレンダー・日付の計算（2-4年生）
+  | 'calendar-days-jap' // 日数の計算（日本語）
+  | 'calendar-week-jap' // 週数の計算（日本語）
+  | 'calendar-age-jap' // 年齢の計算（日本語）
+  | 'calendar-days-en' // Days calculation (English)
+  | 'calendar-week-en' // Weeks calculation (English)
+  | 'calendar-age-en' // Age calculation (English)
+
+  // 省エネ・電気の計算（4-6年生）
+  | 'energy-usage-jap' // 電気使用量の計算（日本語）
+  | 'energy-saving-jap' // 節約額の計算（日本語）
+  | 'energy-usage-en' // Energy usage calculation (English)
+  | 'energy-saving-en' // Energy saving calculation (English)
+
+  // 交通費の計算（2-4年生）
+  | 'transport-fare-jap' // 運賃の計算（日本円）
+  | 'transport-change-jap' // 交通機関のおつり（日本円）
+  | 'transport-discount-jap' // 回数券・定期券（日本円）
+  | 'transport-fare-en' // Transportation fare (RM)
+  | 'transport-change-en' // Transport change (RM)
+  | 'transport-discount-en' // Ticket/Pass discounts (RM)
+
+  // お小遣いの管理（2-4年生）
+  | 'allowance-saving-jap' // 貯金の計算（日本円）
+  | 'allowance-goal-jap' // 目標達成までの計算（日本円）
+  | 'allowance-saving-en' // Saving calculation (RM)
+  | 'allowance-goal-en'; // Savings goal (RM)
 
 // 学年別の利用可能なパターン
 export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
@@ -134,6 +192,22 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'time-elapsed-jap',
     'time-reading-en',
     'time-elapsed-en',
+    'temperature-diff-jap',
+    'temperature-diff-en',
+    'calendar-days-jap',
+    'calendar-week-jap',
+    'calendar-age-jap',
+    'calendar-days-en',
+    'calendar-week-en',
+    'calendar-age-en',
+    'transport-fare-jap',
+    'transport-change-jap',
+    'transport-fare-en',
+    'transport-change-en',
+    'allowance-saving-jap',
+    'allowance-goal-jap',
+    'allowance-saving-en',
+    'allowance-goal-en',
   ],
   3: [
     'add-triple-digit',
@@ -165,6 +239,40 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'unit-length-en',
     'unit-weight-en',
     'unit-capacity-en',
+    'shopping-discount-jap',
+    'shopping-budget-jap',
+    'shopping-comparison-jap',
+    'shopping-discount-en',
+    'shopping-budget-en',
+    'shopping-comparison-en',
+    'temperature-diff-jap',
+    'temperature-diff-en',
+    'distance-walk-jap',
+    'distance-comparison-jap',
+    'distance-walk-en',
+    'distance-comparison-en',
+    'cooking-ingredients-jap',
+    'cooking-time-jap',
+    'cooking-serving-jap',
+    'cooking-ingredients-en',
+    'cooking-time-en',
+    'cooking-serving-en',
+    'calendar-days-jap',
+    'calendar-week-jap',
+    'calendar-age-jap',
+    'calendar-days-en',
+    'calendar-week-en',
+    'calendar-age-en',
+    'transport-fare-jap',
+    'transport-change-jap',
+    'transport-discount-jap',
+    'transport-fare-en',
+    'transport-change-en',
+    'transport-discount-en',
+    'allowance-saving-jap',
+    'allowance-goal-jap',
+    'allowance-saving-en',
+    'allowance-goal-en',
   ],
   4: [
     'add-large-numbers',
@@ -195,6 +303,44 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'unit-length-en',
     'unit-weight-en',
     'unit-capacity-en',
+    'shopping-discount-jap',
+    'shopping-budget-jap',
+    'shopping-comparison-jap',
+    'shopping-discount-en',
+    'shopping-budget-en',
+    'shopping-comparison-en',
+    'temperature-diff-jap',
+    'temperature-diff-en',
+    'distance-walk-jap',
+    'distance-comparison-jap',
+    'distance-walk-en',
+    'distance-comparison-en',
+    'cooking-ingredients-jap',
+    'cooking-time-jap',
+    'cooking-serving-jap',
+    'cooking-ingredients-en',
+    'cooking-time-en',
+    'cooking-serving-en',
+    'calendar-days-jap',
+    'calendar-week-jap',
+    'calendar-age-jap',
+    'calendar-days-en',
+    'calendar-week-en',
+    'calendar-age-en',
+    'energy-usage-jap',
+    'energy-saving-jap',
+    'energy-usage-en',
+    'energy-saving-en',
+    'transport-fare-jap',
+    'transport-change-jap',
+    'transport-discount-jap',
+    'transport-fare-en',
+    'transport-change-en',
+    'transport-discount-en',
+    'allowance-saving-jap',
+    'allowance-goal-jap',
+    'allowance-saving-en',
+    'allowance-goal-en',
   ],
   5: [
     'mult-dec-dec',
@@ -210,6 +356,32 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'unit-length-en',
     'unit-weight-en',
     'unit-capacity-en',
+    'shopping-discount-jap',
+    'shopping-budget-jap',
+    'shopping-comparison-jap',
+    'shopping-discount-en',
+    'shopping-budget-en',
+    'shopping-comparison-en',
+    'temperature-diff-jap',
+    'temperature-conversion-jap',
+    'temperature-diff-en',
+    'temperature-conversion-en',
+    'distance-walk-jap',
+    'distance-map-scale-jap',
+    'distance-comparison-jap',
+    'distance-walk-en',
+    'distance-map-scale-en',
+    'distance-comparison-en',
+    'cooking-ingredients-jap',
+    'cooking-time-jap',
+    'cooking-serving-jap',
+    'cooking-ingredients-en',
+    'cooking-time-en',
+    'cooking-serving-en',
+    'energy-usage-jap',
+    'energy-saving-jap',
+    'energy-usage-en',
+    'energy-saving-en',
   ],
   6: [
     'frac-mult',
@@ -224,6 +396,32 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'unit-length-en',
     'unit-weight-en',
     'unit-capacity-en',
+    'shopping-discount-jap',
+    'shopping-budget-jap',
+    'shopping-comparison-jap',
+    'shopping-discount-en',
+    'shopping-budget-en',
+    'shopping-comparison-en',
+    'temperature-diff-jap',
+    'temperature-conversion-jap',
+    'temperature-diff-en',
+    'temperature-conversion-en',
+    'distance-walk-jap',
+    'distance-map-scale-jap',
+    'distance-comparison-jap',
+    'distance-walk-en',
+    'distance-map-scale-en',
+    'distance-comparison-en',
+    'cooking-ingredients-jap',
+    'cooking-time-jap',
+    'cooking-serving-jap',
+    'cooking-ingredients-en',
+    'cooking-time-en',
+    'cooking-serving-en',
+    'energy-usage-jap',
+    'energy-saving-jap',
+    'energy-usage-en',
+    'energy-saving-en',
   ],
 };
 
@@ -319,6 +517,64 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'unit-length-en': 'Length Units (m, cm, mm, km)',
   'unit-weight-en': 'Weight Units (kg, g)',
   'unit-capacity-en': 'Capacity Units (L, mL)',
+
+  // 買い物の計算
+  'shopping-discount-jap': '割引計算',
+  'shopping-budget-jap': '予算内の買い物',
+  'shopping-comparison-jap': '値段の比較',
+  'shopping-discount-en': 'Discount Calculation',
+  'shopping-budget-en': 'Shopping within Budget',
+  'shopping-comparison-en': 'Price Comparison',
+
+  // 温度の計算
+  'temperature-diff-jap': '温度差の計算',
+  'temperature-conversion-jap': '温度の変換（℃⇔℉）',
+  'temperature-diff-en': 'Temperature Difference',
+  'temperature-conversion-en': 'Temperature Conversion (°C⇔°F)',
+
+  // 距離と地図
+  'distance-walk-jap': '歩く距離の計算',
+  'distance-map-scale-jap': '地図の縮尺',
+  'distance-comparison-jap': '距離の比較',
+  'distance-walk-en': 'Walking Distance',
+  'distance-map-scale-en': 'Map Scale',
+  'distance-comparison-en': 'Distance Comparison',
+
+  // 料理の計算
+  'cooking-ingredients-jap': '材料の量（倍量・半量）',
+  'cooking-time-jap': '調理時間',
+  'cooking-serving-jap': '人数分の計算',
+  'cooking-ingredients-en': 'Ingredient Quantities',
+  'cooking-time-en': 'Cooking Time',
+  'cooking-serving-en': 'Serving Size',
+
+  // カレンダー・日付
+  'calendar-days-jap': '日数の計算',
+  'calendar-week-jap': '週数の計算',
+  'calendar-age-jap': '年齢の計算',
+  'calendar-days-en': 'Days Calculation',
+  'calendar-week-en': 'Weeks Calculation',
+  'calendar-age-en': 'Age Calculation',
+
+  // 省エネ・電気
+  'energy-usage-jap': '電気使用量',
+  'energy-saving-jap': '節約額',
+  'energy-usage-en': 'Energy Usage',
+  'energy-saving-en': 'Energy Saving',
+
+  // 交通費
+  'transport-fare-jap': '運賃の計算',
+  'transport-change-jap': '交通機関のおつり',
+  'transport-discount-jap': '回数券・定期券',
+  'transport-fare-en': 'Transportation Fare',
+  'transport-change-en': 'Transport Change',
+  'transport-discount-en': 'Ticket/Pass Discounts',
+
+  // お小遣い管理
+  'allowance-saving-jap': '貯金の計算',
+  'allowance-goal-jap': '目標達成までの期間',
+  'allowance-saving-en': 'Saving Calculation',
+  'allowance-goal-en': 'Savings Goal',
 };
 
 // パターンの説明
@@ -413,4 +669,62 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'unit-length-en': '3m 50cm = □cm, 1.5km = □m',
   'unit-weight-en': '2kg 300g = □g, 2500g = □kg □g',
   'unit-capacity-en': '2L 400mL = □mL, 1.5L = □mL',
+
+  // 買い物の計算
+  'shopping-discount-jap': '800円のTシャツが20%OFF。いくらになる？',
+  'shopping-budget-jap': '500円で買えるお菓子は？',
+  'shopping-comparison-jap': '50g で100円と80g で150円、どちらがお得？',
+  'shopping-discount-en': 'RM40 shirt with 25% discount. How much to pay?',
+  'shopping-budget-en': 'What can you buy with RM10 budget?',
+  'shopping-comparison-en': 'Which is better value: 50g for RM2 or 80g for RM3?',
+
+  // 温度の計算
+  'temperature-diff-jap': '朝15℃、昼25℃。何度上がった？',
+  'temperature-conversion-jap': '25℃は華氏何度？（高学年）',
+  'temperature-diff-en': 'Temperature rose from 20°C to 28°C. How much?',
+  'temperature-conversion-en': '25°C = □°F, 77°F = □°C',
+
+  // 距離と地図
+  'distance-walk-jap': '家から学校800m、学校から公園600m。合計何km？',
+  'distance-map-scale-jap': '地図の1cm が実際の500m。3cm は何m？',
+  'distance-comparison-jap': '1.2km と1500m、どちらが長い？',
+  'distance-walk-en': 'Home to school 1.2km, school to park 800m. Total?',
+  'distance-map-scale-en': '1cm on map = 500m in reality. 3cm = ?',
+  'distance-comparison-en': 'Which is longer: 1.2km or 1500m?',
+
+  // 料理の計算
+  'cooking-ingredients-jap': '4人分で砂糖50g。6人分だと何g？',
+  'cooking-time-jap': 'ケーキを焼くのに40分。3時に食べるには何時に始める？',
+  'cooking-serving-jap': '8個のクッキーを4人で分けると1人何個？',
+  'cooking-ingredients-en': 'Recipe for 4 uses 200g flour. How much for 6 people?',
+  'cooking-time-en': 'Baking takes 40 minutes. Start time to eat at 3 PM?',
+  'cooking-serving-en': 'Share 12 cookies among 4 people. How many each?',
+
+  // カレンダー・日付
+  'calendar-days-jap': '5月10日から20日後は何月何日？',
+  'calendar-week-jap': '28日は何週間？',
+  'calendar-age-jap': '2010年生まれの人は今年何歳？',
+  'calendar-days-en': 'Today is May 15. What date is 25 days later?',
+  'calendar-week-en': 'How many weeks in 28 days?',
+  'calendar-age-en': 'Born in 2010. How old this year?',
+
+  // 省エネ・電気
+  'energy-usage-jap': '1時間50Wh の電気を3時間使うと何Wh？',
+  'energy-saving-jap': 'LED で月500円節約。1年で何円？',
+  'energy-usage-en': 'Device uses 40Wh per hour. Usage in 5 hours?',
+  'energy-saving-en': 'Save RM20 monthly with LED. Yearly savings?',
+
+  // 交通費
+  'transport-fare-jap': 'バス1回150円。10回乗ると何円？',
+  'transport-change-jap': '280円の切符を500円で買う。おつりは？',
+  'transport-discount-jap': '10回で1500円の回数券。1回あたり何円？',
+  'transport-fare-en': 'Bus fare RM2.50 per trip. Cost for 8 trips?',
+  'transport-change-en': 'Buy RM2.80 ticket with RM5. Change?',
+  'transport-discount-en': '10-trip pass costs RM20. Price per trip?',
+
+  // お小遣い管理
+  'allowance-saving-jap': '毎週100円貯金。500円貯めるには何週間？',
+  'allowance-goal-jap': '1000円のゲームを買いたい。毎月200円貯金すると何ヶ月？',
+  'allowance-saving-en': 'Save RM5 weekly. How many weeks to save RM50?',
+  'allowance-goal-en': 'Want to buy RM80 toy. Save RM10 monthly. How long?',
 };

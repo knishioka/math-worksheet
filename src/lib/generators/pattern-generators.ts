@@ -15,6 +15,22 @@ import { generateGradeTimeProblems } from './time-problems';
 import { generateGradeTimeProblemsEn } from './time-problems-en';
 import { generateGradeUnitProblems } from './unit-problems';
 import { generateGradeUnitProblemsEn } from './unit-problems-en';
+import { generateGradeShoppingProblems } from './shopping-problems';
+import { generateGradeShoppingProblemsEn } from './shopping-problems-en';
+import { generateGradeTemperatureProblems } from './temperature-problems';
+import { generateGradeTemperatureProblemsEn } from './temperature-problems-en';
+import { generateGradeDistanceProblems } from './distance-problems';
+import { generateGradeDistanceProblemsEn } from './distance-problems-en';
+import { generateGradeCookingProblems } from './cooking-problems';
+import { generateGradeCookingProblemsEn } from './cooking-problems-en';
+import { generateGradeCalendarProblems } from './calendar-problems';
+import { generateGradeCalendarProblemsEn } from './calendar-problems-en';
+import { generateGradeEnergyProblems } from './energy-problems';
+import { generateGradeEnergyProblemsEn } from './energy-problems-en';
+import { generateGradeTransportProblems } from './transport-problems';
+import { generateGradeTransportProblemsEn } from './transport-problems-en';
+import { generateGradeAllowanceProblems } from './allowance-problems';
+import { generateGradeAllowanceProblemsEn } from './allowance-problems-en';
 
 /**
  * 計算パターンに基づいて問題を生成
@@ -185,6 +201,96 @@ export function generatePatternProblems(
     case 'unit-weight-en':
     case 'unit-capacity-en':
       return generateGradeUnitProblemsEn(settings.grade, count, pattern);
+
+    // 買い物の計算（日本語）
+    case 'shopping-discount-jap':
+    case 'shopping-budget-jap':
+    case 'shopping-comparison-jap':
+      return generateGradeShoppingProblems(settings.grade, count, pattern);
+
+    // 買い物の計算（英語）
+    case 'shopping-discount-en':
+    case 'shopping-budget-en':
+    case 'shopping-comparison-en':
+      return generateGradeShoppingProblemsEn(settings.grade, count, pattern);
+
+    // 温度の計算（日本語）
+    case 'temperature-diff-jap':
+    case 'temperature-conversion-jap':
+      return generateGradeTemperatureProblems(settings.grade, count, pattern);
+
+    // 温度の計算（英語）
+    case 'temperature-diff-en':
+    case 'temperature-conversion-en':
+      return generateGradeTemperatureProblemsEn(settings.grade, count, pattern);
+
+    // 距離と地図の計算（日本語）
+    case 'distance-walk-jap':
+    case 'distance-map-scale-jap':
+    case 'distance-comparison-jap':
+      return generateGradeDistanceProblems(settings.grade, count, pattern);
+
+    // 距離と地図の計算（英語）
+    case 'distance-walk-en':
+    case 'distance-map-scale-en':
+    case 'distance-comparison-en':
+      return generateGradeDistanceProblemsEn(settings.grade, count, pattern);
+
+    // 料理の計算（日本語）
+    case 'cooking-ingredients-jap':
+    case 'cooking-time-jap':
+    case 'cooking-serving-jap':
+      return generateGradeCookingProblems(settings.grade, count, pattern);
+
+    // 料理の計算（英語）
+    case 'cooking-ingredients-en':
+    case 'cooking-time-en':
+    case 'cooking-serving-en':
+      return generateGradeCookingProblemsEn(settings.grade, count, pattern);
+
+    // カレンダー・日付の計算（日本語）
+    case 'calendar-days-jap':
+    case 'calendar-week-jap':
+    case 'calendar-age-jap':
+      return generateGradeCalendarProblems(settings.grade, count, pattern);
+
+    // カレンダー・日付の計算（英語）
+    case 'calendar-days-en':
+    case 'calendar-week-en':
+    case 'calendar-age-en':
+      return generateGradeCalendarProblemsEn(settings.grade, count, pattern);
+
+    // 省エネ・電気の計算（日本語）
+    case 'energy-usage-jap':
+    case 'energy-saving-jap':
+      return generateGradeEnergyProblems(settings.grade, count, pattern);
+
+    // 省エネ・電気の計算（英語）
+    case 'energy-usage-en':
+    case 'energy-saving-en':
+      return generateGradeEnergyProblemsEn(settings.grade, count, pattern);
+
+    // 交通費の計算（日本語）
+    case 'transport-fare-jap':
+    case 'transport-change-jap':
+    case 'transport-discount-jap':
+      return generateGradeTransportProblems(settings.grade, count, pattern);
+
+    // 交通費の計算（英語）
+    case 'transport-fare-en':
+    case 'transport-change-en':
+    case 'transport-discount-en':
+      return generateGradeTransportProblemsEn(settings.grade, count, pattern);
+
+    // お小遣いの管理（日本語）
+    case 'allowance-saving-jap':
+    case 'allowance-goal-jap':
+      return generateGradeAllowanceProblems(settings.grade, count, pattern);
+
+    // お小遣いの管理（英語）
+    case 'allowance-saving-en':
+    case 'allowance-goal-en':
+      return generateGradeAllowanceProblemsEn(settings.grade, count, pattern);
 
     default:
       throw new Error(`Pattern ${pattern} is not implemented yet`);
