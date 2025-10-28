@@ -9,6 +9,12 @@ import type {
 import { generateId, randomInt } from '../utils/math';
 import { generateHissanProblem } from './hissan';
 import { generateGradeEnWordProblems } from './word-problem-en';
+import { generateGradeMoneyProblems } from './money-problems';
+import { generateGradeMoneyProblemsEn } from './money-problems-en';
+import { generateGradeTimeProblems } from './time-problems';
+import { generateGradeTimeProblemsEn } from './time-problems-en';
+import { generateGradeUnitProblems } from './unit-problems';
+import { generateGradeUnitProblemsEn } from './unit-problems-en';
 
 /**
  * 計算パターンに基づいて問題を生成
@@ -143,6 +149,42 @@ export function generatePatternProblems(
     // 英語文章問題（全学年対応）
     case 'word-en':
       return generateGradeEnWordProblems(settings.grade, count);
+
+    // お金の計算（日本円）
+    case 'money-change-jap':
+    case 'money-total-jap':
+    case 'money-payment-jap':
+      return generateGradeMoneyProblems(settings.grade, count, pattern);
+
+    // お金の計算（リンギット）
+    case 'money-change-en':
+    case 'money-total-en':
+    case 'money-payment-en':
+      return generateGradeMoneyProblemsEn(settings.grade, count, pattern);
+
+    // 時刻・時間（日本語）
+    case 'time-reading-jap':
+    case 'time-elapsed-jap':
+    case 'time-calc-jap':
+      return generateGradeTimeProblems(settings.grade, count, pattern);
+
+    // 時刻・時間（英語）
+    case 'time-reading-en':
+    case 'time-elapsed-en':
+    case 'time-calc-en':
+      return generateGradeTimeProblemsEn(settings.grade, count, pattern);
+
+    // 単位変換（日本語）
+    case 'unit-length-jap':
+    case 'unit-weight-jap':
+    case 'unit-capacity-jap':
+      return generateGradeUnitProblems(settings.grade, count, pattern);
+
+    // 単位変換（英語）
+    case 'unit-length-en':
+    case 'unit-weight-en':
+    case 'unit-capacity-en':
+      return generateGradeUnitProblemsEn(settings.grade, count, pattern);
 
     default:
       throw new Error(`Pattern ${pattern} is not implemented yet`);

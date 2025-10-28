@@ -65,7 +65,31 @@ export type CalculationPattern =
   | 'complex-calc' // 複雑な計算
 
   // 英語文章問題（全学年対応）
-  | 'word-en'; // English word problems for international schools
+  | 'word-en' // English word problems for international schools
+
+  // お金の計算（1-4年生）
+  | 'money-change-jap' // おつりの計算（日本円）
+  | 'money-total-jap' // お金の合計（日本円）
+  | 'money-payment-jap' // 支払い方法（日本円）
+  | 'money-change-en' // Change calculation (Malaysian Ringgit)
+  | 'money-total-en' // Money total (Malaysian Ringgit)
+  | 'money-payment-en' // Payment methods (Malaysian Ringgit)
+
+  // 時刻・時間の計算（2-4年生）
+  | 'time-reading-jap' // 時刻の読み方（日本語）
+  | 'time-elapsed-jap' // 経過時間（日本語）
+  | 'time-calc-jap' // 時間の計算（日本語）
+  | 'time-reading-en' // Reading time (English)
+  | 'time-elapsed-en' // Elapsed time (English)
+  | 'time-calc-en' // Time calculation (English)
+
+  // 単位変換（3-6年生）
+  | 'unit-length-jap' // 長さの単位変換（m, cm, mm, km）
+  | 'unit-weight-jap' // 重さの単位変換（kg, g）
+  | 'unit-capacity-jap' // かさの単位変換（L, dL, mL）
+  | 'unit-length-en' // Length unit conversion (m, cm, mm, km)
+  | 'unit-weight-en' // Weight unit conversion (kg, g)
+  | 'unit-capacity-en'; // Capacity unit conversion (L, mL)
 
 // 学年別の利用可能なパターン
 export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
@@ -81,6 +105,10 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'add-single-missing',
     'sub-single-missing',
     'word-en',
+    'money-change-jap',
+    'money-total-jap',
+    'money-change-en',
+    'money-total-en',
   ],
   2: [
     'add-double-digit-no-carry',
@@ -96,6 +124,16 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'hissan-add-double',
     'hissan-sub-double',
     'word-en',
+    'money-change-jap',
+    'money-total-jap',
+    'money-payment-jap',
+    'money-change-en',
+    'money-total-en',
+    'money-payment-en',
+    'time-reading-jap',
+    'time-elapsed-jap',
+    'time-reading-en',
+    'time-elapsed-en',
   ],
   3: [
     'add-triple-digit',
@@ -109,6 +147,24 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'hissan-sub-triple',
     'hissan-mult-basic',
     'word-en',
+    'money-change-jap',
+    'money-total-jap',
+    'money-payment-jap',
+    'money-change-en',
+    'money-total-en',
+    'money-payment-en',
+    'time-reading-jap',
+    'time-elapsed-jap',
+    'time-calc-jap',
+    'time-reading-en',
+    'time-elapsed-en',
+    'time-calc-en',
+    'unit-length-jap',
+    'unit-weight-jap',
+    'unit-capacity-jap',
+    'unit-length-en',
+    'unit-weight-en',
+    'unit-capacity-en',
   ],
   4: [
     'add-large-numbers',
@@ -121,6 +177,24 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'hissan-mult-advanced',
     'hissan-div-basic',
     'word-en',
+    'money-change-jap',
+    'money-total-jap',
+    'money-payment-jap',
+    'money-change-en',
+    'money-total-en',
+    'money-payment-en',
+    'time-reading-jap',
+    'time-elapsed-jap',
+    'time-calc-jap',
+    'time-reading-en',
+    'time-elapsed-en',
+    'time-calc-en',
+    'unit-length-jap',
+    'unit-weight-jap',
+    'unit-capacity-jap',
+    'unit-length-en',
+    'unit-weight-en',
+    'unit-capacity-en',
   ],
   5: [
     'mult-dec-dec',
@@ -130,6 +204,12 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'percent-basic',
     'area-volume',
     'word-en',
+    'unit-length-jap',
+    'unit-weight-jap',
+    'unit-capacity-jap',
+    'unit-length-en',
+    'unit-weight-en',
+    'unit-capacity-en',
   ],
   6: [
     'frac-mult',
@@ -138,6 +218,12 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'speed-time-distance',
     'complex-calc',
     'word-en',
+    'unit-length-jap',
+    'unit-weight-jap',
+    'unit-capacity-jap',
+    'unit-length-en',
+    'unit-weight-en',
+    'unit-capacity-en',
   ],
 };
 
@@ -209,6 +295,30 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
 
   // 英語文章問題
   'word-en': 'English Word Problems',
+
+  // お金の計算
+  'money-change-jap': 'おつりの計算',
+  'money-total-jap': 'お金の合計',
+  'money-payment-jap': '支払い方法',
+  'money-change-en': 'Change Calculation (RM)',
+  'money-total-en': 'Money Total (RM)',
+  'money-payment-en': 'Payment Methods (RM)',
+
+  // 時刻・時間
+  'time-reading-jap': '時刻の読み方',
+  'time-elapsed-jap': '経過時間',
+  'time-calc-jap': '時間の計算',
+  'time-reading-en': 'Reading Time',
+  'time-elapsed-en': 'Elapsed Time',
+  'time-calc-en': 'Time Calculation',
+
+  // 単位変換
+  'unit-length-jap': '長さの単位（m, cm, mm, km）',
+  'unit-weight-jap': '重さの単位（kg, g）',
+  'unit-capacity-jap': 'かさの単位（L, dL, mL）',
+  'unit-length-en': 'Length Units (m, cm, mm, km)',
+  'unit-weight-en': 'Weight Units (kg, g)',
+  'unit-capacity-en': 'Capacity Units (L, mL)',
 };
 
 // パターンの説明
@@ -279,4 +389,28 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
 
   // 英語文章問題
   'word-en': 'English word story problems for international school students (e.g., "Tom has 5 apples. He gets 3 more. How many apples does he have now?")',
+
+  // お金の計算
+  'money-change-jap': '100円で68円のお菓子を買ったら、おつりはいくら？',
+  'money-total-jap': '50円のえんぴつと30円の消しゴムで、合計いくら？',
+  'money-payment-jap': '150円の買い物を100円玉と50円玉で支払う方法',
+  'money-change-en': 'Buy candy for RM2.50 with RM5. How much change?',
+  'money-total-en': 'A pencil costs RM1.50 and an eraser costs RM0.80. Total?',
+  'money-payment-en': 'How to pay RM3.50 using RM1 and RM0.50 coins?',
+
+  // 時刻・時間
+  'time-reading-jap': '時計の針を見て、何時何分か答える',
+  'time-elapsed-jap': '8時30分から2時間30分後は何時？',
+  'time-calc-jap': '午前9時から午後3時まで何時間？',
+  'time-reading-en': 'Read the clock: What time is it?',
+  'time-elapsed-en': '2 hours 30 minutes after 8:30 is what time?',
+  'time-calc-en': 'How many hours from 9:00 AM to 3:00 PM?',
+
+  // 単位変換
+  'unit-length-jap': '3m 50cm = □cm、1.5km = □m',
+  'unit-weight-jap': '2kg 300g = □g、2500g = □kg □g',
+  'unit-capacity-jap': '2L 400mL = □mL、1.5L = □dL',
+  'unit-length-en': '3m 50cm = □cm, 1.5km = □m',
+  'unit-weight-en': '2kg 300g = □g, 2500g = □kg □g',
+  'unit-capacity-en': '2L 400mL = □mL, 1.5L = □mL',
 };
