@@ -7,27 +7,35 @@ import type { WordProblem, Operation, Grade } from '../../types';
 import { randomInt, generateId } from '../utils/math';
 
 /**
- * 時刻の読み方問題を生成
- * Generate time reading problems
+ * 時刻の計算問題（○分後）を生成
+ * Generate time calculation problems (minutes after)
  */
 export function generateTimeReading(grade: Grade, count: number): WordProblem[] {
   const problems: WordProblem[] = [];
 
   for (let i = 0; i < count; i++) {
-    const hour = randomInt(1, 12);
-    const minute = grade === 2 ? randomInt(0, 11) * 5 : randomInt(0, 59);
+    const startHour = randomInt(1, 11);
+    const startMinute = grade === 2 ? randomInt(0, 11) * 5 : randomInt(0, 5) * 10;
 
-    const minuteText = minute === 0 ? 'ちょうど' : `${minute}分`;
-    const problemText = `時計が${hour}時${minuteText}を指しています。何時何分ですか？`;
+    // 経過時間（分）
+    const elapsedMinutes = grade === 2 ? randomInt(1, 6) * 10 : randomInt(1, 12) * 5;
 
-    const answer = minute === 0 ? `${hour}時` : `${hour}時${minute}分`;
+    // 終了時刻を計算
+    const endTotalMinutes = startHour * 60 + startMinute + elapsedMinutes;
+    const endHour = Math.floor(endTotalMinutes / 60);
+    const endMinute = endTotalMinutes % 60;
+
+    const startTime = startMinute === 0 ? `${startHour}時` : `${startHour}時${startMinute}分`;
+    const endTime = endMinute === 0 ? `${endHour}時` : `${endHour}時${endMinute}分`;
+
+    const problemText = `今${startTime}です。${elapsedMinutes}分後は何時何分ですか？`;
 
     problems.push({
       id: generateId(),
       type: 'word',
-      operation: 'addition' as Operation, // 時刻は演算ではないが便宜上
+      operation: 'addition' as Operation,
       problemText,
-      answer,
+      answer: endTime,
       unit: '',
     });
   }

@@ -7,32 +7,42 @@ import type { WordProblemEn, Operation, Grade } from '../../types';
 import { randomInt, generateId } from '../utils/math';
 
 /**
- * 時刻の読み方問題を生成（英語）
- * Generate time reading problems (English)
+ * 時刻の計算問題（○分後）を生成（英語）
+ * Generate time calculation problems (minutes after) (English)
  */
 export function generateTimeReadingEn(grade: Grade, count: number): WordProblemEn[] {
   const problems: WordProblemEn[] = [];
 
   for (let i = 0; i < count; i++) {
-    const hour = randomInt(1, 12);
-    const minute = grade === 2 ? randomInt(0, 11) * 5 : randomInt(0, 59);
+    const startHour = randomInt(1, 11);
+    const startMinute = grade === 2 ? randomInt(0, 11) * 5 : randomInt(0, 5) * 10;
 
-    const ampm = randomInt(0, 1) === 0 ? 'AM' : 'PM';
-    const minuteText = minute === 0 ? "o'clock" : minute < 10 ? `0${minute}` : `${minute}`;
+    // Elapsed time (minutes)
+    const elapsedMinutes = grade === 2 ? randomInt(1, 6) * 10 : randomInt(1, 12) * 5;
 
-    const problemText =
-      minute === 0
-        ? `The clock shows ${hour} ${ampm}. What time is it?`
-        : `The clock shows ${hour}:${minuteText} ${ampm}. What time is it?`;
+    // Calculate end time
+    const endTotalMinutes = startHour * 60 + startMinute + elapsedMinutes;
+    const endHour = Math.floor(endTotalMinutes / 60);
+    const endMinute = endTotalMinutes % 60;
 
-    const answer = minute === 0 ? `${hour}:00 ${ampm}` : `${hour}:${minuteText} ${ampm}`;
+    const formatTime = (h: number, m: number) => {
+      const ampm = h < 12 ? 'AM' : 'PM';
+      const displayHour = h > 12 ? h - 12 : h === 0 ? 12 : h;
+      const minuteStr = m < 10 ? `0${m}` : `${m}`;
+      return `${displayHour}:${minuteStr} ${ampm}`;
+    };
+
+    const startTime = formatTime(startHour, startMinute);
+    const endTime = formatTime(endHour, endMinute);
+
+    const problemText = `It is ${startTime}. What time will it be in ${elapsedMinutes} minutes?`;
 
     problems.push({
       id: generateId(),
       type: 'word-en',
       operation: 'addition' as Operation,
       problemText,
-      answer,
+      answer: endTime,
       unit: '',
       category: 'word-story',
       language: 'en',
