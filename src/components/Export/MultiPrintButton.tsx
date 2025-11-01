@@ -32,17 +32,96 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
     const originalTitle = document.title;
     document.title = `計算プリント ${worksheets.length}枚`;
 
+    const MM_PER_PX = 25.4 / 96;
+    const PX_PER_MM = 96 / 25.4;
+    const A4_HEIGHT_MM = 297;
+    const MIN_MARGIN_MM = 5;
+
+    const pxToMm = (px: number): number => px * MM_PER_PX;
+    const mmToPx = (mm: number): number => mm * PX_PER_MM;
+
+    const fitPageToA4 = (
+      pageElement: HTMLDivElement,
+      initialTop: number,
+      initialBottom: number,
+    ): void => {
+      let top = Number.isFinite(initialTop) ? initialTop : MIN_MARGIN_MM;
+      let bottom = Number.isFinite(initialBottom) ? initialBottom : MIN_MARGIN_MM;
+
+      const setPadding = (): void => {
+        const safeTop = Math.max(MIN_MARGIN_MM, Number(top.toFixed(2)));
+        const safeBottom = Math.max(MIN_MARGIN_MM, Number(bottom.toFixed(2)));
+        pageElement.style.padding = `${safeTop}mm 15mm ${safeBottom}mm`;
+        top = safeTop;
+        bottom = safeBottom;
+      };
+
+      setPadding();
+
+      const a4HeightPx = mmToPx(A4_HEIGHT_MM);
+      let heightPx = pageElement.getBoundingClientRect().height;
+      let iterations = 0;
+
+      while (heightPx > a4HeightPx && iterations < 6) {
+        const overflowMm = pxToMm(heightPx - a4HeightPx);
+        const availableTop = Math.max(0, top - MIN_MARGIN_MM);
+        const availableBottom = Math.max(0, bottom - MIN_MARGIN_MM);
+        const totalAvailable = availableTop + availableBottom;
+
+        if (totalAvailable <= 0) {
+          break;
+        }
+
+        const topShare = totalAvailable === 0 ? 0.5 : availableTop / totalAvailable;
+        const bottomShare = totalAvailable === 0 ? 0.5 : availableBottom / totalAvailable;
+
+        const topReduction = Math.min(availableTop, overflowMm * topShare);
+        const bottomReduction = Math.min(availableBottom, overflowMm * bottomShare);
+
+        top -= topReduction;
+        bottom -= bottomReduction;
+        setPadding();
+        heightPx = pageElement.getBoundingClientRect().height;
+        iterations += 1;
+      }
+
+      if (heightPx > a4HeightPx) {
+        pageElement.style.padding = `${MIN_MARGIN_MM}mm 15mm ${MIN_MARGIN_MM}mm`;
+      }
+    };
+
+    // 既存要素を記録
+    const originalChildren = Array.from(document.body.children);
+
     // 印刷用コンテナを作成
     const printContainer = document.createElement('div');
     printContainer.id = 'multi-print-container';
+    printContainer.style.position = 'absolute';
+    printContainer.style.left = '0';
+    printContainer.style.top = '0';
+    printContainer.style.width = '100%';
+    printContainer.style.visibility = 'hidden';
+    printContainer.style.display = 'flex';
+    printContainer.style.flexDirection = 'column';
+    printContainer.style.alignItems = 'center';
+    printContainer.style.backgroundColor = '#ffffff';
+
+    document.body.appendChild(printContainer);
 
     // 各ワークシートをレンダリング
     worksheets.forEach((worksheet, index) => {
       const pageDiv = document.createElement('div');
+      pageDiv.classList.add('multi-print-page');
       if (index > 0) {
         pageDiv.style.pageBreakBefore = 'always';
       }
       pageDiv.style.position = 'relative';
+      pageDiv.style.boxSizing = 'border-box';
+      pageDiv.style.backgroundColor = '#ffffff';
+      pageDiv.style.width = '210mm';
+      pageDiv.style.margin = '0 auto';
+      pageDiv.style.pageBreakInside = 'avoid';
+      pageDiv.style.breakInside = 'avoid';
 
       // 問題数とタイプから動的に余白を計算
       const primaryType = detectPrimaryProblemType(worksheet.problems);
@@ -52,8 +131,8 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
       const estimatedRows = Math.ceil(problemCount / columns);
 
       // 問題タイプごとの推定高さ（mm）
-      const minProblemHeightMm = parseInt(template.layout.minProblemHeight) * 0.26; // px to mm (96dpi)
-      const rowGapMm = parseInt(template.layout.rowGap) * 0.26;
+      const minProblemHeightMm = parseFloat(template.layout.minProblemHeight) * MM_PER_PX;
+      const rowGapMm = parseFloat(template.layout.rowGap) * MM_PER_PX;
 
       // 必要な高さを計算
       const headerHeight = 25; // ヘッダー部分の高さ (mm)
@@ -62,13 +141,19 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
       // A4の高さは297mm、残りスペースを余白として配分
       const a4Height = 297;
       const remainingSpace = a4Height - estimatedContentHeight;
+      const safeRemaining = Math.max(0, remainingSpace);
+      const marginBudget = Math.max(safeRemaining, MIN_MARGIN_MM * 2);
+      let topMargin = Math.min(15, marginBudget * 0.6);
+      let bottomMargin = marginBudget - topMargin;
 
-      // 上の余白: 5mm〜15mm
-      const topMargin = Math.max(5, Math.min(15, remainingSpace * 0.6));
-      // 下の余白: 上の余白の半分（小さめに）
-      const bottomMargin = Math.max(5, topMargin * 0.5);
+      if (bottomMargin < MIN_MARGIN_MM) {
+        bottomMargin = MIN_MARGIN_MM;
+        topMargin = Math.max(MIN_MARGIN_MM, marginBudget - bottomMargin);
+      }
 
-      pageDiv.style.padding = `${topMargin}mm 15mm ${bottomMargin}mm`;
+      if (topMargin < MIN_MARGIN_MM) {
+        topMargin = MIN_MARGIN_MM;
+      }
 
       // ヘッダー部分
       const headerHTML = `
@@ -399,6 +484,7 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
 
       pageDiv.innerHTML = headerHTML + problemsHTML + footerHTML;
       printContainer.appendChild(pageDiv);
+      fitPageToA4(pageDiv, topMargin, bottomMargin);
     });
 
     // スタイルを追加
@@ -412,29 +498,52 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
         body {
           margin: 0;
           padding: 0;
+          background: #ffffff;
         }
         #multi-print-container {
           width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        #multi-print-container .multi-print-page {
+          width: 210mm;
+          box-sizing: border-box;
+          page-break-after: always;
+          break-after: page;
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+        #multi-print-container .multi-print-page:last-child {
+          page-break-after: auto;
+          break-after: auto;
         }
       }
     `;
     document.head.appendChild(styleEl);
 
     // 既存の要素を非表示
-    const allElements = document.body.querySelectorAll('body > *');
-    allElements.forEach((el) => {
-      (el as HTMLElement).style.display = 'none';
+    const hiddenElements: HTMLElement[] = [];
+    originalChildren.forEach((el) => {
+      if (el instanceof HTMLElement) {
+        hiddenElements.push(el);
+        el.style.display = 'none';
+      }
     });
 
-    // 印刷用コンテナを追加
-    document.body.appendChild(printContainer);
+    // 印刷用コンテナを表示
+    printContainer.style.visibility = 'visible';
+    printContainer.style.position = 'relative';
+    printContainer.style.left = '0';
+    printContainer.style.top = '0';
+    printContainer.style.pointerEvents = 'auto';
 
     // 印刷
     window.print();
 
     // 元に戻す
-    allElements.forEach((el) => {
-      (el as HTMLElement).style.display = '';
+    hiddenElements.forEach((el) => {
+      el.style.display = '';
     });
 
     // クリーンアップ
