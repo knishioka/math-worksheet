@@ -1,30 +1,20 @@
-# EditorConfig: https://EditorConfig.org
-
-# トップレベルの設定ファイル
+# Editor configuration aligned with math-worksheet conventions
 root = true
 
-# すべてのファイルに適用
 [*]
 charset = utf-8
 end_of_line = lf
-indent_size = 2
-indent_style = space
 insert_final_newline = true
+indent_style = space
+indent_size = 2
 trim_trailing_whitespace = true
 
-# Markdownファイル
 [*.md]
 trim_trailing_whitespace = false
 max_line_length = off
 
-# YAMLファイル
-[*.{yml,yaml}]
+[*.{ts,tsx,js,jsx,json,css,scss,pcss,yml,yaml}]
 indent_size = 2
 
-# JSONファイル
-[*.json]
-indent_size = 2
-
-# Makefile
 [Makefile]
 indent_style = tab
