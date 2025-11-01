@@ -60,12 +60,28 @@ describe('English Word Problem Generator', () => {
 
     it('should generate problems with appropriate difficulty for each grade', () => {
       const grade1Problems = generateEnWordStory(1, 10);
+      const grade2Problems = generateEnWordStory(2, 15);
       const grade6Problems = generateEnWordStory(6, 20);
 
       // Grade 1 should have smaller numbers
       grade1Problems.forEach((problem) => {
         const answer = problem.answer as number;
         expect(answer).toBeLessThanOrEqual(20);
+      });
+
+      // Grade 2 problems should avoid sequence drills and include at least one mid-range answer
+      const grade2Texts = grade2Problems.map((problem) =>
+        problem.problemText.toLowerCase()
+      );
+      grade2Texts.forEach((text) => {
+        expect(text).not.toMatch(/what number comes|is between/);
+      });
+      const grade2Answers = grade2Problems.map(
+        (problem) => problem.answer as number
+      );
+      expect(grade2Answers.some((answer) => answer >= 20)).toBe(true);
+      grade2Answers.forEach((answer) => {
+        expect(answer).toBeLessThanOrEqual(150);
       });
 
       // Grade 6 can have larger numbers (at least some should be > 50)
@@ -236,23 +252,28 @@ describe('English Word Problem Generator', () => {
   });
 
   describe('Number Sequence Problems', () => {
-    it('should generate number sequence problems for grade 1-3', () => {
-      // Number sequence problems are available for grade 1-3
+    const hasSequenceProblem = (problems: WordProblemEn[]): boolean =>
+      problems.some((p) =>
+        /(comes just before|comes just after|is between|Count \d+ (step|steps))/i.test(
+          p.problemText
+        )
+      );
+
+    it('should generate number sequence problems for grade 1 students', () => {
       const grade1Problems = generateGradeEnWordProblems(1, 20);
-      const grade2Problems = generateGradeEnWordProblems(2, 20);
-      const grade3Problems = generateGradeEnWordProblems(3, 20);
+      expect(hasSequenceProblem(grade1Problems)).toBe(true);
+    });
 
-      // Should contain "before", "after", or "between" for sequence problems
-      const hasSequenceProblem = (problems: WordProblemEn[]): boolean =>
-        problems.some((p) =>
-          /before|after|between|count/i.test(p.problemText)
-        );
-
-      // At least one of the grades should have sequence problems
+    it('should focus grade 2 problems on contextual stories', () => {
+      const grade2Problems = generateGradeEnWordProblems(2, 25);
+      expect(hasSequenceProblem(grade2Problems)).toBe(false);
+      // Grade 2 problem sets should include story-style questions
       expect(
-        hasSequenceProblem(grade1Problems) ||
-          hasSequenceProblem(grade2Problems) ||
-          hasSequenceProblem(grade3Problems)
+        grade2Problems.some((problem) =>
+          /How many|How much|How long|How far|What time/i.test(
+            problem.problemText
+          )
+        )
       ).toBe(true);
     });
   });
