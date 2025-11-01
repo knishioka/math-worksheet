@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MultiPrintButton } from '../MultiPrintButton';
+import { fitPageToA4 } from '../fitPageToA4';
 import type { WorksheetData } from '../../../types';
 
 describe('MultiPrintButton', () => {
@@ -335,5 +336,65 @@ describe('MultiPrintButton', () => {
     await waitFor(() => {
       expect(window.print).toHaveBeenCalled();
     });
+  });
+});
+
+describe('fitPageToA4', () => {
+  const pxPerMm = 96 / 25.4;
+
+  const createBoundingClientRectMock = (
+    element: HTMLDivElement,
+    heightsMm: number[],
+  ): void => {
+    const heightsPx = heightsMm.map((mm) => mm * pxPerMm);
+    let callCount = 0;
+    vi.spyOn(element, 'getBoundingClientRect').mockImplementation(() => {
+      const height = heightsPx[Math.min(callCount, heightsPx.length - 1)];
+      callCount += 1;
+      return {
+        width: 0,
+        x: 0,
+        y: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height,
+        toJSON: (): Record<string, never> => ({}),
+      };
+    });
+  };
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('reduces margins until the page fits without scaling', () => {
+    const page = document.createElement('div');
+    createBoundingClientRectMock(page, [320, 295]);
+
+    const result = fitPageToA4(page, 20, 22);
+
+    expect(result.scale).toBe(1);
+    expect(parseFloat(page.style.paddingTop)).toBeCloseTo(9.22, 2);
+    expect(parseFloat(page.style.paddingBottom)).toBeCloseTo(9.78, 2);
+    expect(page.dataset.printScale).toBe('1.000');
+  });
+
+  it('applies a scale factor when margins alone cannot fit the page', () => {
+    const page = document.createElement('div');
+    createBoundingClientRectMock(page, [340, 340, 340, 340, 340, 340, 340]);
+
+    const result = fitPageToA4(page, 15, 18);
+
+    expect(result.scale).toBeLessThan(1);
+    expect(result.scale).toBeGreaterThanOrEqual(0.85);
+    expect(page.style.paddingTop).toBe('5mm');
+    expect(page.style.paddingBottom).toBe('5mm');
+    expect(page.style.transform).toBe(`scale(${result.scale})`);
+    expect(page.style.transformOrigin).toBe('top center');
+    expect(page.dataset.printScale).toBe(result.scale.toFixed(3));
+    const expectedWidth = (210 / result.scale).toFixed(3);
+    expect(page.style.width).toBe(`${expectedWidth}mm`);
   });
 });
