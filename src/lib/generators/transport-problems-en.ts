@@ -5,6 +5,7 @@
 
 import type { WordProblemEn, Operation, Grade } from '../../types';
 import { randomInt, generateId } from '../utils/math';
+import { pickByGrade, randomIntByGrade, rangeByGrade } from './grade-utils';
 
 /**
  * 運賃の計算問題を生成（英語）
@@ -14,10 +15,22 @@ export function generateTransportFareEn(grade: Grade, count: number): WordProble
   const problems: WordProblemEn[] = [];
 
   const transports = [
-    { name: 'bus', fare: [1.5, 2.0, 2.5, 3.0] },
-    { name: 'train', fare: [2.0, 2.5, 3.0, 3.5] },
-    { name: 'LRT', fare: [1.5, 2.0, 2.5, 3.0] },
+    { name: 'bus' },
+    { name: 'train' },
+    { name: 'LRT' },
   ];
+
+  const fareBands = pickByGrade(grade, {
+    lower: [1.0, 1.5, 2.0],
+    middle: [1.5, 2.0, 2.5, 3.0],
+    upper: [2.0, 2.5, 3.0, 3.5],
+  });
+
+  const tripRange = rangeByGrade(grade, {
+    lower: { min: 2, max: 5 },
+    middle: { min: 3, max: 7 },
+    upper: { min: 4, max: 10 },
+  });
 
   for (let i = 0; i < count; i++) {
     const problemType = randomInt(0, 1);
@@ -27,8 +40,8 @@ export function generateTransportFareEn(grade: Grade, count: number): WordProble
     if (problemType === 0) {
       // Fare per trip × number of trips
       const transport = transports[randomInt(0, transports.length - 1)];
-      const fare = transport.fare[randomInt(0, transport.fare.length - 1)];
-      const times = randomInt(4, 10); // 4-10 trips
+      const fare = fareBands[randomInt(0, fareBands.length - 1)];
+      const times = randomInt(tripRange.min, tripRange.max);
       const totalFare = fare * times;
 
       problemText = `A ${transport.name} ride costs RM${fare.toFixed(2)}. How much for ${times} trips?`;
@@ -36,7 +49,7 @@ export function generateTransportFareEn(grade: Grade, count: number): WordProble
     } else {
       // Round trip fare
       const transport = transports[randomInt(0, transports.length - 1)];
-      const oneWayFare = transport.fare[randomInt(0, transport.fare.length - 1)];
+      const oneWayFare = fareBands[randomInt(0, fareBands.length - 1)];
       const roundTripFare = oneWayFare * 2;
 
       problemText = `A one-way ${transport.name} fare is RM${oneWayFare.toFixed(2)}. What is the round trip cost?`;
@@ -66,8 +79,20 @@ export function generateTransportChangeEn(grade: Grade, count: number): WordProb
   const problems: WordProblemEn[] = [];
 
   for (let i = 0; i < count; i++) {
-    const ticketPrice = [1.5, 2.0, 2.5, 3.0, 3.5, 4.0][randomInt(0, 5)];
-    const payment = [5, 10][randomInt(0, 1)];
+    const ticketOptions = pickByGrade(grade, {
+      lower: [1.0, 1.5, 2.0, 2.5],
+      middle: [1.5, 2.0, 2.5, 3.0, 3.5],
+      upper: [2.5, 3.0, 3.5, 4.0, 4.5],
+    });
+    const paymentOptions = pickByGrade(grade, {
+      lower: [3, 4, 5],
+      middle: [4, 5, 6, 8],
+      upper: [5, 6, 8, 10],
+    });
+    const ticketPrice = ticketOptions[randomInt(0, ticketOptions.length - 1)];
+    const affordablePayments = paymentOptions.filter((amount) => amount > ticketPrice);
+    const paymentPool = affordablePayments.length > 0 ? affordablePayments : paymentOptions;
+    const payment = paymentPool[randomInt(0, paymentPool.length - 1)];
     const change = payment - ticketPrice;
 
     const problemText = `You buy a ticket for RM${ticketPrice.toFixed(2)} with RM${payment}. What is your change?`;
