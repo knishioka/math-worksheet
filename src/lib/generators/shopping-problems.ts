@@ -116,7 +116,6 @@ export function generateShoppingComparison(grade: Grade, count: number): WordPro
 
       const unitPrice1 = Math.round((price1 / weight1) * 100);
       const unitPrice2 = Math.round((price2 / weight2) * 100);
-      const cheaper = unitPrice1 < unitPrice2 ? 'A' : 'B';
       const priceDiff = Math.abs(unitPrice1 - unitPrice2);
 
       problemText = `A店では${weight1}gで${price1}円、B店では${weight2}gで${price2}円のお菓子があります。100gあたりの値段の差はいくらですか？`;

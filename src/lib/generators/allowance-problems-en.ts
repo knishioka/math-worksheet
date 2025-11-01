@@ -27,7 +27,7 @@ export function generateAllowanceSavingEn(grade: Grade, count: number): WordProb
       const periodType = randomInt(0, 1) === 0 ? 'week' : 'month';
       const periodPlural = periods > 1 ? periodType + 's' : periodType;
 
-      problemText = `You save RM${savingPerPeriod} per ${periodType}. How many ${periodType}s to save RM${targetAmount}?`;
+      problemText = `You save RM${savingPerPeriod} per ${periodType}. How many ${periodPlural} to save RM${targetAmount}?`;
       answer = periods;
     } else {
       // Calculate total savings over time

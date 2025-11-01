@@ -121,7 +121,7 @@ describe('Layout Dimensions Tests', () => {
 
   describe('Layout Settings Consistency', () => {
     it('should have consistent recommended counts across all problem types', () => {
-      Object.entries(PRINT_TEMPLATES).forEach(([type, template]) => {
+      Object.entries(PRINT_TEMPLATES).forEach(([_, template]) => {
         // 推奨問題数は列数に応じて増加すべき
         expect(template.recommendedCounts[1]).toBeLessThanOrEqual(
           template.recommendedCounts[2]
@@ -152,7 +152,7 @@ describe('Layout Dimensions Tests', () => {
     });
 
     it('should have valid layout measurements', () => {
-      Object.entries(PRINT_TEMPLATES).forEach(([type, template]) => {
+      Object.entries(PRINT_TEMPLATES).forEach(([_, template]) => {
         const { rowGap, colGap, fontSize, minProblemHeight } = template.layout;
 
         // 数値として解析可能であることを確認

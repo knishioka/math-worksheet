@@ -40,7 +40,7 @@ export function generateCalendarDaysEn(grade: Grade, count: number): WordProblem
       const month = months[randomInt(0, 11)];
       const endDay = startDay + daysToAdd;
 
-      const ordinal = (n: number) => {
+      const ordinal = (n: number): string => {
         const s = ["th", "st", "nd", "rd"];
         const v = n % 100;
         return n + (s[(v - 20) % 10] || s[v] || s[0]);
