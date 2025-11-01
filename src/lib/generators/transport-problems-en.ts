@@ -78,24 +78,25 @@ export function generateTransportFareEn(grade: Grade, count: number): WordProble
 export function generateTransportChangeEn(grade: Grade, count: number): WordProblemEn[] {
   const problems: WordProblemEn[] = [];
 
+  const ticketOptions = pickByGrade(grade, {
+    lower: [1.0, 1.5, 2.0, 2.5],
+    middle: [1.5, 2.0, 2.5, 3.0, 3.5],
+    upper: [2.5, 3.0, 3.5, 4.0, 4.5],
+  });
+  const paymentOptions = pickByGrade(grade, {
+    lower: [3, 4, 5],
+    middle: [4, 5, 6, 8],
+    upper: [5, 6, 8, 10],
+  });
+
   for (let i = 0; i < count; i++) {
-    const ticketOptions = pickByGrade(grade, {
-      lower: [1.0, 1.5, 2.0, 2.5],
-      middle: [1.5, 2.0, 2.5, 3.0, 3.5],
-      upper: [2.5, 3.0, 3.5, 4.0, 4.5],
-    });
-    const paymentOptions = pickByGrade(grade, {
-      lower: [3, 4, 5],
-      middle: [4, 5, 6, 8],
-      upper: [5, 6, 8, 10],
-    });
     const ticketPrice = ticketOptions[randomInt(0, ticketOptions.length - 1)];
     const affordablePayments = paymentOptions.filter((amount) => amount > ticketPrice);
     const paymentPool = affordablePayments.length > 0 ? affordablePayments : paymentOptions;
     const payment = paymentPool[randomInt(0, paymentPool.length - 1)];
     const change = payment - ticketPrice;
 
-    const problemText = `You buy a ticket for RM${ticketPrice.toFixed(2)} with RM${payment}. What is your change?`;
+    const problemText = `You buy a ticket for RM${ticketPrice.toFixed(2)} with RM${payment.toFixed(2)}. What is your change?`;
     const answer = Math.round(change * 100) / 100;
 
     problems.push({
@@ -127,16 +128,20 @@ export function generateTransportDiscountEn(grade: Grade, count: number): WordPr
 
     if (problemType === 0) {
       // Multi-trip pass price per trip
-      const tripsOptions = grade <= 3 ? [8, 10] : [10, 12, 15];
+      const tripsOptions = pickByGrade(grade, {
+        lower: [8, 10],
+        middle: [10, 12, 15],
+        upper: [12, 15, 18],
+      });
       const trips = tripsOptions[randomInt(0, tripsOptions.length - 1)];
       const passPrice = randomIntByGrade(grade, {
         lower: { min: 18, max: 30 },
-        middle: { min: 22, max: 35 },
-        upper: { min: 28, max: 45 },
+        middle: { min: 24, max: 38 },
+        upper: { min: 30, max: 48 },
       });
       const perTrip = Math.round((passPrice / trips) * 100) / 100;
 
-      problemText = `A ${trips}-trip pass costs RM${passPrice}. What is the cost per trip?`;
+      problemText = `A ${trips}-trip pass costs RM${passPrice.toFixed(2)}. What is the cost per trip?`;
       answer = perTrip;
     } else {
       // Monthly pass vs single tickets savings
@@ -151,16 +156,22 @@ export function generateTransportDiscountEn(grade: Grade, count: number): WordPr
         upper: { min: 20, max: 24 },
       });
       const commuteDays = randomInt(daysRange.min, daysRange.max);
-      const normalTotal = dailyFare * commuteDays;
-      const passPrice = randomIntByGrade(grade, {
-        lower: { min: 25, max: 35 },
-        middle: { min: 30, max: 45 },
-        upper: { min: 35, max: 55 },
-      });
-      const saving = Math.round((normalTotal - passPrice) * 100) / 100;
+      const normalTotal = Math.round(dailyFare * commuteDays * 100) / 100;
 
-      problemText = `Daily fare is RM${dailyFare.toFixed(2)} for ${commuteDays} days. A monthly pass costs RM${passPrice}. How much do you save with the pass?`;
-      answer = saving;
+      const savingRange = pickByGrade(grade, {
+        lower: { min: 80, max: 400 },
+        middle: { min: 150, max: 500 },
+        upper: { min: 200, max: 650 },
+      });
+      const normalTotalCents = Math.round(normalTotal * 100);
+      const maxSavingCents = Math.max(50, Math.min(savingRange.max, normalTotalCents - 100));
+      const minSavingCents = Math.min(Math.max(50, savingRange.min), maxSavingCents);
+      const savingCents = randomInt(minSavingCents, maxSavingCents);
+      const passPrice = (normalTotalCents - savingCents) / 100;
+      const saving = savingCents / 100;
+
+      problemText = `Daily fare is RM${dailyFare.toFixed(2)} for ${commuteDays} days. A monthly pass costs RM${passPrice.toFixed(2)}. How much do you save with the pass?`;
+      answer = Math.round(saving * 100) / 100;
     }
 
     problems.push({
