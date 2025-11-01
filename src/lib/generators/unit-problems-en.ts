@@ -5,6 +5,7 @@
 
 import type { WordProblemEn, Operation, Grade } from '../../types';
 import { randomInt, generateId } from '../utils/math';
+import { randomIntByGrade } from './grade-utils';
 
 /**
  * 長さの単位変換問題を生成（英語）
@@ -20,15 +21,27 @@ export function generateUnitLengthEn(grade: Grade, count: number): WordProblemEn
 
     if (conversionType === 0) {
       // m to cm conversion
-      const meters = randomInt(1, 10);
-      const centimeters = randomInt(0, 9) * 10;
+      const meters = randomIntByGrade(grade, {
+        lower: { min: 1, max: 6 },
+        middle: { min: 2, max: 9 },
+        upper: { min: 3, max: 12 },
+      });
+      const centimeters = randomIntByGrade(grade, {
+        lower: { min: 0, max: 5 },
+        middle: { min: 0, max: 8 },
+        upper: { min: 0, max: 9 },
+      }) * 10;
       const totalCm = meters * 100 + centimeters;
 
       problemText = `Convert ${meters}m ${centimeters}cm to centimeters. How many cm?`;
       answer = totalCm;
     } else if (conversionType === 1) {
       // cm to m and cm conversion
-      const totalCm = randomInt(100, 900);
+      const totalCm = randomIntByGrade(grade, {
+        lower: { min: 80, max: 500 },
+        middle: { min: 120, max: 900 },
+        upper: { min: 200, max: 1200 },
+      });
       const meters = Math.floor(totalCm / 100);
       const centimeters = totalCm % 100;
 
@@ -36,15 +49,27 @@ export function generateUnitLengthEn(grade: Grade, count: number): WordProblemEn
       answer = centimeters === 0 ? `${meters}m` : `${meters}m ${centimeters}cm`;
     } else if (conversionType === 2) {
       // km to m conversion
-      const kilometers = randomInt(1, 5);
-      const meters = randomInt(0, 9) * 100;
+      const kilometers = randomIntByGrade(grade, {
+        lower: { min: 1, max: 3 },
+        middle: { min: 1, max: 5 },
+        upper: { min: 2, max: 8 },
+      });
+      const meters = randomIntByGrade(grade, {
+        lower: { min: 0, max: 6 },
+        middle: { min: 0, max: 8 },
+        upper: { min: 0, max: 9 },
+      }) * 100;
       const totalM = kilometers * 1000 + meters;
 
       problemText = `Convert ${kilometers}km ${meters}m to meters. How many meters?`;
       answer = totalM;
     } else {
       // cm to mm conversion
-      const centimeters = randomInt(1, 50);
+      const centimeters = randomIntByGrade(grade, {
+        lower: { min: 1, max: 40 },
+        middle: { min: 10, max: 70 },
+        upper: { min: 20, max: 90 },
+      });
       const millimeters = centimeters * 10;
 
       problemText = `Convert ${centimeters}cm to millimeters. How many mm?`;
@@ -80,15 +105,27 @@ export function generateUnitWeightEn(grade: Grade, count: number): WordProblemEn
 
     if (conversionType === 0) {
       // kg to g conversion
-      const kilograms = randomInt(1, 5);
-      const grams = randomInt(0, 9) * 100;
+      const kilograms = randomIntByGrade(grade, {
+        lower: { min: 1, max: 3 },
+        middle: { min: 1, max: 5 },
+        upper: { min: 2, max: 7 },
+      });
+      const grams = randomIntByGrade(grade, {
+        lower: { min: 0, max: 5 },
+        middle: { min: 0, max: 8 },
+        upper: { min: 0, max: 9 },
+      }) * 100;
       const totalG = kilograms * 1000 + grams;
 
       problemText = `Convert ${kilograms}kg ${grams}g to grams. How many grams?`;
       answer = totalG;
     } else {
       // g to kg and g conversion
-      const totalG = randomInt(1000, 5000);
+      const totalG = randomIntByGrade(grade, {
+        lower: { min: 800, max: 4000 },
+        middle: { min: 1200, max: 7000 },
+        upper: { min: 2000, max: 9000 },
+      });
       const kilograms = Math.floor(totalG / 1000);
       const grams = totalG % 1000;
 
@@ -125,15 +162,27 @@ export function generateUnitCapacityEn(grade: Grade, count: number): WordProblem
 
     if (conversionType === 0) {
       // L to mL conversion
-      const liters = randomInt(1, 5);
-      const milliliters = randomInt(0, 9) * 100;
+      const liters = randomIntByGrade(grade, {
+        lower: { min: 1, max: 3 },
+        middle: { min: 1, max: 5 },
+        upper: { min: 2, max: 7 },
+      });
+      const milliliters = randomIntByGrade(grade, {
+        lower: { min: 0, max: 5 },
+        middle: { min: 0, max: 8 },
+        upper: { min: 0, max: 9 },
+      }) * 100;
       const totalMl = liters * 1000 + milliliters;
 
       problemText = `Convert ${liters}L ${milliliters}mL to milliliters. How many mL?`;
       answer = totalMl;
     } else {
       // mL to L and mL conversion
-      const totalMl = randomInt(1000, 5000);
+      const totalMl = randomIntByGrade(grade, {
+        lower: { min: 800, max: 4000 },
+        middle: { min: 1200, max: 7000 },
+        upper: { min: 2000, max: 9000 },
+      });
       const liters = Math.floor(totalMl / 1000);
       const milliliters = totalMl % 1000;
 

@@ -5,6 +5,7 @@
 
 import type { WordProblemEn, Operation, Grade } from '../../types';
 import { randomInt, generateId } from '../utils/math';
+import { randomIntByGrade, rangeByGrade } from './grade-utils';
 
 /**
  * 貯金の計算問題を生成（英語）
@@ -20,19 +21,36 @@ export function generateAllowanceSavingEn(grade: Grade, count: number): WordProb
 
     if (problemType === 0) {
       // Calculate periods needed to reach target
-      const savingPerPeriod = randomInt(3, 10); // RM3-10
-      const targetAmount = randomInt(30, 100); // RM30-100
+      const savingPerPeriod = randomIntByGrade(grade, {
+        lower: { min: 3, max: 8 },
+        middle: { min: 5, max: 12 },
+        upper: { min: 8, max: 18 },
+      });
+      const targetAmount = randomIntByGrade(grade, {
+        lower: { min: 25, max: 70 },
+        middle: { min: 45, max: 140 },
+        upper: { min: 80, max: 220 },
+      });
       const periods = Math.ceil(targetAmount / savingPerPeriod);
 
       const periodType = randomInt(0, 1) === 0 ? 'week' : 'month';
       const periodPlural = periods > 1 ? periodType + 's' : periodType;
 
-      problemText = `You save RM${savingPerPeriod} per ${periodType}. How many ${periodType}s to save RM${targetAmount}?`;
+      problemText = `You save RM${savingPerPeriod} per ${periodType}. How many ${periodPlural} to save RM${targetAmount}?`;
       answer = periods;
     } else {
       // Calculate total savings over time
-      const savingPerPeriod = randomInt(5, 15); // RM5-15
-      const periods = randomInt(6, 12); // 6-12 periods
+      const savingPerPeriod = randomIntByGrade(grade, {
+        lower: { min: 4, max: 9 },
+        middle: { min: 6, max: 14 },
+        upper: { min: 9, max: 20 },
+      });
+      const { min: minPeriods, max: maxPeriods } = rangeByGrade(grade, {
+        lower: { min: 4, max: 8 },
+        middle: { min: 6, max: 12 },
+        upper: { min: 9, max: 16 },
+      });
+      const periods = randomInt(minPeriods, maxPeriods);
 
       const periodType = randomInt(0, 1) === 0 ? 'week' : 'month';
       const periodPlural = periods > 1 ? periodType + 's' : periodType;
@@ -71,8 +89,16 @@ export function generateAllowanceGoalEn(grade: Grade, count: number): WordProble
 
     if (problemType === 0) {
       // Months to reach goal
-      const targetAmount = randomInt(40, 100); // RM40-100
-      const savingPerMonth = randomInt(5, 15); // RM5-15
+      const targetAmount = randomIntByGrade(grade, {
+        lower: { min: 40, max: 100 },
+        middle: { min: 60, max: 180 },
+        upper: { min: 90, max: 250 },
+      });
+      const savingPerMonth = randomIntByGrade(grade, {
+        lower: { min: 4, max: 10 },
+        middle: { min: 6, max: 16 },
+        upper: { min: 10, max: 25 },
+      });
       const months = Math.ceil(targetAmount / savingPerMonth);
 
       const item = ['game', 'book', 'toy'][randomInt(0, 2)];
@@ -80,8 +106,17 @@ export function generateAllowanceGoalEn(grade: Grade, count: number): WordProble
       answer = months;
     } else {
       // Amount still needed
-      const targetAmount = randomInt(50, 100); // RM50-100
-      const currentSaving = randomInt(20, targetAmount - 10); // RM20 to slightly below target
+      const targetAmount = randomIntByGrade(grade, {
+        lower: { min: 50, max: 100 },
+        middle: { min: 80, max: 200 },
+        upper: { min: 120, max: 320 },
+      });
+      const savingsWindow = rangeByGrade(grade, {
+        lower: { min: Math.max(15, Math.floor(targetAmount * 0.3)), max: targetAmount - 10 },
+        middle: { min: Math.max(25, Math.floor(targetAmount * 0.35)), max: targetAmount - 15 },
+        upper: { min: Math.max(40, Math.floor(targetAmount * 0.4)), max: targetAmount - 20 },
+      });
+      const currentSaving = randomInt(savingsWindow.min, Math.max(savingsWindow.min + 1, savingsWindow.max));
       const remaining = targetAmount - currentSaving;
 
       problemText = `Your savings goal is RM${targetAmount}. You have saved RM${currentSaving}. How much more do you need?`;

@@ -59,7 +59,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const problemCountOptions = [];
 
   // ステップサイズの決定: 文章問題は2問、それ以外は問題数に応じて調整
-  const getStepSize = () => {
+  const getStepSize = (): number => {
     if (isWord || isWordEn) return 2; // 文章問題は2問ステップ
     if (recommendedCount >= 20) return 5; // 20問以上は5問ステップ
     if (recommendedCount >= 10) return 2; // 10-19問は2問ステップ
@@ -68,6 +68,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
   const step = getStepSize();
   const minProblems = Math.max(step, Math.floor(recommendedCount / 2)); // 最小値は推奨の半分程度
+
+  const lessCount = Math.floor((recommendedCount * 0.75) / step) * step;
+  const moreCount = Math.ceil((recommendedCount * 1.25) / step) * step;
 
   // 最小値から最大値まで、ステップごとに選択肢を生成
   for (let i = minProblems; i <= maxProblems; i += step) {
@@ -84,6 +87,11 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   if (!problemCountOptions.includes(maxProblems)) {
     problemCountOptions.push(maxProblems);
   }
+
+  const showLessOption =
+    lessCount >= minProblems && problemCountOptions.includes(lessCount);
+  const showMoreOption =
+    moreCount <= maxProblems && problemCountOptions.includes(moreCount);
 
   return (
     <div className="space-y-6">
@@ -184,26 +192,20 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           </p>
           <div className="grid grid-cols-3 gap-2">
             {/* 少なめ: 推奨の約0.75倍 */}
-            {(() => {
-              const lessCount = Math.floor(recommendedCount * 0.75 / step) * step;
-              if (lessCount >= minProblems && problemCountOptions.includes(lessCount)) {
-                return (
-                  <button
-                    type="button"
-                    onClick={() => onProblemCountChange(lessCount)}
-                    className={`px-3 py-2 text-sm rounded-md border transition-colors ${
-                      problemCount === lessCount
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
-                    }`}
-                  >
-                    少なめ<br />
-                    <span className="text-xs">{lessCount}問</span>
-                  </button>
-                );
-              }
-              return null;
-            })()}
+            {showLessOption && (
+              <button
+                type="button"
+                onClick={() => onProblemCountChange(lessCount)}
+                className={`px-3 py-2 text-sm rounded-md border transition-colors ${
+                  problemCount === lessCount
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                }`}
+              >
+                少なめ<br />
+                <span className="text-xs">{lessCount}問</span>
+              </button>
+            )}
 
             {/* 推奨 */}
             <button
@@ -220,26 +222,20 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             </button>
 
             {/* 多め: 推奨の約1.25倍 */}
-            {(() => {
-              const moreCount = Math.ceil(recommendedCount * 1.25 / step) * step;
-              if (moreCount <= maxProblems && problemCountOptions.includes(moreCount)) {
-                return (
-                  <button
-                    type="button"
-                    onClick={() => onProblemCountChange(moreCount)}
-                    className={`px-3 py-2 text-sm rounded-md border transition-colors ${
-                      problemCount === moreCount
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
-                    }`}
-                  >
-                    多め<br />
-                    <span className="text-xs">{moreCount}問</span>
-                  </button>
-                );
-              }
-              return null;
-            })()}
+            {showMoreOption && (
+              <button
+                type="button"
+                onClick={() => onProblemCountChange(moreCount)}
+                className={`px-3 py-2 text-sm rounded-md border transition-colors ${
+                  problemCount === moreCount
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                }`}
+              >
+                多め<br />
+                <span className="text-xs">{moreCount}問</span>
+              </button>
+            )}
           </div>
         </div>
 

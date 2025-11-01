@@ -5,6 +5,7 @@
 
 import type { WordProblemEn, Operation, Grade } from '../../types';
 import { randomInt, generateId } from '../utils/math';
+import { randomIntByGrade, rangeByGrade } from './grade-utils';
 
 /**
  * 割引計算問題を生成（英語）
@@ -20,8 +21,14 @@ export function generateShoppingDiscountEn(grade: Grade, count: number): WordPro
 
     if (discountType === 0) {
       // Calculate final price after discount
-      const originalPrice = randomInt(10, 50) * 2; // RM20-RM100
-      const discountRate = [10, 20, 25, 30][randomInt(0, 3)]; // 10%, 20%, 25%, 30%
+      const priceBand = rangeByGrade(grade, {
+        lower: { min: 10, max: 30 },
+        middle: { min: 15, max: 45 },
+        upper: { min: 20, max: 60 },
+      });
+      const originalPrice = randomInt(priceBand.min, priceBand.max) * 2;
+      const rateOptions = grade <= 2 ? [10, 15, 20] : grade <= 4 ? [10, 20, 25] : [15, 20, 25, 30];
+      const discountRate = rateOptions[randomInt(0, rateOptions.length - 1)];
       const discountAmount = Math.floor(originalPrice * discountRate / 100);
       const finalPrice = originalPrice - discountAmount;
 
@@ -29,8 +36,17 @@ export function generateShoppingDiscountEn(grade: Grade, count: number): WordPro
       answer = finalPrice;
     } else {
       // Calculate discount rate from discount amount
-      const originalPrice = randomInt(20, 50) * 2; // RM40-RM100
-      const discountAmount = randomInt(5, 20); // RM5-RM20
+      const originalPriceRange = rangeByGrade(grade, {
+        lower: { min: 20, max: 40 },
+        middle: { min: 25, max: 55 },
+        upper: { min: 30, max: 70 },
+      });
+      const originalPrice = randomInt(originalPriceRange.min, originalPriceRange.max) * 2;
+      const discountAmount = randomIntByGrade(grade, {
+        lower: { min: 4, max: 12 },
+        middle: { min: 5, max: 18 },
+        upper: { min: 8, max: 25 },
+      });
       const discountRate = Math.round((discountAmount / originalPrice) * 100);
 
       problemText = `A toy costs RM${originalPrice}. The discount is RM${discountAmount}. What is the discount percentage?`;
@@ -66,17 +82,37 @@ export function generateShoppingBudgetEn(grade: Grade, count: number): WordProbl
 
     if (budgetType === 0) {
       // Calculate how many items can be bought within budget
-      const budget = randomInt(10, 30) * 2; // RM20-RM60
-      const itemPrice = randomInt(2, 8); // RM2-RM8
+      const budget = randomIntByGrade(grade, {
+        lower: { min: 10, max: 25 },
+        middle: { min: 15, max: 35 },
+        upper: { min: 20, max: 45 },
+      }) * 2;
+      const itemPrice = randomIntByGrade(grade, {
+        lower: { min: 2, max: 5 },
+        middle: { min: 3, max: 7 },
+        upper: { min: 4, max: 9 },
+      });
       const quantity = Math.floor(budget / itemPrice);
 
       problemText = `You have RM${budget}. Candy costs RM${itemPrice} each. How many can you buy?`;
       answer = quantity;
     } else {
       // Calculate change
-      const budget = randomInt(25, 50) * 2; // RM50-RM100
-      const item1Price = randomInt(5, 15); // RM5-RM15
-      const item2Price = randomInt(8, 20); // RM8-RM20
+      const budget = randomIntByGrade(grade, {
+        lower: { min: 25, max: 40 },
+        middle: { min: 30, max: 50 },
+        upper: { min: 35, max: 60 },
+      }) * 2;
+      const item1Price = randomIntByGrade(grade, {
+        lower: { min: 4, max: 10 },
+        middle: { min: 6, max: 15 },
+        upper: { min: 8, max: 20 },
+      });
+      const item2Price = randomIntByGrade(grade, {
+        lower: { min: 6, max: 14 },
+        middle: { min: 8, max: 18 },
+        upper: { min: 12, max: 24 },
+      });
       const totalSpent = item1Price + item2Price;
       const change = budget - totalSpent;
 
@@ -113,10 +149,26 @@ export function generateShoppingComparisonEn(grade: Grade, count: number): WordP
 
     if (comparisonType === 0) {
       // Compare unit prices
-      const weight1 = randomInt(50, 100); // 50-100g
-      const price1 = randomInt(2, 5); // RM2-RM5
-      const weight2 = randomInt(80, 150); // 80-150g
-      const price2 = randomInt(4, 8); // RM4-RM8
+      const weight1 = randomIntByGrade(grade, {
+        lower: { min: 40, max: 90 },
+        middle: { min: 60, max: 120 },
+        upper: { min: 80, max: 180 },
+      });
+      const price1 = randomIntByGrade(grade, {
+        lower: { min: 2, max: 4 },
+        middle: { min: 3, max: 6 },
+        upper: { min: 4, max: 8 },
+      });
+      const weight2 = randomIntByGrade(grade, {
+        lower: { min: 60, max: 120 },
+        middle: { min: 80, max: 180 },
+        upper: { min: 110, max: 250 },
+      });
+      const price2 = randomIntByGrade(grade, {
+        lower: { min: 3, max: 6 },
+        middle: { min: 4, max: 8 },
+        upper: { min: 5, max: 10 },
+      });
 
       const unitPrice1 = Math.round((price1 / weight1) * 100 * 100) / 100;
       const unitPrice2 = Math.round((price2 / weight2) * 100 * 100) / 100;
@@ -126,9 +178,21 @@ export function generateShoppingComparisonEn(grade: Grade, count: number): WordP
       answer = priceDiff;
     } else {
       // Calculate total price difference
-      const priceA = randomInt(2, 5); // RM2-RM5
-      const priceB = randomInt(3, 6); // RM3-RM6
-      const quantity = randomInt(3, 6); // 3-6 items
+      const priceA = randomIntByGrade(grade, {
+        lower: { min: 2, max: 4 },
+        middle: { min: 3, max: 6 },
+        upper: { min: 4, max: 8 },
+      });
+      const priceB = randomIntByGrade(grade, {
+        lower: { min: 3, max: 5 },
+        middle: { min: 4, max: 7 },
+        upper: { min: 5, max: 9 },
+      });
+      const quantity = randomIntByGrade(grade, {
+        lower: { min: 2, max: 4 },
+        middle: { min: 3, max: 6 },
+        upper: { min: 4, max: 8 },
+      });
       const totalA = priceA * quantity;
       const totalB = priceB * quantity;
       const difference = Math.abs(totalA - totalB);

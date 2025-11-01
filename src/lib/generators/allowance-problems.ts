@@ -5,6 +5,7 @@
 
 import type { WordProblem, Operation, Grade } from '../../types';
 import { randomInt, generateId } from '../utils/math';
+import { rangeByGrade } from './grade-utils';
 
 /**
  * 貯金の計算問題を生成
@@ -20,8 +21,18 @@ export function generateAllowanceSaving(grade: Grade, count: number): WordProble
 
     if (problemType === 0) {
       // 毎週/毎月の貯金額から必要な期間を計算
-      const savingPerPeriod = randomInt(5, 20) * 10; // 50-200円
-      const targetAmount = randomInt(5, 15) * 100; // 500-1500円
+      const savingBand = rangeByGrade(grade, {
+        lower: { min: 5, max: 12 },
+        middle: { min: 8, max: 20 },
+        upper: { min: 12, max: 28 },
+      });
+      const savingPerPeriod = randomInt(savingBand.min, savingBand.max) * 10;
+      const targetBand = rangeByGrade(grade, {
+        lower: { min: 5, max: 12 },
+        middle: { min: 8, max: 20 },
+        upper: { min: 12, max: 30 },
+      });
+      const targetAmount = randomInt(targetBand.min, targetBand.max) * 100;
       const periods = Math.ceil(targetAmount / savingPerPeriod);
 
       const periodType = randomInt(0, 1) === 0 ? '週' : 'ヶ月';
@@ -29,8 +40,18 @@ export function generateAllowanceSaving(grade: Grade, count: number): WordProble
       answer = periods;
     } else {
       // 一定期間での総貯金額を計算
-      const savingPerPeriod = randomInt(10, 30) * 10; // 100-300円
-      const periods = randomInt(5, 12); // 5-12期間
+      const savingBand = rangeByGrade(grade, {
+        lower: { min: 10, max: 18 },
+        middle: { min: 12, max: 30 },
+        upper: { min: 18, max: 40 },
+      });
+      const savingPerPeriod = randomInt(savingBand.min, savingBand.max) * 10;
+      const periodsRange = rangeByGrade(grade, {
+        lower: { min: 4, max: 8 },
+        middle: { min: 6, max: 12 },
+        upper: { min: 9, max: 16 },
+      });
+      const periods = randomInt(periodsRange.min, periodsRange.max);
 
       const periodType = randomInt(0, 1) === 0 ? '週間' : 'ヶ月';
       const totalSaving = savingPerPeriod * periods;
@@ -66,8 +87,18 @@ export function generateAllowanceGoal(grade: Grade, count: number): WordProblem[
 
     if (problemType === 0) {
       // 目標金額に達するまでの期間
-      const targetAmount = randomInt(8, 20) * 100; // 800-2000円
-      const savingPerMonth = randomInt(1, 3) * 100; // 100-300円
+      const targetBand = rangeByGrade(grade, {
+        lower: { min: 8, max: 18 },
+        middle: { min: 12, max: 24 },
+        upper: { min: 18, max: 36 },
+      });
+      const targetAmount = randomInt(targetBand.min, targetBand.max) * 100;
+      const savingBand = rangeByGrade(grade, {
+        lower: { min: 1, max: 3 },
+        middle: { min: 2, max: 5 },
+        upper: { min: 3, max: 7 },
+      });
+      const savingPerMonth = randomInt(savingBand.min, savingBand.max) * 100;
       const months = Math.ceil(targetAmount / savingPerMonth);
 
       const item = ['ゲーム', '本', 'おもちゃ'][randomInt(0, 2)];
@@ -75,8 +106,15 @@ export function generateAllowanceGoal(grade: Grade, count: number): WordProblem[
       answer = months;
     } else {
       // あと何円貯めればよいか
-      const targetAmount = randomInt(10, 20) * 100; // 1000-2000円
-      const currentSaving = randomInt(3, targetAmount / 100 - 2) * 100; // 300円〜目標の少し手前
+      const targetBand = rangeByGrade(grade, {
+        lower: { min: 10, max: 20 },
+        middle: { min: 14, max: 28 },
+        upper: { min: 18, max: 40 },
+      });
+      const targetAmount = randomInt(targetBand.min, targetBand.max) * 100;
+      const savingsFloor = Math.max(2, Math.floor(targetBand.min * 0.4));
+      const savingsCeil = Math.max(savingsFloor + 1, Math.floor(targetAmount / 100) - 1);
+      const currentSaving = randomInt(savingsFloor, savingsCeil) * 100;
       const remaining = targetAmount - currentSaving;
 
       problemText = `${targetAmount}円の貯金が目標です。今${currentSaving}円貯まっています。あと何円必要ですか？`;

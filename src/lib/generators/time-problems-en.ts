@@ -25,7 +25,7 @@ export function generateTimeReadingEn(grade: Grade, count: number): WordProblemE
     const endHour = Math.floor(endTotalMinutes / 60);
     const endMinute = endTotalMinutes % 60;
 
-    const formatTime = (h: number, m: number) => {
+    const formatTime = (h: number, m: number): string => {
       const ampm = h < 12 ? 'AM' : 'PM';
       const displayHour = h > 12 ? h - 12 : h === 0 ? 12 : h;
       const minuteStr = m < 10 ? `0${m}` : `${m}`;
@@ -85,7 +85,7 @@ export function generateTimeElapsedEn(grade: Grade, count: number): WordProblemE
     const finalMinute = endMinute % 60;
     const finalHour = startHour + elapsedHours + extraHour;
 
-    const formatTime = (h: number, m: number) => {
+    const formatTime = (h: number, m: number): string => {
       const ampm = h < 12 ? 'AM' : 'PM';
       const displayHour = h > 12 ? h - 12 : h;
       return m === 0 ? `${displayHour}:00 ${ampm}` : `${displayHour}:${m < 10 ? '0' + m : m} ${ampm}`;
@@ -149,7 +149,7 @@ export function generateTimeCalcEn(grade: Grade, count: number): WordProblemEn[]
         ? `${answerHours} hours`
         : `${answerHours} hours ${answerMinutes} minutes`;
 
-    const formatTime = (h: number, m: number, ampm: string) => {
+    const formatTime = (h: number, m: number, ampm: string): string => {
       return m === 0 ? `${h}:00 ${ampm}` : `${h}:${m < 10 ? '0' + m : m} ${ampm}`;
     };
 

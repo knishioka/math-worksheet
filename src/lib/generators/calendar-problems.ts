@@ -5,6 +5,7 @@
 
 import type { WordProblem, Operation, Grade } from '../../types';
 import { randomInt, generateId } from '../utils/math';
+import { rangeByGrade, randomIntByGrade, scaleByGrade } from './grade-utils';
 
 /**
  * 日数の計算問題を生成
@@ -35,8 +36,17 @@ export function generateCalendarDays(grade: Grade, count: number): WordProblem[]
 
     if (problemType === 0) {
       // 何日後の日付を計算
-      const startDay = randomInt(1, 20); // 1-20日
-      const daysToAdd = randomInt(5, 15); // 5-15日後
+      const startRange = rangeByGrade(grade, {
+        lower: { min: 1, max: 18 },
+        middle: { min: 1, max: 22 },
+        upper: { min: 1, max: 25 },
+      });
+      const startDay = randomInt(startRange.min, startRange.max);
+      const daysToAdd = randomIntByGrade(grade, {
+        lower: { min: 3, max: 10 },
+        middle: { min: 6, max: 18 },
+        upper: { min: 10, max: 24 },
+      });
       const month = months[randomInt(0, 11)];
       const endDay = startDay + daysToAdd;
 
@@ -52,11 +62,22 @@ export function generateCalendarDays(grade: Grade, count: number): WordProblem[]
       }
     } else if (problemType === 1) {
       // 日数の差を計算
-      const startDay = randomInt(1, 15); // 1-15日
-      const endDay = randomInt(20, 30); // 20-30日
-      const daysDiff = endDay - startDay;
+      const monthData = months[randomInt(0, 11)];
+      const startDay = randomIntByGrade(grade, {
+        lower: { min: 1, max: Math.min(14, monthData.days - 6) },
+        middle: { min: 3, max: Math.min(18, monthData.days - 6) },
+        upper: { min: 5, max: Math.min(22, monthData.days - 6) },
+      });
+      const gapRange = rangeByGrade(grade, {
+        lower: { min: 6, max: 12 },
+        middle: { min: 8, max: 16 },
+        upper: { min: 10, max: 20 },
+      });
+      const maxGap = Math.min(gapRange.max, monthData.days - startDay);
+      const daysDiff = randomInt(gapRange.min, Math.max(gapRange.min, maxGap));
+      const endDay = startDay + daysDiff;
 
-      const month = months[randomInt(0, 11)].name;
+      const month = monthData.name;
       problemText = `${month}${startDay}日から${month}${endDay}日まで何日ありますか？`;
       answer = daysDiff;
     } else {
@@ -93,14 +114,22 @@ export function generateCalendarWeek(grade: Grade, count: number): WordProblem[]
 
     if (problemType === 0) {
       // 日数から週数を計算
-      const days = randomInt(2, 8) * 7; // 14-56日（2-8週間）
-      const weeks = days / 7;
+      const weeks = randomIntByGrade(grade, {
+        lower: { min: 2, max: 5 },
+        middle: { min: 3, max: 7 },
+        upper: { min: 4, max: 9 },
+      });
+      const days = weeks * 7;
 
       problemText = `${days}日は何週間ですか？`;
       answer = weeks;
     } else {
       // 週数から日数を計算
-      const weeks = randomInt(2, 8); // 2-8週間
+      const weeks = randomIntByGrade(grade, {
+        lower: { min: 2, max: 5 },
+        middle: { min: 3, max: 7 },
+        upper: { min: 4, max: 9 },
+      });
       const days = weeks * 7;
 
       problemText = `${weeks}週間は何日ですか？`;
@@ -136,15 +165,34 @@ export function generateCalendarAge(grade: Grade, count: number): WordProblem[] 
 
     if (problemType === 0) {
       // 生まれ年から年齢を計算
-      const birthYear = currentYear - randomInt(6, 12); // 6-12歳
-      const age = currentYear - birthYear;
+      const age = randomIntByGrade(grade, {
+        lower: { min: 6, max: 10 },
+        middle: { min: 8, max: 13 },
+        upper: { min: 10, max: 16 },
+      });
+      const birthYear = currentYear - age;
 
       problemText = `${birthYear}年生まれの人は、今年（${currentYear}年）何歳ですか？`;
       answer = age;
     } else {
       // 年齢差を計算
-      const age1 = randomInt(8, 12); // 8-12歳
-      const age2 = randomInt(6, age1 - 2); // より若い年齢
+      const age1 = randomIntByGrade(grade, {
+        lower: { min: 7, max: 11 },
+        middle: { min: 9, max: 13 },
+        upper: { min: 11, max: 16 },
+      });
+      const youngerBuffer = scaleByGrade(grade, {
+        lower: 2,
+        middle: 3,
+        upper: 4,
+      });
+      const youngerMax = age1 - youngerBuffer;
+      const youngerMin = Math.max(5, youngerMax - scaleByGrade(grade, {
+        lower: 2,
+        middle: 3,
+        upper: 4,
+      }));
+      const age2 = randomInt(Math.min(youngerMin, youngerMax - 1), youngerMax);
       const ageDiff = age1 - age2;
 
       problemText = `太郎さんは${age1}歳、花子さんは${age2}歳です。何歳違いますか？`;
