@@ -222,12 +222,26 @@ export const SIMPLE_ADDITION_STORIES: WordStoryTemplate[] = [
  */
 export const MULTI_STEP_STORIES: WordStoryTemplate[] = [
   {
-    generateProblem: () => {
+    generateProblem: (grade) => {
       const name = getRandomName();
       const item = getRandomItem(true);
-      const total = randomInt(15, 30);
-      const red = randomInt(3, Math.floor(total / 3));
-      const green = randomInt(3, Math.floor(total / 3));
+      const total = gradeRandomInt(
+        grade,
+        [
+          { upTo: 2, min: 18, max: 36 },
+          { upTo: 3, min: 24, max: 50 },
+          { upTo: 4, min: 28, max: 60 },
+        ],
+        { upTo: 6, min: 36, max: 90 }
+      );
+      const red = randomInt(
+        Math.max(3, Math.floor(total * 0.2)),
+        Math.max(4, Math.floor(total * 0.35))
+      );
+      const green = randomInt(
+        Math.max(3, Math.floor(total * 0.2)),
+        Math.max(4, Math.floor(total * 0.35))
+      );
       const answer = red + green;
 
       return {
@@ -241,12 +255,28 @@ export const MULTI_STEP_STORIES: WordStoryTemplate[] = [
     category: 'word-story',
   },
   {
-    generateProblem: () => {
+    generateProblem: (grade) => {
       const name1 = getRandomName();
       const name2 = getRandomName();
       const item = getRandomItem(true);
-      const count1 = randomInt(10, 30);
-      const count2 = randomInt(5, 15);
+      const count1 = gradeRandomInt(
+        grade,
+        [
+          { upTo: 2, min: 14, max: 32 },
+          { upTo: 3, min: 18, max: 48 },
+          { upTo: 4, min: 22, max: 60 },
+        ],
+        { upTo: 6, min: 28, max: 90 }
+      );
+      const count2 = gradeRandomInt(
+        grade,
+        [
+          { upTo: 2, min: 8, max: 18 },
+          { upTo: 3, min: 10, max: 25 },
+          { upTo: 4, min: 12, max: 30 },
+        ],
+        { upTo: 6, min: 14, max: 36 }
+      );
       const answer = count1 + count2;
 
       return {
@@ -799,8 +829,18 @@ export const TIME_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const activity = ['a movie', 'a game', 'practice', 'class'][randomInt(0, 3)];
-      const duration = randomInt(grade <= 3 ? 30 : 45, grade <= 3 ? 90 : 120);
-      const passed = randomInt(10, duration - 10);
+      const duration = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 30, max: 75 },
+          { upTo: 4, min: 40, max: 100 },
+        ],
+        { upTo: 5, min: 55, max: 130 }
+      );
+      const passed = randomInt(
+        Math.max(10, Math.floor(duration * 0.25)),
+        Math.max(12, duration - Math.max(12, Math.floor(duration * 0.3)))
+      );
       const answer = duration - passed;
 
       return {
@@ -847,8 +887,22 @@ export const TIME_STORIES: WordStoryTemplate[] = [
   },
   {
     generateProblem: (grade) => {
-      const totalMinutes = randomInt(grade <= 3 ? 30 : 60, grade <= 3 ? 60 : 120);
-      const numPeople = randomInt(2, grade <= 3 ? 5 : 6);
+      const totalMinutes = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 36, max: 72 },
+          { upTo: 4, min: 50, max: 110 },
+        ],
+        { upTo: 5, min: 60, max: 150 }
+      );
+      const numPeople = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 2, max: 4 },
+          { upTo: 4, min: 3, max: 5 },
+        ],
+        { upTo: 5, min: 4, max: 6 }
+      );
       // Ensure division is exact
       const minutesEach = Math.floor(totalMinutes / numPeople);
       const actualTotal = minutesEach * numPeople;
@@ -1072,8 +1126,22 @@ export const MEASUREMENT_STORIES: WordStoryTemplate[] = [
     generateProblem: (grade) => {
       const name1 = getRandomName();
       const name2 = getRandomName();
-      const height1 = randomInt(grade <= 3 ? 100 : 120, grade <= 3 ? 130 : 150);
-      const difference = randomInt(5, grade <= 3 ? 15 : 25);
+      const height1 = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 100, max: 135 },
+          { upTo: 4, min: 115, max: 150 },
+        ],
+        { upTo: 5, min: 125, max: 170 }
+      );
+      const difference = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 6, max: 18 },
+          { upTo: 4, min: 8, max: 24 },
+        ],
+        { upTo: 5, min: 10, max: 30 }
+      );
       const answer = height1 - difference;
 
       return {
@@ -1089,8 +1157,22 @@ export const MEASUREMENT_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const item = ['rope', 'ribbon', 'string', 'wire'][randomInt(0, 3)];
-      const lengthEach = randomInt(grade <= 3 ? 5 : 10, grade <= 3 ? 20 : 30);
-      const numPieces = randomInt(2, grade <= 3 ? 5 : 8);
+      const lengthEach = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 6, max: 22 },
+          { upTo: 4, min: 10, max: 28 },
+        ],
+        { upTo: 5, min: 12, max: 36 }
+      );
+      const numPieces = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 2, max: 5 },
+          { upTo: 4, min: 3, max: 6 },
+        ],
+        { upTo: 5, min: 4, max: 8 }
+      );
       const answer = lengthEach * numPieces;
 
       return {
@@ -1322,8 +1404,22 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
       const name1 = getRandomName();
       const name2 = getRandomName();
       const item = getRandomItem(true);
-      const count1 = randomInt(10, grade >= 5 ? 80 : 40);
-      const more = randomInt(5, grade >= 5 ? 60 : 20);
+      const count1 = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 12, max: 36 },
+          { upTo: 4, min: 20, max: 50 },
+        ],
+        { upTo: 6, min: 28, max: 90 }
+      );
+      const more = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 5, max: 18 },
+          { upTo: 4, min: 8, max: 24 },
+        ],
+        { upTo: 6, min: 10, max: 36 }
+      );
       const answer = count1 + more;
 
       return {
@@ -1341,10 +1437,26 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
       const name1 = getRandomName();
       const name2 = getRandomName();
       const item = getRandomItem(true);
-      const count1 = randomInt(20, grade >= 5 ? 100 : 50);
-      // Ensure fewer is less than count1 to avoid negative answers
-      const maxFewer = Math.min(grade >= 5 ? 30 : 15, count1 - 1);
-      const fewer = randomInt(5, maxFewer);
+      const count1 = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 24, max: 60 },
+          { upTo: 4, min: 28, max: 80 },
+        ],
+        { upTo: 6, min: 36, max: 120 }
+      );
+      const maxFewer = Math.min(
+        gradeRandomInt(
+          grade,
+          [
+            { upTo: 3, min: 8, max: 18 },
+            { upTo: 4, min: 10, max: 24 },
+          ],
+          { upTo: 6, min: 12, max: 36 }
+        ),
+        count1 - 1
+      );
+      const fewer = randomInt(5, Math.max(5, maxFewer));
       const answer = count1 - fewer;
 
       return {
@@ -1362,8 +1474,22 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
       const name1 = getRandomName();
       const name2 = getRandomName();
       const item = getRandomItem(true);
-      const count2 = randomInt(10, grade >= 5 ? 60 : 30);
-      const more = randomInt(5, grade >= 5 ? 40 : 20);
+      const count2 = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 10, max: 32 },
+          { upTo: 4, min: 16, max: 45 },
+        ],
+        { upTo: 6, min: 22, max: 70 }
+      );
+      const more = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 5, max: 16 },
+          { upTo: 4, min: 8, max: 22 },
+        ],
+        { upTo: 6, min: 10, max: 32 }
+      );
       const answer = count2 + more;
 
       return {
@@ -1381,7 +1507,14 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
       const name1 = getRandomName();
       const name2 = getRandomName();
       const item = getRandomItem(true);
-      const count1 = randomInt(15, grade >= 5 ? 80 : 40);
+      const count1 = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 18, max: 48 },
+          { upTo: 4, min: 24, max: 70 },
+        ],
+        { upTo: 6, min: 30, max: 110 }
+      );
       const count2 = randomInt(10, count1 - 5);
       const answer = count1 - count2;
 
@@ -1401,9 +1534,30 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
       const name2 = getRandomName();
       const name3 = getRandomName();
       const item = getRandomItem(true);
-      const count1 = randomInt(10, grade >= 5 ? 40 : 25);
-      const count2 = randomInt(8, grade >= 5 ? 35 : 20);
-      const count3 = randomInt(7, grade >= 5 ? 30 : 18);
+      const count1 = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 12, max: 30 },
+          { upTo: 4, min: 18, max: 42 },
+        ],
+        { upTo: 6, min: 24, max: 60 }
+      );
+      const count2 = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 10, max: 26 },
+          { upTo: 4, min: 14, max: 36 },
+        ],
+        { upTo: 6, min: 20, max: 52 }
+      );
+      const count3 = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 8, max: 22 },
+          { upTo: 4, min: 12, max: 30 },
+        ],
+        { upTo: 6, min: 16, max: 44 }
+      );
       const answer = count1 + count2 + count3;
 
       return {
@@ -1421,7 +1575,14 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
       const item = getRandomItem(true);
       const container1 = ['basket', 'box', 'bag', 'jar'][randomInt(0, 3)];
       const container2 = ['basket', 'box', 'bag', 'jar'][randomInt(0, 3)];
-      const count1 = randomInt(12, grade >= 5 ? 60 : 35);
+      const count1 = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 14, max: 36 },
+          { upTo: 4, min: 20, max: 60 },
+        ],
+        { upTo: 6, min: 26, max: 90 }
+      );
       const count2 = randomInt(8, count1 - 4);
       const answer = count1 - count2;
 
@@ -1443,9 +1604,30 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
 export const PATTERN_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
-      const start = randomInt(grade <= 3 ? 2 : 5, grade <= 3 ? 10 : 20);
-      const step = randomInt(2, grade <= 3 ? 5 : 10);
-      const numSteps = randomInt(2, grade <= 3 ? 3 : 4);
+      const start = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 2, max: 12 },
+          { upTo: 4, min: 5, max: 24 },
+        ],
+        { upTo: 6, min: 8, max: 40 }
+      );
+      const step = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 2, max: 6 },
+          { upTo: 4, min: 3, max: 9 },
+        ],
+        { upTo: 6, min: 4, max: 12 }
+      );
+      const numSteps = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 2, max: 3 },
+          { upTo: 4, min: 3, max: 4 },
+        ],
+        { upTo: 6, min: 4, max: 5 }
+      );
       const answer = start + step * numSteps;
 
       return {
@@ -1460,8 +1642,22 @@ export const PATTERN_STORIES: WordStoryTemplate[] = [
   },
   {
     generateProblem: (grade) => {
-      const total = randomInt(grade <= 3 ? 20 : 40, grade <= 3 ? 40 : 80);
-      const step = randomInt(2, grade <= 3 ? 5 : 8);
+      const total = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 24, max: 48 },
+          { upTo: 4, min: 36, max: 80 },
+        ],
+        { upTo: 6, min: 48, max: 120 }
+      );
+      const step = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 2, max: 6 },
+          { upTo: 4, min: 3, max: 9 },
+        ],
+        { upTo: 6, min: 4, max: 12 }
+      );
       const current = randomInt(step * 2, total - step * 2);
       const answer = current + step;
 
@@ -1483,8 +1679,22 @@ export const PATTERN_STORIES: WordStoryTemplate[] = [
 export const GEOMETRY_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
-      const numShapes = randomInt(2, grade <= 3 ? 4 : 6);
-      const sidesPerShape = randomInt(3, grade <= 3 ? 4 : 6);
+      const numShapes = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 2, max: 4 },
+          { upTo: 4, min: 3, max: 6 },
+        ],
+        { upTo: 6, min: 4, max: 8 }
+      );
+      const sidesPerShape = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 3, max: 4 },
+          { upTo: 4, min: 3, max: 6 },
+        ],
+        { upTo: 6, min: 4, max: 8 }
+      );
       const answer = numShapes * sidesPerShape;
 
       const shapeName = sidesPerShape === 3 ? 'triangle' : sidesPerShape === 4 ? 'square' : sidesPerShape === 5 ? 'pentagon' : 'hexagon';
@@ -1572,8 +1782,22 @@ export const COLLECTION_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const item = getRandomItem(true);
-      const shelves = randomInt(2, grade <= 3 ? 4 : 6);
-      const perShelf = randomInt(grade <= 3 ? 5 : 8, grade <= 3 ? 12 : 18);
+      const shelves = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 2, max: 4 },
+          { upTo: 4, min: 3, max: 6 },
+        ],
+        { upTo: 6, min: 4, max: 8 }
+      );
+      const perShelf = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 6, max: 14 },
+          { upTo: 4, min: 8, max: 18 },
+        ],
+        { upTo: 6, min: 10, max: 24 }
+      );
       const answer = shelves * perShelf;
 
       return {
@@ -1590,7 +1814,14 @@ export const COLLECTION_STORIES: WordStoryTemplate[] = [
     generateProblem: (grade) => {
       const name = getRandomName();
       const item = getRandomItem(true);
-      const total = randomInt(grade <= 3 ? 20 : 40, grade <= 3 ? 50 : 100);
+      const total = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 24, max: 60 },
+          { upTo: 4, min: 36, max: 90 },
+        ],
+        { upTo: 6, min: 48, max: 120 }
+      );
       const redPercent = randomInt(20, 50);
       const red = Math.floor(total * redPercent / 100);
       const answer = total - red;
@@ -1609,8 +1840,22 @@ export const COLLECTION_STORIES: WordStoryTemplate[] = [
     generateProblem: (grade) => {
       const name = getRandomName();
       const item = getRandomItem(true);
-      const pages = randomInt(2, grade <= 3 ? 5 : 8);
-      const perPage = randomInt(grade <= 3 ? 4 : 6, grade <= 3 ? 9 : 12);
+      const pages = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 2, max: 5 },
+          { upTo: 4, min: 3, max: 7 },
+        ],
+        { upTo: 6, min: 4, max: 9 }
+      );
+      const perPage = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 4, max: 9 },
+          { upTo: 4, min: 5, max: 11 },
+        ],
+        { upTo: 6, min: 6, max: 14 }
+      );
       const answer = pages * perPage;
 
       return {
@@ -1632,8 +1877,22 @@ export const TRAVEL_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const vehicle = ['bus', 'train', 'boat', 'plane'][randomInt(0, 3)];
-      const trips = randomInt(2, grade <= 3 ? 4 : 6);
-      const peoplePerTrip = randomInt(grade <= 3 ? 10 : 20, grade <= 3 ? 40 : 60);
+      const trips = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 2, max: 4 },
+          { upTo: 4, min: 3, max: 5 },
+        ],
+        { upTo: 6, min: 4, max: 7 }
+      );
+      const peoplePerTrip = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 12, max: 36 },
+          { upTo: 4, min: 18, max: 48 },
+        ],
+        { upTo: 6, min: 24, max: 72 }
+      );
       const answer = trips * peoplePerTrip;
 
       return {
@@ -1680,9 +1939,30 @@ export const TRAVEL_STORIES: WordStoryTemplate[] = [
   },
   {
     generateProblem: (grade) => {
-      const rows = randomInt(2, grade <= 3 ? 5 : 8);
-      const seatsPerRow = randomInt(grade <= 3 ? 4 : 6, grade <= 3 ? 8 : 12);
-      const empty = randomInt(2, grade <= 3 ? 5 : 10);
+      const rows = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 2, max: 5 },
+          { upTo: 4, min: 3, max: 6 },
+        ],
+        { upTo: 6, min: 4, max: 8 }
+      );
+      const seatsPerRow = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 4, max: 8 },
+          { upTo: 4, min: 5, max: 10 },
+        ],
+        { upTo: 6, min: 6, max: 12 }
+      );
+      const empty = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 2, max: 6 },
+          { upTo: 4, min: 3, max: 8 },
+        ],
+        { upTo: 6, min: 4, max: 10 }
+      );
       const total = rows * seatsPerRow;
       const answer = total - empty;
 

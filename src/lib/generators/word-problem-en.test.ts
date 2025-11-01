@@ -92,6 +92,21 @@ describe('English Word Problem Generator', () => {
       expect(hasLargeNumber).toBe(true);
     });
 
+    it('should scale numeric ranges for upper elementary grades', () => {
+      const grade4Problems = generateEnWordStory(4, 40);
+      const grade5Problems = generateEnWordStory(5, 40);
+
+      const grade4Max = Math.max(
+        ...grade4Problems.map((problem) => problem.answer as number)
+      );
+      const grade5Max = Math.max(
+        ...grade5Problems.map((problem) => problem.answer as number)
+      );
+
+      expect(grade4Max).toBeGreaterThanOrEqual(50);
+      expect(grade5Max).toBeGreaterThanOrEqual(80);
+    });
+
     it('should include proper English grammar', () => {
       const problems = generateEnWordStory(2, 10);
 
