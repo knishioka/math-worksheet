@@ -5,6 +5,7 @@
 
 import type { WordProblem, Operation, Grade } from '../../types';
 import { randomInt, generateId } from '../utils/math';
+import { randomIntByGrade, rangeByGrade } from './grade-utils';
 
 /**
  * 割引計算問題を生成
@@ -20,8 +21,14 @@ export function generateShoppingDiscount(grade: Grade, count: number): WordProbl
 
     if (discountType === 0) {
       // 割引率から割引後の価格を計算
-      const originalPrice = randomInt(5, 20) * 100; // 500-2000円
-      const discountRate = [10, 20, 25, 30][randomInt(0, 3)]; // 10%, 20%, 25%, 30%
+      const priceBand = rangeByGrade(grade, {
+        lower: { min: 4, max: 15 },
+        middle: { min: 6, max: 20 },
+        upper: { min: 8, max: 25 },
+      });
+      const originalPrice = randomInt(priceBand.min, priceBand.max) * 100;
+      const rateOptions = grade <= 2 ? [10, 15, 20] : grade <= 4 ? [10, 20, 25] : [15, 20, 25, 30];
+      const discountRate = rateOptions[randomInt(0, rateOptions.length - 1)];
       const discountAmount = Math.floor(originalPrice * discountRate / 100);
       const finalPrice = originalPrice - discountAmount;
 
@@ -29,8 +36,17 @@ export function generateShoppingDiscount(grade: Grade, count: number): WordProbl
       answer = finalPrice;
     } else {
       // 割引額から割引率を計算
-      const originalPrice = randomInt(8, 20) * 100; // 800-2000円
-      const discountAmount = randomInt(1, 5) * 100; // 100-500円
+      const originalPriceRange = rangeByGrade(grade, {
+        lower: { min: 7, max: 16 },
+        middle: { min: 8, max: 20 },
+        upper: { min: 10, max: 25 },
+      });
+      const originalPrice = randomInt(originalPriceRange.min, originalPriceRange.max) * 100;
+      const discountAmount = randomIntByGrade(grade, {
+        lower: { min: 1, max: 4 },
+        middle: { min: 2, max: 6 },
+        upper: { min: 3, max: 8 },
+      }) * 100;
       const discountRate = Math.round((discountAmount / originalPrice) * 100);
 
       problemText = `${originalPrice}円の商品が${discountAmount}円引きで売っています。何%引きですか？`;
@@ -64,17 +80,37 @@ export function generateShoppingBudget(grade: Grade, count: number): WordProblem
 
     if (budgetType === 0) {
       // 予算内で買える数を計算
-      const budget = randomInt(5, 15) * 100; // 500-1500円
-      const itemPrice = randomInt(1, 5) * 100; // 100-500円
+      const budget = randomIntByGrade(grade, {
+        lower: { min: 5, max: 12 },
+        middle: { min: 7, max: 18 },
+        upper: { min: 9, max: 22 },
+      }) * 100;
+      const itemPrice = randomIntByGrade(grade, {
+        lower: { min: 1, max: 4 },
+        middle: { min: 2, max: 5 },
+        upper: { min: 3, max: 6 },
+      }) * 100;
       const quantity = Math.floor(budget / itemPrice);
 
       problemText = `${budget}円持っています。1個${itemPrice}円のお菓子は何個買えますか？`;
       answer = quantity;
     } else {
       // おつりを計算
-      const budget = randomInt(10, 20) * 100; // 1000-2000円
-      const item1Price = randomInt(2, 5) * 100; // 200-500円
-      const item2Price = randomInt(3, 6) * 100; // 300-600円
+      const budget = randomIntByGrade(grade, {
+        lower: { min: 10, max: 18 },
+        middle: { min: 12, max: 24 },
+        upper: { min: 15, max: 30 },
+      }) * 100;
+      const item1Price = randomIntByGrade(grade, {
+        lower: { min: 2, max: 4 },
+        middle: { min: 3, max: 6 },
+        upper: { min: 4, max: 7 },
+      }) * 100;
+      const item2Price = randomIntByGrade(grade, {
+        lower: { min: 3, max: 5 },
+        middle: { min: 4, max: 7 },
+        upper: { min: 5, max: 9 },
+      }) * 100;
       const totalSpent = item1Price + item2Price;
       const change = budget - totalSpent;
 
@@ -109,10 +145,26 @@ export function generateShoppingComparison(grade: Grade, count: number): WordPro
 
     if (comparisonType === 0) {
       // 単位あたりの価格を比較
-      const weight1 = randomInt(50, 100); // 50-100g
-      const price1 = randomInt(100, 200); // 100-200円
-      const weight2 = randomInt(80, 150); // 80-150g
-      const price2 = randomInt(150, 300); // 150-300円
+      const weight1 = randomIntByGrade(grade, {
+        lower: { min: 40, max: 90 },
+        middle: { min: 60, max: 130 },
+        upper: { min: 90, max: 200 },
+      });
+      const price1 = randomIntByGrade(grade, {
+        lower: { min: 80, max: 160 },
+        middle: { min: 100, max: 220 },
+        upper: { min: 130, max: 300 },
+      });
+      const weight2 = randomIntByGrade(grade, {
+        lower: { min: 70, max: 140 },
+        middle: { min: 90, max: 200 },
+        upper: { min: 120, max: 260 },
+      });
+      const price2 = randomIntByGrade(grade, {
+        lower: { min: 120, max: 250 },
+        middle: { min: 150, max: 320 },
+        upper: { min: 200, max: 420 },
+      });
 
       const unitPrice1 = Math.round((price1 / weight1) * 100);
       const unitPrice2 = Math.round((price2 / weight2) * 100);
@@ -122,9 +174,21 @@ export function generateShoppingComparison(grade: Grade, count: number): WordPro
       answer = priceDiff;
     } else {
       // 合計金額の差を計算
-      const priceA = randomInt(3, 8) * 100; // 300-800円
-      const priceB = randomInt(4, 9) * 100; // 400-900円
-      const quantity = randomInt(2, 5); // 2-5個
+      const priceA = randomIntByGrade(grade, {
+        lower: { min: 3, max: 6 },
+        middle: { min: 4, max: 8 },
+        upper: { min: 5, max: 10 },
+      }) * 100;
+      const priceB = randomIntByGrade(grade, {
+        lower: { min: 4, max: 7 },
+        middle: { min: 5, max: 9 },
+        upper: { min: 6, max: 11 },
+      }) * 100;
+      const quantity = randomIntByGrade(grade, {
+        lower: { min: 2, max: 4 },
+        middle: { min: 3, max: 6 },
+        upper: { min: 4, max: 8 },
+      });
       const totalA = priceA * quantity;
       const totalB = priceB * quantity;
       const difference = Math.abs(totalA - totalB);

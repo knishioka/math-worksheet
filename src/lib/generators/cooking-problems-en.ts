@@ -5,6 +5,7 @@
 
 import type { WordProblemEn, Operation, Grade } from '../../types';
 import { randomInt, generateId } from '../utils/math';
+import { rangeByGrade, randomIntByGrade, scaleByGrade } from './grade-utils';
 
 /**
  * 材料の量の計算問題を生成（英語）
@@ -23,9 +24,25 @@ export function generateCookingIngredientsEn(grade: Grade, count: number): WordP
 
   for (let i = 0; i < count; i++) {
     const ingredient = ingredients[randomInt(0, ingredients.length - 1)];
-    const baseServings = randomInt(2, 4); // 2-4 servings
-    const targetServings = randomInt(4, 8); // 4-8 servings
-    const baseAmount = ingredient.baseAmount[randomInt(0, ingredient.baseAmount.length - 1)];
+    const baseServings = randomIntByGrade(grade, {
+      lower: { min: 2, max: 3 },
+      middle: { min: 3, max: 4 },
+      upper: { min: 3, max: 5 },
+    });
+    const targetServings = randomIntByGrade(grade, {
+      lower: { min: 4, max: 6 },
+      middle: { min: 5, max: 8 },
+      upper: { min: 6, max: 10 },
+    });
+    const amountChoices = ingredient.baseAmount.slice(
+      0,
+      Math.min(ingredient.baseAmount.length, scaleByGrade(grade, {
+        lower: 2,
+        middle: 3,
+        upper: ingredient.baseAmount.length,
+      }))
+    );
+    const baseAmount = amountChoices[randomInt(0, amountChoices.length - 1)];
     const targetAmount = Math.round((baseAmount * targetServings) / baseServings);
 
     const problemText = `A recipe for ${baseServings} people uses ${baseAmount}${ingredient.unit} of ${ingredient.name}. How much do you need for ${targetServings} people?`;
@@ -60,8 +77,14 @@ export function generateCookingTimeEn(grade: Grade, count: number): WordProblemE
 
     if (problemType === 0) {
       // Calculate start time for cooking
-      const cookingMinutes = [30, 40, 45, 60][randomInt(0, 3)];
-      const targetHour = randomInt(12, 18); // 12-18 o'clock
+      const cookingChoices = grade <= 3 ? [25, 30, 35, 40] : [35, 45, 50, 60];
+      const cookingMinutes = cookingChoices[randomInt(0, cookingChoices.length - 1)];
+      const targetHourRange = rangeByGrade(grade, {
+        lower: { min: 12, max: 16 },
+        middle: { min: 13, max: 17 },
+        upper: { min: 14, max: 19 },
+      });
+      const targetHour = randomInt(targetHourRange.min, targetHourRange.max);
       const targetMinute = [0, 30][randomInt(0, 1)]; // 0 or 30 minutes
 
       let startHour = targetHour;
@@ -79,16 +102,32 @@ export function generateCookingTimeEn(grade: Grade, count: number): WordProblemE
       answer = startTime;
     } else if (problemType === 1) {
       // Calculate total cooking time
-      const prepMinutes = randomInt(15, 30); // prep 15-30 min
-      const cookMinutes = randomInt(30, 60); // cook 30-60 min
+      const prepMinutes = randomIntByGrade(grade, {
+        lower: { min: 10, max: 20 },
+        middle: { min: 15, max: 30 },
+        upper: { min: 20, max: 35 },
+      });
+      const cookMinutes = randomIntByGrade(grade, {
+        lower: { min: 20, max: 40 },
+        middle: { min: 30, max: 60 },
+        upper: { min: 35, max: 80 },
+      });
       const totalMinutes = prepMinutes + cookMinutes;
 
       problemText = `Preparation takes ${prepMinutes} minutes and cooking takes ${cookMinutes} minutes. What is the total time?`;
       answer = totalMinutes;
     } else {
       // Convert hours to minutes
-      const hours = randomInt(1, 2); // 1-2 hours
-      const minutes = randomInt(0, 30); // 0-30 minutes
+      const hours = randomIntByGrade(grade, {
+        lower: { min: 1, max: 2 },
+        middle: { min: 1, max: 3 },
+        upper: { min: 2, max: 3 },
+      });
+      const minutes = randomIntByGrade(grade, {
+        lower: { min: 0, max: 20 },
+        middle: { min: 0, max: 40 },
+        upper: { min: 10, max: 50 },
+      });
       const totalMinutes = hours * 60 + minutes;
 
       const timeStr = minutes === 0 ? `${hours} hour${hours > 1 ? 's' : ''}` : `${hours} hour${hours > 1 ? 's' : ''} ${minutes} minutes`;
@@ -125,8 +164,13 @@ export function generateCookingServingEn(grade: Grade, count: number): WordProbl
 
     if (problemType === 0) {
       // Divide equally
-      const totalItems = randomInt(12, 24); // 12-24 items
-      const people = [2, 3, 4, 6][randomInt(0, 3)]; // divisible numbers
+      const totalItems = randomIntByGrade(grade, {
+        lower: { min: 12, max: 20 },
+        middle: { min: 18, max: 28 },
+        upper: { min: 24, max: 36 },
+      });
+      const peopleChoices = grade <= 2 ? [2, 3, 4] : [3, 4, 6, 8];
+      const people = peopleChoices[randomInt(0, peopleChoices.length - 1)];
       const perPerson = totalItems / people;
 
       const items = ['cookies', 'donuts', 'sandwiches', 'muffins'][randomInt(0, 3)];
@@ -134,8 +178,16 @@ export function generateCookingServingEn(grade: Grade, count: number): WordProbl
       answer = perPerson;
     } else {
       // Calculate total needed
-      const perPerson = randomInt(100, 300); // 100-300g/mL
-      const people = randomInt(3, 6); // 3-6 people
+      const perPerson = randomIntByGrade(grade, {
+        lower: { min: 80, max: 200 },
+        middle: { min: 120, max: 300 },
+        upper: { min: 180, max: 400 },
+      });
+      const people = randomIntByGrade(grade, {
+        lower: { min: 2, max: 4 },
+        middle: { min: 3, max: 6 },
+        upper: { min: 4, max: 8 },
+      });
       const total = perPerson * people;
 
       const item = ['rice', 'soup'][randomInt(0, 1)];

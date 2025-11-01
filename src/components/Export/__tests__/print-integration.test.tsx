@@ -218,6 +218,7 @@ describe('Print Integration Tests', () => {
         operand1: 12.5,
         operand2: 3.7,
         answer: 16.2,
+        decimalPlaces: 1,
       };
 
       const { container } = render(

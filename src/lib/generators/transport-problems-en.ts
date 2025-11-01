@@ -102,21 +102,39 @@ export function generateTransportDiscountEn(grade: Grade, count: number): WordPr
 
     if (problemType === 0) {
       // Multi-trip pass price per trip
-      const trips = [10, 12][randomInt(0, 1)]; // 10 or 12 trips
-      const passPrice = randomInt(20, 35); // RM20-35
+      const tripsOptions = grade <= 3 ? [8, 10] : [10, 12, 15];
+      const trips = tripsOptions[randomInt(0, tripsOptions.length - 1)];
+      const passPrice = randomIntByGrade(grade, {
+        lower: { min: 18, max: 30 },
+        middle: { min: 22, max: 35 },
+        upper: { min: 28, max: 45 },
+      });
       const perTrip = Math.round((passPrice / trips) * 100) / 100;
 
       problemText = `A ${trips}-trip pass costs RM${passPrice}. What is the cost per trip?`;
       answer = perTrip;
     } else {
       // Monthly pass vs single tickets savings
-      const dailyFare = [2.0, 2.5, 3.0][randomInt(0, 2)];
-      const days = 20; // 20 days
-      const normalTotal = dailyFare * days;
-      const passPrice = randomInt(30, 45); // RM30-45
+      const dailyFare = randomIntByGrade(grade, {
+        lower: { min: 18, max: 25 },
+        middle: { min: 20, max: 30 },
+        upper: { min: 25, max: 35 },
+      }) / 10;
+      const daysRange = rangeByGrade(grade, {
+        lower: { min: 15, max: 18 },
+        middle: { min: 18, max: 22 },
+        upper: { min: 20, max: 24 },
+      });
+      const commuteDays = randomInt(daysRange.min, daysRange.max);
+      const normalTotal = dailyFare * commuteDays;
+      const passPrice = randomIntByGrade(grade, {
+        lower: { min: 25, max: 35 },
+        middle: { min: 30, max: 45 },
+        upper: { min: 35, max: 55 },
+      });
       const saving = Math.round((normalTotal - passPrice) * 100) / 100;
 
-      problemText = `Daily fare is RM${dailyFare.toFixed(2)} for 20 days. A monthly pass costs RM${passPrice}. How much do you save with the pass?`;
+      problemText = `Daily fare is RM${dailyFare.toFixed(2)} for ${commuteDays} days. A monthly pass costs RM${passPrice}. How much do you save with the pass?`;
       answer = saving;
     }
 

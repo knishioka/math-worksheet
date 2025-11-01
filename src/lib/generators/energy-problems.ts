@@ -5,6 +5,7 @@
 
 import type { WordProblem, Operation, Grade } from '../../types';
 import { randomInt, generateId } from '../utils/math';
+import { randomIntByGrade, rangeByGrade, scaleByGrade } from './grade-utils';
 
 /**
  * 電気使用量の計算問題を生成
@@ -29,19 +30,40 @@ export function generateEnergyUsage(grade: Grade, count: number): WordProblem[] 
     if (problemType === 0) {
       // 1時間あたりの電力使用量 × 時間
       const appliance = appliances[randomInt(0, appliances.length - 1)];
-      const wattHour = appliance.wattHour[randomInt(0, appliance.wattHour.length - 1)];
-      const hours = randomInt(2, 8); // 2-8時間
+      const wattChoices = appliance.wattHour.slice(
+        0,
+        Math.min(appliance.wattHour.length, scaleByGrade(grade, {
+          lower: 2,
+          middle: 3,
+          upper: appliance.wattHour.length,
+        }))
+      );
+      const wattHour = wattChoices[randomInt(0, wattChoices.length - 1)];
+      const hours = randomIntByGrade(grade, {
+        lower: { min: 1, max: 4 },
+        middle: { min: 2, max: 6 },
+        upper: { min: 3, max: 8 },
+      });
       const totalWh = wattHour * hours;
 
       problemText = `${appliance.name}を${hours}時間使いました。1時間に${wattHour}Wh使うとき、全部で何Wh使いましたか？`;
       answer = totalWh;
     } else {
       // 1日の使用量から1ヶ月を計算
-      const dailyWh = randomInt(5, 15) * 100; // 500-1500Wh
-      const days = 30;
-      const monthlyWh = dailyWh * days;
+      const dailyWh = randomIntByGrade(grade, {
+        lower: { min: 4, max: 12 },
+        middle: { min: 6, max: 18 },
+        upper: { min: 10, max: 24 },
+      }) * 100;
+      const days = rangeByGrade(grade, {
+        lower: { min: 20, max: 25 },
+        middle: { min: 25, max: 30 },
+        upper: { min: 28, max: 31 },
+      });
+      const billingDays = randomInt(days.min, days.max);
+      const monthlyWh = dailyWh * billingDays;
 
-      problemText = `1日に${dailyWh}Whの電気を使います。30日では何Wh使いますか？`;
+      problemText = `1日に${dailyWh}Whの電気を使います。${billingDays}日では何Wh使いますか？`;
       answer = monthlyWh;
     }
 
@@ -72,15 +94,24 @@ export function generateEnergySaving(grade: Grade, count: number): WordProblem[]
 
     if (problemType === 0) {
       // 月々の節約額から年間節約額を計算
-      const monthlySaving = randomInt(2, 10) * 100; // 200-1000円
+      const monthlySaving = randomIntByGrade(grade, {
+        lower: { min: 2, max: 8 },
+        middle: { min: 3, max: 12 },
+        upper: { min: 5, max: 18 },
+      }) * 100;
       const yearlySaving = monthlySaving * 12;
 
       problemText = `LED電球に変えて、月に${monthlySaving}円節約できました。1年間では何円節約できますか？`;
       answer = yearlySaving;
     } else {
       // 電気使用量の削減
-      const beforeWh = randomInt(40, 80) * 100; // 4000-8000Wh
-      const reductionPercent = [10, 20, 25, 30][randomInt(0, 3)]; // 10%, 20%, 25%, 30%
+      const beforeWh = randomIntByGrade(grade, {
+        lower: { min: 35, max: 70 },
+        middle: { min: 45, max: 100 },
+        upper: { min: 60, max: 140 },
+      }) * 100;
+      const reductionOptions = grade <= 3 ? [10, 15, 20] : [15, 20, 25, 30, 35];
+      const reductionPercent = reductionOptions[randomInt(0, reductionOptions.length - 1)];
       const reductionWh = Math.floor(beforeWh * reductionPercent / 100);
 
       problemText = `月に${beforeWh}Whの電気を使っていましたが、${reductionPercent}%削減しました。何Wh減りましたか？`;

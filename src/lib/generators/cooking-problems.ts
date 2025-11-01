@@ -5,6 +5,7 @@
 
 import type { WordProblem, Operation, Grade } from '../../types';
 import { randomInt, generateId } from '../utils/math';
+import { rangeByGrade, randomIntByGrade, scaleByGrade } from './grade-utils';
 
 /**
  * 材料の量の計算問題を生成
@@ -23,9 +24,25 @@ export function generateCookingIngredients(grade: Grade, count: number): WordPro
 
   for (let i = 0; i < count; i++) {
     const ingredient = ingredients[randomInt(0, ingredients.length - 1)];
-    const baseServings = randomInt(2, 4); // 2-4人分
-    const targetServings = randomInt(4, 8); // 4-8人分
-    const baseAmount = ingredient.baseAmount[randomInt(0, ingredient.baseAmount.length - 1)];
+    const baseServings = randomIntByGrade(grade, {
+      lower: { min: 2, max: 3 },
+      middle: { min: 3, max: 4 },
+      upper: { min: 3, max: 5 },
+    });
+    const targetServings = randomIntByGrade(grade, {
+      lower: { min: 4, max: 6 },
+      middle: { min: 5, max: 8 },
+      upper: { min: 6, max: 10 },
+    });
+    const amountChoices = ingredient.baseAmount.slice(
+      0,
+      Math.min(ingredient.baseAmount.length, scaleByGrade(grade, {
+        lower: 2,
+        middle: 3,
+        upper: ingredient.baseAmount.length,
+      }))
+    );
+    const baseAmount = amountChoices[randomInt(0, amountChoices.length - 1)];
     const targetAmount = Math.round((baseAmount * targetServings) / baseServings);
 
     const problemText = `${baseServings}人分のレシピで${ingredient.name}が${baseAmount}${ingredient.unit}必要です。${targetServings}人分作るには何${ingredient.unit}必要ですか？`;
@@ -58,8 +75,14 @@ export function generateCookingTime(grade: Grade, count: number): WordProblem[] 
 
     if (problemType === 0) {
       // 調理開始時刻を計算
-      const cookingMinutes = [20, 30, 40, 50, 60][randomInt(0, 4)];
-      const targetHour = randomInt(12, 18); // 12-18時
+      const cookingChoices = grade <= 3 ? [20, 25, 30, 40] : [30, 40, 50, 60];
+      const cookingMinutes = cookingChoices[randomInt(0, cookingChoices.length - 1)];
+      const targetHourRange = rangeByGrade(grade, {
+        lower: { min: 12, max: 16 },
+        middle: { min: 13, max: 17 },
+        upper: { min: 14, max: 19 },
+      });
+      const targetHour = randomInt(targetHourRange.min, targetHourRange.max);
       const targetMinute = [0, 30][randomInt(0, 1)]; // 0分または30分
 
       let startHour = targetHour;
@@ -74,16 +97,32 @@ export function generateCookingTime(grade: Grade, count: number): WordProblem[] 
       answer = `${startHour}時${startMinute}分`;
     } else if (problemType === 1) {
       // 合計調理時間を計算
-      const prepMinutes = randomInt(10, 30); // 準備10-30分
-      const cookMinutes = randomInt(20, 60); // 調理20-60分
+      const prepMinutes = randomIntByGrade(grade, {
+        lower: { min: 8, max: 20 },
+        middle: { min: 12, max: 30 },
+        upper: { min: 18, max: 35 },
+      });
+      const cookMinutes = randomIntByGrade(grade, {
+        lower: { min: 18, max: 40 },
+        middle: { min: 25, max: 60 },
+        upper: { min: 30, max: 80 },
+      });
       const totalMinutes = prepMinutes + cookMinutes;
 
       problemText = `料理の準備に${prepMinutes}分、調理に${cookMinutes}分かかります。合計何分かかりますか？`;
       answer = totalMinutes;
     } else {
       // 時間から分への変換
-      const hours = randomInt(1, 2); // 1-2時間
-      const minutes = randomInt(0, 30); // 0-30分
+      const hours = randomIntByGrade(grade, {
+        lower: { min: 1, max: 2 },
+        middle: { min: 1, max: 3 },
+        upper: { min: 2, max: 3 },
+      });
+      const minutes = randomIntByGrade(grade, {
+        lower: { min: 0, max: 20 },
+        middle: { min: 0, max: 40 },
+        upper: { min: 10, max: 50 },
+      });
       const totalMinutes = hours * 60 + minutes;
 
       problemText = `煮込み料理に${hours}時間${minutes === 0 ? '' : minutes + '分'}かかります。全部で何分ですか？`;
@@ -117,8 +156,13 @@ export function generateCookingServing(grade: Grade, count: number): WordProblem
 
     if (problemType === 0) {
       // 均等に分ける
-      const totalItems = randomInt(8, 24); // 8-24個
-      const people = [2, 3, 4, 6, 8][randomInt(0, 4)]; // 割り切れる数
+      const totalItems = randomIntByGrade(grade, {
+        lower: { min: 8, max: 18 },
+        middle: { min: 12, max: 28 },
+        upper: { min: 20, max: 36 },
+      });
+      const peopleChoices = grade <= 2 ? [2, 3, 4] : [3, 4, 6, 8];
+      const people = peopleChoices[randomInt(0, peopleChoices.length - 1)];
       const perPerson = totalItems / people;
 
       const items = ['クッキー', 'ドーナツ', 'おにぎり', 'サンドイッチ'][randomInt(0, 3)];
@@ -126,8 +170,16 @@ export function generateCookingServing(grade: Grade, count: number): WordProblem
       answer = perPerson;
     } else {
       // 必要な総量を計算
-      const perPerson = randomInt(100, 300); // 100-300g/mL
-      const people = randomInt(3, 6); // 3-6人
+      const perPerson = randomIntByGrade(grade, {
+        lower: { min: 80, max: 200 },
+        middle: { min: 120, max: 280 },
+        upper: { min: 160, max: 380 },
+      });
+      const people = randomIntByGrade(grade, {
+        lower: { min: 2, max: 4 },
+        middle: { min: 3, max: 6 },
+        upper: { min: 4, max: 8 },
+      });
       const total = perPerson * people;
 
       const item = ['ごはん', 'スープ'][randomInt(0, 1)];
