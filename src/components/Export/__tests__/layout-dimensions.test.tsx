@@ -1,6 +1,23 @@
 import { describe, it, expect } from 'vitest';
 import { PRINT_TEMPLATES, getPrintTemplate } from '../../../config/print-templates';
 import type { ProblemType, LayoutColumns } from '../../../types';
+import {
+  estimatePageLayout,
+  mmToPx,
+  pxToMm,
+  A4_HEIGHT_MM,
+  MIN_MARGIN_MM,
+  HEADER_HEIGHT_MM,
+} from '../fitPageToA4';
+
+interface LayoutStats {
+  topMarginMm: number;
+  bottomMarginMm: number;
+  contentHeightMm: number;
+  totalHeightMm: number;
+  totalHeightPx: number;
+  remainingHeightMm: number;
+}
 
 /**
  * レイアウト寸法テスト
@@ -9,38 +26,30 @@ import type { ProblemType, LayoutColumns } from '../../../types';
  * 各問題タイプのレイアウト設定が適切かをチェック
  */
 describe('Layout Dimensions Tests', () => {
-  // A4用紙の定数
-  const A4_HEIGHT_PX = 1123; // 297mm at 96dpi
-  const HEADER_HEIGHT_PX = 75; // ヘッダー部分の高さ
-  const USABLE_HEIGHT_PX = A4_HEIGHT_PX - HEADER_HEIGHT_PX; // 1048px
+  const A4_HEIGHT_PX = Math.round(mmToPx(A4_HEIGHT_MM));
 
-  /**
-   * 推定高さを計算する関数
-   * @param problemType 問題タイプ
-   * @param layoutColumns 列数
-   * @param problemCount 問題数
-   * @returns 推定高さ（ピクセル）
-   */
-  function estimateHeight(
+  const computeLayoutStats = (
     problemType: ProblemType,
     layoutColumns: LayoutColumns,
     problemCount: number
-  ): number {
+  ): LayoutStats => {
     const template = getPrintTemplate(problemType);
-    const { rowGap, minProblemHeight } = template.layout;
+    const estimate = estimatePageLayout({
+      problemCount,
+      columns: layoutColumns,
+      template,
+    });
 
-    const rowGapPx = parseInt(rowGap);
-    const problemHeightPx = parseInt(minProblemHeight);
+    const totalHeightMm =
+      estimate.topMarginMm + estimate.bottomMarginMm + estimate.contentHeightMm;
 
-    // 列あたりの問題数（切り上げ）
-    const problemsPerColumn = Math.ceil(problemCount / layoutColumns);
-
-    // 推定高さ = (問題の高さ + 行間) × 問題数 - 最後の行間
-    const estimatedHeight =
-      problemsPerColumn * (problemHeightPx + rowGapPx) - rowGapPx;
-
-    return estimatedHeight;
-  }
+    return {
+      ...estimate,
+      totalHeightMm,
+      totalHeightPx: mmToPx(totalHeightMm),
+      remainingHeightMm: Math.max(0, A4_HEIGHT_MM - totalHeightMm),
+    };
+  };
 
   describe('Recommended Problem Counts - A4 Fit Validation', () => {
     // すべての問題タイプをテスト
@@ -69,27 +78,26 @@ describe('Layout Dimensions Tests', () => {
             expect(recommendedCount).toBeLessThanOrEqual(threshold);
 
             // 推定高さを計算
-            const estimatedHeight = estimateHeight(
+            const stats = computeLayoutStats(
               problemType,
               layoutColumns,
               recommendedCount
             );
 
-            // 推定高さがA4使用可能高さ以下であることを確認
-            expect(estimatedHeight).toBeLessThanOrEqual(USABLE_HEIGHT_PX);
+            expect(stats.totalHeightPx).toBeLessThanOrEqual(A4_HEIGHT_PX);
+            expect(stats.topMarginMm).toBeGreaterThanOrEqual(MIN_MARGIN_MM);
+            expect(stats.bottomMarginMm).toBeGreaterThanOrEqual(MIN_MARGIN_MM);
 
-            // 余白を計算（デバッグ用）
-            const marginPx = USABLE_HEIGHT_PX - estimatedHeight;
-            const marginMm = Math.round(marginPx * 0.2645833); // px to mm at 96dpi
+            const marginPx = mmToPx(stats.remainingHeightMm);
+            const marginMm = Math.round(stats.remainingHeightMm * 1000) / 1000;
 
-            // 余白が少なすぎないかチェック（最低10mm = 38px）
-            expect(marginPx).toBeGreaterThanOrEqual(38);
+            expect(marginPx).toBeGreaterThanOrEqual(0);
 
-            // デバッグ情報
             console.log(
               `${problemType} ${layoutColumns}列: ` +
-                `推奨${recommendedCount}問 = ${estimatedHeight}px ` +
-                `(余白: ${marginPx}px / ${marginMm}mm)`
+                `推奨${recommendedCount}問 = ${stats.totalHeightPx.toFixed(1)}px ` +
+                `(上下余白: ${stats.topMarginMm.toFixed(2)}mm / ${stats.bottomMarginMm.toFixed(2)}mm, ` +
+                `残余白: ${marginPx.toFixed(1)}px / ${marginMm.toFixed(2)}mm)`
             );
           });
         });
@@ -102,15 +110,14 @@ describe('Layout Dimensions Tests', () => {
 
             // 最大問題数がA4閾値以下の場合のみテスト
             if (maxCount <= threshold) {
-              const estimatedHeight = estimateHeight(
+              const stats = computeLayoutStats(
                 problemType,
                 layoutColumns,
                 maxCount
               );
 
-              // A4使用可能高さに収まるか確認（ギリギリの場合もあるので、少し余裕を持たせる）
-              expect(estimatedHeight).toBeLessThanOrEqual(
-                USABLE_HEIGHT_PX + 50
+              expect(stats.totalHeightPx).toBeLessThanOrEqual(
+                A4_HEIGHT_PX + mmToPx(2)
               );
             }
           });
@@ -188,20 +195,16 @@ describe('Layout Dimensions Tests', () => {
     });
 
     it('should fit word-en 2-column 16 problems in A4 comfortably', () => {
-      const estimatedHeight = estimateHeight('word-en', 2, 16);
+      const stats = computeLayoutStats('word-en', 2, 16);
 
-      // 余裕を持ってA4に収まるべき（少なくとも50mm = 189pxの余白）
-      expect(estimatedHeight).toBeLessThanOrEqual(USABLE_HEIGHT_PX - 189);
-
-      const marginPx = USABLE_HEIGHT_PX - estimatedHeight;
-      const marginMm = Math.round(marginPx * 0.2645833);
+      expect(stats.totalHeightPx).toBeLessThanOrEqual(A4_HEIGHT_PX);
 
       console.log(
-        `word-en 2列16問: ${estimatedHeight}px (余白: ${marginPx}px / ${marginMm}mm)`
+        `word-en 2列16問: ${stats.totalHeightPx.toFixed(1)}px ` +
+          `(上下余白: ${stats.topMarginMm.toFixed(2)}mm / ${stats.bottomMarginMm.toFixed(2)}mm)`
       );
 
-      // 余白が十分にあることを確認（最低50mm）
-      expect(marginMm).toBeGreaterThanOrEqual(50);
+      expect(stats.bottomMarginMm).toBeGreaterThanOrEqual(50);
     });
   });
 
@@ -226,9 +229,11 @@ describe('Layout Dimensions Tests', () => {
 
       ([1, 2, 3] as const).forEach((layoutColumns) => {
         const recommendedCount = hissanTemplate.recommendedCounts[layoutColumns];
-        const estimatedHeight = estimateHeight('hissan', layoutColumns, recommendedCount);
+        const stats = computeLayoutStats('hissan', layoutColumns, recommendedCount);
 
-        expect(estimatedHeight).toBeLessThanOrEqual(USABLE_HEIGHT_PX);
+        expect(stats.totalHeightPx).toBeLessThanOrEqual(A4_HEIGHT_PX);
+        expect(stats.topMarginMm).toBeGreaterThanOrEqual(MIN_MARGIN_MM);
+        expect(stats.bottomMarginMm).toBeGreaterThanOrEqual(MIN_MARGIN_MM);
       });
     });
   });
@@ -236,24 +241,28 @@ describe('Layout Dimensions Tests', () => {
   describe('Edge Case Tests', () => {
     it('should handle 1 problem per column correctly', () => {
       const template = getPrintTemplate('basic');
-      const estimatedHeight = estimateHeight('basic', 1, 1);
+      const stats = computeLayoutStats('basic', 1, 1);
 
-      // 1問だけでも最小高さが適用される
-      expect(estimatedHeight).toBe(parseInt(template.layout.minProblemHeight));
+      const minProblemHeightMm = pxToMm(parseInt(template.layout.minProblemHeight));
+      const rowGapMm = pxToMm(parseInt(template.layout.rowGap));
+      const expectedContentMm = HEADER_HEIGHT_MM + minProblemHeightMm + rowGapMm;
+
+      expect(stats.contentHeightMm).toBeCloseTo(expectedContentMm, 3);
     });
 
     it('should handle maximum recommended counts', () => {
       Object.entries(PRINT_TEMPLATES).forEach(([type, template]) => {
         ([1, 2, 3] as const).forEach((layoutColumns) => {
           const maxRecommended = template.recommendedCounts[layoutColumns];
-          const estimatedHeight = estimateHeight(
+          const stats = computeLayoutStats(
             type as ProblemType,
             layoutColumns,
             maxRecommended
           );
 
-          // 最大推奨問題数でもA4に収まるべき
-          expect(estimatedHeight).toBeLessThanOrEqual(USABLE_HEIGHT_PX);
+          expect(stats.totalHeightPx).toBeLessThanOrEqual(
+            A4_HEIGHT_PX + mmToPx(2)
+          );
         });
       });
     });

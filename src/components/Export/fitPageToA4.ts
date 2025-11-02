@@ -7,7 +7,7 @@ export const MIN_MARGIN_MM = 5;
 const MAX_MARGIN_ITERATIONS = 6;
 const SCALE_SAFETY_MM = 0.5;
 const MIN_SCALE = 0.85;
-const HEADER_HEIGHT_MM = 25;
+export const HEADER_HEIGHT_MM = 25;
 const MAX_INITIAL_TOP_MARGIN_MM = 15;
 const HORIZONTAL_MARGIN_MM = 15;
 
