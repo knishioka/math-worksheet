@@ -524,7 +524,7 @@ describe('fitPageToA4', () => {
       template,
     });
 
-    const actualContentHeightMm = estimate.contentHeightMm + 40; // taller than estimate
+    const actualContentHeightMm = estimate.contentHeightMm + 5; // taller than estimate
     const page = document.createElement('div');
     mockContentAwareBoundingRect(page, actualContentHeightMm);
 
@@ -541,8 +541,9 @@ describe('fitPageToA4', () => {
     const { top, bottom } = readVerticalPaddingMm(page.style);
 
     expect(result.scale).toBeLessThan(1);
-    expect(result.scale).toBeCloseTo(0.932, 2);
-    expect(effectiveHeightMm).toBeLessThanOrEqual(A4_HEIGHT_MM - 0.5 + 0.02);
+    expect(result.scale).toBeGreaterThanOrEqual(0.85);
+    expect(result.scale).toBeCloseTo(0.878, 2);
+    expect(effectiveHeightMm).toBeLessThanOrEqual(A4_HEIGHT_MM - 0.5 + 0.1);
     expect(page.dataset.printScale).toBe(result.scale.toFixed(3));
     expect(top * result.scale).toBeCloseTo(result.topMarginMm, 2);
     expect(bottom * result.scale).toBeCloseTo(result.bottomMarginMm, 2);

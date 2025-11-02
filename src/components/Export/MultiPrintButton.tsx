@@ -151,8 +151,8 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
         }
 
         if (problem.type === 'word') {
-          // 文章問題の表示 - よりコンパクトに
-          problemsHTML += `<div style="font-size: 12px; line-height: 1.3;">`;
+          // 文章問題の表示
+          problemsHTML += `<div style="font-size: ${fontSize}; line-height: 1.3;">`;
           problemsHTML += problem.problemText;
           problemsHTML += '</div>';
           problemsHTML += '<div style="margin-top: 6px;">';
