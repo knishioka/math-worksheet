@@ -294,7 +294,7 @@ export const MULTI_STEP_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const name1 = getRandomName();
-      const name2 = getRandomName();
+      const name2 = getDifferentName(name1);
       const item = getRandomItem(true);
       const count1 = gradeRandomInt(
         grade,
@@ -1163,7 +1163,7 @@ export const MEASUREMENT_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const name1 = getRandomName();
-      const name2 = getRandomName();
+      const name2 = getDifferentName(name1);
       const height1 = gradeRandomInt(
         grade,
         [
@@ -1446,7 +1446,7 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const name1 = getRandomName();
-      const name2 = getRandomName();
+      const name2 = getDifferentName(name1);
       const item = getRandomItem(true);
       const count1 = gradeRandomInt(
         grade,
@@ -1479,7 +1479,7 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const name1 = getRandomName();
-      const name2 = getRandomName();
+      const name2 = getDifferentName(name1);
       const item = getRandomItem(true);
       const count1 = gradeRandomInt(
         grade,
@@ -1516,7 +1516,7 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const name1 = getRandomName();
-      const name2 = getRandomName();
+      const name2 = getDifferentName(name1);
       const item = getRandomItem(true);
       const count2 = gradeRandomInt(
         grade,
@@ -1549,7 +1549,7 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const name1 = getRandomName();
-      const name2 = getRandomName();
+      const name2 = getDifferentName(name1);
       const item = getRandomItem(true);
       const count1 = gradeRandomInt(
         grade,
@@ -1575,8 +1575,8 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const name1 = getRandomName();
-      const name2 = getRandomName();
-      const name3 = getRandomName();
+      const name2 = getDifferentName(name1);
+      const name3 = getDifferentName(name2);
       const item = getRandomItem(true);
       const count1 = gradeRandomInt(
         grade,
