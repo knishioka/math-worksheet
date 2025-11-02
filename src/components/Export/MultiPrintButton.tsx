@@ -416,9 +416,12 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
       const { topMarginMm: fittedTop, bottomMarginMm: fittedBottom, scale } =
         fitPageToA4(pageDiv, topMarginMm, bottomMarginMm);
 
-      pageDiv.dataset.printTopMarginMm = fittedTop.toFixed(2);
-      pageDiv.dataset.printBottomMarginMm = fittedBottom.toFixed(2);
-      pageDiv.dataset.printScale = scale.toFixed(3);
+      // デバッグ用: 開発モードでのみレイアウト情報を記録
+      if (import.meta.env.DEV) {
+        pageDiv.dataset.printTopMarginMm = fittedTop.toFixed(2);
+        pageDiv.dataset.printBottomMarginMm = fittedBottom.toFixed(2);
+        pageDiv.dataset.printScale = scale.toFixed(3);
+      }
     });
 
     // スタイルを追加
