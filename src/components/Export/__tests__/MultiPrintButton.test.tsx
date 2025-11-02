@@ -1,13 +1,15 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, Mock } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MultiPrintButton } from '../MultiPrintButton';
-import {
+import * as fitPageToA4Module from '../fitPageToA4';
+
+const {
   fitPageToA4,
   estimatePageLayout,
   mmToPx,
   A4_HEIGHT_MM,
   MIN_MARGIN_MM,
-} from '../fitPageToA4';
+} = fitPageToA4Module;
 import { getPrintTemplate } from '../../../config/print-templates';
 import type { WorksheetData } from '../../../types';
 
@@ -122,6 +124,47 @@ describe('MultiPrintButton', () => {
       expect(window.print).toHaveBeenCalled();
       expect(mockOnPrint).toHaveBeenCalled();
     });
+  });
+
+  it('records fitted margins and scale in data attributes', async () => {
+    const mockOnPrint = vi.fn();
+    const fitSpy = vi
+      .spyOn(fitPageToA4Module, 'fitPageToA4')
+      .mockImplementation((element) => {
+        element.dataset.printScale = '0.930';
+        return { topMarginMm: 12.345, bottomMarginMm: 8.765, scale: 0.93 };
+      });
+    const captured: { top?: string; bottom?: string; scale?: string } = {};
+    (window.print as Mock).mockImplementation(() => {
+      const firstPage = document.querySelector<HTMLDivElement>(
+        '#multi-print-container .multi-print-page'
+      );
+      captured.top = firstPage?.dataset.printTopMarginMm;
+      captured.bottom = firstPage?.dataset.printBottomMarginMm;
+      captured.scale = firstPage?.dataset.printScale;
+    });
+
+    try {
+      render(
+        <MultiPrintButton
+          worksheets={mockWorksheets}
+          showAnswers={false}
+          onPrint={mockOnPrint}
+        />
+      );
+
+      fireEvent.click(screen.getByRole('button'));
+
+      await waitFor(() => {
+        expect(window.print).toHaveBeenCalled();
+        expect(mockOnPrint).toHaveBeenCalled();
+        expect(captured.top).toBe('12.35');
+        expect(captured.bottom).toBe('8.77');
+        expect(captured.scale).toBe('0.930');
+      });
+    } finally {
+      fitSpy.mockRestore();
+    }
   });
 
   it('should set correct document title for multi-page printing', async () => {
