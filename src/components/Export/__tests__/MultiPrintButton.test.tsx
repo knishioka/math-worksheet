@@ -6,6 +6,7 @@ import {
   estimatePageLayout,
   mmToPx,
   A4_HEIGHT_MM,
+  MIN_MARGIN_MM,
 } from '../fitPageToA4';
 import { getPrintTemplate } from '../../../config/print-templates';
 import type { WorksheetData } from '../../../types';
@@ -460,8 +461,10 @@ describe('fitPageToA4', () => {
 
     expect(result.scale).toBeLessThan(1);
     expect(result.scale).toBeGreaterThanOrEqual(0.85);
-    expect(page.style.paddingTop).toBe('5mm');
-    expect(page.style.paddingBottom).toBe('5mm');
+    const { top, bottom } = readVerticalPaddingMm(page.style);
+    expect(top * result.scale).toBeCloseTo(result.topMarginMm, 2);
+    expect(bottom * result.scale).toBeCloseTo(result.bottomMarginMm, 2);
+    expect(top * result.scale).toBeGreaterThanOrEqual(MIN_MARGIN_MM - 0.02);
     expect(page.style.transform).toBe(`scale(${result.scale})`);
     expect(page.style.transformOrigin).toBe('top center');
     expect(page.dataset.printScale).toBe(result.scale.toFixed(3));
@@ -487,13 +490,17 @@ describe('fitPageToA4', () => {
       estimate.bottomMarginMm,
     );
 
-    const finalHeightMm =
-      actualContentHeightMm + result.topMarginMm + result.bottomMarginMm;
-    const effectiveHeightMm = finalHeightMm * result.scale;
+    const effectiveHeightMm =
+      result.scale * actualContentHeightMm +
+      result.topMarginMm +
+      result.bottomMarginMm;
+    const { top, bottom } = readVerticalPaddingMm(page.style);
 
     expect(result.scale).toBeLessThan(1);
     expect(result.scale).toBeCloseTo(0.932, 2);
-    expect(effectiveHeightMm).toBeLessThanOrEqual(A4_HEIGHT_MM - 0.5 + 0.01);
+    expect(effectiveHeightMm).toBeLessThanOrEqual(A4_HEIGHT_MM - 0.5 + 0.02);
     expect(page.dataset.printScale).toBe(result.scale.toFixed(3));
+    expect(top * result.scale).toBeCloseTo(result.topMarginMm, 2);
+    expect(bottom * result.scale).toBeCloseTo(result.bottomMarginMm, 2);
   });
 });

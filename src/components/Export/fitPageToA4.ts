@@ -9,6 +9,7 @@ const SCALE_SAFETY_MM = 0.5;
 const MIN_SCALE = 0.85;
 const HEADER_HEIGHT_MM = 25;
 const MAX_INITIAL_TOP_MARGIN_MM = 15;
+const HORIZONTAL_MARGIN_MM = 15;
 
 export const pxToMm = (px: number): number => px * MM_PER_PX;
 export const mmToPx = (mm: number): number => mm * PX_PER_MM;
@@ -79,7 +80,7 @@ export const fitPageToA4 = (
   const setPadding = (): void => {
     const safeTop = Math.max(MIN_MARGIN_MM, roundMargin(top));
     const safeBottom = Math.max(MIN_MARGIN_MM, roundMargin(bottom));
-    pageElement.style.padding = `${safeTop}mm 15mm ${safeBottom}mm`;
+    pageElement.style.padding = `${safeTop}mm ${HORIZONTAL_MARGIN_MM}mm ${safeBottom}mm`;
     top = safeTop;
     bottom = safeBottom;
   };
@@ -120,11 +121,27 @@ export const fitPageToA4 = (
 
   if (heightPx > a4HeightPx) {
     const targetHeightPx = a4HeightPx - mmToPx(SCALE_SAFETY_MM);
-    const proposedScale = targetHeightPx / heightPx;
+    const topPx = mmToPx(top);
+    const bottomPx = mmToPx(bottom);
+    const contentHeightPx = Math.max(0, heightPx - topPx - bottomPx);
+    const availableContentPx = targetHeightPx - (topPx + bottomPx);
+    const proposedScale =
+      contentHeightPx > 0 ? availableContentPx / contentHeightPx : 1;
     const scale = Math.min(1, Math.max(MIN_SCALE, Number(proposedScale.toFixed(3))));
 
     if (scale < 1) {
+      const expandPaddingForScale = (valueMm: number): number => {
+        return Math.ceil((valueMm / scale) * 1000) / 1000;
+      };
+
+      const scaledTopPaddingMm = expandPaddingForScale(top);
+      const scaledBottomPaddingMm = expandPaddingForScale(bottom);
+      const scaledHorizontalPaddingMm = expandPaddingForScale(
+        HORIZONTAL_MARGIN_MM,
+      );
       const effectiveWidthMm = 210 / scale;
+
+      pageElement.style.padding = `${scaledTopPaddingMm.toFixed(3)}mm ${scaledHorizontalPaddingMm.toFixed(3)}mm ${scaledBottomPaddingMm.toFixed(3)}mm`;
       pageElement.style.transform = `scale(${scale})`;
       pageElement.style.transformOrigin = 'top center';
       pageElement.style.width = `${effectiveWidthMm.toFixed(3)}mm`;
