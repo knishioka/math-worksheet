@@ -49,16 +49,16 @@ export const WORD_PROBLEM_PATTERNS: readonly CalculationPattern[] = [
   // 買い物（日本語）
   'shopping-discount-jap', // 割引計算
   'shopping-budget-jap', // 予算内の買い物
-  'shopping-price-comparison-jap', // 値段の比較
+  'shopping-comparison-jap', // 値段の比較
 
   // 買い物（英語）
   'shopping-discount-en', // Discount Calculation
   'shopping-budget-en', // Shopping within Budget
-  'shopping-price-comparison-en', // Price Comparison
+  'shopping-comparison-en', // Price Comparison
 
   // 温度（日本語・英語）
-  'temperature-jap', // 温度差の計算
-  'temperature-en', // Temperature Difference
+  'temperature-diff-jap', // 温度差の計算
+  'temperature-diff-en', // Temperature Difference
 
   // 距離（日本語）
   'distance-walk-jap', // 歩く距離の計算
@@ -69,42 +69,34 @@ export const WORD_PROBLEM_PATTERNS: readonly CalculationPattern[] = [
   'distance-comparison-en', // Distance Comparison
 
   // 料理（日本語）
-  'cooking-ingredient-jap', // 材料の量
+  'cooking-ingredients-jap', // 材料の量
   'cooking-time-jap', // 調理時間
   'cooking-serving-jap', // 人数分の計算
 
   // 料理（英語）
-  'cooking-ingredient-en', // Ingredient Quantities
+  'cooking-ingredients-en', // Ingredient Quantities
   'cooking-time-en', // Cooking Time
   'cooking-serving-en', // Serving Size
 
   // カレンダー（日本語）
   'calendar-days-jap', // 日数の計算
-  'calendar-weeks-jap', // 週数の計算
+  'calendar-week-jap', // 週数の計算
   'calendar-age-jap', // 年齢の計算
 
   // カレンダー（英語）
   'calendar-days-en', // Days Calculation
-  'calendar-weeks-en', // Weeks Calculation
+  'calendar-week-en', // Weeks Calculation
   'calendar-age-en', // Age Calculation
 
   // 交通機関（日本語）
   'transport-fare-jap', // 運賃の計算
   'transport-change-jap', // 交通機関のおつり
-  'transport-pass-jap', // 回数券・定期券
+  'transport-discount-jap', // 回数券・定期券
 
   // 交通機関（英語）
   'transport-fare-en', // Transportation Fare
   'transport-change-en', // Transport Change
-  'transport-pass-en', // Ticket/Pass Discounts
-
-  // 貯金（日本語）
-  'savings-weekly-jap', // 貯金の計算
-  'savings-goal-jap', // 目標達成までの期間
-
-  // 貯金（英語）
-  'savings-weekly-en', // Saving Calculation
-  'savings-goal-en', // Savings Goal
+  'transport-discount-en', // Ticket/Pass Discounts
 ] as const;
 
 /**
