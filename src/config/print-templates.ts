@@ -1,4 +1,47 @@
+import { estimatePageLayout, A4_HEIGHT_MM } from '../components/Export/fitPageToA4';
 import type { ProblemType, LayoutColumns } from '../types';
+
+const LAYOUT_COLUMNS: LayoutColumns[] = [1, 2, 3];
+
+const formatColumnLabel = (columns: LayoutColumns): string => `${columns}列`;
+
+export const createPrintTemplate = <T extends ProblemType>(
+  config: PrintTemplate & { type: T },
+): PrintTemplate & { type: T } => {
+  for (const column of LAYOUT_COLUMNS) {
+    const recommended = config.recommendedCounts[column];
+    const max = config.maxCounts[column];
+    const threshold = config.fitsInA4.threshold[column];
+
+    if (recommended > max) {
+      throw new Error(
+        `${config.displayName}: ${formatColumnLabel(column)}の推奨問題数（${recommended}問）は最大問題数（${max}問）以下にしてください。`,
+      );
+    }
+
+    if (recommended > threshold) {
+      throw new Error(
+        `${config.displayName}: ${formatColumnLabel(column)}の推奨問題数（${recommended}問）はA4閾値（${threshold}問）以下にしてください。`,
+      );
+    }
+
+    const layout = estimatePageLayout({
+      problemCount: recommended,
+      columns: column,
+      template: config,
+    });
+    const totalHeight =
+      layout.contentHeightMm + layout.topMarginMm + layout.bottomMarginMm;
+
+    if (totalHeight > A4_HEIGHT_MM + 0.5) {
+      throw new Error(
+        `${config.displayName}: ${formatColumnLabel(column)}の推奨問題数（${recommended}問）はA4の高さを超えています（${totalHeight.toFixed(2)}mm > ${A4_HEIGHT_MM}mm）。`,
+      );
+    }
+  }
+
+  return config;
+};
 
 /**
  * プリントテンプレート定義
@@ -42,9 +85,9 @@ export interface PrintTemplate {
 /**
  * 問題タイプ別のプリントテンプレート定義
  */
-export const PRINT_TEMPLATES: Record<ProblemType, PrintTemplate> = {
+export const PRINT_TEMPLATES = {
   // 基本計算（整数）
-  basic: {
+  basic: createPrintTemplate({
     type: 'basic',
     displayName: '基本計算',
     description: '整数の四則演算。標準的な問題間隔。',
@@ -71,10 +114,10 @@ export const PRINT_TEMPLATES: Record<ProblemType, PrintTemplate> = {
         3: 30,
       },
     },
-  },
+  }),
 
   // 分数
-  fraction: {
+  fraction: createPrintTemplate({
     type: 'fraction',
     displayName: '分数',
     description: '分数の計算。MathML表示のため標準より少し広め。',
@@ -101,10 +144,10 @@ export const PRINT_TEMPLATES: Record<ProblemType, PrintTemplate> = {
         3: 27,
       },
     },
-  },
+  }),
 
   // 小数
-  decimal: {
+  decimal: createPrintTemplate({
     type: 'decimal',
     displayName: '小数',
     description: '小数の計算。基本計算と同様の間隔。',
@@ -131,10 +174,10 @@ export const PRINT_TEMPLATES: Record<ProblemType, PrintTemplate> = {
         3: 30,
       },
     },
-  },
+  }),
 
   // 帯分数
-  mixed: {
+  mixed: createPrintTemplate({
     type: 'mixed',
     displayName: '帯分数',
     description: '帯分数の計算。MathML表示のため広めの間隔。',
@@ -161,10 +204,10 @@ export const PRINT_TEMPLATES: Record<ProblemType, PrintTemplate> = {
         3: 24,
       },
     },
-  },
+  }),
 
   // 筆算
-  hissan: {
+  hissan: createPrintTemplate({
     type: 'hissan',
     displayName: '筆算',
     description: '筆算形式。縦書きのため大きなスペースが必要。lineHeight: 1.2で最適化。',
@@ -191,10 +234,10 @@ export const PRINT_TEMPLATES: Record<ProblemType, PrintTemplate> = {
         3: 18,
       },
     },
-  },
+  }),
 
   // 虫食い算
-  missing: {
+  missing: createPrintTemplate({
     type: 'missing',
     displayName: '虫食い算',
     description: '虫食い算。ボックス表示のため標準よりやや広め。',
@@ -221,10 +264,10 @@ export const PRINT_TEMPLATES: Record<ProblemType, PrintTemplate> = {
         3: 30,
       },
     },
-  },
+  }),
 
   // 文章問題
-  word: {
+  word: createPrintTemplate({
     type: 'word',
     displayName: '文章問題',
     description: '文章問題。複数行表示のため大きなスペースが必要。',
@@ -251,10 +294,10 @@ export const PRINT_TEMPLATES: Record<ProblemType, PrintTemplate> = {
         3: 24,
       },
     },
-  },
+  }),
 
   // 英語文章問題
-  'word-en': {
+  'word-en': createPrintTemplate({
     type: 'word-en',
     displayName: 'English Word Problems',
     description: 'Word problems for international school students. Ultra compact spacing for A4 fit.',
@@ -281,8 +324,8 @@ export const PRINT_TEMPLATES: Record<ProblemType, PrintTemplate> = {
         3: 18,
       },
     },
-  },
-};
+  }),
+} satisfies Record<ProblemType, PrintTemplate>;
 
 /**
  * 問題タイプに応じたテンプレートを取得

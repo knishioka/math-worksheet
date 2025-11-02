@@ -4,10 +4,71 @@ import {
   detectPrimaryProblemType,
   fitsInA4,
   PRINT_TEMPLATES,
+  createPrintTemplate,
 } from './print-templates';
 import type { WordProblemEn, Problem, ProblemType } from '../types';
 
 describe('Print Templates', () => {
+  describe('createPrintTemplate validation', () => {
+    const baseTemplate = {
+      displayName: '検証用テンプレート',
+      description: 'テスト用のテンプレート設定',
+      layout: {
+        rowGap: '24px',
+        colGap: '32px',
+        fontSize: '18px',
+        minProblemHeight: '40px',
+      },
+    } as const;
+
+    it('should throw when recommended count exceeds max count', () => {
+      expect(() =>
+        createPrintTemplate({
+          type: 'basic',
+          ...baseTemplate,
+          recommendedCounts: { 1: 12, 2: 20, 3: 30 },
+          maxCounts: { 1: 10, 2: 20, 3: 30 },
+          fitsInA4: {
+            threshold: { 1: 12, 2: 20, 3: 30 },
+          },
+        }),
+      ).toThrowError(/最大問題数/);
+    });
+
+    it('should throw when recommended count exceeds A4 threshold', () => {
+      expect(() =>
+        createPrintTemplate({
+          type: 'fraction',
+          ...baseTemplate,
+          recommendedCounts: { 1: 10, 2: 22, 3: 30 },
+          maxCounts: { 1: 10, 2: 22, 3: 30 },
+          fitsInA4: {
+            threshold: { 1: 10, 2: 20, 3: 30 },
+          },
+        }),
+      ).toThrowError(/A4閾値/);
+    });
+
+    it('should throw when recommended count would overflow A4 height', () => {
+      expect(() =>
+        createPrintTemplate({
+          type: 'decimal',
+          ...baseTemplate,
+          layout: {
+            ...baseTemplate.layout,
+            rowGap: '0px',
+            minProblemHeight: '250px',
+          },
+          recommendedCounts: { 1: 10, 2: 1, 3: 1 },
+          maxCounts: { 1: 10, 2: 1, 3: 1 },
+          fitsInA4: {
+            threshold: { 1: 10, 2: 1, 3: 1 },
+          },
+        }),
+      ).toThrowError(/A4の高さ/);
+    });
+  });
+
   describe('PRINT_TEMPLATES configuration', () => {
     it('should have word-en template defined', () => {
       expect(PRINT_TEMPLATES['word-en']).toBeDefined();
