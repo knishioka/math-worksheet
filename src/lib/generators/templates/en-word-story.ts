@@ -131,6 +131,43 @@ function gradeRandomInt(
   return randomInt(min, max);
 }
 
+function generateFriendlyPayment(price: number, maxPaid: number): number {
+  const candidates = new Set<number>();
+  const addCandidate = (value: number) => {
+    if (value > price && value <= maxPaid) {
+      candidates.add(value);
+    }
+  };
+
+  const nextMultipleOfFive = Math.ceil(price / 5) * 5;
+  addCandidate(nextMultipleOfFive);
+
+  addCandidate(price + 5);
+
+  const nextMultipleOfTen = Math.ceil(price / 10) * 10;
+  if (nextMultipleOfTen - price <= 5) {
+    addCandidate(nextMultipleOfTen);
+  }
+
+  const nextMultipleOfTwenty = Math.ceil(price / 20) * 20;
+  if (nextMultipleOfTwenty - price <= 10) {
+    addCandidate(nextMultipleOfTwenty);
+  }
+
+  [50, 100].forEach((bill) => {
+    if (bill >= price && bill - price <= 30) {
+      addCandidate(bill);
+    }
+  });
+
+  if (candidates.size === 0) {
+    addCandidate(Math.min(maxPaid, price + 5));
+  }
+
+  const options = Array.from(candidates);
+  return options[randomInt(0, options.length - 1)];
+}
+
 function getDifferentName(exclude: string): string {
   let name = getRandomName();
   while (name === exclude) {
@@ -257,7 +294,7 @@ export const MULTI_STEP_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const name1 = getRandomName();
-      const name2 = getRandomName();
+      const name2 = getDifferentName(name1);
       const item = getRandomItem(true);
       const count1 = gradeRandomInt(
         grade,
@@ -936,7 +973,7 @@ export const MONEY_STORIES: WordStoryTemplate[] = [
         ],
         { upTo: 5, min: 12, max: 75 }
       );
-      const paid = gradeRandomInt(
+      const paidUpperBound = gradeRandomInt(
         grade,
         [
           { upTo: 2, min: price + 5, max: Math.max(price + 10, 40) },
@@ -944,6 +981,7 @@ export const MONEY_STORIES: WordStoryTemplate[] = [
         ],
         { upTo: 5, min: price + 5, max: Math.max(price + 30, 100) }
       );
+      const paid = generateFriendlyPayment(price, Math.max(paidUpperBound, price + 5));
       const answer = paid - price;
 
       return {
@@ -1125,7 +1163,7 @@ export const MEASUREMENT_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const name1 = getRandomName();
-      const name2 = getRandomName();
+      const name2 = getDifferentName(name1);
       const height1 = gradeRandomInt(
         grade,
         [
@@ -1328,13 +1366,19 @@ export const MIXED_OPERATION_STORIES: WordStoryTemplate[] = [
         { upTo: 6, min: 3, max: 8 }
       );
       const totalCost = price * quantity;
-      const paid = Math.ceil(totalCost / 10) * 10 + gradeRandomInt(
-        grade,
-        [
-          { upTo: 4, min: 5, max: 15 },
-          { upTo: 5, min: 8, max: 18 },
-        ],
-        { upTo: 6, min: 10, max: 20 }
+      const paidUpperBound =
+        Math.ceil(totalCost / 10) * 10 +
+        gradeRandomInt(
+          grade,
+          [
+            { upTo: 4, min: 5, max: 15 },
+            { upTo: 5, min: 8, max: 18 },
+          ],
+          { upTo: 6, min: 10, max: 20 }
+        );
+      const paid = generateFriendlyPayment(
+        totalCost,
+        Math.max(paidUpperBound, totalCost + 5)
       );
       const answer = paid - totalCost;
 
@@ -1402,7 +1446,7 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const name1 = getRandomName();
-      const name2 = getRandomName();
+      const name2 = getDifferentName(name1);
       const item = getRandomItem(true);
       const count1 = gradeRandomInt(
         grade,
@@ -1435,7 +1479,7 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const name1 = getRandomName();
-      const name2 = getRandomName();
+      const name2 = getDifferentName(name1);
       const item = getRandomItem(true);
       const count1 = gradeRandomInt(
         grade,
@@ -1472,7 +1516,7 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const name1 = getRandomName();
-      const name2 = getRandomName();
+      const name2 = getDifferentName(name1);
       const item = getRandomItem(true);
       const count2 = gradeRandomInt(
         grade,
@@ -1505,7 +1549,7 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const name1 = getRandomName();
-      const name2 = getRandomName();
+      const name2 = getDifferentName(name1);
       const item = getRandomItem(true);
       const count1 = gradeRandomInt(
         grade,
@@ -1531,8 +1575,8 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const name1 = getRandomName();
-      const name2 = getRandomName();
-      const name3 = getRandomName();
+      const name2 = getDifferentName(name1);
+      const name3 = getDifferentName(name2);
       const item = getRandomItem(true);
       const count1 = gradeRandomInt(
         grade,

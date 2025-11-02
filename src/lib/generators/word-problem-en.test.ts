@@ -4,6 +4,10 @@ import {
   generateEnWordStory,
   generateGradeEnWordProblems,
 } from './word-problem-en';
+import {
+  MONEY_STORIES,
+  MIXED_OPERATION_STORIES,
+} from './templates/en-word-story';
 import type { WordProblemEn } from '../../types';
 
 describe('English Word Problem Generator', () => {
@@ -120,6 +124,56 @@ describe('English Word Problem Generator', () => {
           /has|have|is|are|many|how|what|number|between|count/
         );
       });
+    });
+
+    it('should use realistic payments in change stories', () => {
+      const singleItemChange = MONEY_STORIES[0];
+
+      for (let grade = 2; grade <= 5; grade++) {
+        for (let i = 0; i < 40; i++) {
+          const { text } = singleItemChange.generateProblem(grade);
+          const match = text.match(/for \$(\d+).*pays with \$(\d+)/);
+          expect(match).not.toBeNull();
+
+          if (!match) {
+            continue;
+          }
+
+          const price = Number(match[1]);
+          const paid = Number(match[2]);
+
+          expect(paid).toBeGreaterThan(price);
+          const isMultipleOfFive = paid % 5 === 0;
+          const isFiveMoreThanPrice = paid === price + 5;
+          expect(isMultipleOfFive || isFiveMoreThanPrice).toBe(true);
+        }
+      }
+
+      const multiItemChange = MIXED_OPERATION_STORIES[2];
+
+      for (let grade = 4; grade <= 6; grade++) {
+        for (let i = 0; i < 40; i++) {
+          const { text } = multiItemChange.generateProblem(grade);
+          const match = text.match(
+            /buys (\d+) items at \$(\d+) each\. .*pays with \$(\d+)/
+          );
+
+          expect(match).not.toBeNull();
+          if (!match) {
+            continue;
+          }
+
+          const quantity = Number(match[1]);
+          const price = Number(match[2]);
+          const paid = Number(match[3]);
+          const totalCost = quantity * price;
+
+          expect(paid).toBeGreaterThan(totalCost);
+          const isMultipleOfFive = paid % 5 === 0;
+          const isFiveMoreThanTotal = paid === totalCost + 5;
+          expect(isMultipleOfFive || isFiveMoreThanTotal).toBe(true);
+        }
+      }
     });
   });
 
