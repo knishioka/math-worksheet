@@ -86,8 +86,8 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
 
       // ヘッダー部分
       const headerHTML = `
-        <div style="border-bottom: 1px solid #ccc; padding-bottom: 12px; margin-bottom: 16px;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 12px;">
+        <div style="border-bottom: 1px solid #ccc; padding-bottom: 6px; margin-bottom: 8px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 8px;">
             <div style="font-size: 14px;">
               名前：<span style="display: inline-block; width: 128px; border-bottom: 1px solid black; margin-left: 4px;"></span>
             </div>
@@ -102,7 +102,7 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
       `;
 
       // 問題部分
-      let problemsHTML = '<div style="margin-top: 24px;">';
+      let problemsHTML = '<div style="margin-top: 12px;">';
 
       // テンプレートの設定を使用
       const { rowGap, colGap } = template.layout;
@@ -129,7 +129,7 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
 
       reorderedProblems.forEach((problem, index) => {
         if (!problem) {
-          problemsHTML += `<div style="margin-bottom: 12px;"></div>`;
+          problemsHTML += `<div style="margin-bottom: 8px;"></div>`;
           return;
         }
 
@@ -138,8 +138,8 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
         const row = Math.floor(index / columns);
         const originalNumber = col * rowCount + row + 1;
 
-        // 問題タイプに応じて余白を調整（word-enは狭め）
-        const problemMargin = problem.type === 'word-en' ? '6px' : '12px';
+        // 問題タイプに応じて余白を調整（word系は狭め）
+        const problemMargin = (problem.type === 'word-en' || problem.type === 'word') ? '6px' : '8px';
         problemsHTML += `<div style="margin-bottom: ${problemMargin};">`;
 
         const fontSize = template.layout.fontSize;
