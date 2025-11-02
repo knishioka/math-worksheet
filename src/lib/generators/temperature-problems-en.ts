@@ -5,6 +5,7 @@
 
 import type { WordProblemEn, Operation, Grade } from '../../types';
 import { randomInt, generateId } from '../utils/math';
+import { randomIntByGrade, rangeByGrade } from './grade-utils';
 
 /**
  * 温度差の計算問題を生成（英語）
@@ -20,24 +21,48 @@ export function generateTemperatureDiffEn(grade: Grade, count: number): WordProb
 
     if (problemType === 0) {
       // Temperature rise
-      const morningTemp = randomInt(18, 25); // 18-25℃
-      const noonTemp = morningTemp + randomInt(5, 12); // +5-12℃
+      const morningTemp = randomIntByGrade(grade, {
+        lower: { min: 16, max: 24 },
+        middle: { min: 18, max: 28 },
+        upper: { min: 20, max: 32 },
+      });
+      const noonTemp = morningTemp + randomIntByGrade(grade, {
+        lower: { min: 4, max: 8 },
+        middle: { min: 5, max: 12 },
+        upper: { min: 6, max: 15 },
+      });
       const tempRise = noonTemp - morningTemp;
 
       problemText = `The temperature was ${morningTemp}°C in the morning. It rose to ${noonTemp}°C at noon. How many degrees did it rise?`;
       answer = tempRise;
     } else if (problemType === 1) {
       // Temperature drop
-      const afternoonTemp = randomInt(28, 35); // 28-35℃
-      const eveningTemp = afternoonTemp - randomInt(5, 12); // -5-12℃
+      const afternoonTemp = randomIntByGrade(grade, {
+        lower: { min: 24, max: 32 },
+        middle: { min: 26, max: 35 },
+        upper: { min: 28, max: 38 },
+      });
+      const eveningTemp = afternoonTemp - randomIntByGrade(grade, {
+        lower: { min: 3, max: 7 },
+        middle: { min: 4, max: 10 },
+        upper: { min: 5, max: 12 },
+      });
       const tempDrop = afternoonTemp - eveningTemp;
 
       problemText = `The temperature was ${afternoonTemp}°C in the afternoon. It dropped to ${eveningTemp}°C in the evening. How many degrees did it drop?`;
       answer = tempDrop;
     } else {
       // Temperature range (max - min)
-      const minTemp = randomInt(20, 25); // 20-25℃
-      const maxTemp = minTemp + randomInt(8, 15); // +8-15℃
+      const minTemp = randomIntByGrade(grade, {
+        lower: { min: 18, max: 24 },
+        middle: { min: 20, max: 27 },
+        upper: { min: 22, max: 30 },
+      });
+      const maxTemp = minTemp + randomIntByGrade(grade, {
+        lower: { min: 6, max: 10 },
+        middle: { min: 7, max: 14 },
+        upper: { min: 8, max: 18 },
+      });
       const tempDiff = maxTemp - minTemp;
 
       problemText = `Today's minimum temperature was ${minTemp}°C and maximum was ${maxTemp}°C. What is the temperature difference?`;
@@ -73,14 +98,23 @@ export function generateTemperatureConversionEn(grade: Grade, count: number): Wo
 
     if (conversionType === 0) {
       // Celsius to Fahrenheit
-      const celsius = randomInt(0, 40); // 0-40℃
+      const celsius = randomIntByGrade(grade, {
+        lower: { min: -5, max: 30 },
+        middle: { min: -2, max: 35 },
+        upper: { min: -5, max: 40 },
+      });
       const fahrenheit = Math.round((celsius * 9 / 5) + 32);
 
       problemText = `Convert ${celsius}°C to Fahrenheit. (Formula: °F = °C × 9/5 + 32)`;
       answer = fahrenheit;
     } else {
       // Fahrenheit to Celsius
-      const fahrenheit = randomInt(32, 104); // 32-104℉ (equals 0-40℃)
+      const fahrenheitRange = rangeByGrade(grade, {
+        lower: { min: 32, max: 90 },
+        middle: { min: 32, max: 102 },
+        upper: { min: 20, max: 108 },
+      });
+      const fahrenheit = randomInt(fahrenheitRange.min, fahrenheitRange.max);
       const celsius = Math.round((fahrenheit - 32) * 5 / 9);
 
       problemText = `Convert ${fahrenheit}°F to Celsius. (Formula: °C = (°F - 32) × 5/9)`;

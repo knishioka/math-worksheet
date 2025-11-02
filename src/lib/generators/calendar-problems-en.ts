@@ -5,6 +5,7 @@
 
 import type { WordProblemEn, Operation, Grade } from '../../types';
 import { randomInt, generateId } from '../utils/math';
+import { rangeByGrade, randomIntByGrade, scaleByGrade } from './grade-utils';
 
 /**
  * 日数の計算問題を生成（英語）
@@ -35,12 +36,21 @@ export function generateCalendarDaysEn(grade: Grade, count: number): WordProblem
 
     if (problemType === 0) {
       // Calculate date after N days
-      const startDay = randomInt(1, 20); // 1-20
-      const daysToAdd = randomInt(5, 15); // 5-15 days later
+      const startRange = rangeByGrade(grade, {
+        lower: { min: 1, max: 18 },
+        middle: { min: 1, max: 22 },
+        upper: { min: 1, max: 25 },
+      });
+      const startDay = randomInt(startRange.min, startRange.max);
+      const daysToAdd = randomIntByGrade(grade, {
+        lower: { min: 3, max: 10 },
+        middle: { min: 6, max: 18 },
+        upper: { min: 10, max: 24 },
+      });
       const month = months[randomInt(0, 11)];
       const endDay = startDay + daysToAdd;
 
-      const ordinal = (n: number) => {
+      const ordinal = (n: number): string => {
         const s = ["th", "st", "nd", "rd"];
         const v = n % 100;
         return n + (s[(v - 20) % 10] || s[v] || s[0]);
@@ -58,11 +68,22 @@ export function generateCalendarDaysEn(grade: Grade, count: number): WordProblem
       }
     } else if (problemType === 1) {
       // Calculate difference between dates
-      const startDay = randomInt(1, 15); // 1-15
-      const endDay = randomInt(20, 30); // 20-30
-      const daysDiff = endDay - startDay;
+      const monthData = months[randomInt(0, 11)];
+      const startDay = randomIntByGrade(grade, {
+        lower: { min: 1, max: Math.min(14, monthData.days - 6) },
+        middle: { min: 3, max: Math.min(18, monthData.days - 6) },
+        upper: { min: 5, max: Math.min(22, monthData.days - 6) },
+      });
+      const gapRange = rangeByGrade(grade, {
+        lower: { min: 6, max: 12 },
+        middle: { min: 8, max: 16 },
+        upper: { min: 10, max: 20 },
+      });
+      const maxGap = Math.min(gapRange.max, monthData.days - startDay);
+      const daysDiff = randomInt(gapRange.min, Math.max(gapRange.min, maxGap));
+      const endDay = startDay + daysDiff;
 
-      const month = months[randomInt(0, 11)].name;
+      const month = monthData.name;
       problemText = `How many days are there from ${month} ${startDay} to ${month} ${endDay}?`;
       answer = daysDiff;
     } else {
@@ -101,14 +122,21 @@ export function generateCalendarWeekEn(grade: Grade, count: number): WordProblem
 
     if (problemType === 0) {
       // Convert days to weeks
-      const days = randomInt(2, 8) * 7; // 14-56 days (2-8 weeks)
-      const weeks = days / 7;
-
+      const weeks = randomIntByGrade(grade, {
+        lower: { min: 2, max: 5 },
+        middle: { min: 3, max: 7 },
+        upper: { min: 4, max: 9 },
+      });
+      const days = weeks * 7; // 2-9 weeks
       problemText = `How many weeks are there in ${days} days?`;
       answer = weeks;
     } else {
       // Convert weeks to days
-      const weeks = randomInt(2, 8); // 2-8 weeks
+      const weeks = randomIntByGrade(grade, {
+        lower: { min: 2, max: 5 },
+        middle: { min: 3, max: 7 },
+        upper: { min: 4, max: 9 },
+      });
       const days = weeks * 7;
 
       problemText = `How many days are there in ${weeks} week${weeks > 1 ? 's' : ''}?`;
@@ -146,15 +174,33 @@ export function generateCalendarAgeEn(grade: Grade, count: number): WordProblemE
 
     if (problemType === 0) {
       // Calculate age from birth year
-      const birthYear = currentYear - randomInt(6, 12); // 6-12 years old
-      const age = currentYear - birthYear;
-
+      const age = randomIntByGrade(grade, {
+        lower: { min: 6, max: 10 },
+        middle: { min: 8, max: 13 },
+        upper: { min: 10, max: 16 },
+      });
+      const birthYear = currentYear - age; // 6-16 years old
       problemText = `Someone was born in ${birthYear}. How old are they this year (${currentYear})?`;
       answer = age;
     } else {
       // Calculate age difference
-      const age1 = randomInt(8, 12); // 8-12 years old
-      const age2 = randomInt(6, age1 - 2); // younger age
+      const age1 = randomIntByGrade(grade, {
+        lower: { min: 7, max: 11 },
+        middle: { min: 9, max: 13 },
+        upper: { min: 11, max: 16 },
+      });
+      const youngerBuffer = scaleByGrade(grade, {
+        lower: 2,
+        middle: 3,
+        upper: 4,
+      });
+      const youngerMax = age1 - youngerBuffer;
+      const youngerMin = Math.max(5, youngerMax - scaleByGrade(grade, {
+        lower: 2,
+        middle: 3,
+        upper: 4,
+      }));
+      const age2 = randomInt(Math.min(youngerMin, youngerMax - 1), youngerMax);
       const ageDiff = age1 - age2;
 
       problemText = `Ali is ${age1} years old and Maya is ${age2} years old. What is the age difference?`;

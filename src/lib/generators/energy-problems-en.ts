@@ -5,6 +5,7 @@
 
 import type { WordProblemEn, Operation, Grade } from '../../types';
 import { randomInt, generateId } from '../utils/math';
+import { randomIntByGrade, rangeByGrade, scaleByGrade } from './grade-utils';
 
 /**
  * 電気使用量の計算問題を生成（英語）
@@ -29,19 +30,40 @@ export function generateEnergyUsageEn(grade: Grade, count: number): WordProblemE
     if (problemType === 0) {
       // Power consumption per hour × hours
       const appliance = appliances[randomInt(0, appliances.length - 1)];
-      const wattHour = appliance.wattHour[randomInt(0, appliance.wattHour.length - 1)];
-      const hours = randomInt(3, 8); // 3-8 hours
+      const wattChoices = appliance.wattHour.slice(
+        0,
+        Math.min(appliance.wattHour.length, scaleByGrade(grade, {
+          lower: 2,
+          middle: 3,
+          upper: appliance.wattHour.length,
+        }))
+      );
+      const wattHour = wattChoices[randomInt(0, wattChoices.length - 1)];
+      const hours = randomIntByGrade(grade, {
+        lower: { min: 2, max: 5 },
+        middle: { min: 3, max: 7 },
+        upper: { min: 4, max: 9 },
+      });
       const totalWh = wattHour * hours;
 
       problemText = `A ${appliance.name} uses ${wattHour}Wh per hour. How much energy does it use in ${hours} hours?`;
       answer = totalWh;
     } else {
       // Daily usage to monthly usage
-      const dailyWh = randomInt(8, 20) * 100; // 800-2000Wh
-      const days = 30;
-      const monthlyWh = dailyWh * days;
+      const dailyWh = randomIntByGrade(grade, {
+        lower: { min: 6, max: 14 },
+        middle: { min: 8, max: 20 },
+        upper: { min: 12, max: 28 },
+      }) * 100;
+      const days = rangeByGrade(grade, {
+        lower: { min: 20, max: 25 },
+        middle: { min: 25, max: 30 },
+        upper: { min: 28, max: 31 },
+      });
+      const billingDays = randomInt(days.min, days.max);
+      const monthlyWh = dailyWh * billingDays;
 
-      problemText = `You use ${dailyWh}Wh of electricity per day. How much in 30 days?`;
+      problemText = `You use ${dailyWh}Wh of electricity per day. How much in ${billingDays} days?`;
       answer = monthlyWh;
     }
 
@@ -74,15 +96,24 @@ export function generateEnergySavingEn(grade: Grade, count: number): WordProblem
 
     if (problemType === 0) {
       // Monthly savings to yearly savings
-      const monthlySaving = randomInt(10, 30); // RM10-RM30
+      const monthlySaving = randomIntByGrade(grade, {
+        lower: { min: 8, max: 20 },
+        middle: { min: 12, max: 30 },
+        upper: { min: 18, max: 45 },
+      });
       const yearlySaving = monthlySaving * 12;
 
       problemText = `By switching to LED bulbs, you save RM${monthlySaving} per month. How much do you save in a year?`;
       answer = yearlySaving;
     } else {
       // Energy consumption reduction
-      const beforeWh = randomInt(50, 100) * 100; // 5000-10000Wh
-      const reductionPercent = [10, 20, 25, 30][randomInt(0, 3)]; // 10%, 20%, 25%, 30%
+      const beforeWh = randomIntByGrade(grade, {
+        lower: { min: 40, max: 80 },
+        middle: { min: 60, max: 120 },
+        upper: { min: 80, max: 160 },
+      }) * 100;
+      const reductionOptions = grade <= 3 ? [10, 15, 20] : [15, 20, 25, 30, 35];
+      const reductionPercent = reductionOptions[randomInt(0, reductionOptions.length - 1)];
       const reductionWh = Math.floor(beforeWh * reductionPercent / 100);
 
       problemText = `You used ${beforeWh}Wh per month, but reduced it by ${reductionPercent}%. How much Wh did you save?`;

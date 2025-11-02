@@ -1,5 +1,12 @@
 import React from 'react';
-import type { WorksheetData, HissanProblem, WordProblemEn, FractionProblem, DecimalProblem, MixedNumberProblem } from '../../types';
+import type {
+  WorksheetData,
+  HissanProblem,
+  WordProblemEn,
+  FractionProblem,
+  DecimalProblem,
+  MixedNumberProblem,
+} from '../../types';
 import {
   getOperationName,
   getOperatorSymbol,
@@ -13,6 +20,7 @@ import {
   detectPrimaryProblemType,
   getPrintTemplate,
 } from '../../config/print-templates';
+import { fitPageToA4, estimatePageLayout } from './fitPageToA4';
 
 interface MultiPrintButtonProps {
   id?: string;
@@ -32,43 +40,49 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
     const originalTitle = document.title;
     document.title = `計算プリント ${worksheets.length}枚`;
 
+    // 既存要素を記録
+    const originalChildren = Array.from(document.body.children);
+
     // 印刷用コンテナを作成
     const printContainer = document.createElement('div');
     printContainer.id = 'multi-print-container';
+    printContainer.style.position = 'absolute';
+    printContainer.style.left = '0';
+    printContainer.style.top = '0';
+    printContainer.style.width = '100%';
+    printContainer.style.visibility = 'hidden';
+    printContainer.style.display = 'flex';
+    printContainer.style.flexDirection = 'column';
+    printContainer.style.alignItems = 'center';
+    printContainer.style.backgroundColor = '#ffffff';
+
+    document.body.appendChild(printContainer);
 
     // 各ワークシートをレンダリング
     worksheets.forEach((worksheet, index) => {
       const pageDiv = document.createElement('div');
+      pageDiv.classList.add('multi-print-page');
       if (index > 0) {
         pageDiv.style.pageBreakBefore = 'always';
       }
       pageDiv.style.position = 'relative';
+      pageDiv.style.boxSizing = 'border-box';
+      pageDiv.style.backgroundColor = '#ffffff';
+      pageDiv.style.width = '210mm';
+      pageDiv.style.margin = '0 auto';
+      pageDiv.style.pageBreakInside = 'avoid';
+      pageDiv.style.breakInside = 'avoid';
 
       // 問題数とタイプから動的に余白を計算
       const primaryType = detectPrimaryProblemType(worksheet.problems);
       const template = getPrintTemplate(primaryType);
       const problemCount = worksheet.problems.length;
       const columns = worksheet.settings.layoutColumns || 2;
-      const estimatedRows = Math.ceil(problemCount / columns);
-
-      // 問題タイプごとの推定高さ（mm）
-      const minProblemHeightMm = parseInt(template.layout.minProblemHeight) * 0.26; // px to mm (96dpi)
-      const rowGapMm = parseInt(template.layout.rowGap) * 0.26;
-
-      // 必要な高さを計算
-      const headerHeight = 25; // ヘッダー部分の高さ (mm)
-      const estimatedContentHeight = headerHeight + (minProblemHeightMm + rowGapMm) * estimatedRows;
-
-      // A4の高さは297mm、残りスペースを余白として配分
-      const a4Height = 297;
-      const remainingSpace = a4Height - estimatedContentHeight;
-
-      // 上の余白: 5mm〜15mm
-      const topMargin = Math.max(5, Math.min(15, remainingSpace * 0.6));
-      // 下の余白: 上の余白の半分（小さめに）
-      const bottomMargin = Math.max(5, topMargin * 0.5);
-
-      pageDiv.style.padding = `${topMargin}mm 15mm ${bottomMargin}mm`;
+      const { topMarginMm, bottomMarginMm } = estimatePageLayout({
+        problemCount,
+        columns,
+        template,
+      });
 
       // ヘッダー部分
       const headerHTML = `
@@ -137,8 +151,8 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
         }
 
         if (problem.type === 'word') {
-          // 文章問題の表示 - よりコンパクトに
-          problemsHTML += `<div style="font-size: 12px; line-height: 1.3;">`;
+          // 文章問題の表示
+          problemsHTML += `<div style="font-size: ${fontSize}; line-height: 1.3;">`;
           problemsHTML += problem.problemText;
           problemsHTML += '</div>';
           problemsHTML += '<div style="margin-top: 6px;">';
@@ -399,6 +413,15 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
 
       pageDiv.innerHTML = headerHTML + problemsHTML + footerHTML;
       printContainer.appendChild(pageDiv);
+      const { topMarginMm: fittedTop, bottomMarginMm: fittedBottom, scale } =
+        fitPageToA4(pageDiv, topMarginMm, bottomMarginMm);
+
+      // デバッグ用: 開発モードでのみレイアウト情報を記録
+      if (import.meta.env.DEV) {
+        pageDiv.dataset.printTopMarginMm = fittedTop.toFixed(2);
+        pageDiv.dataset.printBottomMarginMm = fittedBottom.toFixed(2);
+        pageDiv.dataset.printScale = scale.toFixed(3);
+      }
     });
 
     // スタイルを追加
@@ -412,29 +435,52 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
         body {
           margin: 0;
           padding: 0;
+          background: #ffffff;
         }
         #multi-print-container {
           width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        #multi-print-container .multi-print-page {
+          width: 210mm;
+          box-sizing: border-box;
+          page-break-after: always;
+          break-after: page;
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+        #multi-print-container .multi-print-page:last-child {
+          page-break-after: auto;
+          break-after: auto;
         }
       }
     `;
     document.head.appendChild(styleEl);
 
     // 既存の要素を非表示
-    const allElements = document.body.querySelectorAll('body > *');
-    allElements.forEach((el) => {
-      (el as HTMLElement).style.display = 'none';
+    const hiddenElements: HTMLElement[] = [];
+    originalChildren.forEach((el) => {
+      if (el instanceof HTMLElement) {
+        hiddenElements.push(el);
+        el.style.display = 'none';
+      }
     });
 
-    // 印刷用コンテナを追加
-    document.body.appendChild(printContainer);
+    // 印刷用コンテナを表示
+    printContainer.style.visibility = 'visible';
+    printContainer.style.position = 'relative';
+    printContainer.style.left = '0';
+    printContainer.style.top = '0';
+    printContainer.style.pointerEvents = 'auto';
 
     // 印刷
     window.print();
 
     // 元に戻す
-    allElements.forEach((el) => {
-      (el as HTMLElement).style.display = '';
+    hiddenElements.forEach((el) => {
+      el.style.display = '';
     });
 
     // クリーンアップ
