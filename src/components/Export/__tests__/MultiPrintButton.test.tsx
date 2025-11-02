@@ -1,6 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import type { Mock } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MultiPrintButton } from '../MultiPrintButton';
+import * as fitPageToA4Module from '../fitPageToA4';
+
+const {
+  fitPageToA4,
+  estimatePageLayout,
+  mmToPx,
+  A4_HEIGHT_MM,
+  MIN_MARGIN_MM,
+} = fitPageToA4Module;
+import { getPrintTemplate } from '../../../config/print-templates';
 import type { WorksheetData } from '../../../types';
 
 describe('MultiPrintButton', () => {
@@ -114,6 +125,47 @@ describe('MultiPrintButton', () => {
       expect(window.print).toHaveBeenCalled();
       expect(mockOnPrint).toHaveBeenCalled();
     });
+  });
+
+  it('records fitted margins and scale in data attributes', async () => {
+    const mockOnPrint = vi.fn();
+    const fitSpy = vi
+      .spyOn(fitPageToA4Module, 'fitPageToA4')
+      .mockImplementation((element) => {
+        element.dataset.printScale = '0.930';
+        return { topMarginMm: 12.345, bottomMarginMm: 8.765, scale: 0.93 };
+      });
+    const captured: { top?: string; bottom?: string; scale?: string } = {};
+    (window.print as Mock).mockImplementation(() => {
+      const firstPage = document.querySelector<HTMLDivElement>(
+        '#multi-print-container .multi-print-page'
+      );
+      captured.top = firstPage?.dataset.printTopMarginMm;
+      captured.bottom = firstPage?.dataset.printBottomMarginMm;
+      captured.scale = firstPage?.dataset.printScale;
+    });
+
+    try {
+      render(
+        <MultiPrintButton
+          worksheets={mockWorksheets}
+          showAnswers={false}
+          onPrint={mockOnPrint}
+        />
+      );
+
+      fireEvent.click(screen.getByRole('button'));
+
+      await waitFor(() => {
+        expect(window.print).toHaveBeenCalled();
+        expect(mockOnPrint).toHaveBeenCalled();
+        expect(captured.top).toBe('12.35');
+        expect(captured.bottom).toBe('8.77');
+        expect(captured.scale).toBe('0.930');
+      });
+    } finally {
+      fitSpy.mockRestore();
+    }
   });
 
   it('should set correct document title for multi-page printing', async () => {
@@ -335,5 +387,164 @@ describe('MultiPrintButton', () => {
     await waitFor(() => {
       expect(window.print).toHaveBeenCalled();
     });
+  });
+});
+
+describe('fitPageToA4', () => {
+  const pxPerMm = 96 / 25.4;
+
+  const parsePaddingValue = (value: string | null | undefined): number => {
+    if (!value) return 0;
+    const numeric = parseFloat(value.replace('mm', ''));
+    return Number.isFinite(numeric) ? numeric : 0;
+  };
+
+  const readVerticalPaddingMm = (
+    style: CSSStyleDeclaration,
+  ): { top: number; bottom: number } => {
+    const directTop = parsePaddingValue(style.paddingTop);
+    const directBottom = parsePaddingValue(style.paddingBottom);
+    if (directTop || directBottom) {
+      return { top: directTop, bottom: directBottom };
+    }
+
+    const shorthand = style.padding?.trim();
+    if (!shorthand) {
+      return { top: 0, bottom: 0 };
+    }
+
+    const parts = shorthand.split(/\s+/);
+    if (parts.length === 1) {
+      const val = parsePaddingValue(parts[0]);
+      return { top: val, bottom: val };
+    }
+
+    if (parts.length === 2) {
+      const vertical = parsePaddingValue(parts[0]);
+      return { top: vertical, bottom: vertical };
+    }
+
+    if (parts.length === 3) {
+      return {
+        top: parsePaddingValue(parts[0]),
+        bottom: parsePaddingValue(parts[2]),
+      };
+    }
+
+    return {
+      top: parsePaddingValue(parts[0]),
+      bottom: parsePaddingValue(parts[2]),
+    };
+  };
+
+  const createBoundingClientRectMock = (
+    element: HTMLDivElement,
+    heightsMm: number[],
+  ): void => {
+    const heightsPx = heightsMm.map((mm) => mm * pxPerMm);
+    let callCount = 0;
+    vi.spyOn(element, 'getBoundingClientRect').mockImplementation(() => {
+      const height = heightsPx[Math.min(callCount, heightsPx.length - 1)];
+      callCount += 1;
+      return {
+        width: 0,
+        x: 0,
+        y: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height,
+        toJSON: (): Record<string, never> => ({}),
+      };
+    });
+  };
+
+  const mockContentAwareBoundingRect = (
+    element: HTMLDivElement,
+    contentHeightMm: number,
+  ): void => {
+    vi.spyOn(element, 'getBoundingClientRect').mockImplementation(() => {
+      const { top, bottom } = readVerticalPaddingMm(element.style);
+      const heightMm = contentHeightMm + top + bottom;
+      return {
+        width: 0,
+        x: 0,
+        y: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: mmToPx(heightMm),
+        toJSON: (): Record<string, never> => ({}),
+      };
+    });
+  };
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('reduces margins until the page fits without scaling', () => {
+    const page = document.createElement('div');
+    createBoundingClientRectMock(page, [320, 295]);
+
+    const result = fitPageToA4(page, 20, 22);
+
+    expect(result.scale).toBe(1);
+    expect(parseFloat(page.style.paddingTop)).toBeCloseTo(9.22, 2);
+    expect(parseFloat(page.style.paddingBottom)).toBeCloseTo(9.78, 2);
+    expect(page.dataset.printScale).toBe('1.000');
+  });
+
+  it('applies a scale factor when margins alone cannot fit the page', () => {
+    const page = document.createElement('div');
+    createBoundingClientRectMock(page, [340, 340, 340, 340, 340, 340, 340]);
+
+    const result = fitPageToA4(page, 15, 18);
+
+    expect(result.scale).toBeLessThan(1);
+    expect(result.scale).toBeGreaterThanOrEqual(0.85);
+    const { top, bottom } = readVerticalPaddingMm(page.style);
+    expect(top * result.scale).toBeCloseTo(result.topMarginMm, 2);
+    expect(bottom * result.scale).toBeCloseTo(result.bottomMarginMm, 2);
+    expect(top * result.scale).toBeGreaterThanOrEqual(MIN_MARGIN_MM - 0.02);
+    expect(page.style.transform).toBe(`scale(${result.scale})`);
+    expect(page.style.transformOrigin).toBe('top center');
+    expect(page.dataset.printScale).toBe(result.scale.toFixed(3));
+    const expectedWidth = (210 / result.scale).toFixed(3);
+    expect(page.style.width).toBe(`${expectedWidth}mm`);
+  });
+
+  it('keeps grade 2 transport fare layout within the scaled A4 frame', () => {
+    const template = getPrintTemplate('word');
+    const estimate = estimatePageLayout({
+      problemCount: 20,
+      columns: 2,
+      template,
+    });
+
+    const actualContentHeightMm = estimate.contentHeightMm + 40; // taller than estimate
+    const page = document.createElement('div');
+    mockContentAwareBoundingRect(page, actualContentHeightMm);
+
+    const result = fitPageToA4(
+      page,
+      estimate.topMarginMm,
+      estimate.bottomMarginMm,
+    );
+
+    const effectiveHeightMm =
+      result.scale * actualContentHeightMm +
+      result.topMarginMm +
+      result.bottomMarginMm;
+    const { top, bottom } = readVerticalPaddingMm(page.style);
+
+    expect(result.scale).toBeLessThan(1);
+    expect(result.scale).toBeCloseTo(0.932, 2);
+    expect(effectiveHeightMm).toBeLessThanOrEqual(A4_HEIGHT_MM - 0.5 + 0.02);
+    expect(page.dataset.printScale).toBe(result.scale.toFixed(3));
+    expect(top * result.scale).toBeCloseTo(result.topMarginMm, 2);
+    expect(bottom * result.scale).toBeCloseTo(result.bottomMarginMm, 2);
   });
 });

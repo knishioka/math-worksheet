@@ -1,5 +1,12 @@
 import React from 'react';
-import type { WorksheetData, HissanProblem, WordProblemEn, FractionProblem, DecimalProblem, MixedNumberProblem } from '../../types';
+import type {
+  WorksheetData,
+  HissanProblem,
+  WordProblemEn,
+  FractionProblem,
+  DecimalProblem,
+  MixedNumberProblem,
+} from '../../types';
 import {
   getOperationName,
   getOperatorSymbol,
@@ -13,6 +20,7 @@ import {
   detectPrimaryProblemType,
   getPrintTemplate,
 } from '../../config/print-templates';
+import { fitPageToA4, estimatePageLayout } from './fitPageToA4';
 
 interface MultiPrintButtonProps {
   id?: string;
@@ -31,64 +39,6 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
     // 元のタイトルを保存
     const originalTitle = document.title;
     document.title = `計算プリント ${worksheets.length}枚`;
-
-    const MM_PER_PX = 25.4 / 96;
-    const PX_PER_MM = 96 / 25.4;
-    const A4_HEIGHT_MM = 297;
-    const MIN_MARGIN_MM = 5;
-
-    const pxToMm = (px: number): number => px * MM_PER_PX;
-    const mmToPx = (mm: number): number => mm * PX_PER_MM;
-
-    const fitPageToA4 = (
-      pageElement: HTMLDivElement,
-      initialTop: number,
-      initialBottom: number,
-    ): void => {
-      let top = Number.isFinite(initialTop) ? initialTop : MIN_MARGIN_MM;
-      let bottom = Number.isFinite(initialBottom) ? initialBottom : MIN_MARGIN_MM;
-
-      const setPadding = (): void => {
-        const safeTop = Math.max(MIN_MARGIN_MM, Number(top.toFixed(2)));
-        const safeBottom = Math.max(MIN_MARGIN_MM, Number(bottom.toFixed(2)));
-        pageElement.style.padding = `${safeTop}mm 15mm ${safeBottom}mm`;
-        top = safeTop;
-        bottom = safeBottom;
-      };
-
-      setPadding();
-
-      const a4HeightPx = mmToPx(A4_HEIGHT_MM);
-      let heightPx = pageElement.getBoundingClientRect().height;
-      let iterations = 0;
-
-      while (heightPx > a4HeightPx && iterations < 6) {
-        const overflowMm = pxToMm(heightPx - a4HeightPx);
-        const availableTop = Math.max(0, top - MIN_MARGIN_MM);
-        const availableBottom = Math.max(0, bottom - MIN_MARGIN_MM);
-        const totalAvailable = availableTop + availableBottom;
-
-        if (totalAvailable <= 0) {
-          break;
-        }
-
-        const topShare = totalAvailable === 0 ? 0.5 : availableTop / totalAvailable;
-        const bottomShare = totalAvailable === 0 ? 0.5 : availableBottom / totalAvailable;
-
-        const topReduction = Math.min(availableTop, overflowMm * topShare);
-        const bottomReduction = Math.min(availableBottom, overflowMm * bottomShare);
-
-        top -= topReduction;
-        bottom -= bottomReduction;
-        setPadding();
-        heightPx = pageElement.getBoundingClientRect().height;
-        iterations += 1;
-      }
-
-      if (heightPx > a4HeightPx) {
-        pageElement.style.padding = `${MIN_MARGIN_MM}mm 15mm ${MIN_MARGIN_MM}mm`;
-      }
-    };
 
     // 既存要素を記録
     const originalChildren = Array.from(document.body.children);
@@ -128,32 +78,11 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
       const template = getPrintTemplate(primaryType);
       const problemCount = worksheet.problems.length;
       const columns = worksheet.settings.layoutColumns || 2;
-      const estimatedRows = Math.ceil(problemCount / columns);
-
-      // 問題タイプごとの推定高さ（mm）
-      const minProblemHeightMm = parseFloat(template.layout.minProblemHeight) * MM_PER_PX;
-      const rowGapMm = parseFloat(template.layout.rowGap) * MM_PER_PX;
-
-      // 必要な高さを計算
-      const headerHeight = 25; // ヘッダー部分の高さ (mm)
-      const estimatedContentHeight = headerHeight + (minProblemHeightMm + rowGapMm) * estimatedRows;
-
-      // A4の高さは297mm、残りスペースを余白として配分
-      const a4Height = 297;
-      const remainingSpace = a4Height - estimatedContentHeight;
-      const safeRemaining = Math.max(0, remainingSpace);
-      const marginBudget = Math.max(safeRemaining, MIN_MARGIN_MM * 2);
-      let topMargin = Math.min(15, marginBudget * 0.6);
-      let bottomMargin = marginBudget - topMargin;
-
-      if (bottomMargin < MIN_MARGIN_MM) {
-        bottomMargin = MIN_MARGIN_MM;
-        topMargin = Math.max(MIN_MARGIN_MM, marginBudget - bottomMargin);
-      }
-
-      if (topMargin < MIN_MARGIN_MM) {
-        topMargin = MIN_MARGIN_MM;
-      }
+      const { topMarginMm, bottomMarginMm } = estimatePageLayout({
+        problemCount,
+        columns,
+        template,
+      });
 
       // ヘッダー部分
       const headerHTML = `
@@ -484,7 +413,15 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
 
       pageDiv.innerHTML = headerHTML + problemsHTML + footerHTML;
       printContainer.appendChild(pageDiv);
-      fitPageToA4(pageDiv, topMargin, bottomMargin);
+      const { topMarginMm: fittedTop, bottomMarginMm: fittedBottom, scale } =
+        fitPageToA4(pageDiv, topMarginMm, bottomMarginMm);
+
+      // デバッグ用: 開発モードでのみレイアウト情報を記録
+      if (import.meta.env.DEV) {
+        pageDiv.dataset.printTopMarginMm = fittedTop.toFixed(2);
+        pageDiv.dataset.printBottomMarginMm = fittedBottom.toFixed(2);
+        pageDiv.dataset.printScale = scale.toFixed(3);
+      }
     });
 
     // スタイルを追加
