@@ -1,3 +1,5 @@
+import type { PrintTemplate } from '../../config/print-templates';
+
 export const MM_PER_PX = 25.4 / 96;
 export const PX_PER_MM = 96 / 25.4;
 export const A4_HEIGHT_MM = 297;
@@ -5,6 +7,8 @@ export const MIN_MARGIN_MM = 5;
 const MAX_MARGIN_ITERATIONS = 6;
 const SCALE_SAFETY_MM = 0.5;
 const MIN_SCALE = 0.85;
+const HEADER_HEIGHT_MM = 25;
+const MAX_INITIAL_TOP_MARGIN_MM = 15;
 
 export const pxToMm = (px: number): number => px * MM_PER_PX;
 export const mmToPx = (mm: number): number => mm * PX_PER_MM;
@@ -16,6 +20,53 @@ export interface FitResult {
 }
 
 const roundMargin = (margin: number): number => Number(margin.toFixed(2));
+
+export interface LayoutEstimateInput {
+  problemCount: number;
+  columns: number;
+  template: PrintTemplate;
+}
+
+export interface LayoutEstimateResult {
+  topMarginMm: number;
+  bottomMarginMm: number;
+  contentHeightMm: number;
+}
+
+export const estimatePageLayout = ({
+  problemCount,
+  columns,
+  template,
+}: LayoutEstimateInput): LayoutEstimateResult => {
+  const rows = Math.max(1, Math.ceil(problemCount / columns));
+  const minProblemHeightMm = parseFloat(template.layout.minProblemHeight) * MM_PER_PX;
+  const rowGapMm = parseFloat(template.layout.rowGap) * MM_PER_PX;
+  const contentHeightMm =
+    HEADER_HEIGHT_MM + rows * (minProblemHeightMm + rowGapMm);
+  const remainingSpace = A4_HEIGHT_MM - contentHeightMm;
+  const marginBudget = Math.max(remainingSpace, MIN_MARGIN_MM * 2);
+
+  let topMargin = Math.min(
+    MAX_INITIAL_TOP_MARGIN_MM,
+    marginBudget * 0.6,
+  );
+  let bottomMargin = marginBudget - topMargin;
+
+  if (bottomMargin < MIN_MARGIN_MM) {
+    bottomMargin = MIN_MARGIN_MM;
+    topMargin = Math.max(MIN_MARGIN_MM, marginBudget - bottomMargin);
+  }
+
+  if (topMargin < MIN_MARGIN_MM) {
+    topMargin = MIN_MARGIN_MM;
+  }
+
+  return {
+    topMarginMm: roundMargin(topMargin),
+    bottomMarginMm: roundMargin(bottomMargin),
+    contentHeightMm,
+  };
+};
 
 export const fitPageToA4 = (
   pageElement: HTMLDivElement,

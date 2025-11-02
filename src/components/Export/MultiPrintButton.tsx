@@ -20,11 +20,7 @@ import {
   detectPrimaryProblemType,
   getPrintTemplate,
 } from '../../config/print-templates';
-import {
-  fitPageToA4,
-  MM_PER_PX,
-  MIN_MARGIN_MM,
-} from './fitPageToA4';
+import { fitPageToA4, estimatePageLayout } from './fitPageToA4';
 
 interface MultiPrintButtonProps {
   id?: string;
@@ -82,32 +78,11 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
       const template = getPrintTemplate(primaryType);
       const problemCount = worksheet.problems.length;
       const columns = worksheet.settings.layoutColumns || 2;
-      const estimatedRows = Math.ceil(problemCount / columns);
-
-      // 問題タイプごとの推定高さ（mm）
-      const minProblemHeightMm = parseFloat(template.layout.minProblemHeight) * MM_PER_PX;
-      const rowGapMm = parseFloat(template.layout.rowGap) * MM_PER_PX;
-
-      // 必要な高さを計算
-      const headerHeight = 25; // ヘッダー部分の高さ (mm)
-      const estimatedContentHeight = headerHeight + (minProblemHeightMm + rowGapMm) * estimatedRows;
-
-      // A4の高さは297mm、残りスペースを余白として配分
-      const a4Height = 297;
-      const remainingSpace = a4Height - estimatedContentHeight;
-      const safeRemaining = Math.max(0, remainingSpace);
-      const marginBudget = Math.max(safeRemaining, MIN_MARGIN_MM * 2);
-      let topMargin = Math.min(15, marginBudget * 0.6);
-      let bottomMargin = marginBudget - topMargin;
-
-      if (bottomMargin < MIN_MARGIN_MM) {
-        bottomMargin = MIN_MARGIN_MM;
-        topMargin = Math.max(MIN_MARGIN_MM, marginBudget - bottomMargin);
-      }
-
-      if (topMargin < MIN_MARGIN_MM) {
-        topMargin = MIN_MARGIN_MM;
-      }
+      const { topMarginMm, bottomMarginMm } = estimatePageLayout({
+        problemCount,
+        columns,
+        template,
+      });
 
       // ヘッダー部分
       const headerHTML = `
@@ -438,7 +413,7 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
 
       pageDiv.innerHTML = headerHTML + problemsHTML + footerHTML;
       printContainer.appendChild(pageDiv);
-      fitPageToA4(pageDiv, topMargin, bottomMargin);
+      fitPageToA4(pageDiv, topMarginMm, bottomMarginMm);
     });
 
     // スタイルを追加

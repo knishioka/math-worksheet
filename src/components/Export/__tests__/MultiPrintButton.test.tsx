@@ -1,7 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MultiPrintButton } from '../MultiPrintButton';
-import { fitPageToA4 } from '../fitPageToA4';
+import {
+  fitPageToA4,
+  estimatePageLayout,
+  mmToPx,
+  A4_HEIGHT_MM,
+} from '../fitPageToA4';
+import { getPrintTemplate } from '../../../config/print-templates';
 import type { WorksheetData } from '../../../types';
 
 describe('MultiPrintButton', () => {
@@ -342,6 +348,50 @@ describe('MultiPrintButton', () => {
 describe('fitPageToA4', () => {
   const pxPerMm = 96 / 25.4;
 
+  const parsePaddingValue = (value: string | null | undefined): number => {
+    if (!value) return 0;
+    const numeric = parseFloat(value.replace('mm', ''));
+    return Number.isFinite(numeric) ? numeric : 0;
+  };
+
+  const readVerticalPaddingMm = (
+    style: CSSStyleDeclaration,
+  ): { top: number; bottom: number } => {
+    const directTop = parsePaddingValue(style.paddingTop);
+    const directBottom = parsePaddingValue(style.paddingBottom);
+    if (directTop || directBottom) {
+      return { top: directTop, bottom: directBottom };
+    }
+
+    const shorthand = style.padding?.trim();
+    if (!shorthand) {
+      return { top: 0, bottom: 0 };
+    }
+
+    const parts = shorthand.split(/\s+/);
+    if (parts.length === 1) {
+      const val = parsePaddingValue(parts[0]);
+      return { top: val, bottom: val };
+    }
+
+    if (parts.length === 2) {
+      const vertical = parsePaddingValue(parts[0]);
+      return { top: vertical, bottom: vertical };
+    }
+
+    if (parts.length === 3) {
+      return {
+        top: parsePaddingValue(parts[0]),
+        bottom: parsePaddingValue(parts[2]),
+      };
+    }
+
+    return {
+      top: parsePaddingValue(parts[0]),
+      bottom: parsePaddingValue(parts[2]),
+    };
+  };
+
   const createBoundingClientRectMock = (
     element: HTMLDivElement,
     heightsMm: number[],
@@ -360,6 +410,27 @@ describe('fitPageToA4', () => {
         right: 0,
         bottom: 0,
         height,
+        toJSON: (): Record<string, never> => ({}),
+      };
+    });
+  };
+
+  const mockContentAwareBoundingRect = (
+    element: HTMLDivElement,
+    contentHeightMm: number,
+  ): void => {
+    vi.spyOn(element, 'getBoundingClientRect').mockImplementation(() => {
+      const { top, bottom } = readVerticalPaddingMm(element.style);
+      const heightMm = contentHeightMm + top + bottom;
+      return {
+        width: 0,
+        x: 0,
+        y: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: mmToPx(heightMm),
         toJSON: (): Record<string, never> => ({}),
       };
     });
@@ -396,5 +467,33 @@ describe('fitPageToA4', () => {
     expect(page.dataset.printScale).toBe(result.scale.toFixed(3));
     const expectedWidth = (210 / result.scale).toFixed(3);
     expect(page.style.width).toBe(`${expectedWidth}mm`);
+  });
+
+  it('keeps grade 2 transport fare layout within the scaled A4 frame', () => {
+    const template = getPrintTemplate('word');
+    const estimate = estimatePageLayout({
+      problemCount: 20,
+      columns: 2,
+      template,
+    });
+
+    const actualContentHeightMm = estimate.contentHeightMm + 40; // taller than estimate
+    const page = document.createElement('div');
+    mockContentAwareBoundingRect(page, actualContentHeightMm);
+
+    const result = fitPageToA4(
+      page,
+      estimate.topMarginMm,
+      estimate.bottomMarginMm,
+    );
+
+    const finalHeightMm =
+      actualContentHeightMm + result.topMarginMm + result.bottomMarginMm;
+    const effectiveHeightMm = finalHeightMm * result.scale;
+
+    expect(result.scale).toBeLessThan(1);
+    expect(result.scale).toBeCloseTo(0.932, 2);
+    expect(effectiveHeightMm).toBeLessThanOrEqual(A4_HEIGHT_MM - 0.5 + 0.01);
+    expect(page.dataset.printScale).toBe(result.scale.toFixed(3));
   });
 });
