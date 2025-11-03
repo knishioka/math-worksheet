@@ -16,10 +16,10 @@ export const Header: React.FC = () => {
               <h1 className="text-3xl font-bold tracking-tight">
                 計算プリント作成ツール
               </h1>
-              <p className="mt-2 text-base text-white/90 leading-relaxed">
-                学年や計算パターンを選ぶだけで、教室ですぐに使える計算プリントを生成できます。
-                先生もご家庭の方も、準備時間を短縮して学習サポートに集中しましょう。
-              </p>
+              <div className="mt-2 space-y-1 text-base text-white/90 leading-relaxed">
+                <p>学年や計算パターンを選ぶだけで、教室ですぐに使える計算プリントを生成できます。</p>
+                <p>先生もご家庭の方も、準備時間を短縮して学習サポートに集中しましょう。</p>
+              </div>
             </div>
             <dl className="grid grid-cols-1 gap-4 text-sm text-white/90 sm:grid-cols-3">
               <div className="flex items-start gap-2">
@@ -55,7 +55,7 @@ export const Header: React.FC = () => {
                   Ready to print
                 </p>
                 <p className="text-sm leading-relaxed text-white/90">
-                  学校や家庭学習で使える<br />オリジナルのプリントを作成
+                  学校や家庭学習で使えるオリジナルのプリントを作成
                 </p>
               </div>
             </div>
