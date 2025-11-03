@@ -21,7 +21,7 @@
   }
 
   body {
-    @apply text-black bg-white;
+    @apply text-gray-900 bg-gradient-to-br from-sky-50 via-white to-emerald-50 antialiased;
   }
 
   /* 筆算（縦書き計算）のスタイル */

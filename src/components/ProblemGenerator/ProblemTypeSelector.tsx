@@ -67,13 +67,13 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
   return (
     <div className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="mb-2 block text-sm font-semibold text-slate-700">
           学年
         </label>
         <select
           value={grade}
           onChange={(e) => onGradeChange(Number(e.target.value) as Grade)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full rounded-xl border border-sky-200 bg-white/80 px-4 py-2 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-300"
         >
           <option value={1}>1年生</option>
           <option value={2}>2年生</option>
@@ -96,11 +96,11 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
       )}
 
 
-      <div className="p-4 bg-blue-50 rounded-md">
-        <h4 className="text-sm font-medium text-blue-900 mb-2">
+      <div className="rounded-2xl border border-sky-100 bg-sky-50/80 p-4">
+        <h4 className="mb-2 text-sm font-semibold text-sky-900">
           {grade}年生 {getProblemTypeDescription(problemType)}
         </h4>
-        <p className="text-sm text-blue-700">
+        <p className="text-sm text-slate-600 leading-relaxed">
           {getGradeProblemTypeDescription(grade, problemType, operation)}
         </p>
       </div>
