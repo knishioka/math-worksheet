@@ -97,6 +97,14 @@ export const WORD_PROBLEM_PATTERNS: readonly CalculationPattern[] = [
   'transport-fare-en', // Transportation Fare
   'transport-change-en', // Transport Change
   'transport-discount-en', // Ticket/Pass Discounts
+
+  // お小遣い管理（日本語）
+  'allowance-saving-jap', // 貯金の計算
+  'allowance-goal-jap', // 目標達成までの期間
+
+  // お小遣い管理（英語）
+  'allowance-saving-en', // Saving Calculation (RM)
+  'allowance-goal-en', // Savings Goal (RM)
 ] as const;
 
 /**
