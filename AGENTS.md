@@ -26,4 +26,6 @@ This repository hosts a React + TypeScript application that generates printable 
 - Summaries must highlight user-facing effects (UI, worksheet content, or tooling) and cite the modified files.
 - Always report the exact lint/test/verification commands executed, noting any failures.
 - Surface any implications to the student learning flow (e.g., altered difficulty progression or hint visibility) in the final report so reviewers can assess educational impact.
-- Ensure the PR title/body created via automation reflects both the functional changes and the quality gates you ran.
+- Ensure the PR title/body created via automation reflects both the functional changes and the quality gates you ran. When drafting
+  the description, follow the structure in `docs/technical/pr-guidelines.md` so reviewers understand the background, delivered
+  value, and linked issues.
