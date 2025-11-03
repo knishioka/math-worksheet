@@ -52,7 +52,10 @@ describe('buildPreviewTitle', () => {
 
   const formats = [worksheetFormat, problemListFormat] as const;
 
-  formats.forEach(({ description, format }) => {
+  formats.forEach((formatConfig) => {
+    const { description } = formatConfig;
+    const format = 'format' in formatConfig ? formatConfig.format : undefined;
+
     describe(description, () => {
       permutations.forEach(({ description: permutationDescription, settings, expectedTopic }) => {
         it(`matches current output for ${permutationDescription}`, () => {
