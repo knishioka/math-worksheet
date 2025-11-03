@@ -97,17 +97,17 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     <div className="space-y-6">
       {/* レイアウトを先に選択 */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="mb-2 block text-sm font-semibold text-slate-700">
           レイアウト
         </label>
         <div className="grid grid-cols-3 gap-2">
           <button
             type="button"
             onClick={() => onLayoutColumnsChange(1)}
-            className={`px-4 py-2 text-sm font-medium rounded-md border ${
+            className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
               layoutColumns === 1
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                ? 'border-sky-500 bg-sky-500/90 text-white shadow'
+                : 'border-sky-200 bg-white/80 text-slate-600 hover:bg-sky-50'
             }`}
           >
             1列
@@ -115,10 +115,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           <button
             type="button"
             onClick={() => onLayoutColumnsChange(2)}
-            className={`px-4 py-2 text-sm font-medium rounded-md border ${
+            className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
               layoutColumns === 2
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                ? 'border-sky-500 bg-sky-500/90 text-white shadow'
+                : 'border-sky-200 bg-white/80 text-slate-600 hover:bg-sky-50'
             }`}
           >
             2列
@@ -126,24 +126,24 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           <button
             type="button"
             onClick={() => onLayoutColumnsChange(3)}
-            className={`px-4 py-2 text-sm font-medium rounded-md border ${
+            className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
               layoutColumns === 3
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                ? 'border-sky-500 bg-sky-500/90 text-white shadow'
+                : 'border-sky-200 bg-white/80 text-slate-600 hover:bg-sky-50'
             }`}
           >
             3列
           </button>
         </div>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="mt-1 text-xs text-slate-500">
           印刷時のレイアウトを選択してください
         </p>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="mt-1 text-xs text-slate-500">
           ※ {layoutColumns}列の場合、最大{maxProblems}問まで入ります
         </p>
         {isWord && (
-          <div className="mt-2 p-2 bg-blue-50 rounded-md border border-blue-200">
-            <p className="text-xs text-blue-700 font-medium mb-2">
+          <div className="mt-2 rounded-2xl border border-sky-100 bg-sky-50/70 p-3">
+            <p className="mb-2 text-xs font-semibold text-sky-800">
               💡 {template.displayName}の推奨問題数 (A4用紙1枚に最適)
             </p>
             <div className="grid grid-cols-3 gap-1">
@@ -157,12 +157,12 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     key={cols}
                     type="button"
                     onClick={() => onProblemCountChange(colRecommended)}
-                    className={`px-2 py-1 text-xs rounded border relative ${
+                    className={`relative rounded-2xl border px-2 py-1 text-xs transition ${
                       isSelected
-                        ? 'bg-blue-600 text-white border-blue-600'
+                        ? 'border-sky-500 bg-sky-500/90 text-white shadow'
                         : isCurrentLayout
-                          ? 'bg-blue-100 text-blue-700 border-blue-400 hover:bg-blue-200 ring-2 ring-blue-300'
-                          : 'bg-white text-blue-600 border-blue-300 hover:bg-blue-50'
+                          ? 'border-sky-300 bg-sky-100/90 text-sky-700 ring-2 ring-sky-200 hover:bg-sky-200/80'
+                          : 'border-sky-200 bg-white/80 text-sky-600 hover:bg-sky-50'
                     }`}
                   >
                     {cols}列: {colRecommended}問
@@ -173,7 +173,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 );
               })}
             </div>
-            <p className="text-xs text-blue-600 mt-1">
+            <p className="mt-1 text-xs text-sky-700">
               🎯 現在のレイアウト({layoutColumns}列)の推奨: {recommendedCount}問
             </p>
           </div>
@@ -181,13 +181,13 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="mb-2 block text-sm font-semibold text-slate-700">
           問題数
         </label>
 
         {/* クイック選択ボタン */}
-        <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <p className="text-xs text-gray-600 mb-2 font-medium">
+        <div className="mb-3 rounded-2xl border border-sky-100 bg-slate-50/80 p-3">
+          <p className="mb-2 text-xs font-semibold text-slate-600">
             クイック選択
           </p>
           <div className="grid grid-cols-3 gap-2">
@@ -196,10 +196,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               <button
                 type="button"
                 onClick={() => onProblemCountChange(lessCount)}
-                className={`px-3 py-2 text-sm rounded-md border transition-colors ${
+                className={`rounded-2xl border px-3 py-2 text-sm font-medium transition ${
                   problemCount === lessCount
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                    ? 'border-sky-500 bg-sky-500/90 text-white shadow'
+                    : 'border-sky-200 bg-white/80 text-slate-600 hover:bg-sky-50'
                 }`}
               >
                 少なめ<br />
@@ -211,10 +211,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             <button
               type="button"
               onClick={() => onProblemCountChange(recommendedCount)}
-              className={`px-3 py-2 text-sm rounded-md border transition-colors ${
+              className={`rounded-2xl border px-3 py-2 text-sm font-medium transition ${
                 problemCount === recommendedCount
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100'
+                  ? 'border-sky-500 bg-sky-500/90 text-white shadow'
+                  : 'border-sky-200 bg-sky-50/80 text-sky-700 hover:bg-sky-100'
               }`}
             >
               推奨 🎯<br />
@@ -226,10 +226,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               <button
                 type="button"
                 onClick={() => onProblemCountChange(moreCount)}
-                className={`px-3 py-2 text-sm rounded-md border transition-colors ${
+                className={`rounded-2xl border px-3 py-2 text-sm font-medium transition ${
                   problemCount === moreCount
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                    ? 'border-sky-500 bg-sky-500/90 text-white shadow'
+                    : 'border-sky-200 bg-white/80 text-slate-600 hover:bg-sky-50'
                 }`}
               >
                 多め<br />
@@ -241,13 +241,13 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
         {/* 詳細選択 */}
         <div>
-          <label className="block text-xs text-gray-600 mb-1">
+          <label className="mb-1 block text-xs font-medium text-slate-500">
             詳細選択 ({minProblems}〜{maxProblems}問、{step}問ステップ)
           </label>
           <select
             value={problemCount}
             onChange={(e) => onProblemCountChange(Number(e.target.value))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full rounded-2xl border border-sky-200 bg-white/80 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-300"
           >
             {problemCountOptions.map((count) => (
               <option key={count} value={count}>

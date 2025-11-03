@@ -69,12 +69,17 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
   );
   if (!worksheetData) {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg p-8 min-h-96 flex items-center justify-center">
-        <div className="text-center text-gray-500">
-          <div className="text-6xl mb-4">📝</div>
-          <h3 className="text-lg font-medium mb-2">問題プレビューエリア</h3>
-          <p className="text-sm">
-            左側の設定で問題を生成すると、ここに問題プレビューが表示されます
+      <div className="flex min-h-96 items-center justify-center rounded-3xl border border-dashed border-sky-200/80 bg-white/70 p-8 text-sky-700 shadow-inner backdrop-blur">
+        <div className="text-center space-y-3">
+          <div className="text-6xl">📝</div>
+          <div>
+            <h3 className="text-lg font-semibold">問題プレビューエリア</h3>
+            <p className="mt-2 text-sm text-slate-600">
+              左側の設定で「生成」すると、ここに出来上がったプリントが表示されます。
+            </p>
+          </div>
+          <p className="text-xs text-slate-500">
+            学年・問題数・レイアウトを選んで、ぴったりのプリントを作りましょう。
           </p>
         </div>
       </div>
@@ -87,21 +92,21 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
 
   return (
     <>
-      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div className="overflow-hidden rounded-3xl border border-sky-100 bg-white/85 shadow-xl backdrop-blur">
         {/* Worksheet Header */}
-        <div className="p-6 border-b border-gray-200 bg-gray-50 no-print">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-black">
+        <div className="no-print border-b border-sky-100 bg-gradient-to-r from-sky-50 via-white to-emerald-50 p-6">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-lg font-semibold text-slate-900">
               問題プレビュー - {getPreviewTitle(settings)}
             </h2>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-slate-500">
               {problems.length}問 • {settings.layoutColumns}列レイアウト
             </div>
           </div>
-          <div className="flex items-center space-x-4 text-sm text-gray-600">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
             <span>生成日時: {formatDate(generatedAt)}</span>
             {showAnswers && (
-              <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">
+              <span className="rounded-full bg-rose-100 px-3 py-1 text-rose-700 shadow-sm">
                 解答表示中
               </span>
             )}
@@ -141,13 +146,13 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
         </div>
 
         {/* Print Button - Below problems */}
-        <div className="p-6 pt-0 no-print">
+        <div className="no-print p-6 pt-0">
           <button
             onClick={() => setIsMultiPageDialogOpen(true)}
-            className="w-full flex items-center justify-center px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 py-3 text-white shadow-lg transition-colors hover:bg-emerald-600"
           >
             <svg
-              className="w-5 h-5 mr-2"
+              className="h-5 w-5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -159,7 +164,7 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            印刷
+            印刷（複数ページにも対応）
           </button>
         </div>
       </div>

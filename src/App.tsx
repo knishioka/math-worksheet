@@ -61,15 +61,42 @@ function App(): React.ReactElement {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50 no-print">
+      <div className="relative min-h-screen no-print">
         <Header />
-        <main className="py-8">
-          <Container>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <main className="relative z-10 py-12">
+          <Container className="space-y-10">
+            <section className="relative overflow-hidden rounded-3xl bg-white/80 px-6 py-8 shadow-xl ring-1 ring-blue-100 backdrop-blur">
+              <div className="absolute -top-16 -right-10 h-40 w-40 rounded-full bg-sky-200/50 blur-3xl" aria-hidden="true"></div>
+              <div className="absolute -bottom-12 -left-10 h-36 w-36 rounded-full bg-emerald-200/60 blur-3xl" aria-hidden="true"></div>
+              <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <h2 className="text-2xl font-semibold text-slate-900">設定を選んで、あなただけのプリントを作成</h2>
+                  <p className="mt-2 text-sm text-slate-600 leading-relaxed">
+                    学年・計算の種類・レイアウトを組み合わせると、お子さまの学習状況にぴったりのプリントが完成します。
+                    プレビューを確認しながら、納得のいく構成に仕上げてください。
+                  </p>
+                </div>
+                <div className="flex flex-col gap-3 text-sm text-slate-600">
+                  <div className="flex items-center gap-2 rounded-full bg-sky-100/80 px-4 py-2 shadow-sm">
+                    <span className="text-lg">🧭</span>
+                    <span>ステップごとに案内するやさしいガイド</span>
+                  </div>
+                  <div className="flex items-center gap-2 rounded-full bg-emerald-100/80 px-4 py-2 shadow-sm">
+                    <span className="text-lg">⏱️</span>
+                    <span>自動生成で準備の時間を短縮</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
               {/* Settings Panel */}
               <div className="lg:col-span-1">
-                <div className="bg-white rounded-lg shadow p-6 sticky top-8">
-                  <h2 className="text-xl font-semibold mb-6">設定</h2>
+                <div className="sticky top-8 space-y-6 rounded-3xl bg-white/80 p-6 shadow-lg ring-1 ring-blue-100 backdrop-blur">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-semibold text-slate-900">設定</h2>
+                    <span className="text-xs font-medium text-sky-600">STEP 1</span>
+                  </div>
 
                   {/* Problem Type Selection */}
                   <div className="mb-6">
@@ -122,7 +149,7 @@ function App(): React.ReactElement {
 
                   {isGenerating && (
                     <div className="mb-6 text-center">
-                      <div className="inline-flex items-center px-4 py-2 text-sm text-blue-600">
+                      <div className="inline-flex items-center rounded-full bg-sky-50 px-4 py-2 text-sm font-medium text-sky-600 shadow-inner">
                         <svg
                           className="animate-spin -ml-1 mr-3 h-4 w-4 text-blue-600"
                           xmlns="http://www.w3.org/2000/svg"
@@ -150,21 +177,19 @@ function App(): React.ReactElement {
 
                   {/* Export Controls */}
                   {worksheetData && (
-                    <div className="mt-6 pt-6 border-t border-gray-200">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-700">
+                    <div className="mt-6 rounded-2xl border border-sky-100 bg-sky-50/60 p-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-sm font-semibold text-sky-900">
                           表示オプション
                         </span>
-                        <label className="flex items-center">
+                        <label className="flex items-center text-sm text-slate-600">
                           <input
                             type="checkbox"
                             checked={showAnswers}
                             onChange={(e) => setShowAnswers(e.target.checked)}
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            className="h-4 w-4 rounded border-sky-300 text-sky-500 focus:ring-sky-400"
                           />
-                          <span className="ml-2 text-sm text-gray-600">
-                            解答表示
-                          </span>
+                          <span className="ml-2">解答表示</span>
                         </label>
                       </div>
                     </div>
