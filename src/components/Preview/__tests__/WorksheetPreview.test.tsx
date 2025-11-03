@@ -4,26 +4,39 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import type { WorksheetData, WorksheetSettings, Problem } from '../../../types';
 import type { UseReactToPrintOptions } from 'react-to-print';
 
-let mockHandlePrint: Mock<[], Promise<void> | void>;
+let mockHandlePrint: Mock<() => Promise<void> | void>;
 let storedPrintOptions: UseReactToPrintOptions | undefined;
 
-vi.mock('react-to-print', (): unknown => ({
-  __esModule: true,
-  useReactToPrint: (
-    options: UseReactToPrintOptions
-  ): ((...args: []) => Promise<void> | void) => {
-    storedPrintOptions = options;
-    return (...args: []): Promise<void> | void =>
-      mockHandlePrint(...args);
-  },
-}));
+vi.mock(
+  'react-to-print',
+  (): {
+    __esModule: true;
+    useReactToPrint: (
+      options: UseReactToPrintOptions
+    ) => (...args: []) => Promise<void> | void;
+  } => ({
+    __esModule: true,
+    useReactToPrint: (
+      options: UseReactToPrintOptions
+    ): ((...args: []) => Promise<void> | void) => {
+      storedPrintOptions = options;
+      return (...args: []): Promise<void> | void =>
+        mockHandlePrint(...args);
+    },
+  })
+);
 
-let generateProblemsMock: Mock<[WorksheetSettings], Problem[]>;
+let generateProblemsMock: Mock<(settings: WorksheetSettings) => Problem[]>;
 
-vi.mock('../../../lib/generators', (): unknown => ({
-  generateProblems: (settings: WorksheetSettings) =>
-    generateProblemsMock(settings),
-}));
+vi.mock(
+  '../../../lib/generators',
+  (): {
+    generateProblems: (settings: WorksheetSettings) => Problem[];
+  } => ({
+    generateProblems: (settings: WorksheetSettings) =>
+      generateProblemsMock(settings),
+  })
+);
 
 import { WorksheetPreview } from '../WorksheetPreview';
 import { useProblemStore } from '../../../stores/problemStore';
@@ -53,21 +66,22 @@ const baseWorksheet: WorksheetData = {
 
 describe('WorksheetPreview multi-page printing', () => {
   beforeEach(() => {
-    mockHandlePrint = vi.fn(async () => {
-      if (storedPrintOptions?.onBeforeGetContent) {
-        await storedPrintOptions.onBeforeGetContent();
+    mockHandlePrint = vi.fn<() => Promise<void> | void>(async () => {
+      if (storedPrintOptions?.onBeforePrint) {
+        await storedPrintOptions.onBeforePrint();
       }
       storedPrintOptions?.onAfterPrint?.();
     });
-    generateProblemsMock = vi.fn((settings: WorksheetSettings): Problem[] =>
-      Array.from({ length: settings.problemCount }, (_, index) => ({
-        id: `generated-${index}`,
-        type: 'basic',
-        operation: settings.operation,
-        operand1: index,
-        operand2: index + 1,
-        answer: index + index + 1,
-      }))
+    generateProblemsMock = vi.fn<(settings: WorksheetSettings) => Problem[]>(
+      (settings: WorksheetSettings): Problem[] =>
+        Array.from({ length: settings.problemCount }, (_, index) => ({
+          id: `generated-${index}`,
+          type: 'basic',
+          operation: settings.operation,
+          operand1: index,
+          operand2: index + 1,
+          answer: index + index + 1,
+        }))
     );
     storedPrintOptions = undefined;
     useProblemStore.setState({
