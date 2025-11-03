@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Problem, WorksheetSettings, WorksheetData } from '../types';
 import { APP_CONFIG } from '../config/constants';
+import { generateProblems } from '../lib/generators';
 
 interface ProblemStore {
   settings: WorksheetSettings;
@@ -11,6 +12,10 @@ interface ProblemStore {
   setProblems: (problems: Problem[]) => void;
   clearProblems: () => void;
   getWorksheetData: () => WorksheetData;
+  buildWorksheetBatch: (
+    pageCount: number,
+    baseWorksheet?: WorksheetData
+  ) => WorksheetData[];
 }
 
 const defaultSettings: WorksheetSettings = {
@@ -41,6 +46,39 @@ export const useProblemStore = create<ProblemStore>()(
         problems: get().problems,
         generatedAt: new Date(),
       }),
+
+      buildWorksheetBatch: (pageCount, baseWorksheet) => {
+        if (pageCount <= 0) {
+          return [];
+        }
+
+        const baseSettings = baseWorksheet
+          ? { ...baseWorksheet.settings }
+          : { ...get().settings };
+
+        const worksheets: WorksheetData[] = [];
+
+        if (baseWorksheet) {
+          worksheets.push({
+            settings: { ...baseWorksheet.settings },
+            problems: baseWorksheet.problems,
+            generatedAt: baseWorksheet.generatedAt,
+          });
+        }
+
+        const remainingPages = Math.max(pageCount - worksheets.length, 0);
+
+        for (let i = 0; i < remainingPages; i += 1) {
+          const settingsSnapshot = { ...baseSettings };
+          worksheets.push({
+            settings: settingsSnapshot,
+            problems: generateProblems(settingsSnapshot),
+            generatedAt: new Date(),
+          });
+        }
+
+        return worksheets;
+      },
     }),
     {
       name: 'math-worksheet-settings',
