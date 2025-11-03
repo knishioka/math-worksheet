@@ -1,11 +1,11 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import type { WorksheetData, WorksheetSettings } from '../../types';
 import { ProblemList } from './ProblemList';
 import { MultiPagePrintDialog } from './MultiPagePrintDialog';
-import { generateProblems } from '../../lib/generators';
 import { PATTERN_LABELS } from '../../types/calculation-patterns';
 import { getOperationName } from '../../lib/utils/formatting';
+import { useProblemStore } from '../../stores/problemStore';
 
 interface WorksheetPreviewProps {
   worksheetData?: WorksheetData;
@@ -20,52 +20,39 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
   const [multiPageWorksheets, setMultiPageWorksheets] = useState<
     WorksheetData[]
   >([]);
-  const [shouldPrint, setShouldPrint] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
+  const buildWorksheetBatch = useProblemStore(
+    (state) => state.buildWorksheetBatch
+  );
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: worksheetData
       ? `計算プリント_${worksheetData.settings.grade}年生`
       : '計算プリント',
+    onBeforePrint: async () => {
+      setIsPrinting(true);
+      await waitForNextFrame();
+    },
     onAfterPrint: () => {
       // 印刷後に複数ページの状態をクリア
       setMultiPageWorksheets([]);
-      setShouldPrint(false);
+      setIsPrinting(false);
     },
   });
-
-  // 複数ページのワークシートが生成されたら印刷を実行
-  useEffect((): void | (() => void) => {
-    if (shouldPrint && multiPageWorksheets.length > 0 && printRef.current) {
-      // DOMが更新されるまで少し待つ
-      const timer = setTimeout(() => {
-        handlePrint();
-      }, 200);
-      return (): void => clearTimeout(timer);
-    }
-  }, [shouldPrint, multiPageWorksheets.length, handlePrint]);
 
   const handleMultiPagePrint = useCallback(
     (pageCount: number) => {
       if (!worksheetData) return;
 
       // 複数ページ分のワークシートを生成
-      const worksheets: WorksheetData[] = [];
-      for (let i = 0; i < pageCount; i++) {
-        const newProblems = generateProblems(worksheetData.settings);
-        worksheets.push({
-          settings: worksheetData.settings,
-          problems: newProblems,
-          generatedAt: new Date(),
-        });
-      }
-
+      const worksheets = buildWorksheetBatch(pageCount);
       setMultiPageWorksheets(worksheets);
       setIsMultiPageDialogOpen(false);
-      setShouldPrint(true);
+      handlePrint();
     },
-    [worksheetData]
+    [worksheetData, buildWorksheetBatch, handlePrint]
   );
   if (!worksheetData) {
     return (
@@ -88,7 +75,8 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
 
   const { settings, problems, generatedAt } = worksheetData;
 
-  const worksheetsToDisplay = multiPageWorksheets.length > 0 ? multiPageWorksheets : [worksheetData];
+  const worksheetsToDisplay =
+    multiPageWorksheets.length > 0 ? multiPageWorksheets : [worksheetData];
 
   return (
     <>
@@ -116,7 +104,7 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
         {/* Printable worksheet content */}
         <div ref={printRef} style={{ background: 'white' }}>
           {/* プレビュー表示: 最初のページのみ */}
-          {!shouldPrint && (
+          {!isPrinting && (
             <ProblemList
               problems={worksheetData.problems}
               layoutColumns={worksheetData.settings.layoutColumns}
@@ -127,22 +115,24 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
           )}
 
           {/* 印刷用: 全ページ（画面には表示されない） */}
-          {shouldPrint && worksheetsToDisplay.map((worksheet, index) => (
-            <div
-              key={index}
-              style={{
-                pageBreakAfter: index < worksheetsToDisplay.length - 1 ? 'always' : 'auto',
-              }}
-            >
-              <ProblemList
-                problems={worksheet.problems}
-                layoutColumns={worksheet.settings.layoutColumns}
-                showAnswers={showAnswers}
-                settings={worksheet.settings}
-                printMode={true}
-              />
-            </div>
-          ))}
+          {isPrinting &&
+            worksheetsToDisplay.map((worksheet, index) => (
+              <div
+                key={index}
+                style={{
+                  pageBreakAfter:
+                    index < worksheetsToDisplay.length - 1 ? 'always' : 'auto',
+                }}
+              >
+                <ProblemList
+                  problems={worksheet.problems}
+                  layoutColumns={worksheet.settings.layoutColumns}
+                  showAnswers={showAnswers}
+                  settings={worksheet.settings}
+                  printMode={true}
+                />
+              </div>
+            ))}
         </div>
 
         {/* Print Button - Below problems */}
@@ -212,4 +202,14 @@ function formatDate(date: Date): string {
     hour: '2-digit',
     minute: '2-digit',
   }).format(date);
+}
+
+async function waitForNextFrame(): Promise<void> {
+  await new Promise<void>((resolve) => {
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => resolve());
+    } else {
+      resolve();
+    }
+  });
 }

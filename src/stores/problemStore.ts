@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Problem, WorksheetSettings, WorksheetData } from '../types';
 import { APP_CONFIG } from '../config/constants';
+import { generateProblems } from '../lib/generators';
 
 interface ProblemStore {
   settings: WorksheetSettings;
@@ -11,6 +12,7 @@ interface ProblemStore {
   setProblems: (problems: Problem[]) => void;
   clearProblems: () => void;
   getWorksheetData: () => WorksheetData;
+  buildWorksheetBatch: (pageCount: number) => WorksheetData[];
 }
 
 const defaultSettings: WorksheetSettings = {
@@ -41,6 +43,15 @@ export const useProblemStore = create<ProblemStore>()(
         problems: get().problems,
         generatedAt: new Date(),
       }),
+
+      buildWorksheetBatch: (pageCount) => {
+        const snapshotSettings = { ...get().settings };
+        return Array.from({ length: pageCount }, () => ({
+          settings: { ...snapshotSettings },
+          problems: generateProblems(snapshotSettings),
+          generatedAt: new Date(),
+        }));
+      },
     }),
     {
       name: 'math-worksheet-settings',
