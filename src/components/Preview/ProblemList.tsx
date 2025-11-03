@@ -18,10 +18,9 @@ import {
   calculateMissingAnswer,
 } from '../../lib/utils/missing-number-calculator';
 import { WordProblemEnComponent } from '../Math/WordProblemEn';
-import { PATTERN_LABELS } from '../../types/calculation-patterns';
-import { getOperationName } from '../../lib/utils/formatting';
 import { getPrintTemplate } from '../../config/print-templates';
 import { estimateA4Fit } from '../../lib/utils/print-validator';
+import { buildPreviewTitle } from '../../lib/utils/previewTitle';
 import {
   emptyA4ContainerStyle,
   getA4ContainerStyle,
@@ -103,27 +102,10 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
     }
   }
 
-  // ヘッダータイトルを生成
-  const getPreviewTitle = (): string => {
-    const grade = `${settings.grade}年生`;
-
-    if (settings.calculationPattern) {
-      const patternLabel = PATTERN_LABELS[settings.calculationPattern];
-      if (patternLabel) {
-        return `${grade} ${patternLabel}`;
-      }
-    }
-
-    if (settings.problemType === 'fraction') {
-      return `${grade} 分数の${getOperationName(settings.operation, settings.calculationPattern)}`;
-    } else if (settings.problemType === 'decimal') {
-      return `${grade} 小数の${getOperationName(settings.operation, settings.calculationPattern)}`;
-    } else if (settings.problemType === 'mixed') {
-      return `${grade} 帯分数の${getOperationName(settings.operation, settings.calculationPattern)}`;
-    }
-
-    return `${grade} ${getOperationName(settings.operation, settings.calculationPattern)}`;
-  };
+  const previewTitle = buildPreviewTitle({
+    settings,
+    format: { gradeFirst: true, wrapGradeInParentheses: false },
+  });
 
   // 動的余白の計算（印刷プレビューと同じロジック）
   const calculatePadding = (): string => {
@@ -206,7 +188,7 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
               名前：<span style={getUnderlineStyle('128px')}></span>
             </div>
             <div style={headerCenterTextStyle}>
-              {getPreviewTitle()}
+              {previewTitle}
             </div>
             <div style={headerRightTextStyle}>
               点数：<span style={getUnderlineStyle('64px')}></span>点

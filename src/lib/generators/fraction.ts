@@ -208,6 +208,9 @@ export function generateFractionProblem(
       if (gcd(origNum, origDen) === 1) continue;
     }
 
+    // 答えが0になるケースは避ける（同値の減算など）
+    if (answerNumerator === 0) continue;
+
     // 答えが仮分数で、それが許可されていない場合は続行
     if (!allowImproper && answerNumerator >= answerDenominator) continue;
 
