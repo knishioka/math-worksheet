@@ -4,7 +4,7 @@ import type { WorksheetSettings } from '../../types';
 interface MultiPagePrintDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onPrint: (pageCount: number) => void;
+  onPrint: (pageCount: number) => void | Promise<void>;
   settings: WorksheetSettings;
 }
 
@@ -18,8 +18,8 @@ export const MultiPagePrintDialog: React.FC<MultiPagePrintDialogProps> = ({
 
   if (!isOpen) return null;
 
-  const handlePrint = (): void => {
-    onPrint(pageCount);
+  const handlePrint = async (): Promise<void> => {
+    await onPrint(pageCount);
     onClose();
   };
 
