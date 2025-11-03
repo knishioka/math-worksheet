@@ -1,11 +1,10 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
-import type { WorksheetData, WorksheetSettings } from '../../types';
+import type { WorksheetData } from '../../types';
 import { ProblemList } from './ProblemList';
 import { MultiPagePrintDialog } from './MultiPagePrintDialog';
-import { PATTERN_LABELS } from '../../types/calculation-patterns';
-import { getOperationName } from '../../lib/utils/formatting';
 import { useProblemStore } from '../../stores/problemStore';
+import { buildPreviewTitle } from '../../lib/utils/previewTitle';
 
 interface WorksheetPreviewProps {
   worksheetData?: WorksheetData;
@@ -85,7 +84,7 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
         <div className="no-print border-b border-sky-100 bg-gradient-to-r from-sky-50 via-white to-emerald-50 p-6">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-lg font-semibold text-slate-900">
-              問題プレビュー - {getPreviewTitle(settings)}
+              問題プレビュー - {buildPreviewTitle({ settings })}
             </h2>
             <div className="text-sm text-slate-500">
               {problems.length}問 • {settings.layoutColumns}列レイアウト
@@ -169,30 +168,6 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
     </>
   );
 };
-
-function getPreviewTitle(settings: WorksheetSettings): string {
-  const grade = `${settings.grade}年生`;
-
-  // 計算パターンがある場合は、パターンのラベルを表示
-  if (settings.calculationPattern) {
-    const patternLabel = PATTERN_LABELS[settings.calculationPattern];
-    if (patternLabel) {
-      return `${patternLabel} (${grade})`;
-    }
-  }
-
-  // 問題タイプによって適切なタイトルを生成
-  if (settings.problemType === 'fraction') {
-    return `分数の${getOperationName(settings.operation, settings.calculationPattern)} (${grade})`;
-  } else if (settings.problemType === 'decimal') {
-    return `小数の${getOperationName(settings.operation, settings.calculationPattern)} (${grade})`;
-  } else if (settings.problemType === 'mixed') {
-    return `帯分数の${getOperationName(settings.operation, settings.calculationPattern)} (${grade})`;
-  }
-
-  // デフォルトは演算名
-  return `${getOperationName(settings.operation, settings.calculationPattern)} (${grade})`;
-}
 
 function formatDate(date: Date): string {
   return new Intl.DateTimeFormat('ja-JP', {
