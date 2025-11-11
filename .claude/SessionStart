@@ -1,0 +1,80 @@
+#!/bin/bash
+# Claude Code on the Web - Session Start Hook
+# このスクリプトはClaude Code on the Webでセッションが開始されると自動的に実行されます
+
+set -e
+
+echo "🚀 Math Worksheet プロジェクトのセットアップを開始します..."
+
+# カラー定義
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+# 1. Node.jsバージョン確認
+echo -e "\n${BLUE}📦 Node.js環境を確認しています...${NC}"
+node --version
+npm --version
+
+# 2. 依存関係のインストール確認
+if [ ! -d "node_modules" ]; then
+  echo -e "\n${YELLOW}📥 依存関係をインストールしています...${NC}"
+  npm install
+  echo -e "${GREEN}✅ 依存関係のインストールが完了しました${NC}"
+else
+  echo -e "${GREEN}✅ 依存関係は既にインストールされています${NC}"
+fi
+
+# 3. 型チェック（軽量チェック）
+echo -e "\n${BLUE}🔍 TypeScript型チェックを実行しています...${NC}"
+if npm run typecheck; then
+  echo -e "${GREEN}✅ 型チェックが成功しました${NC}"
+else
+  echo -e "${RED}⚠️  型エラーが検出されました。開発は続行できますが、後で修正してください${NC}"
+fi
+
+# 4. 開発サーバーをバックグラウンドで起動
+echo -e "\n${BLUE}🌐 開発サーバーを起動しています...${NC}"
+if lsof -ti:5174 > /dev/null 2>&1; then
+  echo -e "${YELLOW}⚠️  ポート5174は既に使用されています。既存のサーバーを使用します${NC}"
+else
+  npm run dev > /tmp/vite-dev.log 2>&1 &
+  DEV_SERVER_PID=$!
+  echo $DEV_SERVER_PID > /tmp/vite-dev.pid
+
+  # サーバー起動待機（最大10秒）
+  echo -e "${BLUE}サーバーの起動を待機しています...${NC}"
+  for i in {1..20}; do
+    if curl -s http://localhost:5174 > /dev/null 2>&1; then
+      echo -e "${GREEN}✅ 開発サーバーが起動しました: http://localhost:5174${NC}"
+      break
+    fi
+    sleep 0.5
+  done
+fi
+
+# 5. 利用可能なスクリプトの表示
+echo -e "\n${GREEN}🎉 セットアップが完了しました！${NC}"
+echo -e "\n${BLUE}📚 利用可能なコマンド:${NC}"
+echo -e "  ${GREEN}npm run dev${NC}        - 開発サーバー起動（既に起動済み）"
+echo -e "  ${GREEN}npm run build${NC}      - 本番ビルド"
+echo -e "  ${GREEN}npm run test${NC}       - テスト実行"
+echo -e "  ${GREEN}npm run typecheck${NC}  - TypeScript型チェック"
+echo -e "  ${GREEN}npm run lint${NC}       - ESLintチェック"
+echo -e "  ${GREEN}npm run format${NC}     - コードフォーマット"
+
+echo -e "\n${BLUE}🛠️  便利なスクリプト:${NC}"
+echo -e "  ${GREEN}./.claude/scripts/check-quality.sh${NC}  - 品質チェック一括実行"
+echo -e "  ${GREEN}./.claude/scripts/stop-dev.sh${NC}       - 開発サーバー停止"
+
+echo -e "\n${BLUE}📖 詳細情報:${NC}"
+echo -e "  プロジェクトガイド: ${GREEN}CLAUDE.md${NC}"
+echo -e "  エージェント設定: ${GREEN}AGENTS.md${NC}"
+echo -e "  実装状況: ${GREEN}docs/implementation-status.md${NC}"
+
+echo -e "\n${YELLOW}💡 Playwright MCP でUIを確認する場合:${NC}"
+echo -e "  ${GREEN}await mcp__playwright__browser_navigate({ url: 'http://localhost:5174/' })${NC}"
+
+echo ""
