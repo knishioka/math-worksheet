@@ -23,29 +23,30 @@ function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+const WORD_STORY_NAMES = [
+  'Tom',
+  'Jen',
+  'Sam',
+  'Ann',
+  'Max',
+  'Lily',
+  'Ben',
+  'Emma',
+  'Jack',
+  'Kate',
+  'Leo',
+  'Mia',
+  'Noah',
+  'Zoe',
+  'Finn',
+  'Lucy',
+] as const;
+
 /**
  * Helper function to get random name
  */
 function getRandomName(): string {
-  const names = [
-    'Tom',
-    'Jen',
-    'Sam',
-    'Ann',
-    'Max',
-    'Lily',
-    'Ben',
-    'Emma',
-    'Jack',
-    'Kate',
-    'Leo',
-    'Mia',
-    'Noah',
-    'Zoe',
-    'Finn',
-    'Lucy',
-  ];
-  return names[randomInt(0, names.length - 1)];
+  return WORD_STORY_NAMES[randomInt(0, WORD_STORY_NAMES.length - 1)];
 }
 
 /**
@@ -66,6 +67,19 @@ function getRandomItem(plural = false): string {
   ];
   const item = items[randomInt(0, items.length - 1)];
   return plural ? item.plural : item.singular;
+}
+
+const COLLECTION_ITEMS = [
+  'stickers',
+  'trading cards',
+  'photos',
+  'postcards',
+  'coins',
+  'stamps',
+] as const;
+
+function getRandomCollectionItem(): string {
+  return COLLECTION_ITEMS[randomInt(0, COLLECTION_ITEMS.length - 1)];
 }
 
 const FEMALE_NAMES = new Set([
@@ -168,9 +182,15 @@ function generateFriendlyPayment(price: number, maxPaid: number): number {
   return options[randomInt(0, options.length - 1)];
 }
 
-function getDifferentName(exclude: string): string {
+function getDifferentName(exclude: string | string[]): string {
+  const excludedNames = Array.isArray(exclude) ? exclude : [exclude];
+  if (excludedNames.length >= WORD_STORY_NAMES.length) {
+    throw new Error('Cannot select a unique name: all names are excluded');
+  }
+  const excludedSet = new Set(excludedNames);
+
   let name = getRandomName();
-  while (name === exclude) {
+  while (excludedSet.has(name)) {
     name = getRandomName();
   }
   return name;
@@ -1576,7 +1596,7 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
     generateProblem: (grade) => {
       const name1 = getRandomName();
       const name2 = getDifferentName(name1);
-      const name3 = getDifferentName(name2);
+      const name3 = getDifferentName([name1, name2]);
       const item = getRandomItem(true);
       const count1 = gradeRandomInt(
         grade,
@@ -1617,8 +1637,12 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const item = getRandomItem(true);
-      const container1 = ['basket', 'box', 'bag', 'jar'][randomInt(0, 3)];
-      const container2 = ['basket', 'box', 'bag', 'jar'][randomInt(0, 3)];
+      const containers = ['basket', 'box', 'bag', 'jar'] as const;
+      const container1 = containers[randomInt(0, containers.length - 1)];
+      let container2 = containers[randomInt(0, containers.length - 1)];
+      while (container2 === container1) {
+        container2 = containers[randomInt(0, containers.length - 1)];
+      }
       const count1 = gradeRandomInt(
         grade,
         [
@@ -1631,7 +1655,7 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
       const answer = count1 - count2;
 
       return {
-        text: `There are ${count1} ${item} in a ${container1} and ${count2} ${item} in a ${container2}. How many more ${item} are in the ${container1}?`,
+        text: `There are ${count1} ${item} in a ${container1} and ${count2} ${item} in a ${container2}. How many more ${item} are in the ${container1} than in the ${container2}?`,
         answer,
         operation: 'subtraction' as Operation,
       };
@@ -1883,7 +1907,7 @@ export const COLLECTION_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const name = getRandomName();
-      const item = getRandomItem(true);
+      const collectionItem = getRandomCollectionItem();
       const pages = gradeRandomInt(
         grade,
         [
@@ -1903,7 +1927,7 @@ export const COLLECTION_STORIES: WordStoryTemplate[] = [
       const answer = pages * perPage;
 
       return {
-        text: `${name} has a collection album with ${pages} pages. Each page has ${perPage} ${item}. How many ${item} are in the album?`,
+        text: `${name} has a collector album with ${pages} pages. Each page holds ${perPage} ${collectionItem}. How many ${collectionItem} are in the album?`,
         answer,
         operation: 'multiplication' as Operation,
       };
