@@ -5,7 +5,23 @@
 
 import type { WordProblem, Operation, Grade } from '../../types';
 import { randomInt, generateId } from '../utils/math';
-import { randomIntByGrade, rangeByGrade, scaleByGrade } from './grade-utils';
+import { pickByGrade, randomIntByGrade, rangeByGrade, scaleByGrade } from './grade-utils';
+
+type TransportChangeScenario = {
+  transportName: string;
+  fare: number;
+  passengerCount: number;
+  tripMultiplier: number;
+  payment: number;
+  totalCost: number;
+};
+
+const TRANSPORT_CHANGE_LINES = [
+  { name: 'バス', fares: [130, 150, 170, 190, 210, 230] },
+  { name: '電車', fares: [140, 160, 180, 200, 220, 240, 260] },
+  { name: '地下鉄', fares: [150, 170, 190, 210, 230, 250, 270] },
+  { name: 'モノレール', fares: [150, 170, 190, 210, 230, 250] },
+];
 
 /**
  * 運賃の計算問題を生成
@@ -74,7 +90,74 @@ export function generateTransportFare(grade: Grade, count: number): WordProblem[
     });
   }
 
-  return problems;
+ return problems;
+}
+
+export function buildTransportChangeScenarios(grade: Grade): TransportChangeScenario[] {
+  const scenarios: TransportChangeScenario[] = [];
+  const passengerCounts = grade <= 2 ? [1, 2] : [1, 2, 3];
+  const tripMultipliers = grade <= 2 ? [1, 2] : [1, 2];
+  const paymentOptions = pickByGrade(grade, {
+    lower: [200, 300, 400, 500, 600, 700, 800, 900, 1000],
+    middle: [300, 400, 500, 600, 700, 800, 1000, 1200, 1500, 2000],
+    upper: [400, 500, 700, 800, 1000, 1200, 1500, 2000, 2500, 3000],
+  });
+  const seen = new Set<string>();
+
+  TRANSPORT_CHANGE_LINES.forEach((line) => {
+    const fareLimit = scaleByGrade(grade, {
+      lower: 4,
+      middle: 5,
+      upper: line.fares.length,
+    });
+    const fareOptions = line.fares.slice(0, fareLimit);
+
+    fareOptions.forEach((fare) => {
+      passengerCounts.forEach((passengers) => {
+        tripMultipliers.forEach((tripMultiplier) => {
+          if (grade <= 2 && passengers > 1 && tripMultiplier > 1) {
+            return;
+          }
+
+          const totalCost = fare * passengers * tripMultiplier;
+          const viablePayments = paymentOptions.filter(
+            (amount) => amount > totalCost
+          );
+          const fallbackBase = Math.ceil(totalCost / 100) * 100;
+          const paymentPool =
+            viablePayments.length > 0
+              ? viablePayments
+              : [fallbackBase + 100, fallbackBase + 200];
+
+          paymentPool.forEach((payment) => {
+            const key = `${line.name}-${fare}-${passengers}-${tripMultiplier}-${payment}`;
+            if (seen.has(key)) {
+              return;
+            }
+            seen.add(key);
+            scenarios.push({
+              transportName: line.name,
+              fare,
+              passengerCount: passengers,
+              tripMultiplier,
+              payment,
+              totalCost,
+            });
+          });
+        });
+      });
+    });
+  });
+
+  return scenarios;
+}
+
+function formatTripWord(tripMultiplier: number): string {
+  return tripMultiplier === 2 ? '往復' : '片道';
+}
+
+function formatPassengerLabel(passengerCount: number): string {
+  return passengerCount === 1 ? '1人' : `${passengerCount}人`;
 }
 
 /**
@@ -83,16 +166,31 @@ export function generateTransportFare(grade: Grade, count: number): WordProblem[
  */
 export function generateTransportChange(grade: Grade, count: number): WordProblem[] {
   const problems: WordProblem[] = [];
+  const templates = [
+    (scenario: TransportChangeScenario): string => {
+      const tripWord = formatTripWord(scenario.tripMultiplier);
+      const passengerLabel = formatPassengerLabel(scenario.passengerCount);
+      const ticketWord = tripWord === '往復' ? '往復きっぷ' : 'きっぷ';
+      return `${scenario.transportName}の${tripWord}きっぷは1人${scenario.fare}円です。${passengerLabel}分の${ticketWord}を${scenario.payment}円で買いました。おつりはいくらですか？`;
+    },
+    (scenario: TransportChangeScenario): string => {
+      const tripWord = formatTripWord(scenario.tripMultiplier);
+      const passengerLabel = formatPassengerLabel(scenario.passengerCount);
+      const rideText = tripWord === '往復' ? '行きと帰りに' : '片道で';
+      return `${passengerLabel}で${scenario.transportName}に${rideText}乗ります。1人${scenario.fare}円のきっぷを${scenario.payment}円で買いました。おつりはいくらですか？`;
+    },
+  ];
+  const scenarioPool = shuffleArray(buildTransportChangeScenarios(grade));
+
+  if (scenarioPool.length === 0) {
+    return problems;
+  }
 
   for (let i = 0; i < count; i++) {
-    const ticketOptions = grade <= 2 ? [140, 160, 180] : grade <= 4 ? [140, 160, 180, 200, 220] : [140, 160, 180, 200, 220, 240, 280, 320];
-    const ticketPrice = ticketOptions[randomInt(0, ticketOptions.length - 1)];
-    const paymentOptions = grade <= 3 ? [500, 1000] : [500, 1000, 2000];
-    const payment = paymentOptions[randomInt(0, paymentOptions.length - 1)];
-    const change = payment - ticketPrice;
-
-    const problemText = `${ticketPrice}円の切符を${payment}円で買いました。おつりはいくらですか？`;
-    const answer = change;
+    const scenario = scenarioPool[i % scenarioPool.length];
+    const template = templates[randomInt(0, templates.length - 1)];
+    const problemText = template(scenario);
+    const answer = scenario.payment - scenario.totalCost;
 
     problems.push({
       id: generateId(),
@@ -105,6 +203,15 @@ export function generateTransportChange(grade: Grade, count: number): WordProble
   }
 
   return problems;
+}
+
+function shuffleArray<T>(values: T[]): T[] {
+  const array = [...values];
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = randomInt(0, i);
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
 }
 
 /**
