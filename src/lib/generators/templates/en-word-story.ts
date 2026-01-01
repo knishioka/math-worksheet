@@ -1787,7 +1787,7 @@ export const GEOMETRY_STORIES: WordStoryTemplate[] = [
         operation: 'multiplication' as Operation,
       };
     },
-    minGrade: 2,
+    minGrade: 3,
     maxGrade: 6,
     category: 'word-story',
   },
@@ -1818,14 +1818,14 @@ export const GEOMETRY_STORIES: WordStoryTemplate[] = [
         operation: 'multiplication' as Operation,
       };
     },
-    minGrade: 2,
+    minGrade: 3,
     maxGrade: 6,
     category: 'word-story',
   },
 ];
 
 /**
- * Grade 2+: Collection and grouping problems (NEW)
+ * Grade 3+: Collection and grouping problems
  */
 export const COLLECTION_STORIES: WordStoryTemplate[] = [
   {
@@ -2053,7 +2053,7 @@ export const TRAVEL_STORIES: WordStoryTemplate[] = [
         operation: 'subtraction' as Operation,
       };
     },
-    minGrade: 2,
+    minGrade: 3,
     maxGrade: 6,
     category: 'word-story',
   },

@@ -31,23 +31,25 @@ export const GRADE_1_TEMPLATES: MissingNumberTemplate[] = [
 ];
 
 /**
- * Grade 2: Multiplication and larger numbers (1-100)
+ * Grade 2: Larger numbers (1-100) - addition and subtraction only
+ * Note: Multiplication is introduced in Grade 2 second semester in Japan,
+ * so we include it only from Grade 3 to be safe for all Grade 2 students.
  */
 export const GRADE_2_TEMPLATES: MissingNumberTemplate[] = [
   ...GRADE_1_TEMPLATES.map(t => ({ ...t, maxNumber: 100 })),
-
-  // Multiplication
-  { template: '{a} times [] equals {answer}', operation: 'multiplication', minGrade: 2, maxNumber: 81 },
-  { template: '[] times {b} equals {answer}', operation: 'multiplication', minGrade: 2, maxNumber: 81 },
-  { template: '{a} × [] = {answer}', operation: 'multiplication', minGrade: 2, maxNumber: 81 },
-  { template: '[] × {b} = {answer}', operation: 'multiplication', minGrade: 2, maxNumber: 81 },
 ];
 
 /**
- * Grade 3+: Division and complex patterns (1-1000)
+ * Grade 3+: Multiplication, division and complex patterns (1-1000)
  */
 export const GRADE_3_PLUS_TEMPLATES: MissingNumberTemplate[] = [
-  ...GRADE_2_TEMPLATES.map(t => ({ ...t, maxNumber: t.operation === 'multiplication' ? 81 : 1000 })),
+  ...GRADE_2_TEMPLATES.map(t => ({ ...t, maxNumber: 1000 })),
+
+  // Multiplication (introduced in Grade 2 second semester, safe from Grade 3)
+  { template: '{a} times [] equals {answer}', operation: 'multiplication', minGrade: 3, maxNumber: 81 },
+  { template: '[] times {b} equals {answer}', operation: 'multiplication', minGrade: 3, maxNumber: 81 },
+  { template: '{a} × [] = {answer}', operation: 'multiplication', minGrade: 3, maxNumber: 81 },
+  { template: '[] × {b} = {answer}', operation: 'multiplication', minGrade: 3, maxNumber: 81 },
 
   // Division
   { template: '{a} divided by [] equals {answer}', operation: 'division', minGrade: 3, maxNumber: 81 },
