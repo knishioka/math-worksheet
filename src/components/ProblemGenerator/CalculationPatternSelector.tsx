@@ -9,12 +9,14 @@ import {
   type PatternLanguage,
   CATEGORY_CONFIG,
   LANGUAGE_DEPENDENT_CATEGORIES,
-  getAvailableCategories,
+  getAvailableCategoriesSorted,
   filterPatternsByLanguage,
   getCategoryForPattern,
+  getPatternDifficulty,
 } from '../../config/pattern-categories';
 import { Accordion, type AccordionItem } from '../UI/Accordion';
 import { LanguageFilter } from '../UI/LanguageFilter';
+import { DifficultyStars } from '../UI/DifficultyStars';
 
 interface CalculationPatternSelectorProps {
   grade: Grade;
@@ -46,9 +48,9 @@ export const CalculationPatternSelector: React.FC<
     [allPatterns, language]
   );
 
-  // カテゴリごとにグループ化
+  // カテゴリごとにグループ化（難易度順にソート）
   const categorizedPatterns = useMemo(
-    () => getAvailableCategories(filteredPatterns),
+    () => getAvailableCategoriesSorted(filteredPatterns),
     [filteredPatterns]
   );
 
@@ -163,50 +165,56 @@ function PatternList({
 }: PatternListProps): React.ReactElement {
   return (
     <div className="space-y-1.5">
-      {patterns.map((pattern) => (
-        <label
-          key={pattern}
-          className={`block p-2.5 rounded-lg border cursor-pointer transition-colors ${
-            selectedPattern === pattern
-              ? 'border-sky-400 bg-sky-50 ring-1 ring-sky-400'
-              : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-          }`}
-        >
-          <input
-            type="radio"
-            name="calculationPattern"
-            value={pattern}
-            checked={selectedPattern === pattern}
-            onChange={() => onPatternSelect(pattern)}
-            className="sr-only"
-          />
-          <div className="flex items-start">
-            <div className="flex-1 min-w-0">
-              <div className="font-medium text-sm text-slate-900 truncate">
-                {PATTERN_LABELS[pattern]}
+      {patterns.map((pattern) => {
+        const difficulty = getPatternDifficulty(pattern);
+        return (
+          <label
+            key={pattern}
+            className={`block p-2.5 rounded-lg border cursor-pointer transition-colors ${
+              selectedPattern === pattern
+                ? 'border-sky-400 bg-sky-50 ring-1 ring-sky-400'
+                : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+            }`}
+          >
+            <input
+              type="radio"
+              name="calculationPattern"
+              value={pattern}
+              checked={selectedPattern === pattern}
+              onChange={() => onPatternSelect(pattern)}
+              className="sr-only"
+            />
+            <div className="flex items-start">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-sm text-slate-900 truncate">
+                    {PATTERN_LABELS[pattern]}
+                  </span>
+                  <DifficultyStars difficulty={difficulty} />
+                </div>
+                <div className="text-xs text-slate-500 mt-0.5 line-clamp-2">
+                  {PATTERN_DESCRIPTIONS[pattern]}
+                </div>
               </div>
-              <div className="text-xs text-slate-500 mt-0.5 line-clamp-2">
-                {PATTERN_DESCRIPTIONS[pattern]}
-              </div>
+              {selectedPattern === pattern && (
+                <div className="ml-2 flex-shrink-0">
+                  <svg
+                    className="h-4 w-4 text-sky-600"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+              )}
             </div>
-            {selectedPattern === pattern && (
-              <div className="ml-2 flex-shrink-0">
-                <svg
-                  className="h-4 w-4 text-sky-600"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-            )}
-          </div>
-        </label>
-      ))}
+          </label>
+        );
+      })}
     </div>
   );
 }

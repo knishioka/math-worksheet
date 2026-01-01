@@ -8,6 +8,12 @@ import {
   getAvailableCategories,
   getCategoryCounts,
   getCategoryForPattern,
+  getPatternDifficulty,
+  getDifficultyForGrade,
+  sortPatternsByDifficulty,
+  getAvailableCategoriesSorted,
+  getDifficultyStars,
+  getDifficultyLabel,
   CATEGORY_CONFIG,
   CATEGORY_ORDER,
   LANGUAGE_DEPENDENT_CATEGORIES,
@@ -230,6 +236,113 @@ describe('pattern-categories', () => {
       expect(LANGUAGE_DEPENDENT_CATEGORIES).toContain('word');
       expect(LANGUAGE_DEPENDENT_CATEGORIES).not.toContain('basic');
       expect(LANGUAGE_DEPENDENT_CATEGORIES).not.toContain('hissan');
+    });
+  });
+
+  describe('getPatternDifficulty', () => {
+    it('should return difficulty level 1 for easy patterns', () => {
+      expect(getPatternDifficulty('add-single-digit')).toBe(1);
+      expect(getPatternDifficulty('add-to-10')).toBe(1);
+      expect(getPatternDifficulty('sub-single-digit')).toBe(1);
+      expect(getPatternDifficulty('money-change-jap')).toBe(1);
+    });
+
+    it('should return difficulty level 2 for medium patterns', () => {
+      expect(getPatternDifficulty('add-single-digit-carry')).toBe(2);
+      expect(getPatternDifficulty('mult-single-digit')).toBe(2);
+      expect(getPatternDifficulty('time-elapsed-jap')).toBe(2);
+    });
+
+    it('should return difficulty level 3 for challenging patterns', () => {
+      expect(getPatternDifficulty('add-sub-mixed-basic')).toBe(3);
+      expect(getPatternDifficulty('add-single-missing')).toBe(3);
+      expect(getPatternDifficulty('hissan-mult-advanced')).toBe(3);
+    });
+
+    it('should return default difficulty 2 for undefined patterns', () => {
+      // Cast to test undefined pattern behavior
+      expect(getPatternDifficulty('unknown-pattern' as CalculationPattern)).toBe(2);
+    });
+  });
+
+  describe('getDifficultyForGrade', () => {
+    it('should return base difficulty for any grade', () => {
+      expect(getDifficultyForGrade('add-single-digit', 1)).toBe(1);
+      expect(getDifficultyForGrade('add-single-digit', 2)).toBe(1);
+      expect(getDifficultyForGrade('mult-single-digit', 2)).toBe(2);
+    });
+  });
+
+  describe('sortPatternsByDifficulty', () => {
+    it('should sort patterns by difficulty ascending', () => {
+      const patterns: CalculationPattern[] = [
+        'add-sub-mixed-basic', // 3
+        'add-single-digit', // 1
+        'add-single-digit-carry', // 2
+      ];
+
+      const sorted = sortPatternsByDifficulty(patterns);
+
+      expect(sorted[0]).toBe('add-single-digit');
+      expect(sorted[1]).toBe('add-single-digit-carry');
+      expect(sorted[2]).toBe('add-sub-mixed-basic');
+    });
+
+    it('should maintain order for same difficulty patterns', () => {
+      const patterns: CalculationPattern[] = [
+        'add-to-10', // 1
+        'add-single-digit', // 1
+        'sub-single-digit', // 1
+      ];
+
+      const sorted = sortPatternsByDifficulty(patterns);
+
+      // All have same difficulty, order should be stable
+      expect(sorted).toHaveLength(3);
+      sorted.forEach((p) => expect(getPatternDifficulty(p)).toBe(1));
+    });
+  });
+
+  describe('getAvailableCategoriesSorted', () => {
+    it('should return categories with patterns sorted by difficulty', () => {
+      const patterns: CalculationPattern[] = [
+        'add-sub-mixed-basic', // basic, difficulty 3
+        'add-single-digit', // basic, difficulty 1
+        'add-single-digit-carry', // basic, difficulty 2
+        'hissan-mult-advanced', // hissan, difficulty 3
+        'hissan-add-double', // hissan, difficulty 1
+      ];
+
+      const result = getAvailableCategoriesSorted(patterns);
+
+      // Check basic category is sorted by difficulty
+      const basicCategory = result.find((r) => r.category === 'basic');
+      expect(basicCategory).toBeDefined();
+      expect(basicCategory!.patterns[0]).toBe('add-single-digit'); // difficulty 1
+      expect(basicCategory!.patterns[1]).toBe('add-single-digit-carry'); // difficulty 2
+      expect(basicCategory!.patterns[2]).toBe('add-sub-mixed-basic'); // difficulty 3
+
+      // Check hissan category is sorted by difficulty
+      const hissanCategory = result.find((r) => r.category === 'hissan');
+      expect(hissanCategory).toBeDefined();
+      expect(hissanCategory!.patterns[0]).toBe('hissan-add-double'); // difficulty 1
+      expect(hissanCategory!.patterns[1]).toBe('hissan-mult-advanced'); // difficulty 3
+    });
+  });
+
+  describe('getDifficultyStars', () => {
+    it('should return correct number of stars', () => {
+      expect(getDifficultyStars(1)).toBe('⭐');
+      expect(getDifficultyStars(2)).toBe('⭐⭐');
+      expect(getDifficultyStars(3)).toBe('⭐⭐⭐');
+    });
+  });
+
+  describe('getDifficultyLabel', () => {
+    it('should return correct Japanese labels', () => {
+      expect(getDifficultyLabel(1)).toBe('やさしい');
+      expect(getDifficultyLabel(2)).toBe('ふつう');
+      expect(getDifficultyLabel(3)).toBe('チャレンジ');
     });
   });
 });
