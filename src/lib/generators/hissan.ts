@@ -151,12 +151,12 @@ function generateHissanDivision(
   let quotient: number;
 
   if (options.grade === 3) {
-    // 3年生: 九九の範囲で割り切れる
-    divisor = Math.floor(Math.random() * 9) + 1;
+    // 3年生: 九九の範囲で割り切れる（1で割るのは無意味なので2〜9）
+    divisor = Math.floor(Math.random() * 8) + 2;
     quotient = Math.floor(Math.random() * 9) + 1;
   } else {
-    // 4年生以上: より大きな数、余りあり
-    divisor = Math.floor(Math.random() * 9) + 1;
+    // 4年生以上: より大きな数、余りあり（1で割るのは無意味なので2〜9）
+    divisor = Math.floor(Math.random() * 8) + 2;
     quotient = Math.floor(Math.random() * 90) + 10;
   }
 

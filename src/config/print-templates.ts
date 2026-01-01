@@ -236,6 +236,36 @@ export const PRINT_TEMPLATES = {
     },
   }),
 
+  // わり算筆算（日本式長除法）
+  'hissan-div': createPrintTemplate({
+    type: 'hissan-div',
+    displayName: 'わり算の筆算',
+    description: '日本式わり算筆算（長除法）。計算過程を書くスペースを確保。',
+    layout: {
+      rowGap: '75px',
+      colGap: '40px',
+      fontSize: '18px',
+      minProblemHeight: '160px',
+    },
+    recommendedCounts: {
+      1: 4,
+      2: 8,
+      3: 12,
+    },
+    maxCounts: {
+      1: 4,
+      2: 8,
+      3: 12,
+    },
+    fitsInA4: {
+      threshold: {
+        1: 4,
+        2: 8,
+        3: 12,
+      },
+    },
+  }),
+
   // 虫食い算
   missing: createPrintTemplate({
     type: 'missing',

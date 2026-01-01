@@ -30,7 +30,7 @@ export function isWordProblem(
 
 /**
  * 筆算問題かどうかを判定
- * - 問題タイプが'hissan'
+ * - 問題タイプが'hissan'または'hissan-div'
  * - または、基本計算で筆算パターンが選択されている場合
  */
 export function isHissanProblem(
@@ -39,8 +39,18 @@ export function isHissanProblem(
 ): boolean {
   return (
     problemType === 'hissan' ||
+    problemType === 'hissan-div' ||
     (problemType === 'basic' && isHissanPattern(calculationPattern))
   );
+}
+
+/**
+ * わり算筆算かどうかを判定
+ */
+export function isDivisionHissanProblem(
+  calculationPattern?: CalculationPattern
+): boolean {
+  return calculationPattern === 'hissan-div-basic';
 }
 
 /**
@@ -56,6 +66,10 @@ export function getEffectiveProblemType(
   }
   if (isWordProblem(problemType, calculationPattern)) {
     return 'word';
+  }
+  // わり算筆算の場合は'hissan-div'テンプレートを使用
+  if (isDivisionHissanProblem(calculationPattern)) {
+    return 'hissan-div';
   }
   if (isHissanProblem(problemType, calculationPattern)) {
     return 'hissan';

@@ -10,6 +10,7 @@ export type ProblemType =
   | 'decimal'
   | 'mixed'
   | 'hissan'
+  | 'hissan-div' // わり算筆算（日本式長除法）
   | 'missing'
   | 'word'
   | 'word-en'; // 英語文章問題

@@ -12,6 +12,7 @@ import type {
   WorksheetSettings,
 } from '../../types';
 import { MathDecimal, MathMixedNumber } from '../Math/MathExpression';
+import { HissanDivisionJapanese } from '../Math/HissanDivisionJapanese';
 import {
   calculateMissingOperand1,
   calculateMissingOperand2,
@@ -19,6 +20,7 @@ import {
 } from '../../lib/utils/missing-number-calculator';
 import { WordProblemEnComponent } from '../Math/WordProblemEn';
 import { getPrintTemplate } from '../../config/print-templates';
+import { getEffectiveProblemType } from '../../lib/utils/problem-type-detector';
 import { estimateA4Fit } from '../../lib/utils/print-validator';
 import { buildPreviewTitle } from '../../lib/utils/previewTitle';
 import {
@@ -136,17 +138,21 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
     return `${topMargin}mm 15mm ${bottomMargin}mm`;
   };
 
+  // 実効的な問題タイプを取得（わり算筆算の場合は 'hissan-div' になる）
+  const effectiveProblemType = getEffectiveProblemType(
+    settings.problemType,
+    settings.calculationPattern
+  );
+
   // A4サイズオーバーフロー判定
   const a4FitResult = estimateA4Fit(
     problems.length,
     layoutColumns,
-    settings.problemType === 'word-en' ? 'word-en' : settings.problemType
+    effectiveProblemType
   );
 
   // テンプレートから gap を取得
-  const template = getPrintTemplate(
-    settings.problemType === 'word-en' ? 'word-en' : settings.problemType
-  );
+  const template = getPrintTemplate(effectiveProblemType);
   const gridGapStyle: React.CSSProperties = {
     display: 'grid',
     rowGap: template.layout.rowGap,
@@ -426,6 +432,24 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
   // 筆算問題の場合
   if (problem.type === 'hissan') {
     const hissanProblem = problem as HissanProblem;
+
+    // わり算の場合は日本式長除法レイアウトを使用
+    if (hissanProblem.operation === 'division') {
+      return (
+        <div className="problem-text" style={problemItemStyle}>
+          <div style={problemNumberStyle}>({number})</div>
+          <HissanDivisionJapanese
+            dividend={hissanProblem.operand1}
+            divisor={hissanProblem.operand2}
+            quotient={hissanProblem.answer}
+            remainder={hissanProblem.remainder}
+            showAnswer={showAnswer}
+          />
+        </div>
+      );
+    }
+
+    // その他の筆算（たし算、ひき算、かけ算）
     const operator = {
       addition: '+',
       subtraction: '−',
