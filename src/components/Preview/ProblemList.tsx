@@ -53,6 +53,7 @@ import {
   hissanCellStyle,
   hissanAnswerBoxStyle,
   getHissanLineStyle,
+  HISSAN_ANSWER_GAP,
   SPACING,
 } from '../../config/styles';
 
@@ -252,11 +253,11 @@ interface ProblemItemProps {
   showAnswer?: boolean;
 }
 
-const ProblemItem: React.FC<ProblemItemProps> = ({
+function ProblemItem({
   problem,
   number,
   showAnswer = false,
-}) => {
+}: ProblemItemProps): React.ReactElement {
   const operationSymbol = {
     addition: '+',
     subtraction: '−',
@@ -508,7 +509,14 @@ const ProblemItem: React.FC<ProblemItemProps> = ({
           <div style={getHissanLineStyle(maxLength)} />
 
           {/* 答え */}
-          <div style={{ whiteSpace: 'nowrap' }}>
+          <div
+            style={{
+              whiteSpace: 'nowrap',
+              display: 'flex',
+              gap: `${HISSAN_ANSWER_GAP}px`,
+              justifyContent: 'flex-end',
+            }}
+          >
             {showAnswer && hissanProblem.answer ? (
               <>
                 {Array(maxLength + 1 - answerDigits.length)

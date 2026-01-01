@@ -243,8 +243,12 @@ export const hissanAnswerBoxStyle: CSSProperties = {
   width: HISSAN_STYLES.cellWidth,
   height: HISSAN_STYLES.cellHeight,
   border: BORDERS.gray,
-  margin: '0 2px',
 };
+
+/**
+ * 筆算の答え行のギャップ（ボックス間の間隔）
+ */
+export const HISSAN_ANSWER_GAP = 4;
 
 /**
  * 筆算のコンテナスタイル
@@ -260,12 +264,18 @@ export const hissanContainerStyle: CSSProperties = {
 
 /**
  * 筆算の横線スタイル
+ * 答えボックス (maxLength + 1個) の合計幅に合わせて計算
  */
-export const getHissanLineStyle = (maxLength: number): CSSProperties => ({
-  borderTop: BORDERS.thick,
-  margin: '2px 0',
-  width: `${maxLength * 30 + 30}px`,
-});
+export const getHissanLineStyle = (maxLength: number): CSSProperties => {
+  const answerBoxCount = maxLength + 1;
+  const boxWidth = 30; // HISSAN_STYLES.cellWidth in px
+  const totalWidth = answerBoxCount * boxWidth + (answerBoxCount - 1) * HISSAN_ANSWER_GAP;
+  return {
+    borderTop: BORDERS.thick,
+    margin: '2px 0',
+    width: `${totalWidth}px`,
+  };
+};
 
 /**
  * 分数の分子スタイル
