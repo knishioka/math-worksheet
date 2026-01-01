@@ -15,10 +15,17 @@ const HORIZONTAL_MARGIN_MM = 15;
 const EQUAL_SHARE_RATIO = 0.5; // 上下余白が同等の場合の配分比率
 const TOP_MARGIN_RATIO = 0.6; // 初期上部余白の配分比率（全体の60%）
 
-// 精度制御
-const SCALE_PRECISION = 3; // スケール値の小数点精度
-const MARGIN_PRECISION = 2; // 余白値の小数点精度
-const PADDING_PRECISION = 3; // スケール適用時のパディング精度
+/**
+ * 精度制御定数
+ * これらの値は印刷レイアウトの計算精度とブラウザ互換性のバランスを取っています。
+ * 値を変更する場合は、すべての問題タイプでA4印刷テストを実施してください。
+ */
+/** スケール値の小数点精度（0.xxx - 3桁で十分な精度を確保） */
+const SCALE_PRECISION = 3;
+/** 余白値の小数点精度（mm単位で0.01mm精度 - 印刷には十分） */
+const MARGIN_PRECISION = 2;
+/** スケール適用時のパディング精度（px計算時の精度維持用） */
+const PADDING_PRECISION = 3;
 
 export const pxToMm = (px: number): number => px * MM_PER_PX;
 export const mmToPx = (mm: number): number => mm * PX_PER_MM;

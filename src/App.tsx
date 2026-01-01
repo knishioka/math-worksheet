@@ -38,7 +38,9 @@ function App(): React.ReactElement {
       const newWorksheetData = getWorksheetData();
       setWorksheetData(newWorksheetData);
     } catch (error) {
-      console.error('Failed to generate problems:', error);
+      if (import.meta.env.DEV) {
+        console.error('Failed to generate problems:', error);
+      }
     } finally {
       setIsGenerating(false);
     }
