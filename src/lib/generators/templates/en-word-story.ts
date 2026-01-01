@@ -49,24 +49,32 @@ function getRandomName(): string {
   return WORD_STORY_NAMES[randomInt(0, WORD_STORY_NAMES.length - 1)];
 }
 
+const ITEMS = [
+  { singular: 'apple', plural: 'apples' },
+  { singular: 'pencil', plural: 'pencils' },
+  { singular: 'book', plural: 'books' },
+  { singular: 'toy', plural: 'toys' },
+  { singular: 'sticker', plural: 'stickers' },
+  { singular: 'marble', plural: 'marbles' },
+  { singular: 'cookie', plural: 'cookies' },
+  { singular: 'crayon', plural: 'crayons' },
+  { singular: 'paper clip', plural: 'paper clips' },
+  { singular: 'stamp', plural: 'stamps' },
+] as const;
+
 /**
  * Helper function to get random item
  */
 function getRandomItem(plural = false): string {
-  const items = [
-    { singular: 'apple', plural: 'apples' },
-    { singular: 'pencil', plural: 'pencils' },
-    { singular: 'book', plural: 'books' },
-    { singular: 'toy', plural: 'toys' },
-    { singular: 'sticker', plural: 'stickers' },
-    { singular: 'marble', plural: 'marbles' },
-    { singular: 'cookie', plural: 'cookies' },
-    { singular: 'crayon', plural: 'crayons' },
-    { singular: 'paper clip', plural: 'paper clips' },
-    { singular: 'stamp', plural: 'stamps' },
-  ];
-  const item = items[randomInt(0, items.length - 1)];
+  const item = ITEMS[randomInt(0, ITEMS.length - 1)];
   return plural ? item.plural : item.singular;
+}
+
+/**
+ * Helper function to get random item with both forms
+ */
+function getRandomItemPair(): { singular: string; plural: string } {
+  return ITEMS[randomInt(0, ITEMS.length - 1)];
 }
 
 const COLLECTION_ITEMS = [
@@ -475,10 +483,10 @@ export const MULTIPLICATION_STORIES: WordStoryTemplate[] = [
       const price = randomInt(2, grade === 2 ? 9 : 12);
       const quantity = randomInt(2, grade === 2 ? 9 : 12);
       const answer = price * quantity;
-      const item = getRandomItem(true);
+      const item = getRandomItemPair();
 
       return {
-        text: `One ${item.replace('s', '')} costs $${price}. How much do ${quantity} ${item} cost?`,
+        text: `One ${item.singular} costs $${price}. How much do ${quantity} ${item.plural} cost?`,
         answer,
         operation: 'multiplication' as Operation,
       };
@@ -550,7 +558,6 @@ export const DIVISION_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const name = getRandomName();
-      const pronouns = getPronouns(name);
       const totalCost = gradeRandomInt(
         grade,
         [
@@ -571,10 +578,10 @@ export const DIVISION_STORIES: WordStoryTemplate[] = [
       const unitPrice = Math.floor(totalCost / numItems);
       const actualTotal = unitPrice * numItems;
       const answer = unitPrice;
-      const item = getRandomItem(true);
+      const item = getRandomItemPair();
 
       return {
-        text: `${name} pays $${actualTotal} for ${numItems} ${item}. How much does one ${item.replace('s', '')} cost for ${pronouns.lowerSubject}?`,
+        text: `${name} pays $${actualTotal} for ${numItems} ${item.plural}. How much does one ${item.singular} cost?`,
         answer,
         operation: 'division' as Operation,
       };
@@ -1048,7 +1055,13 @@ export const MONEY_STORIES: WordStoryTemplate[] = [
   },
   {
     generateProblem: (grade) => {
-      const item = ['notebooks', 'pencils', 'erasers', 'rulers'][randomInt(0, 3)];
+      const schoolItems = [
+        { singular: 'notebook', plural: 'notebooks' },
+        { singular: 'pencil', plural: 'pencils' },
+        { singular: 'eraser', plural: 'erasers' },
+        { singular: 'ruler', plural: 'rulers' },
+      ] as const;
+      const item = schoolItems[randomInt(0, schoolItems.length - 1)];
       const price = gradeRandomInt(
         grade,
         [
@@ -1068,7 +1081,7 @@ export const MONEY_STORIES: WordStoryTemplate[] = [
       const answer = price * quantity;
 
       return {
-        text: `Each ${item.replace('s', '')} costs $${price}. How much do ${quantity} ${item} cost in total?`,
+        text: `Each ${item.singular} costs $${price}. How much do ${quantity} ${item.plural} cost in total?`,
         answer,
         operation: 'multiplication' as Operation,
       };
