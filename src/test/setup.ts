@@ -3,23 +3,23 @@ import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
 
 // localStorage mock for Zustand persist middleware
-const localStorageMock = (() => {
+const localStorageMock = ((): Storage => {
   let store: Record<string, string> = {};
   return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => {
+    getItem: (key: string): string | null => store[key] || null,
+    setItem: (key: string, value: string): void => {
       store[key] = value;
     },
-    removeItem: (key: string) => {
+    removeItem: (key: string): void => {
       delete store[key];
     },
-    clear: () => {
+    clear: (): void => {
       store = {};
     },
-    get length() {
+    get length(): number {
       return Object.keys(store).length;
     },
-    key: (index: number) => Object.keys(store)[index] || null,
+    key: (index: number): string | null => Object.keys(store)[index] || null,
   };
 })();
 vi.stubGlobal('localStorage', localStorageMock);
