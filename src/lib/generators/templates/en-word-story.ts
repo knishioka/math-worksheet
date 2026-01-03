@@ -307,12 +307,12 @@ export const MULTI_STEP_STORIES: WordStoryTemplate[] = [
         Math.max(3, Math.floor(total * 0.2)),
         Math.max(4, Math.floor(total * 0.35))
       );
-      const answer = red + green;
+      const blue = total - red - green;
 
       return {
-        text: `${name} has ${total} ${item}. ${red} of them are red, ${green} are green and the rest are blue. How many red and green ${item} does ${name} have?`,
-        answer,
-        operation: 'addition' as Operation,
+        text: `${name} has ${total} ${item}. ${red} of them are red and ${green} are green. The rest are blue. How many blue ${item} are there?`,
+        answer: blue,
+        operation: 'subtraction' as Operation,
       };
     },
     minGrade: 2,
@@ -437,7 +437,7 @@ export const MULTIPLICATION_STORIES: WordStoryTemplate[] = [
       const answer = multiplier * base;
 
       return {
-        text: `${name} has ${multiplier} times as many ${item} as ${friendPronouns.possessive} friend ${friendName}, who has ${base}. How many ${item} does ${pronouns.lowerSubject} have?`,
+        text: `${name} has ${multiplier} times as many ${item} as ${pronouns.possessive} friend ${friendName}, who has ${base}. How many ${item} does ${pronouns.lowerSubject} have?`,
         answer,
         operation: 'multiplication' as Operation,
       };
@@ -1358,15 +1358,11 @@ export const MIXED_OPERATION_STORIES: WordStoryTemplate[] = [
         ],
         { upTo: 6, min: 5, max: 12 }
       );
-      const given = gradeRandomInt(
-        grade,
-        [
-          { upTo: 4, min: 2, max: 10 },
-          { upTo: 5, min: 3, max: 14 },
-        ],
-        { upTo: 6, min: 4, max: 18 }
-      );
-      const answer = groups * perGroup - given;
+      const total = groups * perGroup;
+      // Ensure given is less than total to avoid negative answers
+      const maxGiven = Math.max(2, Math.floor(total * 0.6));
+      const given = randomInt(2, maxGiven);
+      const answer = total - given;
 
       return {
         text: `${name} makes ${groups} groups of ${perGroup} ${item}. ${pronouns.subject} gives away ${given} ${item}. How many ${item} does ${pronouns.lowerSubject} have left?`,
@@ -1430,14 +1426,6 @@ export const MIXED_OPERATION_STORIES: WordStoryTemplate[] = [
       const name = getRandomName();
       const item = getRandomItem(true);
       const pronouns = getPronouns(name);
-      const initial = gradeRandomInt(
-        grade,
-        [
-          { upTo: 4, min: 20, max: 50 },
-          { upTo: 5, min: 30, max: 70 },
-        ],
-        { upTo: 6, min: 40, max: 90 }
-      );
       const groups = gradeRandomInt(
         grade,
         [
@@ -1446,9 +1434,18 @@ export const MIXED_OPERATION_STORIES: WordStoryTemplate[] = [
         ],
         { upTo: 6, min: 4, max: 6 }
       );
-      // Ensure division is exact
-      const given = Math.floor(initial / groups);
-      const actualInitial = given * groups;
+      // Generate answer first (amount each friend gets)
+      const perFriend = gradeRandomInt(
+        grade,
+        [
+          { upTo: 4, min: 3, max: 10 },
+          { upTo: 5, min: 4, max: 12 },
+        ],
+        { upTo: 6, min: 5, max: 15 }
+      );
+      // Calculate total given (ensures exact division)
+      const totalGiven = perFriend * groups;
+      // Generate remaining amount
       const left = gradeRandomInt(
         grade,
         [
@@ -1457,11 +1454,12 @@ export const MIXED_OPERATION_STORIES: WordStoryTemplate[] = [
         ],
         { upTo: 6, min: 4, max: 15 }
       );
-      const totalGiven = actualInitial - left;
-      const answer = totalGiven / groups;
+      // Calculate initial amount
+      const initial = totalGiven + left;
+      const answer = perFriend;
 
       return {
-        text: `${name} had ${actualInitial} ${item}. After giving ${groups} friends equal amounts, ${pronouns.subject} has ${left} left. How many ${item} did each friend get?`,
+        text: `${name} had ${initial} ${item}. After giving ${groups} friends equal amounts, ${pronouns.lowerSubject} has ${left} left. How many ${item} did each friend get?`,
         answer,
         operation: 'division' as Operation,
       };
@@ -1723,14 +1721,6 @@ export const PATTERN_STORIES: WordStoryTemplate[] = [
   },
   {
     generateProblem: (grade) => {
-      const total = gradeRandomInt(
-        grade,
-        [
-          { upTo: 3, min: 24, max: 48 },
-          { upTo: 4, min: 36, max: 80 },
-        ],
-        { upTo: 6, min: 48, max: 120 }
-      );
       const step = gradeRandomInt(
         grade,
         [
@@ -1739,11 +1729,20 @@ export const PATTERN_STORIES: WordStoryTemplate[] = [
         ],
         { upTo: 6, min: 4, max: 12 }
       );
-      const current = randomInt(step * 2, total - step * 2);
+      // Ensure current is actually on the pattern (multiple of step)
+      const numSteps = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 3, max: 8 },
+          { upTo: 4, min: 4, max: 12 },
+        ],
+        { upTo: 6, min: 5, max: 15 }
+      );
+      const current = step * numSteps;
       const answer = current + step;
 
       return {
-        text: `A number pattern goes from 0 to ${total} by ${step}s. What comes after ${current}?`,
+        text: `Count by ${step}s: ${step}, ${step * 2}, ${step * 3}, ... What comes after ${current}?`,
         answer,
         operation: 'addition' as Operation,
       };
@@ -1768,6 +1767,7 @@ export const GEOMETRY_STORIES: WordStoryTemplate[] = [
         ],
         { upTo: 6, min: 4, max: 8 }
       );
+      // Limit to shapes with known names (3-8 sides)
       const sidesPerShape = gradeRandomInt(
         grade,
         [
@@ -1778,7 +1778,15 @@ export const GEOMETRY_STORIES: WordStoryTemplate[] = [
       );
       const answer = numShapes * sidesPerShape;
 
-      const shapeName = sidesPerShape === 3 ? 'triangle' : sidesPerShape === 4 ? 'square' : sidesPerShape === 5 ? 'pentagon' : 'hexagon';
+      const shapeNames: Record<number, string> = {
+        3: 'triangle',
+        4: 'square',
+        5: 'pentagon',
+        6: 'hexagon',
+        7: 'heptagon',
+        8: 'octagon',
+      };
+      const shapeName = shapeNames[sidesPerShape] ?? 'polygon';
       const plural = numShapes === 1 ? shapeName : shapeName + 's';
 
       return {
@@ -1862,7 +1870,6 @@ export const COLLECTION_STORIES: WordStoryTemplate[] = [
   },
   {
     generateProblem: (grade) => {
-      const item = getRandomItem(true);
       const shelves = gradeRandomInt(
         grade,
         [
@@ -1882,7 +1889,7 @@ export const COLLECTION_STORIES: WordStoryTemplate[] = [
       const answer = shelves * perShelf;
 
       return {
-        text: `A library has ${shelves} shelves. Each shelf holds ${perShelf} ${item}. How many ${item} are there in total?`,
+        text: `A library has ${shelves} shelves. Each shelf holds ${perShelf} books. How many books are there in total?`,
         answer,
         operation: 'multiplication' as Operation,
       };
@@ -2036,15 +2043,10 @@ export const TRAVEL_STORIES: WordStoryTemplate[] = [
         ],
         { upTo: 6, min: 6, max: 12 }
       );
-      const empty = gradeRandomInt(
-        grade,
-        [
-          { upTo: 3, min: 2, max: 6 },
-          { upTo: 4, min: 3, max: 8 },
-        ],
-        { upTo: 6, min: 4, max: 10 }
-      );
       const total = rows * seatsPerRow;
+      // Ensure empty is less than total to avoid negative answers
+      const maxEmpty = Math.max(2, Math.floor(total * 0.4));
+      const empty = randomInt(2, maxEmpty);
       const answer = total - empty;
 
       return {
