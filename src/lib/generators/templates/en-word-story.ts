@@ -891,9 +891,8 @@ export const TIME_STORIES: WordStoryTemplate[] = [
   },
   {
     generateProblem: (grade) => {
-      const activity = ['a movie', 'a game', 'practice', 'class'][
-        randomInt(0, 3)
-      ];
+      const activities = ['a movie', 'a game', 'practice', 'class'];
+      const activity = activities[randomInt(0, activities.length - 1)];
       const duration = gradeRandomInt(
         grade,
         [
