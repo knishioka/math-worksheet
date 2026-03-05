@@ -417,7 +417,6 @@ export const MULTIPLICATION_STORIES: WordStoryTemplate[] = [
       const item = getRandomItem(true);
       const pronouns = getPronouns(name);
       const friendName = getDifferentName(name);
-      const friendPronouns = getPronouns(friendName);
       const multiplier = gradeRandomInt(
         grade,
         [
@@ -892,7 +891,8 @@ export const TIME_STORIES: WordStoryTemplate[] = [
   },
   {
     generateProblem: (grade) => {
-      const activity = ['a movie', 'a game', 'practice', 'class'][randomInt(0, 3)];
+      const activities = ['a movie', 'a game', 'practice', 'class'];
+      const activity = activities[randomInt(0, activities.length - 1)];
       const duration = gradeRandomInt(
         grade,
         [
@@ -1008,7 +1008,10 @@ export const MONEY_STORIES: WordStoryTemplate[] = [
         ],
         { upTo: 5, min: price + 5, max: Math.max(price + 30, 100) }
       );
-      const paid = generateFriendlyPayment(price, Math.max(paidUpperBound, price + 5));
+      const paid = generateFriendlyPayment(
+        price,
+        Math.max(paidUpperBound, price + 5)
+      );
       const answer = paid - price;
 
       return {
@@ -1911,7 +1914,7 @@ export const COLLECTION_STORIES: WordStoryTemplate[] = [
         { upTo: 6, min: 48, max: 120 }
       );
       const redPercent = randomInt(20, 50);
-      const red = Math.floor(total * redPercent / 100);
+      const red = Math.floor((total * redPercent) / 100);
       const answer = total - red;
 
       return {
