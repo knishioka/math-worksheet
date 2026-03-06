@@ -13,7 +13,8 @@ export type ProblemType =
   | 'hissan-div' // わり算筆算（日本式長除法）
   | 'missing'
   | 'word'
-  | 'word-en'; // 英語文章問題
+  | 'word-en' // 英語文章問題
+  | 'anzan'; // 暗算のコツ（複数項の式）
 
 export type Grade = 1 | 2 | 3 | 4 | 5 | 6;
 

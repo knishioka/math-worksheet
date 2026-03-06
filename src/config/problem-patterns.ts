@@ -120,6 +120,25 @@ export const HISSAN_PATTERNS: readonly CalculationPattern[] = [
   'hissan-div-basic', // わり算の筆算
 ] as const;
 
+export const ANZAN_PATTERNS: readonly CalculationPattern[] = [
+  'anzan-complement-10',
+  'anzan-complement-100',
+  'anzan-change-making',
+  'anzan-round-add',
+  'anzan-round-sub',
+  'anzan-round-mul',
+  'anzan-distributive',
+  'anzan-mul-decompose',
+  'anzan-square-diff',
+  'anzan-mul-5',
+  'anzan-mul-9',
+  'anzan-mul-11',
+  'anzan-mul-25',
+  'anzan-pair-sum',
+  'anzan-reorder',
+  'anzan-mixed',
+] as const;
+
 /**
  * パターンが文章問題かどうかを判定
  */
@@ -132,4 +151,11 @@ export function isWordProblemPattern(pattern?: CalculationPattern): boolean {
  */
 export function isHissanPattern(pattern?: CalculationPattern): boolean {
   return pattern !== undefined && HISSAN_PATTERNS.includes(pattern);
+}
+
+/**
+ * パターンが暗算のコツ問題かどうかを判定
+ */
+export function isAnzanPattern(pattern?: CalculationPattern): boolean {
+  return pattern !== undefined && ANZAN_PATTERNS.includes(pattern);
 }

@@ -126,11 +126,15 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
       format: { gradeFirst: true, wrapGradeInParentheses: false },
     });
 
+    // 実効的な問題タイプを取得（わり算筆算の場合は 'hissan-div'、暗算は 'anzan' になる）
+    const effectiveProblemType = getEffectiveProblemType(
+      settings.problemType,
+      settings.calculationPattern
+    );
+
     // 動的余白の計算（印刷プレビューと同じロジック）
     const calculatePadding = (): string => {
-      const template = getPrintTemplate(
-        settings.problemType === 'word-en' ? 'word-en' : settings.problemType
-      );
+      const template = getPrintTemplate(effectiveProblemType);
       const problemCount = problems.length;
       const columns = layoutColumns;
       const estimatedRows = Math.ceil(problemCount / columns);
@@ -156,12 +160,6 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
 
       return `${topMargin}mm 15mm ${bottomMargin}mm`;
     };
-
-    // 実効的な問題タイプを取得（わり算筆算の場合は 'hissan-div' になる）
-    const effectiveProblemType = getEffectiveProblemType(
-      settings.problemType,
-      settings.calculationPattern
-    );
 
     // A4サイズオーバーフロー判定
     const a4FitResult = estimateA4Fit(
@@ -202,6 +200,7 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
         {/* A4用紙風のコンテナ */}
         <div
           ref={ref}
+          data-a4-sheet
           className="bg-white"
           style={getA4ContainerStyle(
             calculatePadding(),
@@ -222,7 +221,7 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
             </div>
           </div>
 
-          <div className={`${gridCols} avoid-break`} style={gridGapStyle}>
+          <div className={gridCols} style={gridGapStyle}>
             {reorderedProblems.map((problem, index) => {
               if (!problem) {
                 // 空のセルを配置（レイアウトを保つため）
