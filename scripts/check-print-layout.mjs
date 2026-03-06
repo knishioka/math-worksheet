@@ -16,7 +16,7 @@
  *       コードを1行にまとめる必要がある。
  */
 
-import { execSync, spawnSync } from 'child_process';
+import { spawnSync } from 'child_process';
 
 const BASE_URL =
   process.argv[2] ?? 'https://knishioka.github.io/math-worksheet/';
@@ -59,13 +59,18 @@ function rc(singleLineJs) {
   }
 }
 
-/** playwright-cli コマンドを実行 */
-function cli(cmd) {
+/** playwright-cli コマンドを実行（spawnSync でシェルを経由しない） */
+function cli(...args) {
   try {
-    execSync('playwright-cli ' + cmd, { encoding: 'utf8', stdio: 'pipe' });
+    spawnSync('playwright-cli', args, { encoding: 'utf8', stdio: 'pipe' });
   } catch {
     /* ignore */
   }
+}
+
+/** テンプレートリテラルの改行・余分な空白を除去して1行のJSにする */
+function collapse(code) {
+  return code.replace(/\n\s*/g, ' ').trim();
 }
 
 function sleep(ms) {
@@ -78,18 +83,48 @@ function sleep(ms) {
  * 学年選択・パターン選択・高さ計測を1行のJSにまとめる。
  */
 async function measureScenario(s) {
-  // パターン選択コード（1行）
+  // パターン選択コード（テンプレートリテラルで記述し、実行時に1行化する）
   const patternJs = s.pattern
-    ? `const r=await page.$('input[value="${s.pattern}"]'); if(r){await r.evaluate(el=>{const lb=el.closest('label')||el.parentElement; if(lb)lb.click();}); await page.waitForTimeout(600);} const r2=await page.$('input[value="${s.pattern}"]:checked'); if(!r2){const btn=await page.$('button[aria-expanded="false"]'); if(btn)await btn.click(); await page.waitForTimeout(300); const r3=await page.$('input[value="${s.pattern}"]'); if(r3)await r3.evaluate(el=>{const lb=el.closest('label')||el.parentElement; if(lb)lb.click();}); await page.waitForTimeout(500);}`
+    ? collapse(`
+        const r = await page.$('input[value="${s.pattern}"]');
+        if (r) {
+          await r.evaluate(el => {
+            const lb = el.closest('label') || el.parentElement;
+            if (lb) lb.click();
+          });
+          await page.waitForTimeout(600);
+        }
+        const r2 = await page.$('input[value="${s.pattern}"]:checked');
+        if (!r2) {
+          const btn = await page.$('button[aria-expanded="false"]');
+          if (btn) await btn.click();
+          await page.waitForTimeout(300);
+          const r3 = await page.$('input[value="${s.pattern}"]');
+          if (r3) await r3.evaluate(el => {
+            const lb = el.closest('label') || el.parentElement;
+            if (lb) lb.click();
+          });
+          await page.waitForTimeout(500);
+        }
+      `)
     : '';
 
-  // 学年選択 + パターン選択 + 推奨問題数選択 + 計測を1行のJSにまとめる
-  const code =
-    `const sel=await page.$('select'); if(sel){await sel.selectOption(String(${s.grade})); await page.waitForTimeout(400);}` +
-    ` ${patternJs}` +
-    ` const recBtn=await page.$('button:has-text("推奨")'); if(recBtn) await recBtn.click(); await page.waitForTimeout(600);` +
-    ` const el=await page.$('[data-a4-sheet]'); if(!el) return '0';` +
-    ` const b=await el.boundingBox(); return b ? String(Math.round(b.height)) : '0';`;
+  // 学年選択 + パターン選択 + 推奨問題数選択 + 計測（テンプレートリテラルで記述し1行化）
+  const code = collapse(`
+    const sel = await page.$('select');
+    if (sel) {
+      await sel.selectOption(String(${s.grade}));
+      await page.waitForTimeout(400);
+    }
+    ${patternJs}
+    const recBtn = await page.$('button:has-text("推奨")');
+    if (recBtn) await recBtn.click();
+    await page.waitForTimeout(600);
+    const el = await page.$('[data-a4-sheet]');
+    if (!el) return '0';
+    const b = await el.boundingBox();
+    return b ? String(Math.round(b.height)) : '0';
+  `);
 
   const h = rc(code);
   return parseInt((h ?? '0').replace(/\D/g, ''), 10);
@@ -100,8 +135,8 @@ async function main() {
   console.log('   URL: ' + BASE_URL);
   console.log('   A4高さ基準: ' + Math.round(A4_PX) + 'px (297mm @ 96dpi)\n');
 
-  cli('open ' + BASE_URL);
-  cli('resize 1280 900');
+  cli('open', BASE_URL);
+  cli('resize', '1280', '900');
   await sleep(3000);
 
   const results = [];
@@ -147,10 +182,25 @@ async function main() {
 
   cli('close-all');
 
+  const unmeasured = results.filter((r) => r.height === 0);
   const failures = results.filter((r) => !r.ok && r.height > 0);
   console.log('\n--- 結果 ---');
-  if (failures.length === 0) {
+  if (unmeasured.length === results.length) {
+    console.log(
+      '❌ 全シナリオの計測に失敗しました。playwright-cli が正しくインストールされているか確認してください。\n'
+    );
+    process.exit(1);
+  }
+  if (unmeasured.length > 0) {
+    console.log(
+      '⚠️  ' + unmeasured.length + '件のシナリオが計測できませんでした'
+    );
+  }
+  if (failures.length === 0 && unmeasured.length === 0) {
     console.log('✅ 全シナリオ A4 1ページに収まっています\n');
+    process.exit(0);
+  } else if (failures.length === 0) {
+    console.log('✅ 計測できたシナリオは全て A4 1ページに収まっています\n');
     process.exit(0);
   } else {
     console.log('❌ ' + failures.length + '件のレイアウト問題を検出:\n');
