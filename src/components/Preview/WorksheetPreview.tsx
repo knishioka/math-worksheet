@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { useReactToPrint } from 'react-to-print';
 import type { WorksheetData } from '../../types';
 import { ProblemList } from './ProblemList';
@@ -30,9 +31,8 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
     documentTitle: worksheetData
       ? `計算プリント_${worksheetData.settings.grade}年生`
       : '計算プリント',
-    onBeforePrint: async () => {
-      setIsPrinting(true);
-      await waitForNextFrame();
+    onBeforePrint: () => {
+      flushSync(() => setIsPrinting(true));
     },
     onAfterPrint: () => {
       // 印刷後に複数ページの状態をクリア
@@ -177,14 +177,4 @@ function formatDate(date: Date): string {
     hour: '2-digit',
     minute: '2-digit',
   }).format(date);
-}
-
-async function waitForNextFrame(): Promise<void> {
-  await new Promise<void>((resolve) => {
-    if (typeof requestAnimationFrame === 'function') {
-      requestAnimationFrame(() => resolve());
-    } else {
-      resolve();
-    }
-  });
 }

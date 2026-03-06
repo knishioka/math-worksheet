@@ -1,0 +1,44 @@
+name: Print Layout Check
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  print-layout:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_BASE_PATH: /math-worksheet/
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Install playwright-cli
+        run: npm install -g @playwright/cli
+
+      - name: Start preview server
+        run: npx vite preview --port 4173 --base /math-worksheet/ &
+        env:
+          NODE_ENV: production
+
+      - name: Wait for server
+        run: npx wait-on http://localhost:4173/math-worksheet/ --timeout 30000
+
+      - name: Run print layout check
+        run: node scripts/check-print-layout.mjs http://localhost:4173/math-worksheet/
