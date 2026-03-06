@@ -183,7 +183,9 @@ describe('pattern-generators', () => {
             expect(typeof problem.answer).toBe('number');
 
             // operand1 または operand2 のどちらか一方だけが null
-            const nullCount = [problem.operand1, problem.operand2].filter(v => v === null).length;
+            const nullCount = [problem.operand1, problem.operand2].filter(
+              (v) => v === null
+            ).length;
             expect(nullCount).toBe(1);
           }
         });
@@ -196,9 +198,13 @@ describe('pattern-generators', () => {
           if (problem.type === 'basic' && problem.answer !== null) {
             // 問題が解答可能であることを確認
             if (problem.operand1 === null && problem.operand2 !== null) {
-              expect(problem.answer - problem.operand2).toBeGreaterThanOrEqual(1);
+              expect(problem.answer - problem.operand2).toBeGreaterThanOrEqual(
+                1
+              );
             } else if (problem.operand2 === null && problem.operand1 !== null) {
-              expect(problem.answer - problem.operand1).toBeGreaterThanOrEqual(1);
+              expect(problem.answer - problem.operand1).toBeGreaterThanOrEqual(
+                1
+              );
             }
           }
         });
@@ -314,6 +320,275 @@ describe('pattern-generators', () => {
               expect(problem.operand2).toBeGreaterThanOrEqual(2);
               expect(problem.operand2).toBeLessThanOrEqual(9);
             }
+          }
+        });
+      });
+    });
+  });
+
+  describe('Special Number Multiplication (特殊数系暗算)', () => {
+    describe('anzan-mul-5 (×5のコツ)', () => {
+      it('should generate ×5 problems for grade 3 (5×even, range 2-20)', () => {
+        const settings: WorksheetSettings = {
+          grade: 3,
+          problemType: 'basic',
+          operation: 'multiplication',
+          problemCount: 10,
+          layoutColumns: 2,
+          calculationPattern: 'anzan-mul-5',
+        };
+
+        const problems = generateProblems(settings);
+        expect(problems).toHaveLength(10);
+
+        problems.forEach((problem) => {
+          expect(problem.type).toBe('basic');
+          if (problem.type === 'basic') {
+            expect(problem.operation).toBe('multiplication');
+            expect(problem.operand1).toBe(5);
+            expect(problem.operand2).toBeGreaterThanOrEqual(2);
+            expect(problem.operand2).toBeLessThanOrEqual(20);
+            // 偶数のみ
+            expect(problem.operand2! % 2).toBe(0);
+            // 答えの検証
+            expect(problem.answer).toBe(5 * problem.operand2!);
+            // 答えが正の整数
+            expect(problem.answer).toBeGreaterThan(0);
+          }
+        });
+      });
+
+      it('should generate ×5 problems for grade 4+ (5×any 2-99)', () => {
+        const settings: WorksheetSettings = {
+          grade: 4,
+          problemType: 'basic',
+          operation: 'multiplication',
+          problemCount: 10,
+          layoutColumns: 2,
+          calculationPattern: 'anzan-mul-5',
+        };
+
+        const problems = generateProblems(settings);
+        expect(problems).toHaveLength(10);
+
+        problems.forEach((problem) => {
+          expect(problem.type).toBe('basic');
+          if (problem.type === 'basic') {
+            expect(problem.operand1).toBe(5);
+            expect(problem.operand2).toBeGreaterThanOrEqual(2);
+            expect(problem.operand2).toBeLessThanOrEqual(99);
+            expect(problem.answer).toBe(5 * problem.operand2!);
+            expect(problem.answer).toBeGreaterThan(0);
+          }
+        });
+      });
+
+      it('should generate different problems', () => {
+        const settings: WorksheetSettings = {
+          grade: 4,
+          problemType: 'basic',
+          operation: 'multiplication',
+          problemCount: 20,
+          layoutColumns: 2,
+          calculationPattern: 'anzan-mul-5',
+        };
+
+        const problems = generateProblems(settings);
+        const unique = new Set(
+          problems
+            .filter((p) => p.type === 'basic')
+            .map((p) => `${p.operand1}×${p.operand2}`)
+        );
+        expect(unique.size).toBeGreaterThanOrEqual(15);
+      });
+    });
+
+    describe('anzan-mul-9 (×9のコツ)', () => {
+      it('should generate ×9 problems for grade 3 (9×1digit)', () => {
+        const settings: WorksheetSettings = {
+          grade: 3,
+          problemType: 'basic',
+          operation: 'multiplication',
+          problemCount: 10,
+          layoutColumns: 2,
+          calculationPattern: 'anzan-mul-9',
+        };
+
+        const problems = generateProblems(settings);
+        expect(problems).toHaveLength(10);
+
+        problems.forEach((problem) => {
+          expect(problem.type).toBe('basic');
+          if (problem.type === 'basic') {
+            expect(problem.operation).toBe('multiplication');
+            expect(problem.operand1).toBe(9);
+            expect(problem.operand2).toBeGreaterThanOrEqual(2);
+            expect(problem.operand2).toBeLessThanOrEqual(9);
+            expect(problem.answer).toBe(problem.operand1! * problem.operand2!);
+            expect(problem.answer).toBeGreaterThan(0);
+          }
+        });
+      });
+
+      it('should generate ×9/×99 problems for grade 4+ (9×2digit or 99×1digit)', () => {
+        const settings: WorksheetSettings = {
+          grade: 4,
+          problemType: 'basic',
+          operation: 'multiplication',
+          problemCount: 20,
+          layoutColumns: 2,
+          calculationPattern: 'anzan-mul-9',
+        };
+
+        const problems = generateProblems(settings);
+        expect(problems).toHaveLength(20);
+
+        problems.forEach((problem) => {
+          expect(problem.type).toBe('basic');
+          if (problem.type === 'basic') {
+            expect([9, 99]).toContain(problem.operand1);
+            if (problem.operand1 === 9) {
+              expect(problem.operand2).toBeGreaterThanOrEqual(10);
+              expect(problem.operand2).toBeLessThanOrEqual(99);
+            } else {
+              expect(problem.operand2).toBeGreaterThanOrEqual(2);
+              expect(problem.operand2).toBeLessThanOrEqual(9);
+            }
+            expect(problem.answer).toBe(problem.operand1! * problem.operand2!);
+            expect(problem.answer).toBeGreaterThan(0);
+          }
+        });
+      });
+    });
+
+    describe('anzan-mul-11 (×11のコツ)', () => {
+      it('should generate ×11 problems for grade 4 (no carry, A+B<10)', () => {
+        const settings: WorksheetSettings = {
+          grade: 4,
+          problemType: 'basic',
+          operation: 'multiplication',
+          problemCount: 10,
+          layoutColumns: 2,
+          calculationPattern: 'anzan-mul-11',
+        };
+
+        const problems = generateProblems(settings);
+        expect(problems).toHaveLength(10);
+
+        problems.forEach((problem) => {
+          expect(problem.type).toBe('basic');
+          if (problem.type === 'basic') {
+            expect(problem.operand1).toBe(11);
+            expect(problem.operand2).toBeGreaterThanOrEqual(10);
+            expect(problem.operand2).toBeLessThanOrEqual(99);
+
+            // A+B < 10 (no carry)
+            const a = Math.floor(problem.operand2! / 10);
+            const b = problem.operand2! % 10;
+            expect(a + b).toBeLessThan(10);
+
+            expect(problem.answer).toBe(11 * problem.operand2!);
+            expect(problem.answer).toBeGreaterThan(0);
+          }
+        });
+      });
+
+      it('should generate ×11 problems for grade 5+ (with carry allowed)', () => {
+        const settings: WorksheetSettings = {
+          grade: 5,
+          problemType: 'basic',
+          operation: 'multiplication',
+          problemCount: 20,
+          layoutColumns: 2,
+          calculationPattern: 'anzan-mul-11',
+        };
+
+        const problems = generateProblems(settings);
+        expect(problems).toHaveLength(20);
+
+        problems.forEach((problem) => {
+          expect(problem.type).toBe('basic');
+          if (problem.type === 'basic') {
+            expect(problem.operand1).toBe(11);
+            expect(problem.operand2).toBeGreaterThanOrEqual(10);
+            expect(problem.operand2).toBeLessThanOrEqual(99);
+            expect(problem.answer).toBe(11 * problem.operand2!);
+            expect(problem.answer).toBeGreaterThan(0);
+          }
+        });
+      });
+
+      it('should include carry cases for grade 5+', () => {
+        const settings: WorksheetSettings = {
+          grade: 5,
+          problemType: 'basic',
+          operation: 'multiplication',
+          problemCount: 50,
+          layoutColumns: 2,
+          calculationPattern: 'anzan-mul-11',
+        };
+
+        const problems = generateProblems(settings);
+        // With 50 problems from range 10-99, we should get some carry cases (A+B>=10)
+        const hasCarry = problems.some((p) => {
+          if (p.type !== 'basic' || p.operand2 === null) return false;
+          const a = Math.floor(p.operand2 / 10);
+          const b = p.operand2 % 10;
+          return a + b >= 10;
+        });
+        expect(hasCarry).toBe(true);
+      });
+    });
+
+    describe('anzan-mul-25 (×25のコツ)', () => {
+      it('should generate ×25 problems for grade 4 (multiples of 4)', () => {
+        const settings: WorksheetSettings = {
+          grade: 4,
+          problemType: 'basic',
+          operation: 'multiplication',
+          problemCount: 10,
+          layoutColumns: 2,
+          calculationPattern: 'anzan-mul-25',
+        };
+
+        const problems = generateProblems(settings);
+        expect(problems).toHaveLength(10);
+
+        problems.forEach((problem) => {
+          expect(problem.type).toBe('basic');
+          if (problem.type === 'basic') {
+            expect(problem.operand1).toBe(25);
+            expect(problem.operand2).toBeGreaterThanOrEqual(4);
+            expect(problem.operand2).toBeLessThanOrEqual(96);
+            // 4の倍数
+            expect(problem.operand2! % 4).toBe(0);
+            expect(problem.answer).toBe(25 * problem.operand2!);
+            expect(problem.answer).toBeGreaterThan(0);
+          }
+        });
+      });
+
+      it('should generate ×25 problems for grade 5+ (any 2-99)', () => {
+        const settings: WorksheetSettings = {
+          grade: 5,
+          problemType: 'basic',
+          operation: 'multiplication',
+          problemCount: 10,
+          layoutColumns: 2,
+          calculationPattern: 'anzan-mul-25',
+        };
+
+        const problems = generateProblems(settings);
+        expect(problems).toHaveLength(10);
+
+        problems.forEach((problem) => {
+          expect(problem.type).toBe('basic');
+          if (problem.type === 'basic') {
+            expect(problem.operand1).toBe(25);
+            expect(problem.operand2).toBeGreaterThanOrEqual(2);
+            expect(problem.operand2).toBeLessThanOrEqual(99);
+            expect(problem.answer).toBe(25 * problem.operand2!);
+            expect(problem.answer).toBeGreaterThan(0);
           }
         });
       });
