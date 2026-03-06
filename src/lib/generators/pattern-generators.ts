@@ -35,6 +35,7 @@ import {
   generateComplement10,
   generateComplement100,
   generateChangeMaking,
+  generateGradeAnzanRoundingProblems,
   generateAnzanDecompositionProblems,
 } from './anzan-problems';
 
@@ -298,6 +299,12 @@ export function generatePatternProblems(
     case 'allowance-goal-en':
       return generateGradeAllowanceProblemsEn(settings.grade, count, pattern);
 
+    // 暗算のコツ - 丸めて計算
+    case 'anzan-round-add':
+    case 'anzan-round-sub':
+    case 'anzan-round-mul':
+      return generateGradeAnzanRoundingProblems(settings.grade, count, pattern);
+
     // 特殊数系暗算パターン（実装済み）
     case 'anzan-mul-5':
       return generateAnzanMul5(settings, count);
@@ -323,9 +330,6 @@ export function generatePatternProblems(
       return generateAnzanDecompositionProblems(settings.grade, count, pattern);
 
     // 暗算のコツ（未実装 - 問題生成ロジックは後続Issueで実装予定）
-    case 'anzan-round-add':
-    case 'anzan-round-sub':
-    case 'anzan-round-mul':
     case 'anzan-pair-sum':
     case 'anzan-reorder':
     case 'anzan-mixed':
