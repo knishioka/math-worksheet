@@ -109,7 +109,9 @@ async function measureScenario(s) {
       `)
     : '';
 
-  // 学年選択 + パターン選択 + 推奨問題数選択 + 計測（テンプレートリテラルで記述し1行化）
+  // 学年選択 + パターン選択 + 推奨問題数選択 + 印刷モード計測（テンプレートリテラルで記述し1行化）
+  // page.emulateMedia('print') で @media print CSS を適用し、実際の印刷レイアウトを計測する。
+  // App.tsx の最外側 div が no-print クラスを持つため、計測前に上書きして非表示を防ぐ。
   const code = collapse(`
     const sel = await page.$('select');
     if (sel) {
@@ -120,9 +122,13 @@ async function measureScenario(s) {
     const recBtn = await page.$('button:has-text("推奨")');
     if (recBtn) await recBtn.click();
     await page.waitForTimeout(600);
+    await page.addStyleTag({ content: '.no-print { display: block !important; }' });
+    await page.emulateMedia({ media: 'print' });
+    await page.waitForTimeout(300);
     const el = await page.$('[data-a4-sheet]');
-    if (!el) return '0';
+    if (!el) { await page.emulateMedia({ media: null }); return '0'; }
     const b = await el.boundingBox();
+    await page.emulateMedia({ media: null });
     return b ? String(Math.round(b.height)) : '0';
   `);
 
