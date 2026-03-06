@@ -41,18 +41,14 @@ export function generateAnzanRoundAdd(
     },
   });
 
-  for (let i = 0; i < count; i++) {
+  while (problems.length < count) {
     const multiple =
-      randomInt(
-        config.roundBase === 10 ? 2 : 2,
-        config.roundBase === 10 ? 10 : 5
-      ) * config.roundBase;
+      randomInt(config.baseMin, config.baseMax) * config.roundBase;
     const offset = randomInt(1, 3);
     const sign = randomInt(0, 1) === 0 ? 1 : -1;
     const nearRound = multiple + sign * offset;
 
     if (nearRound < 2) {
-      i--;
       continue;
     }
 
@@ -63,7 +59,6 @@ export function generateAnzanRoundAdd(
     const answer = operand1 + operand2;
 
     if (answer <= 0) {
-      i--;
       continue;
     }
 
@@ -114,7 +109,7 @@ export function generateAnzanRoundSub(
     },
   });
 
-  for (let i = 0; i < count; i++) {
+  while (problems.length < count) {
     const multiple =
       randomInt(config.multipleMin, config.multipleMax) * config.roundBase;
     const offset = randomInt(1, 3);
@@ -122,20 +117,17 @@ export function generateAnzanRoundSub(
     const nearRound = multiple + sign * offset;
 
     if (nearRound < 2) {
-      i--;
       continue;
     }
 
     const otherMax = Math.min(config.otherMax, nearRound - 1);
     if (otherMax < config.otherMin) {
-      i--;
       continue;
     }
     const other = randomInt(config.otherMin, otherMax);
     const answer = nearRound - other;
 
     if (answer <= 0) {
-      i--;
       continue;
     }
 

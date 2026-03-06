@@ -125,7 +125,7 @@ describe('generateAnzanRoundMul', () => {
   });
 
   it('has at least one round factor operand', () => {
-    const roundFactors = [5, 25, 50, 125];
+    const roundFactors = [25, 50, 125];
     const problems = generateAnzanRoundMul(5, 30);
     for (const p of problems) {
       const op1Round = roundFactors.includes(p.operand1!);
