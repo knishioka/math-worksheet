@@ -1,6 +1,15 @@
 import type { BasicProblem, Grade } from '../../types';
 import { generateId, randomInt } from '../utils/math';
 
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = randomInt(0, i);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 /**
  * 10の補数を生成
  * 1年生: 1〜9の補数 (7+?=10)
@@ -10,36 +19,17 @@ export function generateComplement10(
   _grade: Grade,
   count: number
 ): BasicProblem[] {
-  const problems: BasicProblem[] = [];
-  const usedOperands = new Set<number>();
+  const pool = shuffleArray(Array.from({ length: 9 }, (_, i) => i + 1));
 
-  for (let i = 0; i < count; i++) {
-    let operand1: number;
-    let attempts = 0;
-    const maxAttempts = 50;
-
-    do {
-      operand1 = randomInt(1, 9);
-      attempts++;
-    } while (usedOperands.has(operand1) && attempts < maxAttempts);
-
-    // 9通りしかないので重複を許容する場合もある
-    if (attempts < maxAttempts) {
-      usedOperands.add(operand1);
-    }
-
-    problems.push({
-      id: generateId(),
-      type: 'basic',
-      operation: 'addition',
-      operand1,
-      operand2: null,
-      answer: 10,
-      missingPosition: 'operand2',
-    });
-  }
-
-  return problems;
+  return Array.from({ length: count }, (_, i) => ({
+    id: generateId(),
+    type: 'basic' as const,
+    operation: 'addition' as const,
+    operand1: pool[i % pool.length],
+    operand2: null,
+    answer: 10,
+    missingPosition: 'operand2' as const,
+  }));
 }
 
 /**
@@ -51,41 +41,21 @@ export function generateComplement100(
   grade: Grade,
   count: number
 ): BasicProblem[] {
-  const problems: BasicProblem[] = [];
-  const usedOperands = new Set<number>();
+  const pool = shuffleArray(
+    grade <= 3
+      ? Array.from({ length: 9 }, (_, i) => (i + 1) * 10) // 10, 20, ..., 90
+      : Array.from({ length: 99 }, (_, i) => i + 1) // 1-99
+  );
 
-  for (let i = 0; i < count; i++) {
-    let operand1: number;
-    let attempts = 0;
-    const maxAttempts = 50;
-
-    do {
-      if (grade <= 3) {
-        // 3年生: 10の倍数 (10, 20, ..., 90)
-        operand1 = randomInt(1, 9) * 10;
-      } else {
-        // 4年生以上: 任意の2桁数 (1-99)
-        operand1 = randomInt(1, 99);
-      }
-      attempts++;
-    } while (usedOperands.has(operand1) && attempts < maxAttempts);
-
-    if (attempts < maxAttempts) {
-      usedOperands.add(operand1);
-    }
-
-    problems.push({
-      id: generateId(),
-      type: 'basic',
-      operation: 'addition',
-      operand1,
-      operand2: null,
-      answer: 100,
-      missingPosition: 'operand2',
-    });
-  }
-
-  return problems;
+  return Array.from({ length: count }, (_, i) => ({
+    id: generateId(),
+    type: 'basic' as const,
+    operation: 'addition' as const,
+    operand1: pool[i % pool.length],
+    operand2: null,
+    answer: 100,
+    missingPosition: 'operand2' as const,
+  }));
 }
 
 /**
@@ -110,8 +80,6 @@ export function generateChangeMaking(
       if (grade <= 4) {
         // 4年生: 1000円からのおつり
         totalAmount = 1000;
-        price = randomInt(1, 99) * 10 + randomInt(1, 9); // 11〜999の3桁以下
-        // 100〜999の範囲に調整して実用的な金額に
         price = randomInt(100, 999);
       } else {
         // 5年生以上: 1000円、5000円、10000円からのおつり
