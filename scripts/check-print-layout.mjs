@@ -27,15 +27,20 @@ const BASE_URL =
 const A4_PX = 297 * (96 / 25.4); // ≈ 1122.5px
 
 // チェックするシナリオ: grade=学年(1-6), pattern=calculationPatternの値 or null
+// 各学年の代表的な問題タイプをカバーするシナリオ
+// pattern: null は学年デフォルト（四則演算混合）を意味する
 const SCENARIOS = [
+  // 低学年: 1桁のたし算・ひき算
   { grade: 1, pattern: null, label: '1年生 基本計算' },
   { grade: 2, pattern: 'anzan-pair-sum', label: '2年生 ペアで10を作る' },
+  // 中学年: 3桁の筆算、かけ算・わり算が加わる
+  { grade: 3, pattern: null, label: '3年生 基本計算' },
   { grade: 3, pattern: 'hissan-add-triple', label: '3年生 3桁のたし算筆算' },
   { grade: 4, pattern: 'hissan-div-basic', label: '4年生 わり算の筆算' },
   { grade: 4, pattern: 'anzan-pair-sum', label: '4年生 ペアで10/100を作る' },
   { grade: 4, pattern: 'anzan-reorder', label: '4年生 順序入れ替え' },
+  // 高学年: 暗算混合
   { grade: 5, pattern: 'anzan-mixed', label: '5年生 暗算混合' },
-  { grade: 3, pattern: null, label: '3年生 基本計算' },
 ];
 
 /**
@@ -79,8 +84,32 @@ function collapse(code) {
   return code.replace(/\n\s*/g, ' ').trim();
 }
 
-function sleep(ms) {
-  return new Promise((r) => setTimeout(r, ms));
+/**
+ * パターン選択用JSコードを生成する。
+ * ラジオボタンをクリックし、アコーディオン内の場合は展開してからクリックする。
+ */
+function buildPatternSelectionJs(pattern) {
+  if (!pattern) return '';
+  // clickRadio: ラジオボタンの親label/要素をクリック
+  // expandAndRetry: アコーディオンを展開して再試行
+  return collapse(`
+    async function clickRadio(sel) {
+      const el = await page.$(sel);
+      if (!el) return false;
+      await el.evaluate(e => { const lb = e.closest('label') || e.parentElement; if (lb) lb.click(); });
+      return page.waitForFunction(
+        (v) => document.querySelector('input[value="' + v + '"]:checked'),
+        '${pattern}', { timeout: 3000 }
+      ).then(() => true).catch(() => false);
+    }
+    if (!(await clickRadio('input[value="${pattern}"]'))) {
+      const btn = await page.$('button[aria-expanded="false"]');
+      if (btn) await btn.click();
+      await page.waitForSelector('input[value="${pattern}"]', { timeout: 3000 })
+        .catch((e) => console.warn('wait timed out:', e.message));
+      await clickRadio('input[value="${pattern}"]');
+    }
+  `);
 }
 
 /**
@@ -89,39 +118,7 @@ function sleep(ms) {
  * 学年選択・パターン選択・高さ計測を1行のJSにまとめる。
  */
 async function measureScenario(s) {
-  // パターン選択コード（テンプレートリテラルで記述し、実行時に1行化する）
-  const patternJs = s.pattern
-    ? collapse(`
-        const r = await page.$('input[value="${s.pattern}"]');
-        if (r) {
-          await r.evaluate(el => {
-            const lb = el.closest('label') || el.parentElement;
-            if (lb) lb.click();
-          });
-          await page.waitForFunction(
-            (v) => document.querySelector('input[value="' + v + '"]:checked'),
-            '${s.pattern}',
-            { timeout: 3000 }
-          ).catch(() => {});
-        }
-        const r2 = await page.$('input[value="${s.pattern}"]:checked');
-        if (!r2) {
-          const btn = await page.$('button[aria-expanded="false"]');
-          if (btn) await btn.click();
-          await page.waitForSelector('input[value="${s.pattern}"]', { timeout: 3000 }).catch(() => {});
-          const r3 = await page.$('input[value="${s.pattern}"]');
-          if (r3) await r3.evaluate(el => {
-            const lb = el.closest('label') || el.parentElement;
-            if (lb) lb.click();
-          });
-          await page.waitForFunction(
-            (v) => document.querySelector('input[value="' + v + '"]:checked'),
-            '${s.pattern}',
-            { timeout: 3000 }
-          ).catch(() => {});
-        }
-      `)
-    : '';
+  const patternJs = buildPatternSelectionJs(s.pattern);
 
   // 学年選択 + パターン選択 + 推奨問題数選択 + 印刷モード計測（テンプレートリテラルで記述し1行化）
   // page.emulateMedia('print') で @media print CSS を適用し、実際の印刷レイアウトを計測する。
@@ -134,15 +131,15 @@ async function measureScenario(s) {
         (g) => { const s = document.querySelector('select'); return s && s.value === String(g); },
         ${s.grade},
         { timeout: 3000 }
-      ).catch(() => {});
+      ).catch((e) => console.warn('wait timed out:', e.message));
     }
     ${patternJs}
     const recBtn = await page.$('button:has-text("推奨")');
     if (recBtn) await recBtn.click();
-    await page.waitForSelector('[data-a4-sheet]', { timeout: 5000 }).catch(() => {});
+    await page.waitForSelector('[data-a4-sheet]', { timeout: 5000 }).catch((e) => console.warn('wait timed out:', e.message));
     await page.addStyleTag({ content: '.no-print { display: block !important; }' });
     await page.emulateMedia({ media: 'print' });
-    await page.waitForSelector('[data-a4-sheet]', { state: 'visible', timeout: 3000 }).catch(() => {});
+    await page.waitForSelector('[data-a4-sheet]', { state: 'visible', timeout: 3000 }).catch((e) => console.warn('wait timed out:', e.message));
     const el = await page.$('[data-a4-sheet]');
     if (!el) { await page.emulateMedia({ media: null }); return '0'; }
     const b = await el.boundingBox();
@@ -161,7 +158,13 @@ async function main() {
 
   cli('open', BASE_URL);
   cli('resize', '1280', '900');
-  await sleep(3000);
+  // ページ読み込み完了を待つ（cli はページオブジェクトを返さないため rc() で確認）
+  rc(
+    collapse(`
+    await page.waitForSelector('select', { timeout: 10000 });
+    return 'ready';
+  `)
+  );
 
   const results = [];
 
