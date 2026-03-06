@@ -3,7 +3,7 @@
  * Mental math problem generators (complement + rounding + decomposition patterns)
  */
 
-import type { BasicProblem, Grade } from '../../types';
+import type { BasicProblem, Grade, Operation } from '../../types';
 import { randomInt, generateId } from '../utils/math';
 import { pickByGrade } from './grade-utils';
 
@@ -446,6 +446,230 @@ export function generateAnzanDecompositionProblems(
       const _exhaustiveCheck: never = pattern;
       throw new Error(
         `Unhandled anzan decomposition pattern: ${_exhaustiveCheck}`
+      );
+    }
+  }
+}
+
+/**
+ * ペアで10/100を作る足し算問題を生成
+ * Generate pair-sum problems where operands contain pairs that sum to 10 or 100
+ *
+ * Grade 2: 4 operands, pairs summing to 10 (e.g., 3+7+8+2)
+ * Grade 3+: 5-6 operands, pairs summing to 10 or 100
+ */
+export function generateAnzanPairSum(
+  grade: Grade,
+  count: number
+): BasicProblem[] {
+  const problems: BasicProblem[] = [];
+  const config = pickByGrade(grade, {
+    lower: { operandCount: 4, useHundredPairs: false },
+    middle: { operandCount: 5, useHundredPairs: true },
+    upper: { operandCount: 6, useHundredPairs: true },
+  });
+
+  for (let i = 0; i < count; i++) {
+    const operands: number[] = [];
+
+    if (config.useHundredPairs && randomInt(0, 1) === 0) {
+      // 100のペア (e.g., 30+70)
+      const tens = randomInt(1, 9) * 10;
+      operands.push(tens, 100 - tens);
+    } else {
+      // 10のペア (e.g., 3+7)
+      const a = randomInt(1, 9);
+      operands.push(a, 10 - a);
+    }
+
+    // 残りのオペランドをランダムに追加
+    while (operands.length < config.operandCount) {
+      if (
+        config.useHundredPairs &&
+        operands.length <= config.operandCount - 2 &&
+        randomInt(0, 2) === 0
+      ) {
+        // 追加の100ペア
+        const tens = randomInt(1, 9) * 10;
+        operands.push(tens, 100 - tens);
+      } else if (
+        operands.length <= config.operandCount - 2 &&
+        randomInt(0, 2) === 0
+      ) {
+        // 追加の10ペア
+        const a = randomInt(1, 9);
+        operands.push(a, 10 - a);
+      } else {
+        operands.push(randomInt(1, 9));
+      }
+    }
+
+    // operandCountを超えた場合は切り詰め
+    const finalOperands = shuffleArray(operands.slice(0, config.operandCount));
+    const answer = finalOperands.reduce((sum, n) => sum + n, 0);
+    const operators: Operation[] = Array(finalOperands.length - 1).fill(
+      'addition' as Operation
+    );
+
+    problems.push({
+      id: generateId(),
+      type: 'basic',
+      operation: 'addition',
+      operand1: finalOperands[0],
+      operand2: finalOperands[1],
+      answer,
+      operands: finalOperands,
+      operators,
+    });
+  }
+
+  return problems;
+}
+
+/**
+ * 計算順序の工夫問題を生成
+ * Generate reorder problems where changing calculation order simplifies computation
+ *
+ * Grade 5: 3-4 operand addition/subtraction
+ * Grade 6: includes multiplication/division
+ */
+export function generateAnzanReorder(
+  grade: Grade,
+  count: number
+): BasicProblem[] {
+  const problems: BasicProblem[] = [];
+
+  for (let i = 0; i < count; i++) {
+    if (grade >= 6 && randomInt(0, 1) === 0) {
+      // 掛け算の順序入れ替え (e.g., 7×25×4 → 25×4×7 = 700)
+      const friendlyPairs: [number, number][] = [
+        [25, 4],
+        [5, 2],
+        [50, 2],
+        [125, 8],
+      ];
+      const [friendly, complement] =
+        friendlyPairs[randomInt(0, friendlyPairs.length - 1)];
+      const other = randomInt(2, 9);
+      const operands = shuffleArray([friendly, complement, other]);
+      const answer = operands.reduce((prod, n) => prod * n, 1);
+      const operators: Operation[] = Array(operands.length - 1).fill(
+        'multiplication' as Operation
+      );
+
+      problems.push({
+        id: generateId(),
+        type: 'basic',
+        operation: 'multiplication',
+        operand1: operands[0],
+        operand2: operands[1],
+        answer,
+        operands,
+        operators,
+      });
+    } else {
+      // 加減算の順序入れ替え (e.g., 37+48+63 → 37+63+48 = 148)
+      const operandCount = randomInt(3, 4);
+
+      // 10のペアになる数を2つ生成
+      const a = randomInt(11, 89);
+      const bOnes = 10 - (a % 10);
+      const bTens = randomInt(1, 8) * 10;
+      const b = bTens + (bOnes === 10 ? 0 : bOnes);
+
+      const others: number[] = [];
+      for (let j = 0; j < operandCount - 2; j++) {
+        others.push(randomInt(11, 99));
+      }
+
+      const operands = shuffleArray([a, b, ...others]);
+      const answer = operands.reduce((sum, n) => sum + n, 0);
+      const operators: Operation[] = Array(operands.length - 1).fill(
+        'addition' as Operation
+      );
+
+      problems.push({
+        id: generateId(),
+        type: 'basic',
+        operation: 'addition',
+        operand1: operands[0],
+        operand2: operands[1],
+        answer,
+        operands,
+        operators,
+      });
+    }
+  }
+
+  return problems;
+}
+
+/**
+ * 暗算テクニック混合問題を生成（メタジェネレータ）
+ * Mixed mental math problems - randomly selects from available anzan patterns
+ *
+ * Grade 6 only: selects from all available anzan patterns
+ */
+export function generateAnzanMixed(
+  grade: Grade,
+  count: number
+): BasicProblem[] {
+  const generators: Array<{
+    name: string;
+    generate: (g: Grade, c: number) => BasicProblem[];
+  }> = [
+    { name: 'complement-10', generate: generateComplement10 },
+    { name: 'complement-100', generate: generateComplement100 },
+    { name: 'change-making', generate: generateChangeMaking },
+    { name: 'round-add', generate: generateAnzanRoundAdd },
+    { name: 'round-sub', generate: generateAnzanRoundSub },
+    { name: 'round-mul', generate: generateAnzanRoundMul },
+    { name: 'distributive', generate: generateDistributiveProblems },
+    { name: 'mul-decompose', generate: generateMulDecomposeProblems },
+    { name: 'square-diff', generate: generateSquareDiffProblems },
+    { name: 'pair-sum', generate: generateAnzanPairSum },
+    { name: 'reorder', generate: generateAnzanReorder },
+  ];
+
+  const problems: BasicProblem[] = [];
+  let lastGeneratorIndex = -1;
+
+  for (let i = 0; i < count; i++) {
+    // Pick a different generator than the last one
+    let genIndex: number;
+    do {
+      genIndex = randomInt(0, generators.length - 1);
+    } while (genIndex === lastGeneratorIndex && generators.length > 1);
+    lastGeneratorIndex = genIndex;
+
+    const generated = generators[genIndex].generate(grade, 1);
+    if (generated.length > 0) {
+      problems.push(generated[0]);
+    }
+  }
+
+  return problems;
+}
+
+/**
+ * 暗算（連続計算・総合系）パターンのディスパッチ関数
+ */
+export function generateAnzanSequentialProblems(
+  grade: Grade,
+  count: number,
+  pattern: 'anzan-pair-sum' | 'anzan-reorder' | 'anzan-mixed'
+): BasicProblem[] {
+  switch (pattern) {
+    case 'anzan-pair-sum':
+      return generateAnzanPairSum(grade, count);
+    case 'anzan-reorder':
+      return generateAnzanReorder(grade, count);
+    case 'anzan-mixed':
+      return generateAnzanMixed(grade, count);
+    default: {
+      const _exhaustiveCheck: never = pattern;
+      throw new Error(
+        `Unhandled anzan sequential pattern: ${_exhaustiveCheck}`
       );
     }
   }
