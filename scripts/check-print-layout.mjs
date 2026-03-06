@@ -11,7 +11,7 @@
  *   node scripts/check-print-layout.mjs http://localhost:4173/math-worksheet/
  */
 
-import { chromium } from 'playwright';
+import { chromium } from '@playwright/test';
 
 const BASE_URL =
   process.argv[2] ?? 'https://knishioka.github.io/math-worksheet/';

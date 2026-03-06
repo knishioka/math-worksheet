@@ -27,7 +27,7 @@ jobs:
           VITE_BASE_PATH: /math-worksheet/
 
       - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
+        run: node node_modules/@playwright/test/cli.js install chromium --with-deps
 
       - name: Start preview server
         run: npx vite preview --port 4173 --base /math-worksheet/ &
