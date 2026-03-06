@@ -146,7 +146,12 @@ describe('generateAnzanDecompositionProblems dispatch', () => {
       'anzan-distributive'
     );
     expect(problems).toHaveLength(5);
-    expect(problems[0].operation).toBe('multiplication');
+    for (const p of problems) {
+      expect(p.operand1).toBeGreaterThanOrEqual(2);
+      expect(p.operand1).toBeLessThanOrEqual(9);
+      expect(p.operand2).toBeGreaterThanOrEqual(11);
+      expect(p.operand2).toBeLessThanOrEqual(29);
+    }
   });
 
   it('dispatches anzan-mul-decompose correctly', () => {
@@ -156,6 +161,12 @@ describe('generateAnzanDecompositionProblems dispatch', () => {
       'anzan-mul-decompose'
     );
     expect(problems).toHaveLength(5);
+    for (const p of problems) {
+      const r1 = p.operand1! % 10;
+      const r2 = p.operand2! % 10;
+      const hasNearRound = (r1 >= 1 && r1 <= 5) || (r2 >= 1 && r2 <= 5);
+      expect(hasNearRound).toBe(true);
+    }
   });
 
   it('dispatches anzan-square-diff correctly', () => {

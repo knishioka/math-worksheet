@@ -66,60 +66,21 @@ export function generateMulDecomposeProblems(
   const problems: BasicProblem[] = [];
 
   for (let i = 0; i < count; i++) {
-    if (grade <= 5) {
-      // 2-digit × 2-digit: one near a multiple of 10
-      const tens = randomInt(1, 4); // 10, 20, 30, or 40
-      const remainder = randomInt(1, 5);
-      const nearRound = tens * 10 + remainder;
-      const other = randomInt(11, 19);
+    const tens = randomInt(1, 4);
+    const remainder = randomInt(1, 5);
+    const nearRound = tens * 10 + remainder;
+    const other = grade <= 5 ? randomInt(11, 19) : randomInt(101, 199);
+    const [operand1, operand2] =
+      randomInt(0, 1) === 0 ? [nearRound, other] : [other, nearRound];
 
-      // Randomly swap operand positions
-      if (randomInt(0, 1) === 0) {
-        problems.push({
-          id: generateId(),
-          type: 'basic',
-          operation: 'multiplication',
-          operand1: nearRound,
-          operand2: other,
-          answer: nearRound * other,
-        });
-      } else {
-        problems.push({
-          id: generateId(),
-          type: 'basic',
-          operation: 'multiplication',
-          operand1: other,
-          operand2: nearRound,
-          answer: other * nearRound,
-        });
-      }
-    } else {
-      // Grade 6: 2-digit × 3-digit, one near multiple of 10
-      const tens = randomInt(1, 4);
-      const remainder = randomInt(1, 5);
-      const nearRound = tens * 10 + remainder;
-      const other = randomInt(101, 199);
-
-      if (randomInt(0, 1) === 0) {
-        problems.push({
-          id: generateId(),
-          type: 'basic',
-          operation: 'multiplication',
-          operand1: nearRound,
-          operand2: other,
-          answer: nearRound * other,
-        });
-      } else {
-        problems.push({
-          id: generateId(),
-          type: 'basic',
-          operation: 'multiplication',
-          operand1: other,
-          operand2: nearRound,
-          answer: other * nearRound,
-        });
-      }
-    }
+    problems.push({
+      id: generateId(),
+      type: 'basic',
+      operation: 'multiplication',
+      operand1,
+      operand2,
+      answer: operand1 * operand2,
+    });
   }
 
   return problems;
@@ -172,7 +133,11 @@ export function generateAnzanDecompositionProblems(
       return generateMulDecomposeProblems(grade, count);
     case 'anzan-square-diff':
       return generateSquareDiffProblems(grade, count);
-    default:
-      return generateDistributiveProblems(grade, count);
+    default: {
+      const _exhaustiveCheck: never = pattern;
+      throw new Error(
+        `Unhandled anzan decomposition pattern: ${_exhaustiveCheck}`
+      );
+    }
   }
 }
