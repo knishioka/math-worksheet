@@ -57,6 +57,13 @@ import {
   SPACING,
 } from '../../config/styles';
 
+const multiOperandSymbols: Record<string, string> = {
+  addition: '+',
+  subtraction: '−',
+  multiplication: '×',
+  division: '÷',
+};
+
 interface ProblemListProps {
   problems: Problem[];
   layoutColumns: LayoutColumns;
@@ -66,184 +73,194 @@ interface ProblemListProps {
 }
 
 export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
-  ({ problems, layoutColumns, showAnswers = false, settings, printMode = false }, ref) => {
-  if (problems.length === 0) {
-    return (
-      <div className="flex justify-center py-8 bg-gray-100">
-        <div
-          className="bg-white flex items-center justify-center"
-          style={emptyA4ContainerStyle}
-        >
-          <div className="text-center text-gray-500">
-            設定を確認して「問題を生成」ボタンをクリックしてください
+  (
+    {
+      problems,
+      layoutColumns,
+      showAnswers = false,
+      settings,
+      printMode = false,
+    },
+    ref
+  ) => {
+    if (problems.length === 0) {
+      return (
+        <div className="flex justify-center py-8 bg-gray-100">
+          <div
+            className="bg-white flex items-center justify-center"
+            style={emptyA4ContainerStyle}
+          >
+            <div className="text-center text-gray-500">
+              設定を確認して「問題を生成」ボタンをクリックしてください
+            </div>
           </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  const gridCols = {
-    1: 'grid-cols-1',
-    2: 'grid-cols-2',
-    3: 'grid-cols-3',
-  }[layoutColumns];
+    const gridCols = {
+      1: 'grid-cols-1',
+      2: 'grid-cols-2',
+      3: 'grid-cols-3',
+    }[layoutColumns];
 
-  // 縦順に並び替えた問題配列を作成
-  const reorderedProblems: (Problem | null)[] = [];
-  const rowCount = Math.ceil(problems.length / layoutColumns);
+    // 縦順に並び替えた問題配列を作成
+    const reorderedProblems: (Problem | null)[] = [];
+    const rowCount = Math.ceil(problems.length / layoutColumns);
 
-  for (let col = 0; col < layoutColumns; col++) {
-    for (let row = 0; row < rowCount; row++) {
-      const originalIndex = row + col * rowCount;
-      const newIndex = row * layoutColumns + col;
+    for (let col = 0; col < layoutColumns; col++) {
+      for (let row = 0; row < rowCount; row++) {
+        const originalIndex = row + col * rowCount;
+        const newIndex = row * layoutColumns + col;
 
-      if (originalIndex < problems.length) {
-        reorderedProblems[newIndex] = problems[originalIndex];
-      } else {
-        reorderedProblems[newIndex] = null;
+        if (originalIndex < problems.length) {
+          reorderedProblems[newIndex] = problems[originalIndex];
+        } else {
+          reorderedProblems[newIndex] = null;
+        }
       }
     }
-  }
 
-  const previewTitle = buildPreviewTitle({
-    settings,
-    format: { gradeFirst: true, wrapGradeInParentheses: false },
-  });
+    const previewTitle = buildPreviewTitle({
+      settings,
+      format: { gradeFirst: true, wrapGradeInParentheses: false },
+    });
 
-  // 動的余白の計算（印刷プレビューと同じロジック）
-  const calculatePadding = (): string => {
-    const template = getPrintTemplate(
-      settings.problemType === 'word-en' ? 'word-en' : settings.problemType
+    // 動的余白の計算（印刷プレビューと同じロジック）
+    const calculatePadding = (): string => {
+      const template = getPrintTemplate(
+        settings.problemType === 'word-en' ? 'word-en' : settings.problemType
+      );
+      const problemCount = problems.length;
+      const columns = layoutColumns;
+      const estimatedRows = Math.ceil(problemCount / columns);
+
+      // 問題タイプごとの推定高さ（mm）
+      const minProblemHeightMm =
+        parseInt(template.layout.minProblemHeight) * 0.26;
+      const rowGapMm = parseInt(template.layout.rowGap) * 0.26;
+
+      // 必要な高さを計算
+      const headerHeight = 25; // ヘッダー部分の高さ (mm)
+      const estimatedContentHeight =
+        headerHeight + (minProblemHeightMm + rowGapMm) * estimatedRows;
+
+      // A4の高さは297mm、残りスペースを余白として配分
+      const a4Height = 297;
+      const remainingSpace = a4Height - estimatedContentHeight;
+
+      // 上の余白: 5mm〜15mm
+      const topMargin = Math.max(5, Math.min(15, remainingSpace * 0.6));
+      // 下の余白: 上の余白の半分（小さめに）
+      const bottomMargin = Math.max(5, topMargin * 0.5);
+
+      return `${topMargin}mm 15mm ${bottomMargin}mm`;
+    };
+
+    // 実効的な問題タイプを取得（わり算筆算の場合は 'hissan-div' になる）
+    const effectiveProblemType = getEffectiveProblemType(
+      settings.problemType,
+      settings.calculationPattern
     );
-    const problemCount = problems.length;
-    const columns = layoutColumns;
-    const estimatedRows = Math.ceil(problemCount / columns);
 
-    // 問題タイプごとの推定高さ（mm）
-    const minProblemHeightMm = parseInt(template.layout.minProblemHeight) * 0.26;
-    const rowGapMm = parseInt(template.layout.rowGap) * 0.26;
+    // A4サイズオーバーフロー判定
+    const a4FitResult = estimateA4Fit(
+      problems.length,
+      layoutColumns,
+      effectiveProblemType
+    );
 
-    // 必要な高さを計算
-    const headerHeight = 25; // ヘッダー部分の高さ (mm)
-    const estimatedContentHeight = headerHeight + (minProblemHeightMm + rowGapMm) * estimatedRows;
+    // テンプレートから gap を取得
+    const template = getPrintTemplate(effectiveProblemType);
+    const gridGapStyle: React.CSSProperties = {
+      display: 'grid',
+      rowGap: template.layout.rowGap,
+      columnGap: template.layout.colGap,
+    };
 
-    // A4の高さは297mm、残りスペースを余白として配分
-    const a4Height = 297;
-    const remainingSpace = a4Height - estimatedContentHeight;
-
-    // 上の余白: 5mm〜15mm
-    const topMargin = Math.max(5, Math.min(15, remainingSpace * 0.6));
-    // 下の余白: 上の余白の半分（小さめに）
-    const bottomMargin = Math.max(5, topMargin * 0.5);
-
-    return `${topMargin}mm 15mm ${bottomMargin}mm`;
-  };
-
-  // 実効的な問題タイプを取得（わり算筆算の場合は 'hissan-div' になる）
-  const effectiveProblemType = getEffectiveProblemType(
-    settings.problemType,
-    settings.calculationPattern
-  );
-
-  // A4サイズオーバーフロー判定
-  const a4FitResult = estimateA4Fit(
-    problems.length,
-    layoutColumns,
-    effectiveProblemType
-  );
-
-  // テンプレートから gap を取得
-  const template = getPrintTemplate(effectiveProblemType);
-  const gridGapStyle: React.CSSProperties = {
-    display: 'grid',
-    rowGap: template.layout.rowGap,
-    columnGap: template.layout.colGap,
-  };
-
-  // 印刷モードの場合は外側のラッパーを省略
-  const content = (
-    <>
-      {/* A4オーバーフロー警告 */}
-      {!printMode && !a4FitResult.fits && (
-        <div style={a4WarningContainerStyle}>
-          <div style={a4WarningIconRowStyle}>
-            <span style={{ fontSize: '20px' }}>⚠️</span>
-            <div>
-              <div style={a4WarningTitleStyle}>
-                A4サイズを超えています
-              </div>
-              <div style={a4WarningMessageStyle}>
-                推定高さ: {a4FitResult.estimatedHeight.toFixed(0)}mm（A4: {a4FitResult.a4Height}mm）
-                <br />
-                問題数を減らすか、列数を増やしてください。
+    // 印刷モードの場合は外側のラッパーを省略
+    const content = (
+      <>
+        {/* A4オーバーフロー警告 */}
+        {!printMode && !a4FitResult.fits && (
+          <div style={a4WarningContainerStyle}>
+            <div style={a4WarningIconRowStyle}>
+              <span style={{ fontSize: '20px' }}>⚠️</span>
+              <div>
+                <div style={a4WarningTitleStyle}>A4サイズを超えています</div>
+                <div style={a4WarningMessageStyle}>
+                  推定高さ: {a4FitResult.estimatedHeight.toFixed(0)}mm（A4:{' '}
+                  {a4FitResult.a4Height}mm）
+                  <br />
+                  問題数を減らすか、列数を増やしてください。
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* A4用紙風のコンテナ */}
-      <div
-        ref={ref}
-        className="bg-white"
-        style={getA4ContainerStyle(calculatePadding(), printMode, !a4FitResult.fits)}
-      >
-        {/* ヘッダー */}
-        <div style={headerBorderStyle}>
-          <div style={headerGridStyle}>
-            <div style={headerTextStyle}>
-              名前：<span style={getUnderlineStyle('128px')}></span>
-            </div>
-            <div style={headerCenterTextStyle}>
-              {previewTitle}
-            </div>
-            <div style={headerRightTextStyle}>
-              点数：<span style={getUnderlineStyle('64px')}></span>点
-            </div>
-          </div>
-        </div>
-
+        {/* A4用紙風のコンテナ */}
         <div
-          className={`${gridCols} avoid-break`}
-          style={gridGapStyle}
+          ref={ref}
+          className="bg-white"
+          style={getA4ContainerStyle(
+            calculatePadding(),
+            printMode,
+            !a4FitResult.fits
+          )}
         >
-          {reorderedProblems.map((problem, index) => {
-        if (!problem) {
-          // 空のセルを配置（レイアウトを保つため）
-          return <div key={`empty-${index}`} className="avoid-break" />;
-        }
-
-        // 元のインデックスを計算（縦順から横順へ）
-        const col = index % layoutColumns;
-        const row = Math.floor(index / layoutColumns);
-        const originalNumber = col * rowCount + row + 1;
-
-        return (
-          <div key={problem.id} className="avoid-break">
-            <ProblemItem
-              problem={problem}
-              number={originalNumber}
-              showAnswer={showAnswers}
-            />
+          {/* ヘッダー */}
+          <div style={headerBorderStyle}>
+            <div style={headerGridStyle}>
+              <div style={headerTextStyle}>
+                名前：<span style={getUnderlineStyle('128px')}></span>
+              </div>
+              <div style={headerCenterTextStyle}>{previewTitle}</div>
+              <div style={headerRightTextStyle}>
+                点数：<span style={getUnderlineStyle('64px')}></span>点
+              </div>
+            </div>
           </div>
-        );
-      })}
+
+          <div className={`${gridCols} avoid-break`} style={gridGapStyle}>
+            {reorderedProblems.map((problem, index) => {
+              if (!problem) {
+                // 空のセルを配置（レイアウトを保つため）
+                return <div key={`empty-${index}`} className="avoid-break" />;
+              }
+
+              // 元のインデックスを計算（縦順から横順へ）
+              const col = index % layoutColumns;
+              const row = Math.floor(index / layoutColumns);
+              const originalNumber = col * rowCount + row + 1;
+
+              return (
+                <div key={problem.id} className="avoid-break">
+                  <ProblemItem
+                    problem={problem}
+                    number={originalNumber}
+                    showAnswer={showAnswers}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
+      </>
+    );
+
+    // 印刷モードの場合は直接コンテンツを返す、プレビューモードの場合は外側のラッパーで囲む
+    if (printMode) {
+      return content;
+    }
+
+    return (
+      <div className="flex flex-col items-center py-8 bg-gray-100">
+        {content}
       </div>
-    </>
-  );
-
-  // 印刷モードの場合は直接コンテンツを返す、プレビューモードの場合は外側のラッパーで囲む
-  if (printMode) {
-    return content;
+    );
   }
-
-  return (
-    <div className="flex flex-col items-center py-8 bg-gray-100">
-      {content}
-    </div>
-  );
-});
+);
 
 ProblemList.displayName = 'ProblemList';
 
@@ -392,9 +409,7 @@ function ProblemItem({
     return (
       <div className="problem-text" style={problemItemStyle}>
         <div style={problemNumberStyle}>({number})</div>
-        <div style={wordProblemTextStyle}>
-          {wordProblem.problemText}
-        </div>
+        <div style={wordProblemTextStyle}>{wordProblem.problemText}</div>
         <div style={{ marginTop: SPACING.gap.small }}>
           {showAnswer ? (
             <span style={answerDisplayStyle}>
@@ -403,8 +418,7 @@ function ProblemItem({
             </span>
           ) : (
             <>
-              答え:{' '}
-              <span style={wordProblemAnswerUnderlineStyle} />
+              答え: <span style={wordProblemAnswerUnderlineStyle} />
               {wordProblem.unit && (
                 <span style={{ fontSize: '14px' }}>{wordProblem.unit}</span>
               )}
@@ -419,12 +433,20 @@ function ProblemItem({
   if (problem.type === 'word-en') {
     const wordProblemEn = problem as WordProblemEn;
     return (
-      <div className="problem-item" style={{ ...problemItemStyle, display: 'flex', gap: SPACING.gap.medium }}>
-        <div style={wordEnNumberStyle}>
-          ({number})
-        </div>
+      <div
+        className="problem-item"
+        style={{
+          ...problemItemStyle,
+          display: 'flex',
+          gap: SPACING.gap.medium,
+        }}
+      >
+        <div style={wordEnNumberStyle}>({number})</div>
         <div style={{ flex: 1 }}>
-          <WordProblemEnComponent problem={wordProblemEn} showAnswer={showAnswer} />
+          <WordProblemEnComponent
+            problem={wordProblemEn}
+            showAnswer={showAnswer}
+          />
         </div>
       </div>
     );
@@ -490,14 +512,14 @@ function ProblemItem({
           {/* 演算子と2つ目の数 */}
           <div style={{ whiteSpace: 'nowrap' }}>
             {/* 演算子を数字の左に配置（digits2の長さに応じて左側にパディング） */}
-            {Array(maxLength - digits2.length).fill('').map((_, i) => (
-              <span key={`pad-${i}`} style={hissanCellStyle}>
-                {'\u00A0'}
-              </span>
-            ))}
-            <span style={hissanCellStyle}>
-              {operator}
-            </span>
+            {Array(maxLength - digits2.length)
+              .fill('')
+              .map((_, i) => (
+                <span key={`pad-${i}`} style={hissanCellStyle}>
+                  {'\u00A0'}
+                </span>
+              ))}
+            <span style={hissanCellStyle}>{operator}</span>
             {paddedDigits2.map((d, i) => (
               <span key={i} style={hissanCellStyle}>
                 {d === '' ? '\u00A0' : d}
@@ -552,6 +574,30 @@ function ProblemItem({
   // 基本的な問題の場合（整数）
   const basicProblem = problem as BasicProblem;
 
+  // 多項演算（3数以上）の場合
+  if (basicProblem.operands && basicProblem.operators) {
+    return (
+      <div className="problem-text" style={problemItemStyle}>
+        <div style={problemNumberStyle}>({number})</div>
+        <div style={problemTextStyle}>
+          {basicProblem.operands.map((operand, idx) => (
+            <React.Fragment key={idx}>
+              {idx > 0 &&
+                ` ${multiOperandSymbols[basicProblem.operators![idx - 1]]} `}
+              {operand}
+            </React.Fragment>
+          ))}
+          {' = '}
+          {showAnswer && basicProblem.answer !== null ? (
+            <span style={answerDisplayStyle}>{basicProblem.answer}</span>
+          ) : (
+            <span style={answerUnderlineStyle} />
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="problem-text" style={problemItemStyle}>
       <div style={problemNumberStyle}>({number})</div>
@@ -593,14 +639,11 @@ function ProblemItem({
             {basicProblem.answer}
           </span>
         ) : showAnswer && basicProblem.answer !== null ? (
-          <span style={answerDisplayStyle}>
-            {basicProblem.answer}
-          </span>
+          <span style={answerDisplayStyle}>{basicProblem.answer}</span>
         ) : (
           <span style={answerUnderlineStyle} />
         )}
       </div>
     </div>
   );
-};
-
+}

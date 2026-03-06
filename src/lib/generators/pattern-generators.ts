@@ -37,6 +37,7 @@ import {
   generateChangeMaking,
   generateGradeAnzanRoundingProblems,
   generateAnzanDecompositionProblems,
+  generateAnzanSequentialProblems,
 } from './anzan-problems';
 
 /**
@@ -329,13 +330,11 @@ export function generatePatternProblems(
     case 'anzan-square-diff':
       return generateAnzanDecompositionProblems(settings.grade, count, pattern);
 
-    // 暗算のコツ（未実装 - 問題生成ロジックは後続Issueで実装予定）
+    // 暗算のコツ - 連続計算・総合系（実装済み）
     case 'anzan-pair-sum':
     case 'anzan-reorder':
     case 'anzan-mixed':
-      throw new Error(
-        `Pattern ${pattern} is not implemented yet. 暗算パターンの問題生成は後続Issueで実装予定です。`
-      );
+      return generateAnzanSequentialProblems(settings.grade, count, pattern);
 
     default:
       throw new Error(`Pattern ${pattern} is not implemented yet`);

@@ -165,18 +165,24 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
         const maxLength = Math.max(digits1.length, digits2.length);
 
         // パディング
-        const paddedDigits1 = Array(maxLength - digits1.length).fill('&nbsp;').concat(digits1);
-        const paddedDigits2 = Array(maxLength - digits2.length).fill('&nbsp;').concat(digits2);
+        const paddedDigits1 = Array(maxLength - digits1.length)
+          .fill('&nbsp;')
+          .concat(digits1);
+        const paddedDigits2 = Array(maxLength - digits2.length)
+          .fill('&nbsp;')
+          .concat(digits2);
 
-        const answerDigits = showAnswers && hissanProblem.answer
-          ? hissanProblem.answer.toString().split('')
-          : [];
+        const answerDigits =
+          showAnswers && hissanProblem.answer
+            ? hissanProblem.answer.toString().split('')
+            : [];
 
-        problemsHTML += '<div style="font-family: \'Courier New\', monospace; display: inline-block; text-align: right; line-height: 1.4; margin: 10px 0;">';
+        problemsHTML +=
+          '<div style="font-family: \'Courier New\', monospace; display: inline-block; text-align: right; line-height: 1.4; margin: 10px 0;">';
 
         // 1つ目の数
         problemsHTML += '<div style="white-space: nowrap;">';
-        paddedDigits1.forEach(d => {
+        paddedDigits1.forEach((d) => {
           problemsHTML += `<span style="display: inline-block; width: 30px; text-align: center;">${d}</span>`;
         });
         problemsHTML += '</div>';
@@ -184,7 +190,7 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
         // 演算子と2つ目の数
         problemsHTML += '<div style="white-space: nowrap;">';
         problemsHTML += `<span style="display: inline-block; width: 30px; text-align: center;">${operator}</span>`;
-        paddedDigits2.slice(1).forEach(d => {
+        paddedDigits2.slice(1).forEach((d) => {
           problemsHTML += `<span style="display: inline-block; width: 30px; text-align: center;">${d}</span>`;
         });
         problemsHTML += '</div>';
@@ -195,13 +201,16 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
         // 答え
         problemsHTML += '<div style="white-space: nowrap;">';
         if (showAnswers && hissanProblem.answer) {
-          const paddedAnswer = Array(maxLength + 1 - answerDigits.length).fill('&nbsp;').concat(answerDigits);
-          paddedAnswer.forEach(d => {
+          const paddedAnswer = Array(maxLength + 1 - answerDigits.length)
+            .fill('&nbsp;')
+            .concat(answerDigits);
+          paddedAnswer.forEach((d) => {
             problemsHTML += `<span style="display: inline-block; width: 30px; text-align: center; color: red; font-weight: bold;">${d}</span>`;
           });
         } else {
           for (let i = 0; i <= maxLength; i++) {
-            problemsHTML += '<span style="display: inline-block; width: 30px; height: 30px; border: 1px solid #ccc; margin: 0 2px;"></span>';
+            problemsHTML +=
+              '<span style="display: inline-block; width: 30px; height: 30px; border: 1px solid #ccc; margin: 0 2px;"></span>';
           }
         }
         problemsHTML += '</div>';
@@ -211,51 +220,68 @@ export const SinglePrintButton: React.FC<SinglePrintButtonProps> = ({
         const basicProblem = problem as BasicProblem;
         const operator = getOperatorSymbol(problem.operation);
 
-        // operand1の表示
-        if (basicProblem.operand1 !== null) {
-          problemsHTML += basicProblem.operand1;
-        } else if (showAnswers) {
-          const missingOperand1 = calculateMissingOperand1(basicProblem);
-          problemsHTML += `<span style="color: red; font-weight: bold;">${missingOperand1}</span>`;
+        // 多項演算（3数以上）の場合
+        if (basicProblem.operands && basicProblem.operators) {
+          basicProblem.operands.forEach((operand, idx) => {
+            if (idx > 0) {
+              problemsHTML += ` ${getOperatorSymbol(basicProblem.operators![idx - 1])} `;
+            }
+            problemsHTML += operand;
+          });
+          problemsHTML += ' = ';
+          if (showAnswers && basicProblem.answer !== null) {
+            problemsHTML += `<span style="color: red; font-weight: bold;">${basicProblem.answer}</span>`;
+          } else {
+            problemsHTML +=
+              '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
+          }
         } else {
-          problemsHTML +=
-            '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
-        }
-
-        problemsHTML += ` ${operator} `;
-
-        // operand2の表示
-        if (basicProblem.operand2 !== null) {
-          problemsHTML += basicProblem.operand2;
-        } else if (showAnswers) {
-          const missingOperand2 = calculateMissingOperand2(basicProblem);
-          problemsHTML += `<span style="color: red; font-weight: bold;">${missingOperand2}</span>`;
-        } else {
-          problemsHTML +=
-            '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
-        }
-
-        problemsHTML += ' = ';
-
-        // 答えの表示
-        if (basicProblem.missingPosition === 'answer') {
-          // 虫食い算で答えが空欄の場合
-          if (showAnswers) {
-            const calculatedAnswer = calculateMissingAnswer(basicProblem);
-            problemsHTML += `<span style="color: red; font-weight: bold;">${calculatedAnswer}</span>`;
+          // operand1の表示
+          if (basicProblem.operand1 !== null) {
+            problemsHTML += basicProblem.operand1;
+          } else if (showAnswers) {
+            const missingOperand1 = calculateMissingOperand1(basicProblem);
+            problemsHTML += `<span style="color: red; font-weight: bold;">${missingOperand1}</span>`;
           } else {
             problemsHTML +=
               '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
           }
-        } else if (showAnswers && basicProblem.missingPosition) {
-          // 虫食い算で答えの位置が空欄でない場合、通常の色で答えを表示
-          problemsHTML += `<span style="font-family: monospace; font-size: 18px;">${basicProblem.answer}</span>`;
-        } else if (showAnswers && basicProblem.answer !== null) {
-          problemsHTML += `<span style="color: red; font-weight: bold;">${basicProblem.answer}</span>`;
-        } else {
-          problemsHTML +=
-            '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
-        }
+
+          problemsHTML += ` ${operator} `;
+
+          // operand2の表示
+          if (basicProblem.operand2 !== null) {
+            problemsHTML += basicProblem.operand2;
+          } else if (showAnswers) {
+            const missingOperand2 = calculateMissingOperand2(basicProblem);
+            problemsHTML += `<span style="color: red; font-weight: bold;">${missingOperand2}</span>`;
+          } else {
+            problemsHTML +=
+              '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
+          }
+
+          problemsHTML += ' = ';
+
+          // 答えの表示
+          if (basicProblem.missingPosition === 'answer') {
+            // 虫食い算で答えが空欄の場合
+            if (showAnswers) {
+              const calculatedAnswer = calculateMissingAnswer(basicProblem);
+              problemsHTML += `<span style="color: red; font-weight: bold;">${calculatedAnswer}</span>`;
+            } else {
+              problemsHTML +=
+                '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
+            }
+          } else if (showAnswers && basicProblem.missingPosition) {
+            // 虫食い算で答えの位置が空欄でない場合、通常の色で答えを表示
+            problemsHTML += `<span style="font-family: monospace; font-size: 18px;">${basicProblem.answer}</span>`;
+          } else if (showAnswers && basicProblem.answer !== null) {
+            problemsHTML += `<span style="color: red; font-weight: bold;">${basicProblem.answer}</span>`;
+          } else {
+            problemsHTML +=
+              '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
+          }
+        } // close else (binary operand branch)
       }
 
       problemsHTML += '</div></div>';

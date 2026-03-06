@@ -39,6 +39,8 @@ export interface BasicProblem {
   answer: number | null;
   carryOver?: boolean;
   missingPosition?: 'operand1' | 'operand2' | 'answer';
+  operands?: number[];
+  operators?: Operation[];
 }
 
 export interface HissanProblem {

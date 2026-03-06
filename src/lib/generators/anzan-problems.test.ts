@@ -12,6 +12,10 @@ import {
   generateMulDecomposeProblems,
   generateSquareDiffProblems,
   generateAnzanDecompositionProblems,
+  generateAnzanPairSum,
+  generateAnzanReorder,
+  generateAnzanMixed,
+  generateAnzanSequentialProblems,
 } from './anzan-problems';
 import { generateProblems } from './index';
 import type { Grade, WorksheetSettings } from '../../types';
@@ -580,6 +584,280 @@ describe('generateAnzanDecompositionProblems dispatch', () => {
     for (const p of problems) {
       const avg = (p.operand1! + p.operand2!) / 2;
       expect(avg % 10).toBe(0);
+    }
+  });
+});
+
+function hasPairSummingTo(operands: number[], target: number): boolean {
+  for (let i = 0; i < operands.length; i++) {
+    for (let j = i + 1; j < operands.length; j++) {
+      if (operands[i] + operands[j] === target) return true;
+    }
+  }
+  return false;
+}
+
+describe('anzan-pair-sum (ペアで10/100を作る)', () => {
+  it('generates the requested number of problems', () => {
+    const problems = generateAnzanPairSum(2, 10);
+    expect(problems).toHaveLength(10);
+  });
+
+  it('grade 2: generates 4-operand addition with 10-pairs', () => {
+    const problems = generateAnzanPairSum(2, 30);
+    for (const p of problems) {
+      expect(p.type).toBe('basic');
+      expect(p.operation).toBe('addition');
+      expect(p.operands).toBeDefined();
+      expect(p.operands).toHaveLength(4);
+      expect(p.operators).toBeDefined();
+      expect(p.operators).toHaveLength(3);
+      // All operators should be addition
+      for (const op of p.operators!) {
+        expect(op).toBe('addition');
+      }
+      // Must contain at least one pair summing to 10
+      expect(hasPairSummingTo(p.operands!, 10)).toBe(true);
+      // Answer should be the sum of all operands
+      const sum = p.operands!.reduce((a, b) => a + b, 0);
+      expect(p.answer).toBe(sum);
+    }
+  });
+
+  it('grade 3+: generates 5 operands with 10 or 100 pairs', () => {
+    const problems = generateAnzanPairSum(3, 30);
+    for (const p of problems) {
+      expect(p.operands).toBeDefined();
+      expect(p.operands!.length).toBe(5);
+      // Must contain at least one pair summing to 10 or 100
+      const has10 = hasPairSummingTo(p.operands!, 10);
+      const has100 = hasPairSummingTo(p.operands!, 100);
+      expect(has10 || has100).toBe(true);
+      const sum = p.operands!.reduce((a, b) => a + b, 0);
+      expect(p.answer).toBe(sum);
+    }
+  });
+
+  it('grade 5+: generates 6 operands', () => {
+    const problems = generateAnzanPairSum(5, 20);
+    for (const p of problems) {
+      expect(p.operands!.length).toBe(6);
+    }
+  });
+
+  it('has positive answers', () => {
+    const problems = generateAnzanPairSum(3, 50);
+    for (const p of problems) {
+      expect(p.answer).toBeGreaterThan(0);
+    }
+  });
+
+  it('operand1 and operand2 match first two operands', () => {
+    const problems = generateAnzanPairSum(2, 10);
+    for (const p of problems) {
+      expect(p.operand1).toBe(p.operands![0]);
+      expect(p.operand2).toBe(p.operands![1]);
+    }
+  });
+
+  it('integrates via generateProblems', () => {
+    const settings: WorksheetSettings = {
+      grade: 2,
+      problemType: 'basic',
+      operation: 'addition',
+      problemCount: 10,
+      layoutColumns: 2,
+      calculationPattern: 'anzan-pair-sum',
+    };
+
+    const problems = generateProblems(settings);
+    expect(problems).toHaveLength(10);
+    for (const problem of problems) {
+      expect(problem.type).toBe('basic');
+      if (problem.type === 'basic') {
+        expect(problem.operands).toBeDefined();
+      }
+    }
+  });
+});
+
+describe('anzan-reorder (計算順序の工夫)', () => {
+  it('generates the requested number of problems', () => {
+    const problems = generateAnzanReorder(5, 10);
+    expect(problems).toHaveLength(10);
+  });
+
+  it('grade 5: generates 3-4 operand addition problems', () => {
+    const problems = generateAnzanReorder(5, 30);
+    for (const p of problems) {
+      expect(p.type).toBe('basic');
+      expect(p.operation).toBe('addition');
+      expect(p.operands).toBeDefined();
+      expect(p.operands!.length).toBeGreaterThanOrEqual(3);
+      expect(p.operands!.length).toBeLessThanOrEqual(4);
+      // All operators should be addition for grade 5
+      for (const op of p.operators!) {
+        expect(op).toBe('addition');
+      }
+      // Answer should be correct
+      const sum = p.operands!.reduce((a, b) => a + b, 0);
+      expect(p.answer).toBe(sum);
+    }
+  });
+
+  it('grade 6: includes multiplication problems', () => {
+    // With enough samples, grade 6 should produce some multiplication problems
+    const problems = generateAnzanReorder(6, 100);
+    const mulProblems = problems.filter(
+      (p) => p.operation === 'multiplication'
+    );
+    expect(mulProblems.length).toBeGreaterThan(0);
+
+    for (const p of mulProblems) {
+      expect(p.operands).toBeDefined();
+      expect(p.operands!.length).toBe(3);
+      for (const op of p.operators!) {
+        expect(op).toBe('multiplication');
+      }
+      const product = p.operands!.reduce((a, b) => a * b, 1);
+      expect(p.answer).toBe(product);
+    }
+  });
+
+  it('has positive answers', () => {
+    const problems = generateAnzanReorder(5, 50);
+    for (const p of problems) {
+      expect(p.answer).toBeGreaterThan(0);
+    }
+  });
+
+  it('grade 5 addition problems have operands that form round-number pairs', () => {
+    const problems = generateAnzanReorder(5, 30);
+    for (const p of problems) {
+      if (p.operation === 'addition') {
+        // At least two operands should have ones digits summing to 10 or 0
+        const operands = p.operands!;
+        let hasRoundPair = false;
+        for (let i = 0; i < operands.length; i++) {
+          for (let j = i + 1; j < operands.length; j++) {
+            if ((operands[i] + operands[j]) % 10 === 0) {
+              hasRoundPair = true;
+            }
+          }
+        }
+        expect(hasRoundPair).toBe(true);
+      }
+    }
+  });
+
+  it('integrates via generateProblems', () => {
+    const settings: WorksheetSettings = {
+      grade: 5,
+      problemType: 'basic',
+      operation: 'addition',
+      problemCount: 10,
+      layoutColumns: 2,
+      calculationPattern: 'anzan-reorder',
+    };
+
+    const problems = generateProblems(settings);
+    expect(problems).toHaveLength(10);
+    for (const problem of problems) {
+      expect(problem.type).toBe('basic');
+      if (problem.type === 'basic') {
+        expect(problem.operands).toBeDefined();
+      }
+    }
+  });
+});
+
+describe('anzan-mixed (暗算テクニック混合)', () => {
+  it('generates the requested number of problems', () => {
+    const problems = generateAnzanMixed(6, 10);
+    expect(problems).toHaveLength(10);
+  });
+
+  it('generates valid basic problems', () => {
+    const problems = generateAnzanMixed(6, 20);
+    for (const p of problems) {
+      expect(p.type).toBe('basic');
+      expect(p.id).toBeDefined();
+      expect(p.answer).toBeDefined();
+    }
+  });
+
+  it('produces variety of problem types (not all same operation)', () => {
+    const problems = generateAnzanMixed(6, 30);
+    const operations = new Set(problems.map((p) => p.operation));
+    expect(operations.size).toBeGreaterThan(1);
+  });
+
+  it('does not produce consecutive problems from the same generator', () => {
+    // With 30 problems, the operations should vary
+    const problems = generateAnzanMixed(6, 30);
+    // Check that we don't have long runs of identical operation+operand patterns
+    let maxConsecutiveSame = 1;
+    let currentRun = 1;
+    for (let i = 1; i < problems.length; i++) {
+      const prev = problems[i - 1];
+      const curr = problems[i];
+      // If operation AND operand ranges are the same, it's likely the same generator
+      if (
+        prev.operation === curr.operation &&
+        (prev.operands !== undefined) === (curr.operands !== undefined)
+      ) {
+        currentRun++;
+        maxConsecutiveSame = Math.max(maxConsecutiveSame, currentRun);
+      } else {
+        currentRun = 1;
+      }
+    }
+    // Should not have too many consecutive from same generator type
+    expect(maxConsecutiveSame).toBeLessThanOrEqual(5);
+  });
+
+  it('integrates via generateProblems', () => {
+    const settings: WorksheetSettings = {
+      grade: 6,
+      problemType: 'basic',
+      operation: 'addition',
+      problemCount: 10,
+      layoutColumns: 2,
+      calculationPattern: 'anzan-mixed',
+    };
+
+    const problems = generateProblems(settings);
+    expect(problems).toHaveLength(10);
+    for (const problem of problems) {
+      expect(problem.type).toBe('basic');
+    }
+  });
+});
+
+describe('generateAnzanSequentialProblems dispatch', () => {
+  it('dispatches anzan-pair-sum correctly', () => {
+    const problems = generateAnzanSequentialProblems(2, 5, 'anzan-pair-sum');
+    expect(problems).toHaveLength(5);
+    for (const p of problems) {
+      expect(p.operands).toBeDefined();
+      expect(hasPairSummingTo(p.operands!, 10)).toBe(true);
+    }
+  });
+
+  it('dispatches anzan-reorder correctly', () => {
+    const problems = generateAnzanSequentialProblems(5, 5, 'anzan-reorder');
+    expect(problems).toHaveLength(5);
+    for (const p of problems) {
+      expect(p.operands).toBeDefined();
+      expect(p.operands!.length).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it('dispatches anzan-mixed correctly', () => {
+    const problems = generateAnzanSequentialProblems(6, 5, 'anzan-mixed');
+    expect(problems).toHaveLength(5);
+    for (const p of problems) {
+      expect(p.type).toBe('basic');
     }
   });
 });
