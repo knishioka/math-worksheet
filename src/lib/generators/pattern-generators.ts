@@ -31,6 +31,11 @@ import { generateGradeTransportProblems } from './transport-problems';
 import { generateGradeTransportProblemsEn } from './transport-problems-en';
 import { generateGradeAllowanceProblems } from './allowance-problems';
 import { generateGradeAllowanceProblemsEn } from './allowance-problems-en';
+import {
+  generateComplement10,
+  generateComplement100,
+  generateChangeMaking,
+} from './anzan-problems';
 
 /**
  * 計算パターンに基づいて問題を生成
@@ -292,10 +297,15 @@ export function generatePatternProblems(
     case 'allowance-goal-en':
       return generateGradeAllowanceProblemsEn(settings.grade, count, pattern);
 
-    // 暗算のコツ（未実装 - 問題生成ロジックは後続Issueで実装予定）
+    // 暗算のコツ - 補数系パターン
     case 'anzan-complement-10':
+      return generateComplement10(settings.grade, count);
     case 'anzan-complement-100':
+      return generateComplement100(settings.grade, count);
     case 'anzan-change-making':
+      return generateChangeMaking(settings.grade, count);
+
+    // 暗算のコツ（未実装 - 問題生成ロジックは後続Issueで実装予定）
     case 'anzan-round-add':
     case 'anzan-round-sub':
     case 'anzan-round-mul':
