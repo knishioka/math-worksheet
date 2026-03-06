@@ -292,7 +292,7 @@ export function generatePatternProblems(
     case 'allowance-goal-en':
       return generateGradeAllowanceProblemsEn(settings.grade, count, pattern);
 
-    // 暗算のコツ（スタブ実装）
+    // 暗算のコツ（未実装 - 問題生成ロジックは後続Issueで実装予定）
     case 'anzan-complement-10':
     case 'anzan-complement-100':
     case 'anzan-change-making':
@@ -309,7 +309,9 @@ export function generatePatternProblems(
     case 'anzan-pair-sum':
     case 'anzan-reorder':
     case 'anzan-mixed':
-      return [];
+      throw new Error(
+        `Pattern ${pattern} is not implemented yet. 暗算パターンの問題生成は後続Issueで実装予定です。`
+      );
 
     default:
       throw new Error(`Pattern ${pattern} is not implemented yet`);
