@@ -56,6 +56,12 @@ describe('pattern-categories', () => {
     it('should categorize word problem patterns', () => {
       expect(getPatternCategory('word-en')).toBe('word');
     });
+
+    it('should categorize anzan patterns', () => {
+      expect(getPatternCategory('anzan-complement-10')).toBe('anzan');
+      expect(getPatternCategory('anzan-mul-5')).toBe('anzan');
+      expect(getPatternCategory('anzan-mixed')).toBe('anzan');
+    });
   });
 
   describe('getPatternLanguage', () => {
@@ -75,6 +81,12 @@ describe('pattern-categories', () => {
       expect(getPatternLanguage('add-single-digit')).toBe('all');
       expect(getPatternLanguage('hissan-add-double')).toBe('all');
       expect(getPatternLanguage('frac-same-denom')).toBe('all');
+    });
+
+    it('should identify anzan patterns as language-neutral', () => {
+      expect(getPatternLanguage('anzan-complement-10')).toBe('all');
+      expect(getPatternLanguage('anzan-mul-5')).toBe('all');
+      expect(getPatternLanguage('anzan-mixed')).toBe('all');
     });
   });
 
@@ -267,6 +279,15 @@ describe('pattern-categories', () => {
       expect(getPatternDifficulty('add-sub-mixed-basic')).toBe(3);
       expect(getPatternDifficulty('add-single-missing')).toBe(3);
       expect(getPatternDifficulty('hissan-mult-advanced')).toBe(3);
+    });
+
+    it('should return correct difficulty for anzan patterns', () => {
+      expect(getPatternDifficulty('anzan-complement-10')).toBe(1);
+      expect(getPatternDifficulty('anzan-pair-sum')).toBe(1);
+      expect(getPatternDifficulty('anzan-round-add')).toBe(2);
+      expect(getPatternDifficulty('anzan-mul-9')).toBe(2);
+      expect(getPatternDifficulty('anzan-square-diff')).toBe(3);
+      expect(getPatternDifficulty('anzan-mixed')).toBe(3);
     });
 
     it('should return default difficulty 2 for undefined patterns', () => {
