@@ -2,153 +2,137 @@
 /**
  * 印刷レイアウトチェックスクリプト
  *
- * playwright-cli を使ってデプロイ済みサイト（またはローカル）の
+ * Playwright Node.js API を使ってビルド済みサイトの
  * 印刷プレビューエリアの高さをA4と比較し、オーバーフローを検出する。
  *
  * 使い方:
  *   node scripts/check-print-layout.mjs [url]
  *   node scripts/check-print-layout.mjs https://knishioka.github.io/math-worksheet/
  *   node scripts/check-print-layout.mjs http://localhost:4173/math-worksheet/
- *
- * 注意: playwright-cli run-code は呼び出しのたびにページを再ナビゲートするため、
- *       1シナリオ分の操作（学年選択・パターン選択・計測）を1回の呼び出しにまとめる。
- *       また、JSON.stringify で渡す際は改行が \n に変換されて JS として解釈されないため、
- *       コードを1行にまとめる必要がある。
  */
 
-import { spawnSync } from 'child_process';
+import { chromium } from 'playwright';
 
 const BASE_URL =
   process.argv[2] ?? 'https://knishioka.github.io/math-worksheet/';
 
-// A4 @ 96dpi: 297mm × (96 / 25.4)
-// data-a4-sheet の内側コンテナ（minHeight: 297mm）を計測するため、
-// 297mm のピクセル換算値と比較する。
-const A4_PX = 297 * (96 / 25.4); // ≈ 1122.5px
+// A4 @ 96dpi: 297mm * (96 / 25.4)
+const A4_PX = 297 * (96 / 25.4); // 1122.5px
 
-// チェックするシナリオ: grade=学年(1-6), pattern=calculationPatternの値 or null
-// 各学年の代表的な問題タイプをカバーするシナリオ
-// pattern: null は学年デフォルト（四則演算混合）を意味する
 const SCENARIOS = [
-  // 低学年: 1桁のたし算・ひき算
   { grade: 1, pattern: null, label: '1年生 基本計算' },
   { grade: 2, pattern: 'anzan-pair-sum', label: '2年生 ペアで10を作る' },
-  // 中学年: 3桁の筆算、かけ算・わり算が加わる
   { grade: 3, pattern: null, label: '3年生 基本計算' },
   { grade: 3, pattern: 'hissan-add-triple', label: '3年生 3桁のたし算筆算' },
   { grade: 4, pattern: 'hissan-div-basic', label: '4年生 わり算の筆算' },
   { grade: 4, pattern: 'anzan-pair-sum', label: '4年生 ペアで10/100を作る' },
-  { grade: 4, pattern: 'anzan-reorder', label: '4年生 順序入れ替え' },
-  // 高学年: 暗算混合
-  { grade: 5, pattern: 'anzan-mixed', label: '5年生 暗算混合' },
+  { grade: 5, pattern: 'anzan-reorder', label: '5年生 順序入れ替え' },
+  { grade: 6, pattern: 'anzan-mixed', label: '6年生 暗算混合' },
 ];
 
 /**
- * playwright-cli run-code を実行して Result を返す。
- * singleLineJs は1行のJSコード。IIFE でラップして run-code に渡す。
- * spawnSync でシェルを経由せず引数を直接渡すことで、$() のシェル展開を防ぐ。
+ * パターンのラジオボタンを選択する。
+ * アコーディオン内の場合は全セクションを展開してからクリックする。
  */
-function rc(singleLineJs) {
-  try {
-    const fn =
-      'async (page) => { return await (async()=>{' + singleLineJs + '})(); }';
-    const result = spawnSync('playwright-cli', ['run-code', fn], {
-      encoding: 'utf8',
-      timeout: 30000,
-    });
-    const out = result.stdout ?? '';
-    const m = out.match(/### Result\n([\s\S]*?)(?:\n### |$)/);
-    if (!m) return null;
-    return m[1].trim().replace(/^"|"$/g, '');
-  } catch (e) {
-    console.error('playwright-cli execution failed:', e.message ?? e);
-    return null;
-  }
-}
+async function selectPattern(page, pattern) {
+  if (!pattern) return;
 
-/** playwright-cli コマンドを実行（spawnSync でシェルを経由しない） */
-function cli(...args) {
-  try {
-    spawnSync('playwright-cli', args, {
-      encoding: 'utf8',
-      stdio: 'pipe',
-      timeout: 10000,
-    });
-  } catch (e) {
-    console.warn('playwright-cli command failed:', args[0], e.message ?? e);
-  }
-}
+  // まずラジオボタンが見えるか確認
+  let radio = await page.$(`input[value="${pattern}"]`);
 
-/** テンプレートリテラルの改行・余分な空白を除去して1行のJSにする */
-function collapse(code) {
-  return code.replace(/\n\s*/g, ' ').trim();
+  if (!radio) {
+    // アコーディオンを全て展開
+    const collapsed = await page.$$('button[aria-expanded="false"]');
+    for (const btn of collapsed) {
+      await btn.click();
+      await page.waitForTimeout(100);
+    }
+    // 再度ラジオボタンを探す
+    radio = await page.$(`input[value="${pattern}"]`);
+  }
+
+  if (!radio) {
+    console.warn(
+      `    [warn] パターン "${pattern}" のラジオボタンが見つかりません`
+    );
+    return;
+  }
+
+  // ラジオボタンの親要素（label）をクリック
+  await radio.evaluate((el) => {
+    const label = el.closest('label') || el.parentElement;
+    if (label) label.click();
+  });
+
+  // ラジオボタンがチェックされるのを待つ
+  await page
+    .waitForFunction(
+      (v) => document.querySelector(`input[value="${v}"]:checked`),
+      pattern,
+      { timeout: 3000 }
+    )
+    .catch(() => {
+      console.warn(
+        `    [warn] パターン "${pattern}" の選択を確認できませんでした`
+      );
+    });
+
+  // React の状態更新を待つ（useEffect による recommendedCount 反映）
+  await page.waitForTimeout(1000);
 }
 
 /**
- * パターン選択用JSコードを生成する。
- * ラジオボタンをクリックし、アコーディオン内の場合は展開してからクリックする。
+ * 1シナリオの印刷レイアウトを計測する。
  */
-function buildPatternSelectionJs(pattern) {
-  if (!pattern) return '';
-  // clickRadio: ラジオボタンの親label/要素をクリック
-  // expandAndRetry: アコーディオンを展開して再試行
-  return collapse(`
-    async function clickRadio(sel) {
-      const el = await page.$(sel);
-      if (!el) return false;
-      await el.evaluate(e => { const lb = e.closest('label') || e.parentElement; if (lb) lb.click(); });
-      return page.waitForFunction(
-        (v) => document.querySelector('input[value="' + v + '"]:checked'),
-        '${pattern}', { timeout: 3000 }
-      ).then(() => true).catch(() => false);
-    }
-    if (!(await clickRadio('input[value="${pattern}"]'))) {
-      const btn = await page.$('button[aria-expanded="false"]');
-      if (btn) await btn.click();
-      await page.waitForSelector('input[value="${pattern}"]', { timeout: 3000 })
-        .catch((e) => console.warn('wait timed out:', e.message));
-      await clickRadio('input[value="${pattern}"]');
-    }
-  `);
-}
+async function measureScenario(page, scenario) {
+  // 各シナリオごとにページを再読み込みして状態をリセット
+  await page.goto(BASE_URL, { waitUntil: 'networkidle' });
+  await page.waitForSelector('select', { timeout: 10000 });
 
-/**
- * 1シナリオを単一の rc() 呼び出しで計測する。
- * playwright-cli は run-code のたびにページを再ナビゲートするため、
- * 学年選択・パターン選択・高さ計測を1行のJSにまとめる。
- */
-async function measureScenario(s) {
-  const patternJs = buildPatternSelectionJs(s.pattern);
-
-  // 学年選択 + パターン選択 + 推奨問題数選択 + 印刷モード計測（テンプレートリテラルで記述し1行化）
-  // page.emulateMedia('print') で @media print CSS を適用し、実際の印刷レイアウトを計測する。
-  // App.tsx の最外側 div が no-print クラスを持つため、計測前に上書きして非表示を防ぐ。
-  const code = collapse(`
-    const sel = await page.$('select');
-    if (sel) {
-      await sel.selectOption(String(${s.grade}));
-      await page.waitForFunction(
-        (g) => { const s = document.querySelector('select'); return s && s.value === String(g); },
-        ${s.grade},
+  // 学年選択
+  const gradeSelect = await page.$('select');
+  if (gradeSelect) {
+    await gradeSelect.selectOption(String(scenario.grade));
+    await page
+      .waitForFunction(
+        (g) => {
+          const s = document.querySelector('select');
+          return s && s.value === String(g);
+        },
+        scenario.grade,
         { timeout: 3000 }
-      ).catch((e) => console.warn('wait timed out:', e.message));
-    }
-    ${patternJs}
-    await page.waitForTimeout(1000);
-    await page.waitForSelector('[data-a4-sheet]', { timeout: 5000 }).catch((e) => console.warn('wait timed out:', e.message));
-    await page.addStyleTag({ content: '.no-print { display: block !important; }' });
-    await page.emulateMedia({ media: 'print' });
-    await page.waitForSelector('[data-a4-sheet]', { state: 'visible', timeout: 3000 }).catch((e) => console.warn('wait timed out:', e.message));
-    const el = await page.$('[data-a4-sheet]');
-    if (!el) { await page.emulateMedia({ media: null }); return '0'; }
-    const b = await el.boundingBox();
-    await page.emulateMedia({ media: null });
-    return b ? String(Math.round(b.height)) : '0';
-  `);
+      )
+      .catch(() => {});
+  }
 
-  const h = rc(code);
-  const parsed = parseInt((h ?? '0').replace(/\D/g, ''), 10);
-  return Number.isNaN(parsed) ? 0 : parsed;
+  // パターン選択
+  await selectPattern(page, scenario.pattern);
+
+  // 問題が生成されるのを待つ
+  await page
+    .waitForSelector('[data-a4-sheet]', { timeout: 5000 })
+    .catch(() => {});
+
+  // no-print 要素を表示させる（印刷モードで非表示になるのを防ぐ）
+  await page.addStyleTag({
+    content: '.no-print { display: block !important; }',
+  });
+
+  // 印刷メディアに切り替え
+  await page.emulateMedia({ media: 'print' });
+  await page
+    .waitForSelector('[data-a4-sheet]', { state: 'visible', timeout: 3000 })
+    .catch(() => {});
+
+  const el = await page.$('[data-a4-sheet]');
+  if (!el) {
+    await page.emulateMedia({ media: null });
+    return 0;
+  }
+
+  const box = await el.boundingBox();
+  await page.emulateMedia({ media: null });
+  return box ? Math.round(box.height) : 0;
 }
 
 async function main() {
@@ -156,22 +140,16 @@ async function main() {
   console.log('   URL: ' + BASE_URL);
   console.log('   A4高さ基準: ' + Math.round(A4_PX) + 'px (297mm @ 96dpi)\n');
 
-  cli('open', BASE_URL);
-  cli('resize', '1280', '900');
-  // ページ読み込み完了を待つ（cli はページオブジェクトを返さないため rc() で確認）
-  rc(
-    collapse(`
-    await page.waitForSelector('select', { timeout: 10000 });
-    return 'ready';
-  `)
-  );
+  const browser = await chromium.launch();
+  const context = await browser.newContext({
+    viewport: { width: 1280, height: 900 },
+  });
+  const page = await context.newPage();
 
   const results = [];
 
   for (const scenario of SCENARIOS) {
-    const height = await measureScenario(scenario);
-    // minHeight: 297mm のブラウザ丸め込みにより最低でも Math.round(A4_PX) px になる。
-    // 5px（約1.3mm）のトレランスを設けてブラウザの丸め誤差を吸収する。
+    const height = await measureScenario(page, scenario);
     const A4_BASELINE = Math.round(A4_PX); // 1123px
     const TOLERANCE_PX = 5;
     const ratio = height > 0 ? height / A4_PX : null;
@@ -207,14 +185,14 @@ async function main() {
     }
   }
 
-  cli('close-all');
+  await browser.close();
 
   const unmeasured = results.filter((r) => r.height === 0);
   const failures = results.filter((r) => !r.ok && r.height > 0);
   console.log('\n--- 結果 ---');
   if (unmeasured.length === results.length) {
     console.log(
-      '❌ 全シナリオの計測に失敗しました。playwright-cli が正しくインストールされているか確認してください。\n'
+      '❌ 全シナリオの計測に失敗しました。Playwright が正しくインストールされているか確認してください。\n'
     );
     process.exit(1);
   }
