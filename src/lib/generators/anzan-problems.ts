@@ -530,8 +530,8 @@ export function generateAnzanPairSum(
  * 計算順序の工夫問題を生成
  * Generate reorder problems where changing calculation order simplifies computation
  *
- * Grade 5: 3-4 operand addition/subtraction
- * Grade 6: includes multiplication/division
+ * Grade 5: 3-4 operand addition (round-number pair optimization)
+ * Grade 6: addition or multiplication (e.g., 7×25×4 → 25×4×7 = 700)
  */
 export function generateAnzanReorder(
   grade: Grade,

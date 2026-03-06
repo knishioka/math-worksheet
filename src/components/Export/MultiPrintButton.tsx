@@ -176,7 +176,8 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
           const operator = getOperatorSymbol(problem.operation);
 
           // 分数1
-          problemsHTML += '<math xmlns="http://www.w3.org/1998/Math/MathML"><mfrac>';
+          problemsHTML +=
+            '<math xmlns="http://www.w3.org/1998/Math/MathML"><mfrac>';
           problemsHTML += `<mn>${fractionProblem.numerator1}</mn>`;
           problemsHTML += `<mn>${fractionProblem.denominator1}</mn>`;
           problemsHTML += '</mfrac></math>';
@@ -184,8 +185,12 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
           problemsHTML += ` ${operator} `;
 
           // 分数2
-          if (fractionProblem.numerator2 !== undefined && fractionProblem.denominator2 !== undefined) {
-            problemsHTML += '<math xmlns="http://www.w3.org/1998/Math/MathML"><mfrac>';
+          if (
+            fractionProblem.numerator2 !== undefined &&
+            fractionProblem.denominator2 !== undefined
+          ) {
+            problemsHTML +=
+              '<math xmlns="http://www.w3.org/1998/Math/MathML"><mfrac>';
             problemsHTML += `<mn>${fractionProblem.numerator2}</mn>`;
             problemsHTML += `<mn>${fractionProblem.denominator2}</mn>`;
             problemsHTML += '</mfrac></math>';
@@ -195,12 +200,14 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
 
           // 答え
           if (showAnswers) {
-            problemsHTML += '<math xmlns="http://www.w3.org/1998/Math/MathML"><mfrac>';
+            problemsHTML +=
+              '<math xmlns="http://www.w3.org/1998/Math/MathML"><mfrac>';
             problemsHTML += `<mn style="color: red; font-weight: bold;">${fractionProblem.answerNumerator}</mn>`;
             problemsHTML += `<mn style="color: red; font-weight: bold;">${fractionProblem.answerDenominator}</mn>`;
             problemsHTML += '</mfrac></math>';
           } else {
-            problemsHTML += '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
+            problemsHTML +=
+              '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
           }
         } else if (problem.type === 'decimal') {
           // 小数問題の表示
@@ -215,7 +222,8 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
           if (showAnswers) {
             problemsHTML += `<math xmlns="http://www.w3.org/1998/Math/MathML"><mn style="color: red; font-weight: bold;">${decimalProblem.answer}</mn></math>`;
           } else {
-            problemsHTML += '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
+            problemsHTML +=
+              '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
           }
         } else if (problem.type === 'mixed') {
           // 帯分数問題の表示
@@ -223,7 +231,8 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
           const operator = getOperatorSymbol(problem.operation);
 
           // 帯分数1
-          problemsHTML += '<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow>';
+          problemsHTML +=
+            '<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow>';
           problemsHTML += `<mn>${mixedProblem.whole1}</mn>`;
           problemsHTML += '<mfrac>';
           problemsHTML += `<mn>${mixedProblem.numerator1}</mn>`;
@@ -234,8 +243,13 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
           problemsHTML += ` ${operator} `;
 
           // 帯分数2
-          if (mixedProblem.whole2 !== undefined && mixedProblem.numerator2 !== undefined && mixedProblem.denominator2 !== undefined) {
-            problemsHTML += '<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow>';
+          if (
+            mixedProblem.whole2 !== undefined &&
+            mixedProblem.numerator2 !== undefined &&
+            mixedProblem.denominator2 !== undefined
+          ) {
+            problemsHTML +=
+              '<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow>';
             problemsHTML += `<mn>${mixedProblem.whole2}</mn>`;
             problemsHTML += '<mfrac>';
             problemsHTML += `<mn>${mixedProblem.numerator2}</mn>`;
@@ -248,7 +262,8 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
 
           // 答え
           if (showAnswers) {
-            problemsHTML += '<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow>';
+            problemsHTML +=
+              '<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow>';
             problemsHTML += `<mn style="color: red; font-weight: bold;">${mixedProblem.answerWhole}</mn>`;
             problemsHTML += '<mfrac>';
             problemsHTML += `<mn style="color: red; font-weight: bold;">${mixedProblem.answerNumerator}</mn>`;
@@ -256,7 +271,8 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
             problemsHTML += '</mfrac>';
             problemsHTML += '</mrow></math>';
           } else {
-            problemsHTML += '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
+            problemsHTML +=
+              '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
           }
         } else if (problem.type === 'word-en') {
           // 英語文章問題の表示 - 問題番号を横並びに
@@ -266,9 +282,12 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
           problemsHTML += `<div style="flex: 1;">`;
           problemsHTML += `<div style="margin-bottom: 4px;">${wordProblemEn.problemText}</div>`;
           if (wordProblemEn.category === 'word-story') {
-            problemsHTML += '<div style="margin-top: 4px; display: flex; align-items: flex-end; gap: 6px;">';
-            problemsHTML += '<span style="color: #000; font-size: 14px;">Answer:</span>';
-            problemsHTML += '<div style="border-bottom: 1.5px solid #000; min-width: 3.5rem; padding: 0 6px; height: 1.2em;">';
+            problemsHTML +=
+              '<div style="margin-top: 4px; display: flex; align-items: flex-end; gap: 6px;">';
+            problemsHTML +=
+              '<span style="color: #000; font-size: 14px;">Answer:</span>';
+            problemsHTML +=
+              '<div style="border-bottom: 1.5px solid #000; min-width: 3.5rem; padding: 0 6px; height: 1.2em;">';
             if (showAnswers) {
               problemsHTML += `<span style="font-weight: 500; color: #000;">${wordProblemEn.answer}`;
               if (wordProblemEn.unit) {
@@ -292,18 +311,24 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
           const maxLength = Math.max(digits1.length, digits2.length);
 
           // パディング
-          const paddedDigits1 = Array(maxLength - digits1.length).fill('&nbsp;').concat(digits1);
-          const paddedDigits2 = Array(maxLength - digits2.length).fill('&nbsp;').concat(digits2);
+          const paddedDigits1 = Array(maxLength - digits1.length)
+            .fill('&nbsp;')
+            .concat(digits1);
+          const paddedDigits2 = Array(maxLength - digits2.length)
+            .fill('&nbsp;')
+            .concat(digits2);
 
-          const answerDigits = showAnswers && hissanProblem.answer
-            ? hissanProblem.answer.toString().split('')
-            : [];
+          const answerDigits =
+            showAnswers && hissanProblem.answer
+              ? hissanProblem.answer.toString().split('')
+              : [];
 
-          problemsHTML += '<div style="font-family: \'Courier New\', monospace; display: inline-block; text-align: right; line-height: 1.2; margin: 10px 0;">';
+          problemsHTML +=
+            '<div style="font-family: \'Courier New\', monospace; display: inline-block; text-align: right; line-height: 1.2; margin: 10px 0;">';
 
           // 1つ目の数
           problemsHTML += '<div style="white-space: nowrap;">';
-          paddedDigits1.forEach(d => {
+          paddedDigits1.forEach((d) => {
             problemsHTML += `<span style="display: inline-block; width: 30px; text-align: center;">${d}</span>`;
           });
           problemsHTML += '</div>';
@@ -312,10 +337,11 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
           problemsHTML += '<div style="white-space: nowrap;">';
           // 演算子を左側にパディング
           for (let i = 0; i < maxLength - digits2.length; i++) {
-            problemsHTML += '<span style="display: inline-block; width: 30px; text-align: center;">&nbsp;</span>';
+            problemsHTML +=
+              '<span style="display: inline-block; width: 30px; text-align: center;">&nbsp;</span>';
           }
           problemsHTML += `<span style="display: inline-block; width: 30px; text-align: center;">${operator}</span>`;
-          paddedDigits2.forEach(d => {
+          paddedDigits2.forEach((d) => {
             problemsHTML += `<span style="display: inline-block; width: 30px; text-align: center;">${d}</span>`;
           });
           problemsHTML += '</div>';
@@ -326,13 +352,16 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
           // 答え
           problemsHTML += '<div style="white-space: nowrap;">';
           if (showAnswers && hissanProblem.answer) {
-            const paddedAnswer = Array(maxLength + 1 - answerDigits.length).fill('&nbsp;').concat(answerDigits);
-            paddedAnswer.forEach(d => {
+            const paddedAnswer = Array(maxLength + 1 - answerDigits.length)
+              .fill('&nbsp;')
+              .concat(answerDigits);
+            paddedAnswer.forEach((d) => {
               problemsHTML += `<span style="display: inline-block; width: 30px; text-align: center; color: red; font-weight: bold;">${d}</span>`;
             });
           } else {
             for (let i = 0; i <= maxLength; i++) {
-              problemsHTML += '<span style="display: inline-block; width: 30px; height: 30px; border: 1px solid #ccc; margin: 0 2px;"></span>';
+              problemsHTML +=
+                '<span style="display: inline-block; width: 30px; height: 30px; border: 1px solid #ccc; margin: 0 2px;"></span>';
             }
           }
           problemsHTML += '</div>';
@@ -341,51 +370,68 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
         } else if (problem.type === 'basic') {
           const operator = getOperatorSymbol(problem.operation);
 
-          // operand1の表示
-          if (problem.operand1 !== null) {
-            problemsHTML += problem.operand1;
-          } else if (showAnswers) {
-            const missingOperand1 = calculateMissingOperand1(problem);
-            problemsHTML += `<span style="color: red; font-weight: bold;">${missingOperand1}</span>`;
+          // 多項演算（3数以上）の場合
+          if (problem.operands && problem.operators) {
+            problem.operands.forEach((operand, idx) => {
+              if (idx > 0) {
+                problemsHTML += ` ${getOperatorSymbol(problem.operators![idx - 1])} `;
+              }
+              problemsHTML += operand;
+            });
+            problemsHTML += ' = ';
+            if (showAnswers && problem.answer !== null) {
+              problemsHTML += `<span style="color: red; font-weight: bold;">${problem.answer}</span>`;
+            } else {
+              problemsHTML +=
+                '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
+            }
           } else {
-            problemsHTML +=
-              '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
-          }
-
-          problemsHTML += ` ${operator} `;
-
-          // operand2の表示
-          if (problem.operand2 !== null) {
-            problemsHTML += problem.operand2;
-          } else if (showAnswers) {
-            const missingOperand2 = calculateMissingOperand2(problem);
-            problemsHTML += `<span style="color: red; font-weight: bold;">${missingOperand2}</span>`;
-          } else {
-            problemsHTML +=
-              '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
-          }
-
-          problemsHTML += ' = ';
-
-          // 答えの表示
-          if (problem.missingPosition === 'answer') {
-            // 虫食い算で答えが空欄の場合
-            if (showAnswers) {
-              const calculatedAnswer = calculateMissingAnswer(problem);
-              problemsHTML += `<span style="color: red; font-weight: bold;">${calculatedAnswer}</span>`;
+            // operand1の表示
+            if (problem.operand1 !== null) {
+              problemsHTML += problem.operand1;
+            } else if (showAnswers) {
+              const missingOperand1 = calculateMissingOperand1(problem);
+              problemsHTML += `<span style="color: red; font-weight: bold;">${missingOperand1}</span>`;
             } else {
               problemsHTML +=
                 '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
             }
-          } else if (showAnswers && problem.missingPosition) {
-            // 虫食い算で答えの位置が空欄でない場合、通常の色で答えを表示
-            problemsHTML += `<span style="font-family: monospace; font-size: 18px;">${problem.answer}</span>`;
-          } else if (showAnswers && problem.answer !== null) {
-            problemsHTML += `<span style="color: red; font-weight: bold;">${problem.answer}</span>`;
-          } else {
-            problemsHTML +=
-              '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
-          }
+
+            problemsHTML += ` ${operator} `;
+
+            // operand2の表示
+            if (problem.operand2 !== null) {
+              problemsHTML += problem.operand2;
+            } else if (showAnswers) {
+              const missingOperand2 = calculateMissingOperand2(problem);
+              problemsHTML += `<span style="color: red; font-weight: bold;">${missingOperand2}</span>`;
+            } else {
+              problemsHTML +=
+                '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
+            }
+
+            problemsHTML += ' = ';
+
+            // 答えの表示
+            if (problem.missingPosition === 'answer') {
+              // 虫食い算で答えが空欄の場合
+              if (showAnswers) {
+                const calculatedAnswer = calculateMissingAnswer(problem);
+                problemsHTML += `<span style="color: red; font-weight: bold;">${calculatedAnswer}</span>`;
+              } else {
+                problemsHTML +=
+                  '<span style="display: inline-block; width: 24px; height: 24px; border: 1.5px solid #333; background-color: #f9f9f9; vertical-align: text-bottom;"></span>';
+              }
+            } else if (showAnswers && problem.missingPosition) {
+              // 虫食い算で答えの位置が空欄でない場合、通常の色で答えを表示
+              problemsHTML += `<span style="font-family: monospace; font-size: 18px;">${problem.answer}</span>`;
+            } else if (showAnswers && problem.answer !== null) {
+              problemsHTML += `<span style="color: red; font-weight: bold;">${problem.answer}</span>`;
+            } else {
+              problemsHTML +=
+                '<span style="display: inline-block; width: 64px; border-bottom: 1px solid black; margin-left: 4px;"></span>';
+            }
+          } // close else (binary operand branch)
         }
 
         // word-enの場合は外側のdivのみを閉じ、それ以外は2つのdivを閉じる
@@ -413,8 +459,11 @@ export const MultiPrintButton: React.FC<MultiPrintButtonProps> = ({
 
       pageDiv.innerHTML = headerHTML + problemsHTML + footerHTML;
       printContainer.appendChild(pageDiv);
-      const { topMarginMm: fittedTop, bottomMarginMm: fittedBottom, scale } =
-        fitPageToA4(pageDiv, topMarginMm, bottomMarginMm);
+      const {
+        topMarginMm: fittedTop,
+        bottomMarginMm: fittedBottom,
+        scale,
+      } = fitPageToA4(pageDiv, topMarginMm, bottomMarginMm);
 
       // デバッグ用: 開発モードでのみレイアウト情報を記録
       if (import.meta.env.DEV) {

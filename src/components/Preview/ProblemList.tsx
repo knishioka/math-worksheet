@@ -57,6 +57,13 @@ import {
   SPACING,
 } from '../../config/styles';
 
+const multiOperandSymbols: Record<string, string> = {
+  addition: '+',
+  subtraction: '−',
+  multiplication: '×',
+  division: '÷',
+};
+
 interface ProblemListProps {
   problems: Problem[];
   layoutColumns: LayoutColumns;
@@ -569,20 +576,14 @@ function ProblemItem({
 
   // 多項演算（3数以上）の場合
   if (basicProblem.operands && basicProblem.operators) {
-    const opSymbols: Record<string, string> = {
-      addition: '+',
-      subtraction: '−',
-      multiplication: '×',
-      division: '÷',
-    };
-
     return (
       <div className="problem-text" style={problemItemStyle}>
         <div style={problemNumberStyle}>({number})</div>
         <div style={problemTextStyle}>
           {basicProblem.operands.map((operand, idx) => (
             <React.Fragment key={idx}>
-              {idx > 0 && ` ${opSymbols[basicProblem.operators![idx - 1]]} `}
+              {idx > 0 &&
+                ` ${multiOperandSymbols[basicProblem.operators![idx - 1]]} `}
               {operand}
             </React.Fragment>
           ))}
