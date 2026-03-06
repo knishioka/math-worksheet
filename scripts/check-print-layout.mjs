@@ -49,6 +49,7 @@ function rc(singleLineJs) {
       'async (page) => { return await (async()=>{' + singleLineJs + '})(); }';
     const result = spawnSync('playwright-cli', ['run-code', fn], {
       encoding: 'utf8',
+      timeout: 30000,
     });
     const out = result.stdout ?? '';
     const m = out.match(/### Result\n([\s\S]*?)(?:\n### |$)/);
@@ -63,7 +64,11 @@ function rc(singleLineJs) {
 /** playwright-cli コマンドを実行（spawnSync でシェルを経由しない） */
 function cli(...args) {
   try {
-    spawnSync('playwright-cli', args, { encoding: 'utf8', stdio: 'pipe' });
+    spawnSync('playwright-cli', args, {
+      encoding: 'utf8',
+      stdio: 'pipe',
+      timeout: 10000,
+    });
   } catch (e) {
     console.warn('playwright-cli command failed:', args[0], e.message ?? e);
   }
@@ -218,9 +223,13 @@ async function main() {
   if (failures.length === 0 && unmeasured.length === 0) {
     console.log('✅ 全シナリオ A4 1ページに収まっています\n');
     process.exit(0);
-  } else if (failures.length === 0) {
-    console.log('✅ 計測できたシナリオは全て A4 1ページに収まっています\n');
-    process.exit(0);
+  } else if (failures.length === 0 && unmeasured.length > 0) {
+    console.log(
+      '⚠️  計測できたシナリオは全て A4 1ページに収まっていますが、' +
+        unmeasured.length +
+        '件が未計測のため検証不完全です\n'
+    );
+    process.exit(1);
   } else {
     console.log('❌ ' + failures.length + '件のレイアウト問題を検出:\n');
     for (const f of failures) {

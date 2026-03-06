@@ -7,7 +7,7 @@
 ```bash
 npm run dev        # 開発サーバー起動 (http://localhost:5174/)
 npm run build      # 本番ビルド
-npm run test       # テスト実行 (292テスト)
+npm run test       # テスト実行 (459テスト)
 npm run typecheck  # 型チェック
 npm run lint       # ESLintチェック
 ```
@@ -141,7 +141,7 @@ playwright-cli list        # 実行中セッション一覧
 
 ## テスト
 
-**構成** (292テスト):
+**構成** (459テスト):
 
 - `src/lib/generators/*.test.ts`: 問題生成ロジック
 - `src/components/**/__tests__/`: コンポーネント
