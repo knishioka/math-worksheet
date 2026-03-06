@@ -31,7 +31,7 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
     documentTitle: worksheetData
       ? `計算プリント_${worksheetData.settings.grade}年生`
       : '計算プリント',
-    onBeforePrint: () => {
+    onBeforePrint: async () => {
       flushSync(() => setIsPrinting(true));
     },
     onAfterPrint: () => {
