@@ -38,7 +38,9 @@ describe('pattern-categories', () => {
     it('should categorize fraction and decimal patterns', () => {
       expect(getPatternCategory('frac-same-denom')).toBe('fraction');
       expect(getPatternCategory('frac-mult')).toBe('fraction');
-      expect(getPatternCategory('dec-add-simple' as CalculationPattern)).toBe('fraction');
+      expect(getPatternCategory('dec-add-simple' as CalculationPattern)).toBe(
+        'fraction'
+      );
       expect(getPatternCategory('percent-basic')).toBe('fraction');
       expect(getPatternCategory('ratio-proportion')).toBe('fraction');
     });
@@ -218,17 +220,25 @@ describe('pattern-categories', () => {
   });
 
   describe('constants', () => {
-    it('should have all 5 categories configured', () => {
-      expect(Object.keys(CATEGORY_CONFIG)).toHaveLength(5);
+    it('should have all 6 categories configured', () => {
+      expect(Object.keys(CATEGORY_CONFIG)).toHaveLength(6);
       expect(CATEGORY_CONFIG.basic).toBeDefined();
       expect(CATEGORY_CONFIG.hissan).toBeDefined();
       expect(CATEGORY_CONFIG.fraction).toBeDefined();
       expect(CATEGORY_CONFIG.life).toBeDefined();
       expect(CATEGORY_CONFIG.word).toBeDefined();
+      expect(CATEGORY_CONFIG.anzan).toBeDefined();
     });
 
     it('should have correct category order', () => {
-      expect(CATEGORY_ORDER).toEqual(['basic', 'hissan', 'fraction', 'life', 'word']);
+      expect(CATEGORY_ORDER).toEqual([
+        'basic',
+        'hissan',
+        'fraction',
+        'life',
+        'word',
+        'anzan',
+      ]);
     });
 
     it('should have language-dependent categories defined', () => {
@@ -261,7 +271,9 @@ describe('pattern-categories', () => {
 
     it('should return default difficulty 2 for undefined patterns', () => {
       // Cast to test undefined pattern behavior
-      expect(getPatternDifficulty('unknown-pattern' as CalculationPattern)).toBe(2);
+      expect(
+        getPatternDifficulty('unknown-pattern' as CalculationPattern)
+      ).toBe(2);
     });
   });
 
