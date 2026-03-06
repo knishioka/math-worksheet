@@ -861,3 +861,260 @@ describe('generateAnzanSequentialProblems dispatch', () => {
     }
   });
 });
+
+// ============================================================
+// グレード境界テスト
+// ============================================================
+
+describe('grade band boundaries', () => {
+  describe('generateAnzanPairSum - grade band → operand count', () => {
+    it('grade 1 (lower): 4 operands', () => {
+      const problems = generateAnzanPairSum(1, 20);
+      for (const p of problems) {
+        expect(p.operands!.length).toBe(4);
+      }
+    });
+
+    it('grade 2 (lower): 4 operands', () => {
+      const problems = generateAnzanPairSum(2, 20);
+      for (const p of problems) {
+        expect(p.operands!.length).toBe(4);
+      }
+    });
+
+    it('grade 3 (middle): 5 operands', () => {
+      const problems = generateAnzanPairSum(3, 20);
+      for (const p of problems) {
+        expect(p.operands!.length).toBe(5);
+      }
+    });
+
+    it('grade 4 (middle): 5 operands — not 4', () => {
+      const problems = generateAnzanPairSum(4, 20);
+      for (const p of problems) {
+        expect(p.operands!.length).toBe(5);
+      }
+    });
+
+    it('grade 5 (upper): 6 operands', () => {
+      const problems = generateAnzanPairSum(5, 20);
+      for (const p of problems) {
+        expect(p.operands!.length).toBe(6);
+      }
+    });
+
+    it('grade 6 (upper): 6 operands', () => {
+      const problems = generateAnzanPairSum(6, 20);
+      for (const p of problems) {
+        expect(p.operands!.length).toBe(6);
+      }
+    });
+  });
+
+  describe('generateAnzanReorder - grade 4 produces addition only', () => {
+    it('grade 4 (< 6): generates only addition problems', () => {
+      const problems = generateAnzanReorder(4, 30);
+      for (const p of problems) {
+        expect(p.operation).toBe('addition');
+      }
+    });
+
+    it('grade 5 (< 6): generates only addition problems', () => {
+      const problems = generateAnzanReorder(5, 30);
+      for (const p of problems) {
+        expect(p.operation).toBe('addition');
+      }
+    });
+
+    it('grade 6: generates some multiplication problems (50+ samples)', () => {
+      const problems = generateAnzanReorder(6, 50);
+      const hasMul = problems.some((p) => p.operation === 'multiplication');
+      expect(hasMul).toBe(true);
+    });
+  });
+
+  describe('generateComplement100 - grade 4+ produces arbitrary 1-99 values', () => {
+    it('grade 4 (middle): produces non-multiples of 10', () => {
+      const problems = generateComplement100(4, 30);
+      const nonMultiples = problems.filter((p) => p.operand1! % 10 !== 0);
+      expect(nonMultiples.length).toBeGreaterThan(0);
+    });
+
+    it('grade 5 (upper): same as grade 4+ — arbitrary 1-99', () => {
+      const problems = generateComplement100(5, 30);
+      for (const p of problems) {
+        expect(p.operand1).toBeGreaterThanOrEqual(1);
+        expect(p.operand1).toBeLessThanOrEqual(99);
+        expect(p.answer).toBe(100);
+      }
+      const nonMultiples = problems.filter((p) => p.operand1! % 10 !== 0);
+      expect(nonMultiples.length).toBeGreaterThan(0);
+    });
+
+    it('grade 6 (upper): same as grade 4+ — arbitrary 1-99', () => {
+      const problems = generateComplement100(6, 30);
+      for (const p of problems) {
+        expect(p.operand1).toBeGreaterThanOrEqual(1);
+        expect(p.operand1).toBeLessThanOrEqual(99);
+        expect(p.answer).toBe(100);
+      }
+    });
+  });
+
+  describe('generateChangeMaking - grade 6 produces multi-denomination', () => {
+    it('grade 6: uses 1000/5000/10000 yen', () => {
+      const problems = generateChangeMaking(6, 30);
+      const amounts = new Set(problems.map((p) => p.operand1));
+      for (const p of problems) {
+        expect([1000, 5000, 10000]).toContain(p.operand1);
+        expect(p.answer).toBeGreaterThan(0);
+        expect(p.answer).toBe(p.operand1! - p.operand2!);
+      }
+      expect(amounts.size).toBeGreaterThan(1);
+    });
+  });
+
+  describe('generateAnzanRoundAdd - lower band uses base 10', () => {
+    it('grade 1 (lower): at least one operand near a multiple of 10', () => {
+      const problems = generateAnzanRoundAdd(1, 30);
+      for (const p of problems) {
+        const op1Near = isNearRoundNumber(p.operand1!, 10);
+        const op2Near = isNearRoundNumber(p.operand2!, 10);
+        expect(op1Near || op2Near).toBe(true);
+      }
+    });
+
+    it('grade 2 (lower): at least one operand near a multiple of 10', () => {
+      const problems = generateAnzanRoundAdd(2, 30);
+      for (const p of problems) {
+        const op1Near = isNearRoundNumber(p.operand1!, 10);
+        const op2Near = isNearRoundNumber(p.operand2!, 10);
+        expect(op1Near || op2Near).toBe(true);
+      }
+    });
+
+    it('grade 4 (middle): at least one operand near a multiple of 10', () => {
+      const problems = generateAnzanRoundAdd(4, 30);
+      for (const p of problems) {
+        const op1Near = isNearRoundNumber(p.operand1!, 10);
+        const op2Near = isNearRoundNumber(p.operand2!, 10);
+        expect(op1Near || op2Near).toBe(true);
+      }
+    });
+
+    it('grade 6 (upper): at least one operand near a multiple of 100', () => {
+      const problems = generateAnzanRoundAdd(6, 30);
+      for (const p of problems) {
+        const op1Near = isNearRoundNumber(p.operand1!, 100);
+        const op2Near = isNearRoundNumber(p.operand2!, 100);
+        expect(op1Near || op2Near).toBe(true);
+      }
+    });
+  });
+});
+
+// ============================================================
+// generateProblems 統合テスト（未カバーのパターン）
+// ============================================================
+
+describe('generateProblems integration — remaining anzan patterns', () => {
+  const baseSettings = {
+    problemType: 'basic' as const,
+    operation: 'addition' as const,
+    problemCount: 10,
+    layoutColumns: 2 as const,
+  };
+
+  it('anzan-round-add: generates correct count with valid answers', () => {
+    const problems = generateProblems({
+      ...baseSettings,
+      grade: 3,
+      calculationPattern: 'anzan-round-add',
+    });
+    expect(problems).toHaveLength(10);
+    for (const p of problems) {
+      if (p.type === 'basic') {
+        expect(p.answer).toBe(p.operand1! + p.operand2!);
+        expect(p.answer).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('anzan-round-sub: generates correct count with valid answers', () => {
+    const problems = generateProblems({
+      ...baseSettings,
+      grade: 3,
+      calculationPattern: 'anzan-round-sub',
+    });
+    expect(problems).toHaveLength(10);
+    for (const p of problems) {
+      if (p.type === 'basic') {
+        expect(p.answer).toBe(p.operand1! - p.operand2!);
+        expect(p.answer).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('anzan-round-mul: generates correct count with valid answers', () => {
+    const problems = generateProblems({
+      ...baseSettings,
+      grade: 5,
+      calculationPattern: 'anzan-round-mul',
+    });
+    expect(problems).toHaveLength(10);
+    for (const p of problems) {
+      if (p.type === 'basic') {
+        expect(p.answer).toBe(p.operand1! * p.operand2!);
+        expect(p.answer).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('anzan-distributive: generates correct count with valid answers', () => {
+    const problems = generateProblems({
+      ...baseSettings,
+      grade: 4,
+      calculationPattern: 'anzan-distributive',
+    });
+    expect(problems).toHaveLength(10);
+    for (const p of problems) {
+      if (p.type === 'basic') {
+        expect(p.operation).toBe('multiplication');
+        expect(p.answer).toBe(p.operand1! * p.operand2!);
+      }
+    }
+  });
+
+  it('anzan-mul-decompose: generates correct count with valid answers', () => {
+    const problems = generateProblems({
+      ...baseSettings,
+      grade: 5,
+      calculationPattern: 'anzan-mul-decompose',
+    });
+    expect(problems).toHaveLength(10);
+    for (const p of problems) {
+      if (p.type === 'basic') {
+        expect(p.operation).toBe('multiplication');
+        expect(p.answer).toBe(p.operand1! * p.operand2!);
+        expect(p.answer).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('anzan-square-diff: generates correct count with valid answers', () => {
+    const problems = generateProblems({
+      ...baseSettings,
+      grade: 6,
+      calculationPattern: 'anzan-square-diff',
+    });
+    expect(problems).toHaveLength(10);
+    for (const p of problems) {
+      if (p.type === 'basic') {
+        expect(p.operation).toBe('multiplication');
+        expect(p.answer).toBe(p.operand1! * p.operand2!);
+        const avg = (p.operand1! + p.operand2!) / 2;
+        expect(avg % 10).toBe(0);
+      }
+    }
+  });
+});
