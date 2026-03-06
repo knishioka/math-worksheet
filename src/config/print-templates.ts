@@ -361,9 +361,8 @@ export const PRINT_TEMPLATES = {
     },
   }),
   // 暗算のコツ（複数項の式）
-  // pair-sumなど5〜6項の式は2行に折り返すため minProblemHeight を大きく取る
-  // 実測値: 106px/問 @ grade4 anzan-pair-sum (3列)
-  // 7行 × (110px + 24px) = 938px ≈ 248mm (A4 297mm に余裕あり)
+  // pair-sumは~160px/行、reorder/mixedは~190px/行（CI実測値）
+  // 最も大きい reorder/mixed に合わせて 5行 = A4 1枚に収まる上限
   anzan: createPrintTemplate({
     type: 'anzan',
     displayName: '暗算のコツ',
@@ -373,23 +372,23 @@ export const PRINT_TEMPLATES = {
       rowGap: '24px',
       colGap: '32px',
       fontSize: '18px',
-      minProblemHeight: '110px',
+      minProblemHeight: '150px',
     },
     recommendedCounts: {
-      1: 7,
-      2: 14,
-      3: 21,
+      1: 5,
+      2: 10,
+      3: 15,
     },
     maxCounts: {
-      1: 7,
-      2: 14,
-      3: 21,
+      1: 5,
+      2: 10,
+      3: 15,
     },
     fitsInA4: {
       threshold: {
-        1: 7,
-        2: 14,
-        3: 21,
+        1: 5,
+        2: 10,
+        3: 15,
       },
     },
   }),
