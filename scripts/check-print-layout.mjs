@@ -143,20 +143,15 @@ async function measureScenario(s) {
     await page.emulateMedia({ media: 'print' });
     await page.waitForSelector('[data-a4-sheet]', { state: 'visible', timeout: 3000 }).catch((e) => console.warn('wait timed out:', e.message));
     const el = await page.$('[data-a4-sheet]');
-    if (!el) { await page.emulateMedia({ media: null }); return 'ERR:no-sheet'; }
+    if (!el) { await page.emulateMedia({ media: null }); return '0'; }
     const b = await el.boundingBox();
-    const problemCount = await page.evaluate(() => document.querySelectorAll('[data-a4-sheet] > div > div > div').length);
     await page.emulateMedia({ media: null });
-    return b ? String(Math.round(b.height)) + ':' + String(problemCount) : '0';
+    return b ? String(Math.round(b.height)) : '0';
   `);
 
-  const raw = rc(code) ?? '0';
-  const parts = raw.split(':');
-  const h = parseInt((parts[0] ?? '0').replace(/\D/g, ''), 10);
-  if (parts.length > 1) {
-    console.log('    [debug] problems in DOM: ' + parts[1]);
-  }
-  return h;
+  const h = rc(code);
+  const parsed = parseInt((h ?? '0').replace(/\D/g, ''), 10);
+  return Number.isNaN(parsed) ? 0 : parsed;
 }
 
 async function main() {
