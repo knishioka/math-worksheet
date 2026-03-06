@@ -54,7 +54,8 @@ function rc(singleLineJs) {
     const m = out.match(/### Result\n([\s\S]*?)(?:\n### |$)/);
     if (!m) return null;
     return m[1].trim().replace(/^"|"$/g, '');
-  } catch {
+  } catch (e) {
+    console.error('playwright-cli execution failed:', e.message ?? e);
     return null;
   }
 }
@@ -63,8 +64,8 @@ function rc(singleLineJs) {
 function cli(...args) {
   try {
     spawnSync('playwright-cli', args, { encoding: 'utf8', stdio: 'pipe' });
-  } catch {
-    /* ignore */
+  } catch (e) {
+    console.warn('playwright-cli command failed:', args[0], e.message ?? e);
   }
 }
 
@@ -92,19 +93,27 @@ async function measureScenario(s) {
             const lb = el.closest('label') || el.parentElement;
             if (lb) lb.click();
           });
-          await page.waitForTimeout(600);
+          await page.waitForFunction(
+            (v) => document.querySelector('input[value="' + v + '"]:checked'),
+            '${s.pattern}',
+            { timeout: 3000 }
+          ).catch(() => {});
         }
         const r2 = await page.$('input[value="${s.pattern}"]:checked');
         if (!r2) {
           const btn = await page.$('button[aria-expanded="false"]');
           if (btn) await btn.click();
-          await page.waitForTimeout(300);
+          await page.waitForSelector('input[value="${s.pattern}"]', { timeout: 3000 }).catch(() => {});
           const r3 = await page.$('input[value="${s.pattern}"]');
           if (r3) await r3.evaluate(el => {
             const lb = el.closest('label') || el.parentElement;
             if (lb) lb.click();
           });
-          await page.waitForTimeout(500);
+          await page.waitForFunction(
+            (v) => document.querySelector('input[value="' + v + '"]:checked'),
+            '${s.pattern}',
+            { timeout: 3000 }
+          ).catch(() => {});
         }
       `)
     : '';
@@ -116,15 +125,19 @@ async function measureScenario(s) {
     const sel = await page.$('select');
     if (sel) {
       await sel.selectOption(String(${s.grade}));
-      await page.waitForTimeout(400);
+      await page.waitForFunction(
+        (g) => { const s = document.querySelector('select'); return s && s.value === String(g); },
+        ${s.grade},
+        { timeout: 3000 }
+      ).catch(() => {});
     }
     ${patternJs}
     const recBtn = await page.$('button:has-text("推奨")');
     if (recBtn) await recBtn.click();
-    await page.waitForTimeout(600);
+    await page.waitForSelector('[data-a4-sheet]', { timeout: 5000 }).catch(() => {});
     await page.addStyleTag({ content: '.no-print { display: block !important; }' });
     await page.emulateMedia({ media: 'print' });
-    await page.waitForTimeout(300);
+    await page.waitForSelector('[data-a4-sheet]', { state: 'visible', timeout: 3000 }).catch(() => {});
     const el = await page.$('[data-a4-sheet]');
     if (!el) { await page.emulateMedia({ media: null }); return '0'; }
     const b = await el.boundingBox();
