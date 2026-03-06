@@ -134,10 +134,7 @@ async function measureScenario(s) {
       ).catch((e) => console.warn('wait timed out:', e.message));
     }
     ${patternJs}
-    await page.waitForTimeout(500);
-    const recBtn = await page.$('button:has-text("推奨")');
-    if (recBtn) await recBtn.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1000);
     await page.waitForSelector('[data-a4-sheet]', { timeout: 5000 }).catch((e) => console.warn('wait timed out:', e.message));
     await page.addStyleTag({ content: '.no-print { display: block !important; }' });
     await page.emulateMedia({ media: 'print' });
