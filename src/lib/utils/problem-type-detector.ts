@@ -1,5 +1,9 @@
 import type { ProblemType, CalculationPattern } from '../../types';
-import { isWordProblemPattern, isHissanPattern } from '../../config/problem-patterns';
+import {
+  isWordProblemPattern,
+  isHissanPattern,
+  isAnzanPattern,
+} from '../../config/problem-patterns';
 
 /**
  * 問題タイプ判定ユーティリティ
@@ -9,7 +13,9 @@ import { isWordProblemPattern, isHissanPattern } from '../../config/problem-patt
 /**
  * 英語文章問題かどうかを判定
  */
-export function isWordEnProblem(calculationPattern?: CalculationPattern): boolean {
+export function isWordEnProblem(
+  calculationPattern?: CalculationPattern
+): boolean {
   return calculationPattern === 'word-en';
 }
 
@@ -73,6 +79,9 @@ export function getEffectiveProblemType(
   }
   if (isHissanProblem(problemType, calculationPattern)) {
     return 'hissan';
+  }
+  if (isAnzanPattern(calculationPattern)) {
+    return 'anzan';
   }
   return problemType || 'basic';
 }

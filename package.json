@@ -14,7 +14,9 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "preview": "vite preview",
-    "deploy": "npm run build && gh-pages -d dist"
+    "deploy": "npm run build && gh-pages -d dist",
+    "check:layout": "node scripts/check-print-layout.mjs",
+    "check:layout:local": "node scripts/check-print-layout.mjs http://localhost:4173/"
   },
   "dependencies": {
     "pdfmake": "^0.2.20",

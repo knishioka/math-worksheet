@@ -202,6 +202,7 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
         {/* A4用紙風のコンテナ */}
         <div
           ref={ref}
+          data-a4-sheet
           className="bg-white"
           style={getA4ContainerStyle(
             calculatePadding(),

@@ -1,4 +1,7 @@
-import { estimatePageLayout, A4_HEIGHT_MM } from '../components/Export/fitPageToA4';
+import {
+  estimatePageLayout,
+  A4_HEIGHT_MM,
+} from '../components/Export/fitPageToA4';
 import type { ProblemType, LayoutColumns } from '../types';
 
 const LAYOUT_COLUMNS: LayoutColumns[] = [1, 2, 3];
@@ -6,7 +9,7 @@ const LAYOUT_COLUMNS: LayoutColumns[] = [1, 2, 3];
 const formatColumnLabel = (columns: LayoutColumns): string => `${columns}列`;
 
 export const createPrintTemplate = <T extends ProblemType>(
-  config: PrintTemplate & { type: T },
+  config: PrintTemplate & { type: T }
 ): PrintTemplate & { type: T } => {
   for (const column of LAYOUT_COLUMNS) {
     const recommended = config.recommendedCounts[column];
@@ -15,13 +18,13 @@ export const createPrintTemplate = <T extends ProblemType>(
 
     if (recommended > max) {
       throw new Error(
-        `${config.displayName}: ${formatColumnLabel(column)}の推奨問題数（${recommended}問）は最大問題数（${max}問）以下にしてください。`,
+        `${config.displayName}: ${formatColumnLabel(column)}の推奨問題数（${recommended}問）は最大問題数（${max}問）以下にしてください。`
       );
     }
 
     if (recommended > threshold) {
       throw new Error(
-        `${config.displayName}: ${formatColumnLabel(column)}の推奨問題数（${recommended}問）はA4閾値（${threshold}問）以下にしてください。`,
+        `${config.displayName}: ${formatColumnLabel(column)}の推奨問題数（${recommended}問）はA4閾値（${threshold}問）以下にしてください。`
       );
     }
 
@@ -35,7 +38,7 @@ export const createPrintTemplate = <T extends ProblemType>(
 
     if (totalHeight > A4_HEIGHT_MM + 0.5) {
       throw new Error(
-        `${config.displayName}: ${formatColumnLabel(column)}の推奨問題数（${recommended}問）はA4の高さを超えています（${totalHeight.toFixed(2)}mm > ${A4_HEIGHT_MM}mm）。`,
+        `${config.displayName}: ${formatColumnLabel(column)}の推奨問題数（${recommended}問）はA4の高さを超えています（${totalHeight.toFixed(2)}mm > ${A4_HEIGHT_MM}mm）。`
       );
     }
   }
@@ -210,7 +213,8 @@ export const PRINT_TEMPLATES = {
   hissan: createPrintTemplate({
     type: 'hissan',
     displayName: '筆算',
-    description: '筆算形式。縦書きのため大きなスペースが必要。lineHeight: 1.2で最適化。',
+    description:
+      '筆算形式。縦書きのため大きなスペースが必要。lineHeight: 1.2で最適化。',
     layout: {
       rowGap: '32px',
       colGap: '32px',
@@ -330,7 +334,8 @@ export const PRINT_TEMPLATES = {
   'word-en': createPrintTemplate({
     type: 'word-en',
     displayName: 'English Word Problems',
-    description: 'Word problems for international school students. Ultra compact spacing for A4 fit.',
+    description:
+      'Word problems for international school students. Ultra compact spacing for A4 fit.',
     layout: {
       rowGap: '2px',
       colGap: '16px',
@@ -352,6 +357,38 @@ export const PRINT_TEMPLATES = {
         1: 8,
         2: 16,
         3: 18,
+      },
+    },
+  }),
+  // 暗算のコツ（複数項の式）
+  // pair-sumなど5〜6項の式は2行に折り返すため minProblemHeight を大きく取る
+  // 実測値: 90〜106px/問 → 安全マージンを含めて 110px
+  anzan: createPrintTemplate({
+    type: 'anzan',
+    displayName: '暗算のコツ',
+    description:
+      '複数項の暗算問題。式が長く2行になる場合があるため広めのスペースを確保。',
+    layout: {
+      rowGap: '24px',
+      colGap: '32px',
+      fontSize: '18px',
+      minProblemHeight: '110px',
+    },
+    recommendedCounts: {
+      1: 5,
+      2: 10,
+      3: 15,
+    },
+    maxCounts: {
+      1: 6,
+      2: 12,
+      3: 18,
+    },
+    fitsInA4: {
+      threshold: {
+        1: 5,
+        2: 10,
+        3: 15,
       },
     },
   }),
