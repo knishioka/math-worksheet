@@ -22,7 +22,8 @@ export type PatternCategory =
   | 'hissan' // 筆算
   | 'fraction' // 分数・小数
   | 'life' // 生活の中の算数
-  | 'word'; // 文章問題
+  | 'word' // 文章問題
+  | 'anzan'; // 暗算のコツ
 
 /**
  * 言語タイプ
@@ -65,6 +66,11 @@ export const CATEGORY_CONFIG: Record<
     icon: '📝',
     description: '文章を読んで解く問題',
   },
+  anzan: {
+    label: '暗算のコツ',
+    icon: '🧠',
+    description: '暗算テクニックを使った計算',
+  },
 };
 
 /**
@@ -76,13 +82,17 @@ export const CATEGORY_ORDER: PatternCategory[] = [
   'fraction',
   'life',
   'word',
+  'anzan',
 ];
 
 /**
  * 言語依存のあるカテゴリ
  * これらのカテゴリは言語フィルターが適用される
  */
-export const LANGUAGE_DEPENDENT_CATEGORIES: PatternCategory[] = ['life', 'word'];
+export const LANGUAGE_DEPENDENT_CATEGORIES: PatternCategory[] = [
+  'life',
+  'word',
+];
 
 /**
  * パターンプレフィックスからカテゴリへのマッピング
@@ -122,6 +132,9 @@ const PATTERN_PREFIX_MAPPING: Record<string, PatternCategory> = {
 
   // 文章問題 (word)
   word: 'word',
+
+  // 暗算のコツ (anzan)
+  anzan: 'anzan',
 };
 
 /**
@@ -267,12 +280,32 @@ const BASE_DIFFICULTY: Partial<Record<CalculationPattern, DifficultyLevel>> = {
 
   // === 文章問題 (word) ===
   'word-en': 2,
+
+  // === 暗算のコツ (anzan) ===
+  'anzan-complement-10': 1,
+  'anzan-pair-sum': 1,
+  'anzan-complement-100': 2,
+  'anzan-round-add': 2,
+  'anzan-round-sub': 2,
+  'anzan-mul-5': 2,
+  'anzan-mul-9': 2,
+  'anzan-change-making': 2,
+  'anzan-distributive': 2,
+  'anzan-mul-11': 2,
+  'anzan-mul-25': 2,
+  'anzan-mul-decompose': 3,
+  'anzan-round-mul': 3,
+  'anzan-reorder': 3,
+  'anzan-square-diff': 3,
+  'anzan-mixed': 3,
 };
 
 /**
  * パターンからカテゴリを判定
  */
-export function getPatternCategory(pattern: CalculationPattern): PatternCategory {
+export function getPatternCategory(
+  pattern: CalculationPattern
+): PatternCategory {
   // 完全一致を最初にチェック
   if (pattern === 'word-en') {
     return 'word';
@@ -297,7 +330,9 @@ export function getPatternCategory(pattern: CalculationPattern): PatternCategory
  * パターンから言語を判定
  * 言語サフィックスがない場合は 'all' を返す
  */
-export function getPatternLanguage(pattern: CalculationPattern): PatternLanguage {
+export function getPatternLanguage(
+  pattern: CalculationPattern
+): PatternLanguage {
   for (const [suffix, lang] of Object.entries(LANGUAGE_SUFFIX_MAP)) {
     if (pattern.endsWith(suffix)) {
       return lang;
@@ -350,6 +385,7 @@ export function groupPatternsByCategory(
     fraction: [],
     life: [],
     word: [],
+    anzan: [],
   };
 
   for (const pattern of patterns) {
@@ -390,6 +426,7 @@ export function getCategoryCounts(
     fraction: grouped.fraction.length,
     life: grouped.life.length,
     word: grouped.word.length,
+    anzan: grouped.anzan.length,
   };
 }
 
@@ -409,7 +446,9 @@ export function getCategoryForPattern(
  * パターンの難易度を取得
  * 定義されていない場合はデフォルト値2を返す
  */
-export function getPatternDifficulty(pattern: CalculationPattern): DifficultyLevel {
+export function getPatternDifficulty(
+  pattern: CalculationPattern
+): DifficultyLevel {
   return BASE_DIFFICULTY[pattern] ?? 2;
 }
 
@@ -454,6 +493,7 @@ export function groupPatternsByCategorySorted(
     fraction: sortPatternsByDifficulty(grouped.fraction),
     life: sortPatternsByDifficulty(grouped.life),
     word: sortPatternsByDifficulty(grouped.word),
+    anzan: sortPatternsByDifficulty(grouped.anzan),
   };
 }
 

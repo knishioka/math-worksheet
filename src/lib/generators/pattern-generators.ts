@@ -292,6 +292,27 @@ export function generatePatternProblems(
     case 'allowance-goal-en':
       return generateGradeAllowanceProblemsEn(settings.grade, count, pattern);
 
+    // 暗算のコツ（未実装 - 問題生成ロジックは後続Issueで実装予定）
+    case 'anzan-complement-10':
+    case 'anzan-complement-100':
+    case 'anzan-change-making':
+    case 'anzan-round-add':
+    case 'anzan-round-sub':
+    case 'anzan-round-mul':
+    case 'anzan-distributive':
+    case 'anzan-mul-decompose':
+    case 'anzan-square-diff':
+    case 'anzan-mul-5':
+    case 'anzan-mul-9':
+    case 'anzan-mul-11':
+    case 'anzan-mul-25':
+    case 'anzan-pair-sum':
+    case 'anzan-reorder':
+    case 'anzan-mixed':
+      throw new Error(
+        `Pattern ${pattern} is not implemented yet. 暗算パターンの問題生成は後続Issueで実装予定です。`
+      );
+
     default:
       throw new Error(`Pattern ${pattern} is not implemented yet`);
   }
@@ -2429,9 +2450,7 @@ function generateMultSingleMissing(
 
     do {
       // 虫食い算では operand1 または operand2 のみを空白にする（答えを求める普通の計算問題は除外）
-      missingPosition = (['operand1', 'operand2'] as const)[
-        randomInt(0, 1)
-      ];
+      missingPosition = (['operand1', 'operand2'] as const)[randomInt(0, 1)];
 
       // 答えから逆算
       const validProducts = [];
@@ -2572,7 +2591,7 @@ function generateHissanMultBasic(
   for (let i = 0; i < count; i++) {
     // 2桁×1桁のかけ算の筆算
     const operand1 = Math.floor(Math.random() * 90) + 10; // 10-99
-    const operand2 = Math.floor(Math.random() * 9) + 1;   // 1-9
+    const operand2 = Math.floor(Math.random() * 9) + 1; // 1-9
     const answer = operand1 * operand2;
 
     problems.push({

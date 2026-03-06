@@ -147,7 +147,25 @@ export type CalculationPattern =
   | 'allowance-saving-jap' // 貯金の計算（日本円）
   | 'allowance-goal-jap' // 目標達成までの計算（日本円）
   | 'allowance-saving-en' // Saving calculation (RM)
-  | 'allowance-goal-en'; // Savings goal (RM)
+  | 'allowance-goal-en' // Savings goal (RM)
+
+  // 暗算のコツ（1-6年生）
+  | 'anzan-complement-10' // 10の補数を使った計算
+  | 'anzan-complement-100' // 100の補数を使った計算
+  | 'anzan-change-making' // おつり算（補数応用）
+  | 'anzan-round-add' // キリのいい数に丸めて足す
+  | 'anzan-round-sub' // キリのいい数に丸めて引く
+  | 'anzan-round-mul' // キリのいい数に丸めてかける
+  | 'anzan-distributive' // 分配法則を使った計算
+  | 'anzan-mul-decompose' // かけ算の分解（例: 12×15 = 12×10 + 12×5）
+  | 'anzan-square-diff' // 平方差の公式（例: 19×21 = 20²−1²）
+  | 'anzan-mul-5' // ×5のコツ（÷2×10）
+  | 'anzan-mul-9' // ×9のコツ（×10−元の数）
+  | 'anzan-mul-11' // ×11のコツ
+  | 'anzan-mul-25' // ×25のコツ（÷4×100）
+  | 'anzan-pair-sum' // ペアで10/100を作る足し算
+  | 'anzan-reorder' // 計算順序の工夫
+  | 'anzan-mixed'; // 暗算テクニック混合
 
 // 学年別の利用可能なパターン
 export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
@@ -167,6 +185,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'money-total-jap',
     'money-change-en',
     'money-total-en',
+    'anzan-complement-10',
   ],
   2: [
     'add-double-digit-no-carry',
@@ -208,6 +227,8 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'allowance-goal-jap',
     'allowance-saving-en',
     'allowance-goal-en',
+    'anzan-complement-10',
+    'anzan-pair-sum',
   ],
   3: [
     'add-triple-digit',
@@ -273,6 +294,13 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'allowance-goal-jap',
     'allowance-saving-en',
     'allowance-goal-en',
+    'anzan-complement-10',
+    'anzan-pair-sum',
+    'anzan-complement-100',
+    'anzan-round-add',
+    'anzan-round-sub',
+    'anzan-mul-5',
+    'anzan-mul-9',
   ],
   4: [
     'add-large-numbers',
@@ -341,6 +369,17 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'allowance-goal-jap',
     'allowance-saving-en',
     'allowance-goal-en',
+    'anzan-complement-10',
+    'anzan-pair-sum',
+    'anzan-complement-100',
+    'anzan-round-add',
+    'anzan-round-sub',
+    'anzan-mul-5',
+    'anzan-mul-9',
+    'anzan-change-making',
+    'anzan-distributive',
+    'anzan-mul-11',
+    'anzan-mul-25',
   ],
   5: [
     'mult-dec-dec',
@@ -382,6 +421,20 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'energy-saving-jap',
     'energy-usage-en',
     'energy-saving-en',
+    'anzan-complement-10',
+    'anzan-pair-sum',
+    'anzan-complement-100',
+    'anzan-round-add',
+    'anzan-round-sub',
+    'anzan-mul-5',
+    'anzan-mul-9',
+    'anzan-change-making',
+    'anzan-distributive',
+    'anzan-mul-11',
+    'anzan-mul-25',
+    'anzan-mul-decompose',
+    'anzan-round-mul',
+    'anzan-reorder',
   ],
   6: [
     'frac-mult',
@@ -422,6 +475,22 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'energy-saving-jap',
     'energy-usage-en',
     'energy-saving-en',
+    'anzan-complement-10',
+    'anzan-pair-sum',
+    'anzan-complement-100',
+    'anzan-round-add',
+    'anzan-round-sub',
+    'anzan-mul-5',
+    'anzan-mul-9',
+    'anzan-change-making',
+    'anzan-distributive',
+    'anzan-mul-11',
+    'anzan-mul-25',
+    'anzan-mul-decompose',
+    'anzan-round-mul',
+    'anzan-reorder',
+    'anzan-square-diff',
+    'anzan-mixed',
   ],
 };
 
@@ -575,6 +644,24 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'allowance-goal-jap': '目標達成までの期間',
   'allowance-saving-en': 'Saving Calculation',
   'allowance-goal-en': 'Savings Goal',
+
+  // 暗算のコツ
+  'anzan-complement-10': '10の補数',
+  'anzan-complement-100': '100の補数',
+  'anzan-change-making': 'おつり算',
+  'anzan-round-add': '丸めて足す',
+  'anzan-round-sub': '丸めて引く',
+  'anzan-round-mul': '丸めてかける',
+  'anzan-distributive': '分配法則',
+  'anzan-mul-decompose': 'かけ算の分解',
+  'anzan-square-diff': '平方差の公式',
+  'anzan-mul-5': '×5のコツ',
+  'anzan-mul-9': '×9のコツ',
+  'anzan-mul-11': '×11のコツ',
+  'anzan-mul-25': '×25のコツ',
+  'anzan-pair-sum': 'ペアで10/100を作る',
+  'anzan-reorder': '計算順序の工夫',
+  'anzan-mixed': '暗算テクニック混合',
 };
 
 // パターンの説明
@@ -644,7 +731,8 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'complex-calc': '12＋8×3－15÷5などの四則混合',
 
   // 英語文章問題
-  'word-en': 'English word story problems for international school students (e.g., "Tom has 5 apples. He gets 3 more. How many apples does he have now?")',
+  'word-en':
+    'English word story problems for international school students (e.g., "Tom has 5 apples. He gets 3 more. How many apples does he have now?")',
 
   // お金の計算
   'money-change-jap': '100円で68円のお菓子を買ったら、おつりはいくら？',
@@ -676,7 +764,8 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'shopping-comparison-jap': '50g で100円と80g で150円、どちらがお得？',
   'shopping-discount-en': 'RM40 shirt with 25% discount. How much to pay?',
   'shopping-budget-en': 'What can you buy with RM10 budget?',
-  'shopping-comparison-en': 'Which is better value: 50g for RM2 or 80g for RM3?',
+  'shopping-comparison-en':
+    'Which is better value: 50g for RM2 or 80g for RM3?',
 
   // 温度の計算
   'temperature-diff-jap': '朝15℃、昼25℃。何度上がった？',
@@ -696,7 +785,8 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'cooking-ingredients-jap': '4人分で砂糖50g。6人分だと何g？',
   'cooking-time-jap': 'ケーキを焼くのに40分。3時に食べるには何時に始める？',
   'cooking-serving-jap': '8個のクッキーを4人で分けると1人何個？',
-  'cooking-ingredients-en': 'Recipe for 4 uses 200g flour. How much for 6 people?',
+  'cooking-ingredients-en':
+    'Recipe for 4 uses 200g flour. How much for 6 people?',
   'cooking-time-en': 'Baking takes 40 minutes. Start time to eat at 3 PM?',
   'cooking-serving-en': 'Share 12 cookies among 4 people. How many each?',
 
@@ -727,4 +817,22 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'allowance-goal-jap': '1000円のゲームを買いたい。毎月200円貯金すると何ヶ月？',
   'allowance-saving-en': 'Save RM5 weekly. How many weeks to save RM50?',
   'allowance-goal-en': 'Want to buy RM80 toy. Save RM10 monthly. How long?',
+
+  // 暗算のコツ
+  'anzan-complement-10': '3＋□＝10 → □＝7 のように10の補数を素早く求める',
+  'anzan-complement-100': '37＋□＝100 → □＝63 のように100の補数を素早く求める',
+  'anzan-change-making': '1000円で680円の買い物。おつりを補数で素早く計算',
+  'anzan-round-add': '298＋45 → 300＋45−2＝343 のようにキリのいい数で計算',
+  'anzan-round-sub': '503−198 → 503−200＋2＝305 のようにキリのいい数で計算',
+  'anzan-round-mul': '99×6 → 100×6−6＝594 のようにキリのいい数で計算',
+  'anzan-distributive': '7×12 → 7×10＋7×2＝84 のように分配法則を活用',
+  'anzan-mul-decompose': '12×15 → 12×10＋12×5＝180 のようにかけ算を分解',
+  'anzan-square-diff': '19×21 → 20²−1²＝399 のように平方差の公式を活用',
+  'anzan-mul-5': '48×5 → 48÷2×10＝240 のように×5を÷2×10に変換',
+  'anzan-mul-9': '7×9 → 7×10−7＝63 のように×9を×10−元の数に変換',
+  'anzan-mul-11': '23×11 → 253（2と3の間に2+3=5を挟む）',
+  'anzan-mul-25': '36×25 → 36÷4×100＝900 のように×25を÷4×100に変換',
+  'anzan-pair-sum': '3＋7＋8＋2 → (3+7)＋(8+2)＝20 のようにペアで10を作る',
+  'anzan-reorder': '25×7×4 → 25×4×7＝700 のように計算しやすい順序に並べ替え',
+  'anzan-mixed': '様々な暗算テクニックを組み合わせた総合問題',
 };
