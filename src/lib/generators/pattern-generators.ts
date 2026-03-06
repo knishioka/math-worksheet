@@ -31,6 +31,7 @@ import { generateGradeTransportProblems } from './transport-problems';
 import { generateGradeTransportProblemsEn } from './transport-problems-en';
 import { generateGradeAllowanceProblems } from './allowance-problems';
 import { generateGradeAllowanceProblemsEn } from './allowance-problems-en';
+import { generateAnzanDecompositionProblems } from './anzan-problems';
 
 /**
  * 計算パターンに基づいて問題を生成
@@ -292,6 +293,12 @@ export function generatePatternProblems(
     case 'allowance-goal-en':
       return generateGradeAllowanceProblemsEn(settings.grade, count, pattern);
 
+    // 暗算のコツ - 分解・結合系（実装済み）
+    case 'anzan-distributive':
+    case 'anzan-mul-decompose':
+    case 'anzan-square-diff':
+      return generateAnzanDecompositionProblems(settings.grade, count, pattern);
+
     // 暗算のコツ（未実装 - 問題生成ロジックは後続Issueで実装予定）
     case 'anzan-complement-10':
     case 'anzan-complement-100':
@@ -299,9 +306,6 @@ export function generatePatternProblems(
     case 'anzan-round-add':
     case 'anzan-round-sub':
     case 'anzan-round-mul':
-    case 'anzan-distributive':
-    case 'anzan-mul-decompose':
-    case 'anzan-square-diff':
     case 'anzan-mul-5':
     case 'anzan-mul-9':
     case 'anzan-mul-11':
