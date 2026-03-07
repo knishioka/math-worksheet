@@ -7,17 +7,12 @@ import { SettingsPanel } from './components/ProblemGenerator/SettingsPanel';
 import { WorksheetPreview } from './components/Preview/WorksheetPreview';
 import { useProblemStore, defaultSettings } from './stores/problemStore';
 import { generateProblems } from './lib/generators';
-import { parseUrlSettings, syncUrlFromSettings } from './lib/utils/url-state';
-import type { WorksheetData, CalculationPattern, Operation } from './types';
-
-// 計算パターンから演算タイプを判定する関数
-function getOperationFromPattern(pattern: CalculationPattern): Operation {
-  if (pattern.includes('add')) return 'addition';
-  if (pattern.includes('sub')) return 'subtraction';
-  if (pattern.includes('mult')) return 'multiplication';
-  if (pattern.includes('div')) return 'division';
-  return 'addition'; // デフォルト
-}
+import {
+  parseUrlSettings,
+  syncUrlFromSettings,
+  getOperationFromPattern,
+} from './lib/utils/url-state';
+import type { WorksheetData } from './types';
 
 function App(): React.ReactElement {
   const { settings, updateSettings, setProblems, getWorksheetData } =

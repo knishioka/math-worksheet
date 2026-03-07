@@ -24,7 +24,7 @@ const VALID_PROBLEM_TYPES: readonly string[] = [
 ];
 const VALID_COLUMNS: readonly number[] = [1, 2, 3];
 
-function getOperationFromPattern(
+export function getOperationFromPattern(
   pattern: CalculationPattern
 ): WorksheetSettings['operation'] {
   if (pattern.includes('add')) return 'addition';
