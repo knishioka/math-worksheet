@@ -44,7 +44,12 @@ function App(): React.ReactElement {
 
   // URL からの初期設定読み込み（マウント時のみ）
   useEffect(() => {
-    localStorage.removeItem('math-worksheet-settings');
+    // TODO: 将来のバージョンで削除。PR #38以前のlocalStorage設定データを清掃する一時的な処理。
+    try {
+      localStorage.removeItem('math-worksheet-settings');
+    } catch {
+      // localStorage が無効な環境（プライバシーモード等）では無視
+    }
     const urlOverrides = parseUrlSettings(
       window.location.search,
       defaultSettings
