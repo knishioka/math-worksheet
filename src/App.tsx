@@ -5,18 +5,14 @@ import { ProblemTypeSelector } from './components/ProblemGenerator/ProblemTypeSe
 import { CalculationPatternSelector } from './components/ProblemGenerator/CalculationPatternSelector';
 import { SettingsPanel } from './components/ProblemGenerator/SettingsPanel';
 import { WorksheetPreview } from './components/Preview/WorksheetPreview';
-import { useProblemStore } from './stores/problemStore';
+import { useProblemStore, defaultSettings } from './stores/problemStore';
 import { generateProblems } from './lib/generators';
-import type { WorksheetData, CalculationPattern, Operation } from './types';
-
-// 計算パターンから演算タイプを判定する関数
-function getOperationFromPattern(pattern: CalculationPattern): Operation {
-  if (pattern.includes('add')) return 'addition';
-  if (pattern.includes('sub')) return 'subtraction';
-  if (pattern.includes('mult')) return 'multiplication';
-  if (pattern.includes('div')) return 'division';
-  return 'addition'; // デフォルト
-}
+import {
+  parseUrlSettings,
+  syncUrlFromSettings,
+  getOperationFromPattern,
+} from './lib/utils/url-state';
+import type { WorksheetData } from './types';
 
 function App(): React.ReactElement {
   const { settings, updateSettings, setProblems, getWorksheetData } =
@@ -46,10 +42,26 @@ function App(): React.ReactElement {
     }
   }, [settings, setProblems, getWorksheetData]);
 
-  // 設定変更時に自動で問題を生成
+  // URL からの初期設定読み込み（マウント時のみ）
+  useEffect(() => {
+    const urlOverrides = parseUrlSettings(
+      window.location.search,
+      defaultSettings
+    );
+    if (Object.keys(urlOverrides).length > 0) {
+      updateSettings(urlOverrides);
+    } else {
+      // URL パラメータがない場合もデフォルト設定で URL を同期
+      syncUrlFromSettings(defaultSettings);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 設定変更時に自動で問題を生成 + URL を同期
   useEffect(() => {
     if (settings.grade && settings.operation && settings.problemCount > 0) {
       handleGenerate();
+      syncUrlFromSettings(settings);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -68,11 +80,19 @@ function App(): React.ReactElement {
         <main className="relative z-10 py-12">
           <Container className="space-y-10">
             <section className="relative overflow-hidden rounded-3xl bg-white/80 px-6 py-8 shadow-xl ring-1 ring-blue-100 backdrop-blur">
-              <div className="absolute -top-16 -right-10 h-40 w-40 rounded-full bg-sky-200/50 blur-3xl" aria-hidden="true"></div>
-              <div className="absolute -bottom-12 -left-10 h-36 w-36 rounded-full bg-emerald-200/60 blur-3xl" aria-hidden="true"></div>
+              <div
+                className="absolute -top-16 -right-10 h-40 w-40 rounded-full bg-sky-200/50 blur-3xl"
+                aria-hidden="true"
+              ></div>
+              <div
+                className="absolute -bottom-12 -left-10 h-36 w-36 rounded-full bg-emerald-200/60 blur-3xl"
+                aria-hidden="true"
+              ></div>
               <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <h2 className="text-2xl font-semibold text-slate-900">設定を選んで、あなただけのプリントを作成</h2>
+                  <h2 className="text-2xl font-semibold text-slate-900">
+                    設定を選んで、あなただけのプリントを作成
+                  </h2>
                   <p className="mt-2 text-sm text-slate-600 leading-relaxed">
                     学年・計算の種類・レイアウトを組み合わせると、お子さまの学習状況にぴったりのプリントが完成します。
                     プレビューを確認しながら、納得のいく構成に仕上げてください。
@@ -96,8 +116,12 @@ function App(): React.ReactElement {
               <div className="lg:col-span-1">
                 <div className="sticky top-8 space-y-6 rounded-3xl bg-white/80 p-6 shadow-lg ring-1 ring-blue-100 backdrop-blur">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold text-slate-900">設定</h2>
-                    <span className="text-xs font-medium text-sky-600">STEP 1</span>
+                    <h2 className="text-xl font-semibold text-slate-900">
+                      設定
+                    </h2>
+                    <span className="text-xs font-medium text-sky-600">
+                      STEP 1
+                    </span>
                   </div>
 
                   {/* Problem Type Selection */}
