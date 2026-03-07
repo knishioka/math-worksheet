@@ -44,6 +44,7 @@ function App(): React.ReactElement {
 
   // URL からの初期設定読み込み（マウント時のみ）
   useEffect(() => {
+    localStorage.removeItem('math-worksheet-settings');
     const urlOverrides = parseUrlSettings(
       window.location.search,
       defaultSettings
