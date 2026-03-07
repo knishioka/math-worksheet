@@ -87,16 +87,16 @@ const template = getPrintTemplate(effectiveType);
 
 印刷レイアウトの確認に2つのツールを使い分ける。
 
-| ツール                     | 用途                                       | 設定                   |
-| -------------------------- | ------------------------------------------ | ---------------------- |
-| **Playwright MCP**         | 開発中のUI確認・インタラクティブなデバッグ | `.mcp.json`            |
-| **check-print-layout.mjs** | CI/ローカルでの自動レイアウトチェック      | `npm run check:layout` |
+| ツール                     | 用途                                       | 設定                             |
+| -------------------------- | ------------------------------------------ | -------------------------------- |
+| **Playwright MCP**         | 開発中のUI確認・インタラクティブなデバッグ | `.mcp.json`                      |
+| **check-print-layout.mjs** | CI/ローカルでの自動レイアウトチェック      | `scripts/check-print-layout.mjs` |
 
 ### Playwright MCP（インタラクティブ確認）
 
 `.mcp.json` で設定済み。Claude Code から直接ブラウザを操作できる。
 
-```
+```text
 # ページを開く
 mcp__playwright__browser_navigate → url: "https://knishioka.github.io/math-worksheet/"
 
