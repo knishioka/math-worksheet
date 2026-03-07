@@ -17,7 +17,7 @@ import {
 } from './division';
 import { generateGradeFractionProblems } from './fraction';
 import { generateGradeDecimalProblems } from './decimal';
-import { generatePatternProblems } from './pattern-generators';
+import { generatePatternProblems } from './patterns';
 import { generateGradeEnWordProblems } from './word-problem-en';
 
 /**
@@ -211,5 +211,5 @@ export * from './multiplication';
 export * from './division';
 export * from './fraction';
 export * from './decimal';
-export * from './pattern-generators';
+export * from './patterns';
 export * from './word-problem-en';
