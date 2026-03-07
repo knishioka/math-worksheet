@@ -106,6 +106,8 @@ export const getA4ContainerStyle = (
   minHeight: A4_DIMENSIONS.height,
   padding,
   boxSizing: 'border-box',
+  display: 'flex',
+  flexDirection: 'column',
   boxShadow: printMode
     ? 'none'
     : '0 10px 30px rgba(0, 0, 0, 0.15), 0 0 10px rgba(0, 0, 0, 0.05)',
@@ -269,7 +271,8 @@ export const hissanContainerStyle: CSSProperties = {
 export const getHissanLineStyle = (maxLength: number): CSSProperties => {
   const answerBoxCount = maxLength + 1;
   const boxWidth = 30; // HISSAN_STYLES.cellWidth in px
-  const totalWidth = answerBoxCount * boxWidth + (answerBoxCount - 1) * HISSAN_ANSWER_GAP;
+  const totalWidth =
+    answerBoxCount * boxWidth + (answerBoxCount - 1) * HISSAN_ANSWER_GAP;
   return {
     borderTop: BORDERS.thick,
     margin: '2px 0',

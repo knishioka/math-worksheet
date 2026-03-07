@@ -361,7 +361,6 @@ export const PRINT_TEMPLATES = {
     },
   }),
   // 暗算のコツ（複数項の式）
-  // reorder/mixedパターンは~266px/行（CI実測値）のため、4行がA4上限
   anzan: createPrintTemplate({
     type: 'anzan',
     displayName: '暗算のコツ',
@@ -371,23 +370,23 @@ export const PRINT_TEMPLATES = {
       rowGap: '24px',
       colGap: '32px',
       fontSize: '18px',
-      minProblemHeight: '220px',
+      minProblemHeight: '100px',
     },
     recommendedCounts: {
-      1: 4,
-      2: 8,
-      3: 12,
+      1: 6,
+      2: 12,
+      3: 18,
     },
     maxCounts: {
-      1: 4,
-      2: 8,
-      3: 12,
+      1: 8,
+      2: 14,
+      3: 21,
     },
     fitsInA4: {
       threshold: {
-        1: 4,
-        2: 8,
-        3: 12,
+        1: 6,
+        2: 12,
+        3: 18,
       },
     },
   }),

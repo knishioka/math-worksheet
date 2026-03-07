@@ -9,9 +9,21 @@
  *   node scripts/check-print-layout.mjs [url]
  *   node scripts/check-print-layout.mjs https://knishioka.github.io/math-worksheet/
  *   node scripts/check-print-layout.mjs http://localhost:4173/math-worksheet/
+ *
+ * スクリーンショットは常に .playwright-cli/layout-check/ に保存される。
  */
 
 import { chromium } from '@playwright/test';
+import { mkdir } from 'fs/promises';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const SCREENSHOT_DIR = join(__dirname, '..', '.playwright-cli', 'layout-check');
+
+async function ensureScreenshotDir() {
+  await mkdir(SCREENSHOT_DIR, { recursive: true });
+}
 
 const BASE_URL =
   process.argv[2] ?? 'https://knishioka.github.io/math-worksheet/';
@@ -20,14 +32,44 @@ const BASE_URL =
 const A4_PX = 297 * (96 / 25.4); // 1122.5px
 
 const SCENARIOS = [
-  { grade: 1, pattern: null, label: '1年生 基本計算' },
-  { grade: 2, pattern: 'anzan-pair-sum', label: '2年生 ペアで10を作る' },
-  { grade: 3, pattern: null, label: '3年生 基本計算' },
-  { grade: 3, pattern: 'hissan-add-triple', label: '3年生 3桁のたし算筆算' },
-  { grade: 4, pattern: 'hissan-div-basic', label: '4年生 わり算の筆算' },
-  { grade: 4, pattern: 'anzan-pair-sum', label: '4年生 ペアで10/100を作る' },
-  { grade: 5, pattern: 'anzan-reorder', label: '5年生 順序入れ替え' },
-  { grade: 6, pattern: 'anzan-mixed', label: '6年生 暗算混合' },
+  { grade: 1, pattern: null, label: '1年生 基本計算', minFillRatio: 0.25 },
+  {
+    grade: 2,
+    pattern: 'anzan-pair-sum',
+    label: '2年生 ペアで10を作る',
+    minFillRatio: 0.45,
+  },
+  { grade: 3, pattern: null, label: '3年生 基本計算', minFillRatio: 0.25 },
+  {
+    grade: 3,
+    pattern: 'hissan-add-triple',
+    label: '3年生 3桁のたし算筆算',
+    minFillRatio: 0.25,
+  },
+  {
+    grade: 4,
+    pattern: 'hissan-div-basic',
+    label: '4年生 わり算の筆算',
+    minFillRatio: 0.25,
+  },
+  {
+    grade: 4,
+    pattern: 'anzan-pair-sum',
+    label: '4年生 ペアで10/100を作る',
+    minFillRatio: 0.45,
+  },
+  {
+    grade: 5,
+    pattern: 'anzan-reorder',
+    label: '5年生 順序入れ替え',
+    minFillRatio: 0.45,
+  },
+  {
+    grade: 6,
+    pattern: 'anzan-mixed',
+    label: '6年生 暗算混合',
+    minFillRatio: 0.45,
+  },
 ];
 
 /**
@@ -82,6 +124,13 @@ async function selectPattern(page, pattern) {
 }
 
 /**
+ * シナリオラベルをファイル名に変換する。
+ */
+function labelToFilename(label) {
+  return label.replace(/[^\w\u3040-\u9fff]/g, '_').replace(/_+/g, '_') + '.png';
+}
+
+/**
  * 1シナリオの印刷レイアウトを計測する。
  */
 async function measureScenario(page, scenario) {
@@ -127,18 +176,39 @@ async function measureScenario(page, scenario) {
   const el = await page.$('[data-a4-sheet]');
   if (!el) {
     await page.emulateMedia({ media: null });
-    return 0;
+    return { height: 0, fillRatio: null };
   }
 
-  const box = await el.boundingBox();
+  const containerBox = await el.boundingBox();
+  const gridEl = await page.$('[data-problem-grid]');
+  const gridBox = gridEl ? await gridEl.boundingBox() : null;
+
   await page.emulateMedia({ media: null });
-  return box ? Math.round(box.height) : 0;
+
+  const height = containerBox ? Math.round(containerBox.height) : 0;
+  const fillRatio =
+    gridBox && containerBox
+      ? (gridBox.y + gridBox.height - containerBox.y) / containerBox.height
+      : null;
+
+  // スクリーンショット保存
+  let screenshotPath = null;
+  if (el) {
+    const filename = labelToFilename(scenario.label);
+    screenshotPath = join(SCREENSHOT_DIR, filename);
+    await el.screenshot({ path: screenshotPath }).catch(() => {});
+  }
+
+  return { height, fillRatio, screenshotPath };
 }
 
 async function main() {
   console.log('\n📐 印刷レイアウトチェック');
   console.log('   URL: ' + BASE_URL);
-  console.log('   A4高さ基準: ' + Math.round(A4_PX) + 'px (297mm @ 96dpi)\n');
+  console.log('   A4高さ基準: ' + Math.round(A4_PX) + 'px (297mm @ 96dpi)');
+  console.log('   スクリーンショット: ' + SCREENSHOT_DIR + '\n');
+
+  await ensureScreenshotDir();
 
   const browser = await chromium.launch();
   const context = await browser.newContext({
@@ -149,30 +219,36 @@ async function main() {
   const results = [];
 
   for (const scenario of SCENARIOS) {
-    const height = await measureScenario(page, scenario);
+    const { height, fillRatio, screenshotPath } = await measureScenario(
+      page,
+      scenario
+    );
     const A4_BASELINE = Math.round(A4_PX); // 1123px
     const TOLERANCE_PX = 5;
     const ratio = height > 0 ? height / A4_PX : null;
-    const ok = ratio === null || height <= A4_BASELINE + TOLERANCE_PX;
+    const overflowOk = ratio === null || height <= A4_BASELINE + TOLERANCE_PX;
+    const fillOk =
+      fillRatio === null ||
+      scenario.minFillRatio === undefined ||
+      fillRatio >= scenario.minFillRatio;
+    const ok = overflowOk && fillOk;
     const pages = ratio ? Math.ceil(ratio) : 1;
 
-    results.push({ ...scenario, height, ratio, pages, ok });
+    results.push({
+      ...scenario,
+      height,
+      ratio,
+      fillRatio,
+      pages,
+      ok,
+      screenshotPath,
+    });
 
     if (height === 0) {
       console.log('  ⚠️  ' + scenario.label + ': 計測できませんでした');
-    } else if (ok) {
+    } else if (!overflowOk) {
       console.log(
-        '  ✅ ' +
-          scenario.label +
-          ': ' +
-          height +
-          'px (' +
-          (ratio * 100).toFixed(0) +
-          '% of A4)'
-      );
-    } else {
-      console.log(
-        '  ❌ ' +
+        '  ❌ overflow ' +
           scenario.label +
           ': ' +
           height +
@@ -182,6 +258,32 @@ async function main() {
           (ratio * 100).toFixed(0) +
           '%)'
       );
+    } else if (!fillOk) {
+      console.log(
+        '  ❌ underfill ' +
+          scenario.label +
+          ': fill=' +
+          (fillRatio * 100).toFixed(0) +
+          '% (min ' +
+          (scenario.minFillRatio * 100).toFixed(0) +
+          '%)'
+      );
+    } else {
+      const fillInfo =
+        fillRatio !== null ? ' fill=' + (fillRatio * 100).toFixed(0) + '%' : '';
+      console.log(
+        '  ✅ ' +
+          scenario.label +
+          ': ' +
+          height +
+          'px (' +
+          (ratio * 100).toFixed(0) +
+          '% of A4)' +
+          fillInfo
+      );
+    }
+    if (screenshotPath) {
+      console.log('     📸 ' + screenshotPath);
     }
   }
 

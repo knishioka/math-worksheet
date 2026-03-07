@@ -33,20 +33,24 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const isWord = isWordProblem(problemType, calculationPattern);
 
   // 実効的な問題タイプを取得
-  const effectiveProblemType = getEffectiveProblemType(problemType, calculationPattern);
+  const effectiveProblemType = getEffectiveProblemType(
+    problemType,
+    calculationPattern
+  );
   const template = getPrintTemplate(effectiveProblemType);
+  const isAnzan = effectiveProblemType === 'anzan';
 
   // 列数に応じた最大問題数と推奨問題数を取得
   const maxProblems = template.maxCounts[layoutColumns];
   const recommendedCount = template.recommendedCounts[layoutColumns];
 
-  // 文章問題の場合は2列レイアウトを推奨デフォルトにする
+  // 文章問題・暗算の場合は2列レイアウトを推奨デフォルトにする
   React.useEffect(() => {
-    if ((isWord || isWordEn) && layoutColumns !== 2) {
+    if ((isWord || isWordEn || isAnzan) && layoutColumns !== 2) {
       onLayoutColumnsChange(2);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isWord, isWordEn]);
+  }, [isWord, isWordEn, isAnzan]);
 
   // 問題タイプまたは列数が変更されたときに推奨問題数を自動選択
   React.useEffect(() => {
@@ -202,7 +206,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     : 'border-sky-200 bg-white/80 text-slate-600 hover:bg-sky-50'
                 }`}
               >
-                少なめ<br />
+                少なめ
+                <br />
                 <span className="text-xs">{lessCount}問</span>
               </button>
             )}
@@ -217,7 +222,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   : 'border-sky-200 bg-sky-50/80 text-sky-700 hover:bg-sky-100'
               }`}
             >
-              推奨 🎯<br />
+              推奨 🎯
+              <br />
               <span className="text-xs font-medium">{recommendedCount}問</span>
             </button>
 
@@ -232,7 +238,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     : 'border-sky-200 bg-white/80 text-slate-600 hover:bg-sky-50'
                 }`}
               >
-                多め<br />
+                多め
+                <br />
                 <span className="text-xs">{moreCount}問</span>
               </button>
             )}

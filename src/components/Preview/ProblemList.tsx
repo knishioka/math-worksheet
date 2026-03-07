@@ -133,34 +133,6 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
     );
 
     // 動的余白の計算（印刷プレビューと同じロジック）
-    const calculatePadding = (): string => {
-      const template = getPrintTemplate(effectiveProblemType);
-      const problemCount = problems.length;
-      const columns = layoutColumns;
-      const estimatedRows = Math.ceil(problemCount / columns);
-
-      // 問題タイプごとの推定高さ（mm）
-      const minProblemHeightMm =
-        parseInt(template.layout.minProblemHeight) * 0.26;
-      const rowGapMm = parseInt(template.layout.rowGap) * 0.26;
-
-      // 必要な高さを計算
-      const headerHeight = 25; // ヘッダー部分の高さ (mm)
-      const estimatedContentHeight =
-        headerHeight + (minProblemHeightMm + rowGapMm) * estimatedRows;
-
-      // A4の高さは297mm、残りスペースを余白として配分
-      const a4Height = 297;
-      const remainingSpace = a4Height - estimatedContentHeight;
-
-      // 上の余白: 5mm〜15mm
-      const topMargin = Math.max(5, Math.min(15, remainingSpace * 0.6));
-      // 下の余白: 上の余白の半分（小さめに）
-      const bottomMargin = Math.max(5, topMargin * 0.5);
-
-      return `${topMargin}mm 15mm ${bottomMargin}mm`;
-    };
-
     // A4サイズオーバーフロー判定
     const a4FitResult = estimateA4Fit(
       problems.length,
@@ -170,10 +142,12 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
 
     // テンプレートから gap を取得
     const template = getPrintTemplate(effectiveProblemType);
+    // A4に収まる場合は align-content: space-between で行間を自動拡張し余白を均等配分
     const gridGapStyle: React.CSSProperties = {
       display: 'grid',
       rowGap: template.layout.rowGap,
       columnGap: template.layout.colGap,
+      ...(a4FitResult.fits ? { alignContent: 'space-between', flex: 1 } : {}),
     };
 
     // 印刷モードの場合は外側のラッパーを省略
@@ -203,7 +177,7 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
           data-a4-sheet
           className="bg-white"
           style={getA4ContainerStyle(
-            calculatePadding(),
+            '15mm 15mm 7.5mm',
             printMode,
             !a4FitResult.fits
           )}
@@ -221,7 +195,7 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
             </div>
           </div>
 
-          <div className={gridCols} style={gridGapStyle}>
+          <div data-problem-grid className={gridCols} style={gridGapStyle}>
             {reorderedProblems.map((problem, index) => {
               if (!problem) {
                 // 空のセルを配置（レイアウトを保つため）
