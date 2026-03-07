@@ -83,61 +83,51 @@ const template = getPrintTemplate(effectiveType);
 - 巨大な`useEffect`/多責務コンポーネント
 - MathMLへのインラインスタイル直書き
 
-## Playwright CLIによるレイアウト確認
+## レイアウト確認
 
-デプロイ済みサイト (`https://knishioka.github.io/math-worksheet/`) の印刷レイアウトをチェックする。
-`playwright-cli` はグローバルインストール済み（`npm install -g @playwright/cli`）。
+印刷レイアウトの確認に2つのツールを使い分ける。
 
-### 基本的な使い方
+| ツール                     | 用途                                       | 設定                   |
+| -------------------------- | ------------------------------------------ | ---------------------- |
+| **Playwright MCP**         | 開発中のUI確認・インタラクティブなデバッグ | `.mcp.json`            |
+| **check-print-layout.mjs** | CI/ローカルでの自動レイアウトチェック      | `npm run check:layout` |
 
-```bash
-# サイトを開く
-playwright-cli open https://knishioka.github.io/math-worksheet/
+### Playwright MCP（インタラクティブ確認）
+
+`.mcp.json` で設定済み。Claude Code から直接ブラウザを操作できる。
+
+```
+# ページを開く
+mcp__playwright__browser_navigate → url: "https://knishioka.github.io/math-worksheet/"
+
+# アクセシビリティツリーで要素を確認
+mcp__playwright__browser_snapshot
+
+# 学年セレクターを変更（snapshotでref確認後）
+mcp__playwright__browser_select_option → ref: "e5", values: ["3"]
+
+# ボタンをクリック
+mcp__playwright__browser_click → ref: "e10"
 
 # スクリーンショット
-playwright-cli screenshot
-
-# 要素のrefを確認（クリック・選択の前に実行）
-playwright-cli snapshot
-
-# 学年セレクターを変更（snapshotでrefを確認してから）
-playwright-cli select <ref> "3"   # 3年生
-
-# ボタンをクリック（列数切り替えなど）
-playwright-cli click <ref>
+mcp__playwright__browser_take_screenshot
 ```
 
-### 印刷レイアウトチェック
+**利点**: 状態がセッション間で維持される、`$`のシェル展開問題なし、複数行コード対応。
 
-`run-code` の引数は `page` を受け取る関数として渡す。
-このアプリは `react-to-print` を使うため `emulateMedia` では印刷エリアが消える。
-代わりにプリントエリア要素を直接スクリーンショットする。
+### レイアウト自動チェック（CI向け）
+
+`scripts/check-print-layout.mjs` は Playwright Node.js API を使い、複数シナリオの印刷レイアウトを自動検証する。
 
 ```bash
-# プリントエリアをスクリーンショット
-playwright-cli run-code 'async (page) => { const el = await page.$("[style*=\"background: white\"]"); if (el) { await el.scrollIntoViewIfNeeded(); await el.screenshot({ path: ".playwright-cli/print-preview.png" }); } }'
+# デプロイ済みサイトをチェック
+npm run check:layout
 
-# フルページスクリーンショット
-playwright-cli run-code 'async (page) => { await page.screenshot({ path: ".playwright-cli/fullpage.png", fullPage: true }) }'
+# ローカルビルドをチェック
+npm run check:layout:local
 ```
 
-### 典型的なチェックフロー
-
-UI変更・印刷レイアウト変更後：
-
-1. `playwright-cli open https://knishioka.github.io/math-worksheet/`
-2. `playwright-cli snapshot` で要素のrefを取得
-3. `playwright-cli select <ref> "3"` で学年を変更
-4. `playwright-cli click <ref>` で列数ボタンをクリック
-5. 上記の `run-code` でプリントエリアをスクリーンショット
-
-### セッション管理
-
-```bash
-playwright-cli close-all   # 全セッションを閉じる
-playwright-cli kill-all    # 強制終了（ゾンビプロセス対策）
-playwright-cli list        # 実行中セッション一覧
-```
+スクリーンショットは `.playwright-cli/layout-check/` に保存される。
 
 ## テスト
 
@@ -207,7 +197,7 @@ git commit -m "feat(generator): add new problem type"
 3. `src/lib/generators/`に生成ロジック実装
 4. `src/components/Math/`に表示コンポーネント実装
 5. テスト追加
-6. `playwright-cli` でレイアウト確認
+6. Playwright MCP または `npm run check:layout` でレイアウト確認
 
 ## 参考リソース
 
