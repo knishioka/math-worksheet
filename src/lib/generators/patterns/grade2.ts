@@ -65,6 +65,7 @@ export function generateAddDoubleDigitCarry(
     const maxAttempts = 50;
 
     do {
+      attempts++;
       // 10の位と1の位を別々に生成（繰り上がりが発生するように）
       const tens1 = randomInt(1, 8);
       const ones1 = randomInt(2, 9);
@@ -86,8 +87,6 @@ export function generateAddDoubleDigitCarry(
         usedCombinations.add(key);
         break;
       }
-
-      attempts++;
     } while (attempts < maxAttempts);
 
     problems.push({
@@ -167,6 +166,7 @@ export function generateSubDoubleDigitBorrow(
     const maxAttempts = 50;
 
     do {
+      attempts++;
       // 10の位と1の位を別々に生成（繰り下がりが発生するように）
       const tens1 = randomInt(2, 9);
       const ones1 = randomInt(0, 8);
@@ -187,8 +187,6 @@ export function generateSubDoubleDigitBorrow(
         usedCombinations.add(key);
         break;
       }
-
-      attempts++;
     } while (attempts < maxAttempts);
 
     problems.push({
@@ -265,6 +263,7 @@ export function generateAddSubDoubleMixed(
     const maxAttempts = 50;
 
     do {
+      attempts++;
       // ランダムにたし算かひき算を選択
       operation = Math.random() < 0.5 ? 'addition' : 'subtraction';
 
@@ -344,8 +343,6 @@ export function generateAddSubDoubleMixed(
           break;
         }
       }
-
-      attempts++;
     } while (attempts < maxAttempts);
 
     problems.push({

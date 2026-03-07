@@ -115,7 +115,7 @@ export function generateFracDifferentDenom(
     return (a * b) / gcd(a, b);
   }
 
-  for (let i = 0; i < count; i++) {
+  while (problems.length < count) {
     const isAddition = Math.random() < 0.5;
     const denominator1 = randomInt(2, 12);
     let denominator2 = randomInt(2, 12);

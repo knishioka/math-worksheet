@@ -1,5 +1,5 @@
 import type { HissanProblem, WorksheetSettings } from '../../../types';
-import { generateId } from '../../utils/math';
+import { generateId, randomInt } from '../../utils/math';
 import { generateHissanProblem } from '../hissan';
 
 /**
@@ -92,8 +92,8 @@ export function generateHissanMultBasic(
   const problems: HissanProblem[] = [];
   for (let i = 0; i < count; i++) {
     // 2桁×1桁のかけ算の筆算
-    const operand1 = Math.floor(Math.random() * 90) + 10; // 10-99
-    const operand2 = Math.floor(Math.random() * 9) + 1; // 1-9
+    const operand1 = randomInt(10, 99);
+    const operand2 = randomInt(1, 9);
     const answer = operand1 * operand2;
 
     problems.push({
