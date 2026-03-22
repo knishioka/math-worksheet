@@ -1,5 +1,11 @@
 // 計算パターンの定義
 export type CalculationPattern =
+  // 1年生のパターン（入門）
+  | 'add-plus-one' // □＋1（+1のたし算）
+  | 'add-plus-two' // □＋2（+2のたし算）
+  | 'add-counting' // かずをかぞえよう（順番に+1）
+  | 'counting-add' // ○を使ったたし算
+  | 'counting-sub' // ○を使ったひき算
   // 1年生のパターン
   | 'add-single-digit' // 1桁＋1桁（答えが10まで）
   | 'add-single-digit-carry' // 1桁＋1桁（繰り上がりあり、答えが20まで）
@@ -170,6 +176,11 @@ export type CalculationPattern =
 // 学年別の利用可能なパターン
 export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
   1: [
+    'add-plus-one',
+    'add-plus-two',
+    'add-counting',
+    'counting-add',
+    'counting-sub',
     'add-single-digit',
     'add-single-digit-carry',
     'add-to-10',
@@ -496,6 +507,12 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
 
 // パターンの表示名
 export const PATTERN_LABELS: Record<CalculationPattern, string> = {
+  // 1年生（入門）
+  'add-plus-one': '+1のたし算',
+  'add-plus-two': '+2のたし算',
+  'add-counting': 'かずをかぞえよう（+1ずつ）',
+  'counting-add': '○をつかった たし算',
+  'counting-sub': '○をつかった ひき算',
   // 1年生
   'add-single-digit': '1桁のたし算（10まで）',
   'add-single-digit-carry': '1桁のたし算（繰り上がりあり）',
@@ -666,6 +683,12 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
 
 // パターンの説明
 export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
+  // 1年生（入門）
+  'add-plus-one': '□＋1の計算で数の感覚を身につける',
+  'add-plus-two': '□＋2の計算で数の感覚を身につける',
+  'add-counting': '○や★の数を数えて答える',
+  'counting-add': '○○○ と ○○ で あわせていくつ？',
+  'counting-sub': '○○○○○ から ○○ とると のこりはいくつ？',
   // 1年生
   'add-single-digit': '5＋3などの基本的なたし算',
   'add-single-digit-carry': '8＋7などの繰り上がりのあるたし算',

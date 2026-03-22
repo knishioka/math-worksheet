@@ -379,10 +379,30 @@ function ProblemItem({
   // 文章問題の場合
   if (problem.type === 'word') {
     const wordProblem = problem as WordProblem;
+    const isCountingProblem = !!wordProblem.isSymbolProblem;
     return (
       <div className="problem-text" style={problemItemStyle}>
         <div style={problemNumberStyle}>({number})</div>
-        <div style={wordProblemTextStyle}>{wordProblem.problemText}</div>
+        {isCountingProblem ? (
+          <div>
+            {wordProblem.problemText.split('\n').map((line, i) => (
+              <div
+                key={i}
+                style={{
+                  fontSize: '20px',
+                  letterSpacing: '3px',
+                  lineHeight: '1.2',
+                }}
+              >
+                {line}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ ...wordProblemTextStyle, whiteSpace: 'pre-line' }}>
+            {wordProblem.problemText}
+          </div>
+        )}
         <div style={{ marginTop: SPACING.gap.small }}>
           {showAnswer ? (
             <span style={answerDisplayStyle}>

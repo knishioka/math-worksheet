@@ -113,6 +113,7 @@ export interface WordProblem {
   answer: number | string;
   unit?: string;
   showCalculation?: boolean;
+  isSymbolProblem?: boolean;
 }
 
 export interface WordProblemEn {
