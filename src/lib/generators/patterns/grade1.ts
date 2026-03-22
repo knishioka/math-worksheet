@@ -5,40 +5,42 @@ import type {
 } from '../../../types';
 import { generateId, randomInt } from '../../utils/math';
 
-// 1年生（入門）: +1のたし算
-export function generateAddPlusOne(
-  _settings: WorksheetSettings,
-  count: number
+// 1年生（入門）: +N のたし算（共通関数）
+function generateAddPlusN(
+  count: number,
+  n: number,
+  maxOperand1: number
 ): BasicProblem[] {
+  // シャッフルプールで重複なしを保証
+  const pool: number[] = [];
+  for (let i = 0; i <= maxOperand1; i++) pool.push(i);
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = randomInt(0, i);
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+
   const problems: BasicProblem[] = [];
-  const usedOperands = new Set<number>();
-
   for (let i = 0; i < count; i++) {
-    let operand1: number;
-    let attempts = 0;
-    const maxAttempts = 50;
-
-    do {
-      operand1 = randomInt(0, 9);
-      if (!usedOperands.has(operand1)) {
-        usedOperands.add(operand1);
-        break;
-      }
-      attempts++;
-    } while (attempts < maxAttempts);
-
+    const operand1 = pool[i % pool.length];
     problems.push({
       id: generateId(),
       type: 'basic',
       operation: 'addition',
       operand1,
-      operand2: 1,
-      answer: operand1 + 1,
+      operand2: n,
+      answer: operand1 + n,
       carryOver: false,
     });
   }
-
   return problems;
+}
+
+// 1年生（入門）: +1のたし算
+export function generateAddPlusOne(
+  _settings: WorksheetSettings,
+  count: number
+): BasicProblem[] {
+  return generateAddPlusN(count, 1, 9);
 }
 
 // 1年生（入門）: +2のたし算
@@ -46,35 +48,7 @@ export function generateAddPlusTwo(
   _settings: WorksheetSettings,
   count: number
 ): BasicProblem[] {
-  const problems: BasicProblem[] = [];
-  const usedOperands = new Set<number>();
-
-  for (let i = 0; i < count; i++) {
-    let operand1: number;
-    let attempts = 0;
-    const maxAttempts = 50;
-
-    do {
-      operand1 = randomInt(0, 8);
-      if (!usedOperands.has(operand1)) {
-        usedOperands.add(operand1);
-        break;
-      }
-      attempts++;
-    } while (attempts < maxAttempts);
-
-    problems.push({
-      id: generateId(),
-      type: 'basic',
-      operation: 'addition',
-      operand1,
-      operand2: 2,
-      answer: operand1 + 2,
-      carryOver: false,
-    });
-  }
-
-  return problems;
+  return generateAddPlusN(count, 2, 8);
 }
 
 // 1年生（入門）: かずをかぞえよう（○を数える）
@@ -120,6 +94,7 @@ export function generateAddCounting(
       operation: 'addition',
       problemText: `${symbolText}\nは いくつ？`,
       answer: num,
+      isSymbolProblem: true,
     });
   }
 
@@ -162,6 +137,7 @@ export function generateCountingAdd(
       operation: 'addition',
       problemText: `${group1} と ${group2} で\nあわせて いくつ？`,
       answer: operand1 + operand2,
+      isSymbolProblem: true,
     });
   }
 
@@ -210,6 +186,7 @@ export function generateCountingSub(
       operation: 'subtraction',
       problemText: `${allSymbols}\nから ${removeSymbols} とると\nのこりは いくつ？`,
       answer: operand1 - operand2,
+      isSymbolProblem: true,
     });
   }
 

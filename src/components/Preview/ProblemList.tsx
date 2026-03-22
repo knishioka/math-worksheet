@@ -379,7 +379,7 @@ function ProblemItem({
   // 文章問題の場合
   if (problem.type === 'word') {
     const wordProblem = problem as WordProblem;
-    const isCountingProblem = wordProblem.problemText.includes('いくつ？');
+    const isCountingProblem = !!wordProblem.isSymbolProblem;
     return (
       <div className="problem-text" style={problemItemStyle}>
         <div style={problemNumberStyle}>({number})</div>

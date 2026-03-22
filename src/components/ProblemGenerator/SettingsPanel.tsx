@@ -163,7 +163,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             <div className="grid grid-cols-3 gap-1">
               {([1, 2, 3] as const).map((cols) => {
                 const colTemplate = getPrintTemplate(effectiveProblemType);
-                const colRecommended = colTemplate.recommendedCounts[cols];
+                const colRecommended =
+                  patternOverride?.recommendedCounts[cols] ??
+                  colTemplate.recommendedCounts[cols];
                 const isCurrentLayout = layoutColumns === cols;
                 const isSelected = problemCount === colRecommended;
                 return (

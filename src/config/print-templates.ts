@@ -3,6 +3,7 @@ import {
   A4_HEIGHT_MM,
 } from '../components/Export/fitPageToA4';
 import type { ProblemType, LayoutColumns } from '../types';
+import type { CalculationPattern } from '../types/calculation-patterns';
 
 const LAYOUT_COLUMNS: LayoutColumns[] = [1, 2, 3];
 
@@ -396,8 +397,6 @@ export const PRINT_TEMPLATES = {
  * パターン固有の推奨問題数オーバーライド
  * テンプレートの minProblemHeight より実際のレンダリング高さが大きいパターン用
  */
-import type { CalculationPattern } from '../types/calculation-patterns';
-
 export const PATTERN_COUNT_OVERRIDES: Partial<
   Record<
     CalculationPattern,
