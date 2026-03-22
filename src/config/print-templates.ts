@@ -393,6 +393,35 @@ export const PRINT_TEMPLATES = {
 } satisfies Record<ProblemType, PrintTemplate>;
 
 /**
+ * パターン固有の推奨問題数オーバーライド
+ * テンプレートの minProblemHeight より実際のレンダリング高さが大きいパターン用
+ */
+import type { CalculationPattern } from '../types/calculation-patterns';
+
+export const PATTERN_COUNT_OVERRIDES: Partial<
+  Record<
+    CalculationPattern,
+    {
+      recommendedCounts: Record<LayoutColumns, number>;
+      maxCounts: Record<LayoutColumns, number>;
+    }
+  >
+> = {
+  'add-counting': {
+    recommendedCounts: { 1: 6, 2: 12, 3: 18 },
+    maxCounts: { 1: 8, 2: 14, 3: 18 },
+  },
+  'counting-add': {
+    recommendedCounts: { 1: 6, 2: 12, 3: 18 },
+    maxCounts: { 1: 8, 2: 14, 3: 18 },
+  },
+  'counting-sub': {
+    recommendedCounts: { 1: 5, 2: 10, 3: 15 },
+    maxCounts: { 1: 6, 2: 12, 3: 15 },
+  },
+};
+
+/**
  * 問題タイプに応じたテンプレートを取得
  * @param problemType 問題タイプ
  * @returns プリントテンプレート

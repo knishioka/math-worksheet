@@ -1,5 +1,220 @@
-import type { BasicProblem, WorksheetSettings } from '../../../types';
+import type {
+  BasicProblem,
+  WordProblem,
+  WorksheetSettings,
+} from '../../../types';
 import { generateId, randomInt } from '../../utils/math';
+
+// 1年生（入門）: +1のたし算
+export function generateAddPlusOne(
+  _settings: WorksheetSettings,
+  count: number
+): BasicProblem[] {
+  const problems: BasicProblem[] = [];
+  const usedOperands = new Set<number>();
+
+  for (let i = 0; i < count; i++) {
+    let operand1: number;
+    let attempts = 0;
+    const maxAttempts = 50;
+
+    do {
+      operand1 = randomInt(0, 9);
+      if (!usedOperands.has(operand1)) {
+        usedOperands.add(operand1);
+        break;
+      }
+      attempts++;
+    } while (attempts < maxAttempts);
+
+    problems.push({
+      id: generateId(),
+      type: 'basic',
+      operation: 'addition',
+      operand1,
+      operand2: 1,
+      answer: operand1 + 1,
+      carryOver: false,
+    });
+  }
+
+  return problems;
+}
+
+// 1年生（入門）: +2のたし算
+export function generateAddPlusTwo(
+  _settings: WorksheetSettings,
+  count: number
+): BasicProblem[] {
+  const problems: BasicProblem[] = [];
+  const usedOperands = new Set<number>();
+
+  for (let i = 0; i < count; i++) {
+    let operand1: number;
+    let attempts = 0;
+    const maxAttempts = 50;
+
+    do {
+      operand1 = randomInt(0, 8);
+      if (!usedOperands.has(operand1)) {
+        usedOperands.add(operand1);
+        break;
+      }
+      attempts++;
+    } while (attempts < maxAttempts);
+
+    problems.push({
+      id: generateId(),
+      type: 'basic',
+      operation: 'addition',
+      operand1,
+      operand2: 2,
+      answer: operand1 + 2,
+      carryOver: false,
+    });
+  }
+
+  return problems;
+}
+
+// 1年生（入門）: かずをかぞえよう（○を数える）
+const COUNTING_SYMBOLS = ['○', '●', '★', '♥', '△', '□', '◆', '☆'];
+
+export function generateAddCounting(
+  _settings: WorksheetSettings,
+  count: number
+): WordProblem[] {
+  const problems: WordProblem[] = [];
+  const usedCounts = new Set<string>();
+
+  for (let i = 0; i < count; i++) {
+    let num: number;
+    let symbolIndex: number;
+    let key: string;
+    let attempts = 0;
+    const maxAttempts = 50;
+
+    do {
+      num = randomInt(1, 10);
+      symbolIndex = randomInt(0, COUNTING_SYMBOLS.length - 1);
+      key = `${num}-${symbolIndex}`;
+      if (!usedCounts.has(key)) {
+        usedCounts.add(key);
+        break;
+      }
+      attempts++;
+    } while (attempts < maxAttempts);
+
+    const symbol = COUNTING_SYMBOLS[symbolIndex];
+    // 5個ごとに改行を入れる
+    const lines: string[] = [];
+    for (let j = 0; j < num; j += 5) {
+      const lineCount = Math.min(5, num - j);
+      lines.push(symbol.repeat(lineCount));
+    }
+    const symbolText = lines.join('\n');
+
+    problems.push({
+      id: generateId(),
+      type: 'word',
+      operation: 'addition',
+      problemText: `${symbolText}\nは いくつ？`,
+      answer: num,
+    });
+  }
+
+  return problems;
+}
+
+// 1年生（入門）: ○を使ったたし算
+export function generateCountingAdd(
+  _settings: WorksheetSettings,
+  count: number
+): WordProblem[] {
+  const problems: WordProblem[] = [];
+  const usedCombinations = new Set<string>();
+
+  for (let i = 0; i < count; i++) {
+    let operand1: number, operand2: number;
+    let symbolIndex: number;
+    let attempts = 0;
+    const maxAttempts = 50;
+
+    do {
+      operand1 = randomInt(1, 5);
+      operand2 = randomInt(1, 5);
+      symbolIndex = randomInt(0, COUNTING_SYMBOLS.length - 1);
+      const key = `${operand1}+${operand2}-${symbolIndex}`;
+      if (!usedCombinations.has(key)) {
+        usedCombinations.add(key);
+        break;
+      }
+      attempts++;
+    } while (attempts < maxAttempts);
+
+    const symbol = COUNTING_SYMBOLS[symbolIndex];
+    const group1 = symbol.repeat(operand1);
+    const group2 = symbol.repeat(operand2);
+
+    problems.push({
+      id: generateId(),
+      type: 'word',
+      operation: 'addition',
+      problemText: `${group1} と ${group2} で\nあわせて いくつ？`,
+      answer: operand1 + operand2,
+    });
+  }
+
+  return problems;
+}
+
+// 1年生（入門）: ○を使ったひき算
+export function generateCountingSub(
+  _settings: WorksheetSettings,
+  count: number
+): WordProblem[] {
+  const problems: WordProblem[] = [];
+  const usedCombinations = new Set<string>();
+
+  for (let i = 0; i < count; i++) {
+    let operand1: number, operand2: number;
+    let symbolIndex: number;
+    let attempts = 0;
+    const maxAttempts = 50;
+
+    do {
+      operand1 = randomInt(3, 10);
+      operand2 = randomInt(1, operand1 - 1);
+      symbolIndex = randomInt(0, COUNTING_SYMBOLS.length - 1);
+      const key = `${operand1}-${operand2}-${symbolIndex}`;
+      if (!usedCombinations.has(key)) {
+        usedCombinations.add(key);
+        break;
+      }
+      attempts++;
+    } while (attempts < maxAttempts);
+
+    const symbol = COUNTING_SYMBOLS[symbolIndex];
+    // 全体を表示し、取る分を示す
+    const lines: string[] = [];
+    for (let j = 0; j < operand1; j += 5) {
+      const lineCount = Math.min(5, operand1 - j);
+      lines.push(symbol.repeat(lineCount));
+    }
+    const allSymbols = lines.join('\n');
+    const removeSymbols = symbol.repeat(operand2);
+
+    problems.push({
+      id: generateId(),
+      type: 'word',
+      operation: 'subtraction',
+      problemText: `${allSymbols}\nから ${removeSymbols} とると\nのこりは いくつ？`,
+      answer: operand1 - operand2,
+    });
+  }
+
+  return problems;
+}
 
 // 1年生: 1桁のたし算（10まで）
 export function generateAddSingleDigit(

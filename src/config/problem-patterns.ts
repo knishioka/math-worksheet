@@ -9,6 +9,10 @@ import type { CalculationPattern } from '../types/calculation-patterns';
  * 文章問題を生成する計算パターン
  */
 export const WORD_PROBLEM_PATTERNS: readonly CalculationPattern[] = [
+  // 1年生（入門）
+  'add-counting', // かずをかぞえよう
+  'counting-add', // ○を使ったたし算
+  'counting-sub', // ○を使ったひき算
   // 高学年向け
   'percent-basic', // 百分率
   'area-volume', // 面積・体積

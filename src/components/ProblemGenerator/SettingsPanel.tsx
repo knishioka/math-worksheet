@@ -4,7 +4,10 @@ import type {
   ProblemType,
   CalculationPattern,
 } from '../../types';
-import { getPrintTemplate } from '../../config/print-templates';
+import {
+  getPrintTemplate,
+  PATTERN_COUNT_OVERRIDES,
+} from '../../config/print-templates';
 import {
   isWordEnProblem,
   isWordProblem,
@@ -40,9 +43,16 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const template = getPrintTemplate(effectiveProblemType);
   const isAnzan = effectiveProblemType === 'anzan';
 
-  // 列数に応じた最大問題数と推奨問題数を取得
-  const maxProblems = template.maxCounts[layoutColumns];
-  const recommendedCount = template.recommendedCounts[layoutColumns];
+  // 列数に応じた最大問題数と推奨問題数を取得（パターン固有オーバーライド対応）
+  const patternOverride = calculationPattern
+    ? PATTERN_COUNT_OVERRIDES[calculationPattern]
+    : undefined;
+  const maxProblems =
+    patternOverride?.maxCounts[layoutColumns] ??
+    template.maxCounts[layoutColumns];
+  const recommendedCount =
+    patternOverride?.recommendedCounts[layoutColumns] ??
+    template.recommendedCounts[layoutColumns];
 
   // 文章問題・暗算の場合は2列レイアウトを推奨デフォルトにする
   React.useEffect(() => {

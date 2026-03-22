@@ -32,6 +32,11 @@ import {
 } from '../anzan-problems';
 
 import {
+  generateAddPlusOne,
+  generateAddPlusTwo,
+  generateAddCounting,
+  generateCountingAdd,
+  generateCountingSub,
   generateAddSingleDigit,
   generateAddSingleDigitCarry,
   generateAddTo10,
@@ -128,6 +133,18 @@ export function generatePatternProblems(
   }
 
   switch (pattern) {
+    // 1年生（入門）のパターン
+    case 'add-plus-one':
+      return generateAddPlusOne(settings, count);
+    case 'add-plus-two':
+      return generateAddPlusTwo(settings, count);
+    case 'add-counting':
+      return generateAddCounting(settings, count);
+    case 'counting-add':
+      return generateCountingAdd(settings, count);
+    case 'counting-sub':
+      return generateCountingSub(settings, count);
+
     // 1年生のパターン
     case 'add-single-digit':
       return generateAddSingleDigit(settings, count);
