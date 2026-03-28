@@ -23,6 +23,12 @@ import { generateGradeTransportProblemsEn } from '../transport-problems-en';
 import { generateGradeAllowanceProblems } from '../allowance-problems';
 import { generateGradeAllowanceProblemsEn } from '../allowance-problems-en';
 import {
+  generateSingaporeBarModel,
+  generateSingaporeComparison,
+  generateSingaporeMultiStep,
+  generateSingaporeNumberBond,
+} from '../singapore-problems-en';
+import {
   generateComplement10,
   generateComplement100,
   generateChangeMaking,
@@ -264,6 +270,14 @@ export function generatePatternProblems(
     // 英語文章問題（全学年対応）
     case 'word-en':
       return generateGradeEnWordProblems(settings.grade, count);
+    case 'singapore-bar-model':
+      return generateSingaporeBarModel(settings.grade, count);
+    case 'singapore-number-bond':
+      return generateSingaporeNumberBond(settings.grade, count);
+    case 'singapore-comparison':
+      return generateSingaporeComparison(settings.grade, count);
+    case 'singapore-multi-step':
+      return generateSingaporeMultiStep(settings.grade, count);
 
     // お金の計算（日本円）
     case 'money-change-jap':

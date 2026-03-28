@@ -57,6 +57,13 @@ describe('pattern-categories', () => {
       expect(getPatternCategory('word-en')).toBe('word');
     });
 
+    it('should categorize Singapore Math patterns', () => {
+      expect(getPatternCategory('singapore-bar-model')).toBe('singapore');
+      expect(getPatternCategory('singapore-number-bond')).toBe('singapore');
+      expect(getPatternCategory('singapore-comparison')).toBe('singapore');
+      expect(getPatternCategory('singapore-multi-step')).toBe('singapore');
+    });
+
     it('should categorize anzan patterns', () => {
       expect(getPatternCategory('anzan-complement-10')).toBe('anzan');
       expect(getPatternCategory('anzan-mul-5')).toBe('anzan');
@@ -75,6 +82,9 @@ describe('pattern-categories', () => {
       expect(getPatternLanguage('money-change-en')).toBe('en');
       expect(getPatternLanguage('time-reading-en')).toBe('en');
       expect(getPatternLanguage('word-en')).toBe('en');
+      expect(getPatternLanguage('singapore-bar-model')).toBe('en');
+      expect(getPatternLanguage('singapore-number-bond')).toBe('en');
+      expect(getPatternLanguage('singapore-comparison')).toBe('en');
     });
 
     it('should identify language-neutral patterns', () => {
@@ -94,6 +104,7 @@ describe('pattern-categories', () => {
     it('should return true for language-specific patterns', () => {
       expect(isLanguageDependent('money-change-jap')).toBe(true);
       expect(isLanguageDependent('shopping-discount-en')).toBe(true);
+      expect(isLanguageDependent('singapore-bar-model')).toBe(true);
     });
 
     it('should return false for language-neutral patterns', () => {
@@ -147,6 +158,7 @@ describe('pattern-categories', () => {
       'frac-same-denom',
       'money-change-jap',
       'word-en',
+      'singapore-bar-model',
     ];
 
     it('should group patterns by category', () => {
@@ -158,6 +170,7 @@ describe('pattern-categories', () => {
       expect(result.fraction).toContain('frac-same-denom');
       expect(result.life).toContain('money-change-jap');
       expect(result.word).toContain('word-en');
+      expect(result.singapore).toContain('singapore-bar-model');
     });
 
     it('should return empty arrays for categories with no patterns', () => {
@@ -166,6 +179,7 @@ describe('pattern-categories', () => {
       expect(result.fraction).toEqual([]);
       expect(result.life).toEqual([]);
       expect(result.word).toEqual([]);
+      expect(result.singapore).toEqual([]);
     });
   });
 
@@ -217,6 +231,7 @@ describe('pattern-categories', () => {
       expect(result.fraction).toBe(0);
       expect(result.life).toBe(0);
       expect(result.word).toBe(0);
+      expect(result.singapore).toBe(0);
     });
   });
 
@@ -232,13 +247,14 @@ describe('pattern-categories', () => {
   });
 
   describe('constants', () => {
-    it('should have all 6 categories configured', () => {
-      expect(Object.keys(CATEGORY_CONFIG)).toHaveLength(6);
+    it('should have all 7 categories configured', () => {
+      expect(Object.keys(CATEGORY_CONFIG)).toHaveLength(7);
       expect(CATEGORY_CONFIG.basic).toBeDefined();
       expect(CATEGORY_CONFIG.hissan).toBeDefined();
       expect(CATEGORY_CONFIG.fraction).toBeDefined();
       expect(CATEGORY_CONFIG.life).toBeDefined();
       expect(CATEGORY_CONFIG.word).toBeDefined();
+      expect(CATEGORY_CONFIG.singapore).toBeDefined();
       expect(CATEGORY_CONFIG.anzan).toBeDefined();
     });
 
@@ -249,6 +265,7 @@ describe('pattern-categories', () => {
         'fraction',
         'life',
         'word',
+        'singapore',
         'anzan',
       ]);
     });
@@ -256,6 +273,7 @@ describe('pattern-categories', () => {
     it('should have language-dependent categories defined', () => {
       expect(LANGUAGE_DEPENDENT_CATEGORIES).toContain('life');
       expect(LANGUAGE_DEPENDENT_CATEGORIES).toContain('word');
+      expect(LANGUAGE_DEPENDENT_CATEGORIES).toContain('singapore');
       expect(LANGUAGE_DEPENDENT_CATEGORIES).not.toContain('basic');
       expect(LANGUAGE_DEPENDENT_CATEGORIES).not.toContain('hissan');
     });

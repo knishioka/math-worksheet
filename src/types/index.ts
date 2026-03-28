@@ -123,7 +123,13 @@ export interface WordProblemEn {
   problemText: string; // 英語の問題文
   answer: number | string;
   unit?: string;
-  category: 'missing-number' | 'word-story' | 'comparison';
+  category:
+    | 'missing-number'
+    | 'word-story'
+    | 'comparison'
+    | 'bar-model'
+    | 'number-bond'
+    | 'multi-step';
   showCalculation?: boolean;
   language: 'en';
 }
