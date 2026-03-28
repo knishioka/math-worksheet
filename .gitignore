@@ -57,3 +57,5 @@ logs/
 *.tmp
 *.temp
 .cache/
+artifacts/
+eng.traineddata

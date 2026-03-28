@@ -423,8 +423,8 @@ export const PATTERN_COUNT_OVERRIDES: Partial<
     maxCounts: { 1: 8, 2: 16, 3: 18 },
   },
   'singapore-number-bond': {
-    recommendedCounts: { 1: 8, 2: 16, 3: 20 },
-    maxCounts: { 1: 10, 2: 18, 3: 21 },
+    recommendedCounts: { 1: 8, 2: 16, 3: 18 },
+    maxCounts: { 1: 8, 2: 16, 3: 18 },
   },
   'singapore-comparison': {
     recommendedCounts: { 1: 7, 2: 14, 3: 18 },
