@@ -83,6 +83,8 @@ describe('pattern-categories', () => {
       expect(getPatternLanguage('time-reading-en')).toBe('en');
       expect(getPatternLanguage('word-en')).toBe('en');
       expect(getPatternLanguage('singapore-bar-model')).toBe('en');
+      expect(getPatternLanguage('singapore-number-bond')).toBe('en');
+      expect(getPatternLanguage('singapore-comparison')).toBe('en');
     });
 
     it('should identify language-neutral patterns', () => {

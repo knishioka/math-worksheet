@@ -116,8 +116,6 @@ export function generateSingaporeBarModel(
 
   for (let i = 0; i < count; i++) {
     const problemType = randomInt(0, 1);
-    const nameA = names[randomInt(0, names.length - 1)];
-    const nameB = pickDifferentName(names, nameA);
     const item = items[randomInt(0, items.length - 1)];
 
     if (problemType === 0) {
@@ -144,6 +142,7 @@ export function generateSingaporeBarModel(
           language: 'en',
         });
       } else {
+        const nameA = names[randomInt(0, names.length - 1)];
         problems.push({
           id: generateId(),
           type: 'word-en',
@@ -156,6 +155,8 @@ export function generateSingaporeBarModel(
         });
       }
     } else {
+      const nameA = names[randomInt(0, names.length - 1)];
+      const nameB = pickDifferentName(names, nameA);
       const smallRange = getGradeRange(
         grade,
         { min: 8, max: 25 },
@@ -311,10 +312,10 @@ export function generateSingaporeComparison(
 
   for (let i = 0; i < count; i++) {
     const subject = subjects[randomInt(0, subjects.length - 1)];
-    const nameA = names[randomInt(0, names.length - 1)];
-    const nameB = pickDifferentName(names, nameA);
 
     if (grade <= 2) {
+      const nameA = names[randomInt(0, names.length - 1)];
+      const nameB = pickDifferentName(names, nameA);
       const smallerRange = getGradeRange(
         grade,
         { min: 8, max: 30 },
@@ -369,10 +370,14 @@ export function generateSingaporeComparison(
     const result = baseAmount * multiplier;
 
     const variant = randomInt(0, 1);
-    const text =
-      variant === 0
-        ? `${nameA} has ${baseAmount} ${subject}. ${nameB} has ${multiplier} times as many as ${nameA}. How many ${subject} does ${nameB} have?`
-        : `One box has ${baseAmount} crayons. A big box has ${multiplier} times as many crayons. How many crayons are in the big box?`;
+    let text: string;
+    if (variant === 0) {
+      const nameA = names[randomInt(0, names.length - 1)];
+      const nameB = pickDifferentName(names, nameA);
+      text = `${nameA} has ${baseAmount} ${subject}. ${nameB} has ${multiplier} times as many as ${nameA}. How many ${subject} does ${nameB} have?`;
+    } else {
+      text = `One box has ${baseAmount} crayons. A big box has ${multiplier} times as many crayons. How many crayons are in the big box?`;
+    }
 
     problems.push({
       id: generateId(),
