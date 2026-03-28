@@ -74,7 +74,7 @@ export type CalculationPattern =
   | 'word-en' // English word problems for international schools
   | 'singapore-bar-model' // Singapore Math: bar model problems
   | 'singapore-number-bond' // Singapore Math: number bond decomposition
-  | 'singapore-comparison' // Singapore Math: multiplication comparison
+  | 'singapore-comparison' // Singapore Math: grade-aware comparison
   | 'singapore-multi-step' // Singapore Math: multi-step with fractions
 
   // お金の計算（1-4年生）
@@ -790,7 +790,7 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'singapore-number-bond':
     'Number bond decomposition problems that break a whole into related parts',
   'singapore-comparison':
-    'Multiplicative comparison problems using "times as many" relationships',
+    'Comparison problems using "more/fewer than" in grade 2 and "times as many" in grade 3+',
   'singapore-multi-step':
     'Multi-step Singapore style word problems with fraction reasoning',
 

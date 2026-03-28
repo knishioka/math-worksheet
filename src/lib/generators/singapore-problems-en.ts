@@ -24,6 +24,85 @@ function getGradeRange(
   return upper;
 }
 
+function pickDifferentName(names: string[], firstName: string): string {
+  if (names.length <= 1) {
+    return firstName;
+  }
+
+  let secondName = firstName;
+  while (secondName === firstName) {
+    secondName = names[randomInt(0, names.length - 1)];
+  }
+
+  return secondName;
+}
+
+type FractionUsageStep = {
+  usedFirst: number;
+  usedSecond: number;
+  remainingAfterSecond: number;
+};
+
+export function calculateSequentialFractionUsage(
+  total: number,
+  scenario: FractionScenario
+): FractionUsageStep | null {
+  const usedFirst =
+    (total * scenario.fraction1Numerator) / scenario.fraction1Denominator;
+  if (!Number.isInteger(usedFirst)) {
+    return null;
+  }
+
+  const remainingAfterFirst = total - usedFirst;
+  const usedSecond =
+    (remainingAfterFirst * scenario.fraction2Numerator) /
+    scenario.fraction2Denominator;
+  if (!Number.isInteger(usedSecond)) {
+    return null;
+  }
+
+  const remainingAfterSecond = remainingAfterFirst - usedSecond;
+  if (!Number.isInteger(remainingAfterSecond) || remainingAfterSecond <= 0) {
+    return null;
+  }
+
+  return {
+    usedFirst,
+    usedSecond,
+    remainingAfterSecond,
+  };
+}
+
+function pickValidSequentialTotal(
+  scenario: FractionScenario,
+  multiplierMin: number,
+  multiplierMax: number
+): { total: number; usage: FractionUsageStep } {
+  const validTotals: { total: number; usage: FractionUsageStep }[] = [];
+
+  for (let multiplier = multiplierMin; multiplier <= multiplierMax; multiplier++) {
+    const total = scenario.lcm * multiplier;
+    const usage = calculateSequentialFractionUsage(total, scenario);
+    if (usage) {
+      validTotals.push({ total, usage });
+    }
+  }
+
+  if (validTotals.length === 0) {
+    let multiplier = Math.max(1, multiplierMax + 1);
+    while (true) {
+      const total = scenario.lcm * multiplier;
+      const usage = calculateSequentialFractionUsage(total, scenario);
+      if (usage) {
+        return { total, usage };
+      }
+      multiplier++;
+    }
+  }
+
+  return validTotals[randomInt(0, validTotals.length - 1)];
+}
+
 /**
  * Part-whole and comparison bar model problems.
  */
@@ -38,7 +117,7 @@ export function generateSingaporeBarModel(
   for (let i = 0; i < count; i++) {
     const problemType = randomInt(0, 1);
     const nameA = names[randomInt(0, names.length - 1)];
-    const nameB = names[randomInt(0, names.length - 1)];
+    const nameB = pickDifferentName(names, nameA);
     const item = items[randomInt(0, items.length - 1)];
 
     if (problemType === 0) {
@@ -220,7 +299,7 @@ export function generateSingaporeNumberBond(
 }
 
 /**
- * Multiplication comparison ("times as many") problems.
+ * Comparison problems. Grade 2 uses additive comparison, Grade 3+ uses multiplicative comparison.
  */
 export function generateSingaporeComparison(
   grade: Grade,
@@ -233,7 +312,46 @@ export function generateSingaporeComparison(
   for (let i = 0; i < count; i++) {
     const subject = subjects[randomInt(0, subjects.length - 1)];
     const nameA = names[randomInt(0, names.length - 1)];
-    const nameB = names[randomInt(0, names.length - 1)];
+    const nameB = pickDifferentName(names, nameA);
+
+    if (grade <= 2) {
+      const smallerRange = getGradeRange(
+        grade,
+        { min: 8, max: 30 },
+        { min: 20, max: 90 },
+        { min: 60, max: 180 }
+      );
+      const smaller = randomInt(smallerRange.min, smallerRange.max);
+      const difference = randomInt(2, Math.max(3, Math.floor(smaller * 0.6)));
+      const bigger = smaller + difference;
+      const askBigger = randomInt(0, 1) === 1;
+
+      if (askBigger) {
+        problems.push({
+          id: generateId(),
+          type: 'word-en',
+          operation: 'addition' as Operation,
+          problemText: `${nameA} has ${smaller} ${subject}. ${nameB} has ${difference} more than ${nameA}. How many ${subject} does ${nameB} have?`,
+          answer: bigger,
+          category: 'comparison',
+          showCalculation: true,
+          language: 'en',
+        });
+      } else {
+        problems.push({
+          id: generateId(),
+          type: 'word-en',
+          operation: 'subtraction' as Operation,
+          problemText: `${nameB} has ${bigger} ${subject}. ${nameA} has ${difference} fewer than ${nameB}. How many ${subject} does ${nameA} have?`,
+          answer: smaller,
+          category: 'comparison',
+          showCalculation: true,
+          language: 'en',
+        });
+      }
+      continue;
+    }
+
     const baseRange = getGradeRange(
       grade,
       { min: 2, max: 9 },
@@ -369,14 +487,12 @@ export function generateSingaporeMultiStep(
       { min: 5, max: 12 },
       { min: 8, max: 20 }
     );
-    const multiplier = randomInt(multiplierRange.min, multiplierRange.max);
-    const total = scenario.lcm * multiplier;
-
-    const used1 =
-      (total * scenario.fraction1Numerator) / scenario.fraction1Denominator;
-    const used2 =
-      (total * scenario.fraction2Numerator) / scenario.fraction2Denominator;
-    const remaining = total - used1 - used2;
+    const { total, usage } = pickValidSequentialTotal(
+      scenario,
+      multiplierRange.min,
+      multiplierRange.max
+    );
+    const remaining = usage.remainingAfterSecond;
 
     const problemType = randomInt(0, 1);
     if (problemType === 0) {
@@ -384,7 +500,7 @@ export function generateSingaporeMultiStep(
         id: generateId(),
         type: 'word-en',
         operation: 'subtraction' as Operation,
-        problemText: `A container has ${total} ${context}. In the morning, ${scenario.fraction1Numerator}/${scenario.fraction1Denominator} is used. In the afternoon, ${scenario.fraction2Numerator}/${scenario.fraction2Denominator} is used. How much ${context} is left?`,
+        problemText: `A container has ${total} ${context}. In the morning, ${scenario.fraction1Numerator}/${scenario.fraction1Denominator} is used. In the afternoon, ${scenario.fraction2Numerator}/${scenario.fraction2Denominator} of the remaining amount is used. How much ${context} is left?`,
         answer: remaining,
         category: 'word-story',
         showCalculation: true,
@@ -415,7 +531,7 @@ export function generateSingaporeMultiStep(
       id: generateId(),
       type: 'word-en',
       operation: 'division' as Operation,
-      problemText: `There are ${total} ${context} in a box. First, ${scenario.fraction1Numerator}/${scenario.fraction1Denominator} of them are used. Then ${scenario.fraction2Numerator}/${scenario.fraction2Denominator} of the whole amount are used. The rest are shared equally among ${groups} students. How many ${context} does each student get?`,
+      problemText: `There are ${total} ${context} in a box. First, ${scenario.fraction1Numerator}/${scenario.fraction1Denominator} of them are used. Then ${scenario.fraction2Numerator}/${scenario.fraction2Denominator} of the remaining amount is used. The rest are shared equally among ${groups} students. How many ${context} does each student get?`,
       answer: eachShare,
       category: 'word-story',
       showCalculation: true,
