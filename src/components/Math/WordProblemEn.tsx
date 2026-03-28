@@ -14,13 +14,22 @@ export const WordProblemEnComponent: React.FC<WordProblemEnProps> = ({
   problem,
   showAnswer = false,
 }) => {
+  const ANSWER_LINE_CATEGORIES = new Set([
+    'word-story',
+    'missing-number',
+    'comparison',
+    'bar-model',
+    'number-bond',
+    'multi-step',
+  ]);
+
   return (
     <div style={{ textAlign: 'left', fontSize: '15px', lineHeight: '1.3', color: '#000' }}>
       <div style={{ marginBottom: '2px' }}>
         {problem.problemText}
       </div>
 
-      {problem.category === 'word-story' && (
+      {ANSWER_LINE_CATEGORIES.has(problem.category) && (
         <div style={{ marginTop: '4px', display: 'flex', alignItems: 'flex-end', gap: '6px' }}>
           <span style={{ color: '#000', fontSize: '13px' }}>Answer:</span>
           <div style={{ borderBottom: '1.5px solid #000', minWidth: '3.5rem', padding: '0 6px', height: '1.1em' }}>
