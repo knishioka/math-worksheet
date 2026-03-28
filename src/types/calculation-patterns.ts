@@ -72,6 +72,10 @@ export type CalculationPattern =
 
   // 英語文章問題（全学年対応）
   | 'word-en' // English word problems for international schools
+  | 'singapore-bar-model' // Singapore Math: bar model problems
+  | 'singapore-number-bond' // Singapore Math: number bond decomposition
+  | 'singapore-comparison' // Singapore Math: multiplication comparison
+  | 'singapore-multi-step' // Singapore Math: multi-step with fractions
 
   // お金の計算（1-4年生）
   | 'money-change-jap' // おつりの計算（日本円）
@@ -218,6 +222,8 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'money-change-en',
     'money-total-en',
     'money-payment-en',
+    'singapore-bar-model',
+    'singapore-number-bond',
     'time-reading-jap',
     'time-elapsed-jap',
     'time-reading-en',
@@ -259,6 +265,9 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'money-change-en',
     'money-total-en',
     'money-payment-en',
+    'singapore-bar-model',
+    'singapore-number-bond',
+    'singapore-comparison',
     'time-reading-jap',
     'time-elapsed-jap',
     'time-calc-jap',
@@ -330,6 +339,10 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'money-change-en',
     'money-total-en',
     'money-payment-en',
+    'singapore-bar-model',
+    'singapore-number-bond',
+    'singapore-comparison',
+    'singapore-multi-step',
     'time-reading-jap',
     'time-elapsed-jap',
     'time-calc-jap',
@@ -400,6 +413,10 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'percent-basic',
     'area-volume',
     'word-en',
+    'singapore-bar-model',
+    'singapore-number-bond',
+    'singapore-comparison',
+    'singapore-multi-step',
     'unit-length-jap',
     'unit-weight-jap',
     'unit-capacity-jap',
@@ -454,6 +471,10 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'speed-time-distance',
     'complex-calc',
     'word-en',
+    'singapore-bar-model',
+    'singapore-number-bond',
+    'singapore-comparison',
+    'singapore-multi-step',
     'unit-length-jap',
     'unit-weight-jap',
     'unit-capacity-jap',
@@ -579,6 +600,10 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
 
   // 英語文章問題
   'word-en': 'English Word Problems',
+  'singapore-bar-model': 'Singapore Math: Bar Model',
+  'singapore-number-bond': 'Singapore Math: Number Bond',
+  'singapore-comparison': 'Singapore Math: Comparison',
+  'singapore-multi-step': 'Singapore Math: Multi-step Fractions',
 
   // お金の計算
   'money-change-jap': 'おつりの計算',
@@ -756,6 +781,14 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   // 英語文章問題
   'word-en':
     'English word story problems for international school students (e.g., "Tom has 5 apples. He gets 3 more. How many apples does he have now?")',
+  'singapore-bar-model':
+    'Singapore bar model problems focusing on part-whole and comparison reasoning',
+  'singapore-number-bond':
+    'Number bond decomposition problems that break a whole into related parts',
+  'singapore-comparison':
+    'Multiplicative comparison problems using "times as many" relationships',
+  'singapore-multi-step':
+    'Multi-step Singapore style word problems with fraction reasoning',
 
   // お金の計算
   'money-change-jap': '100円で68円のお菓子を買ったら、おつりはいくら？',

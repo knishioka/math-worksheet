@@ -8,6 +8,13 @@ import type { CalculationPattern } from '../types/calculation-patterns';
 /**
  * 文章問題を生成する計算パターン
  */
+export const SINGAPORE_MATH_PATTERNS: readonly CalculationPattern[] = [
+  'singapore-bar-model',
+  'singapore-number-bond',
+  'singapore-comparison',
+  'singapore-multi-step',
+] as const;
+
 export const WORD_PROBLEM_PATTERNS: readonly CalculationPattern[] = [
   // 1年生（入門）
   'add-counting', // かずをかぞえよう
@@ -109,6 +116,9 @@ export const WORD_PROBLEM_PATTERNS: readonly CalculationPattern[] = [
   // お小遣い管理（英語）
   'allowance-saving-en', // Saving Calculation (RM)
   'allowance-goal-en', // Savings Goal (RM)
+
+  // Singapore Math（英語）
+  ...SINGAPORE_MATH_PATTERNS,
 ] as const;
 
 /**

@@ -418,6 +418,22 @@ export const PATTERN_COUNT_OVERRIDES: Partial<
     recommendedCounts: { 1: 5, 2: 10, 3: 15 },
     maxCounts: { 1: 6, 2: 12, 3: 15 },
   },
+  'singapore-bar-model': {
+    recommendedCounts: { 1: 7, 2: 14, 3: 18 },
+    maxCounts: { 1: 8, 2: 16, 3: 18 },
+  },
+  'singapore-number-bond': {
+    recommendedCounts: { 1: 8, 2: 16, 3: 20 },
+    maxCounts: { 1: 10, 2: 18, 3: 21 },
+  },
+  'singapore-comparison': {
+    recommendedCounts: { 1: 7, 2: 14, 3: 18 },
+    maxCounts: { 1: 8, 2: 16, 3: 18 },
+  },
+  'singapore-multi-step': {
+    recommendedCounts: { 1: 6, 2: 10, 3: 12 },
+    maxCounts: { 1: 8, 2: 12, 3: 15 },
+  },
 };
 
 /**

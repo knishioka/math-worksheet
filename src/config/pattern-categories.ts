@@ -1,6 +1,6 @@
 /**
  * 計算パターンのカテゴリ分類
- * 260以上のパターンを5つの主要カテゴリに整理
+ * 計算パターンを主要カテゴリに整理
  */
 
 import type { CalculationPattern } from '../types/calculation-patterns';
@@ -23,6 +23,7 @@ export type PatternCategory =
   | 'fraction' // 分数・小数
   | 'life' // 生活の中の算数
   | 'word' // 文章問題
+  | 'singapore' // Singapore Math
   | 'anzan'; // 暗算のコツ
 
 /**
@@ -66,6 +67,11 @@ export const CATEGORY_CONFIG: Record<
     icon: '📝',
     description: '文章を読んで解く問題',
   },
+  singapore: {
+    label: 'Singapore Math',
+    icon: '📐',
+    description: 'バー・モデルや数の結びつきで考える文章題',
+  },
   anzan: {
     label: '暗算のコツ',
     icon: '🧠',
@@ -82,6 +88,7 @@ export const CATEGORY_ORDER: PatternCategory[] = [
   'fraction',
   'life',
   'word',
+  'singapore',
   'anzan',
 ];
 
@@ -92,6 +99,7 @@ export const CATEGORY_ORDER: PatternCategory[] = [
 export const LANGUAGE_DEPENDENT_CATEGORIES: PatternCategory[] = [
   'life',
   'word',
+  'singapore',
 ];
 
 /**
@@ -132,6 +140,7 @@ const PATTERN_PREFIX_MAPPING: Record<string, PatternCategory> = {
 
   // 文章問題 (word)
   word: 'word',
+  singapore: 'singapore',
 
   // 暗算のコツ (anzan)
   anzan: 'anzan',
@@ -281,6 +290,12 @@ const BASE_DIFFICULTY: Partial<Record<CalculationPattern, DifficultyLevel>> = {
   // === 文章問題 (word) ===
   'word-en': 2,
 
+  // === Singapore Math ===
+  'singapore-bar-model': 2,
+  'singapore-number-bond': 1,
+  'singapore-comparison': 2,
+  'singapore-multi-step': 3,
+
   // === 暗算のコツ (anzan) ===
   'anzan-complement-10': 1,
   'anzan-pair-sum': 1,
@@ -343,6 +358,9 @@ export function getPatternLanguage(
   if (pattern === 'word-en') {
     return 'en';
   }
+  if (pattern.startsWith('singapore-')) {
+    return 'en';
+  }
 
   return 'all';
 }
@@ -385,6 +403,7 @@ export function groupPatternsByCategory(
     fraction: [],
     life: [],
     word: [],
+    singapore: [],
     anzan: [],
   };
 
@@ -426,6 +445,7 @@ export function getCategoryCounts(
     fraction: grouped.fraction.length,
     life: grouped.life.length,
     word: grouped.word.length,
+    singapore: grouped.singapore.length,
     anzan: grouped.anzan.length,
   };
 }
@@ -493,6 +513,7 @@ export function groupPatternsByCategorySorted(
     fraction: sortPatternsByDifficulty(grouped.fraction),
     life: sortPatternsByDifficulty(grouped.life),
     word: sortPatternsByDifficulty(grouped.word),
+    singapore: sortPatternsByDifficulty(grouped.singapore),
     anzan: sortPatternsByDifficulty(grouped.anzan),
   };
 }
