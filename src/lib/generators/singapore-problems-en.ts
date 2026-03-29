@@ -8,6 +8,7 @@ import type {
   ComparisonDiagram,
 } from '../../types';
 import { generateId, randomInt } from '../utils/math';
+import { assertValidProblem } from './assertions';
 
 type FractionScenario = {
   fraction1Numerator: number;
@@ -250,6 +251,7 @@ export function generateSingaporeBarModel(
     }
   }
 
+  problems.forEach((p) => assertValidProblem(p, 'singapore-bar-model'));
   return problems;
 }
 
@@ -307,7 +309,11 @@ export function generateSingaporeNumberBond(
         { min: 100, max: 900 },
         { min: 1000, max: 9000 }
       );
-      const value = randomInt(base.min, base.max);
+      // Ensure the hidden part (ones digit) is non-zero
+      let value = randomInt(base.min, base.max);
+      while (value % 10 === 0) {
+        value = randomInt(base.min, base.max);
+      }
 
       if (grade <= 2) {
         const tens = Math.floor(value / 10) * 10;
@@ -390,6 +396,7 @@ export function generateSingaporeNumberBond(
     });
   }
 
+  problems.forEach((p) => assertValidProblem(p, 'singapore-number-bond'));
   return problems;
 }
 
@@ -529,6 +536,7 @@ export function generateSingaporeComparison(
     });
   }
 
+  problems.forEach((p) => assertValidProblem(p, 'singapore-comparison'));
   return problems;
 }
 
@@ -682,5 +690,6 @@ export function generateSingaporeMultiStep(
     });
   }
 
+  problems.forEach((p) => assertValidProblem(p, 'singapore-multi-step'));
   return problems;
 }
