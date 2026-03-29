@@ -1,13 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import type { Mock } from 'vitest';
 import type { WorksheetSettings, Problem } from '../../types';
 
-let generateProblemsMock: Mock<[WorksheetSettings], Problem[]>;
+const generateProblemsMock = vi.fn<(settings: WorksheetSettings) => Problem[]>();
 
-vi.mock('../../lib/generators', (): unknown => ({
-  generateProblems: (settings: WorksheetSettings) =>
-    generateProblemsMock(settings),
-}));
+vi.mock(
+  '../../lib/generators',
+  (): { generateProblems: (settings: WorksheetSettings) => Problem[] } => ({
+    generateProblems: (settings: WorksheetSettings): Problem[] =>
+      generateProblemsMock(settings),
+  })
+);
 
 import { useProblemStore } from '../problemStore';
 
@@ -21,7 +23,8 @@ const settingsSnapshot: WorksheetSettings = {
 
 describe('useProblemStore.buildWorksheetBatch', () => {
   beforeEach(() => {
-    generateProblemsMock = vi.fn((settings: WorksheetSettings): Problem[] =>
+    generateProblemsMock.mockReset();
+    generateProblemsMock.mockImplementation((settings: WorksheetSettings): Problem[] =>
       Array.from({ length: settings.problemCount }, (_, index) => ({
         id: `problem-${index}`,
         type: 'basic',
