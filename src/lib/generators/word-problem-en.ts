@@ -1,5 +1,6 @@
 import type { Grade, WordProblemEn } from '../../types';
 import { generateId, randomInt } from '../utils/math';
+import { assertValidProblem } from './assertions';
 import {
   getTemplatesForGrade,
   type MissingNumberTemplate,
@@ -25,8 +26,7 @@ export function generateEnMissingNumber(
 
     while (!problem && attempts < maxAttempts) {
       // Select random template
-      const template =
-        templates[randomInt(0, templates.length - 1)];
+      const template = templates[randomInt(0, templates.length - 1)];
 
       // Generate numbers based on operation
       const { problemText, answer, key } = generateProblemFromTemplate(
@@ -57,6 +57,7 @@ export function generateEnMissingNumber(
     }
   }
 
+  problems.forEach((p) => assertValidProblem(p, 'word-en-missing-number'));
   return problems;
 }
 
@@ -93,6 +94,7 @@ export function generateEnWordStory(
     });
   }
 
+  problems.forEach((p) => assertValidProblem(p, 'word-en-story'));
   return problems;
 }
 
@@ -166,4 +168,3 @@ function generateProblemFromTemplate(
 
   return { problemText, answer, key };
 }
-

@@ -16,7 +16,10 @@
     "preview": "vite preview",
     "deploy": "npm run build && gh-pages -d dist",
     "check:layout": "node scripts/check-print-layout.mjs",
-    "check:layout:local": "node scripts/check-print-layout.mjs http://localhost:4173/"
+    "check:layout:local": "node scripts/check-print-layout.mjs http://localhost:4173/",
+    "verify:playwright:dev": "node scripts/verify-playwright.mjs",
+    "verify:playwright:preview": "node scripts/verify-playwright.mjs http://localhost:4173/",
+    "verify:singapore": "node scripts/verify-playwright.mjs --singapore-only"
   },
   "dependencies": {
     "pdfmake": "^0.2.20",
