@@ -172,11 +172,21 @@ function validateMultiStepAnswer(renderedProblem, combo) {
   }
 
   const answerMatch = renderedProblem.match(/Answer:\s*([0-9]+(?:\.[0-9]+)?)/);
-  const totalMatch = renderedProblem.match(/(?:has|are) (\d+) /);
-  const fractions = [...renderedProblem.matchAll(/(\d+)\/(\d+)/g)];
-  if (!answerMatch || !totalMatch || fractions.length < 2) {
+  if (!answerMatch) {
     throw new Error(
-      `Could not parse multi-step problem in ${combo.slug}: "${renderedProblem}"`
+      `Could not find answer in multi-step problem in ${combo.slug}: "${renderedProblem}"`
+    );
+  }
+  const totalMatch = renderedProblem.match(/(?:has|are) (\d+) /);
+  if (!totalMatch) {
+    throw new Error(
+      `Could not find total value in multi-step problem in ${combo.slug}: "${renderedProblem}"`
+    );
+  }
+  const fractions = [...renderedProblem.matchAll(/(\d+)\/(\d+)/g)];
+  if (fractions.length < 2) {
+    throw new Error(
+      `Expected at least 2 fractions but found ${fractions.length} in ${combo.slug}: "${renderedProblem}"`
     );
   }
 
@@ -219,7 +229,10 @@ function validateMultiStepAnswer(renderedProblem, combo) {
 async function captureCombo(page, combo) {
   await page.goto(BASE_URL, { waitUntil: 'networkidle' });
   await page.selectOption('select', String(combo.grade));
-  await page.waitForTimeout(200);
+  // Wait for grade selection to take effect
+  await page
+    .locator('[data-a4-sheet]')
+    .waitFor({ state: 'visible', timeout: 5000 });
   await page.evaluate((pattern) => {
     const input = document.querySelector(
       `input[name="calculationPattern"][value="${pattern}"]`
@@ -234,10 +247,21 @@ async function captureCombo(page, combo) {
     .locator('[data-a4-sheet]')
     .waitFor({ state: 'visible', timeout: 10000 });
 
-  // Wait for problems to render
+  // Wait for problems to render by checking for visible problem items
   const firstProblemLocator = page.locator(PROBLEM_SELECTOR).first();
   await firstProblemLocator.waitFor({ state: 'visible', timeout: 10000 });
-  await page.waitForTimeout(250);
+  // Wait until problem count stabilizes (all problems rendered)
+  await page.waitForFunction(
+    (selector) => {
+      const items = document.querySelectorAll(selector);
+      return (
+        items.length > 0 &&
+        [...items].every((el) => el.textContent?.trim().length > 0)
+      );
+    },
+    PROBLEM_SELECTOR,
+    { timeout: 10000 }
+  );
 
   const problemLocator = page.locator(PROBLEM_SELECTOR);
   const count = await problemLocator.count();
@@ -253,8 +277,15 @@ async function captureCombo(page, combo) {
   const answerToggle = page.getByLabel('解答表示');
   if (await answerToggle.isChecked()) {
     await answerToggle.uncheck({ force: true });
+    await page.waitForFunction(
+      (selector) => {
+        const items = document.querySelectorAll(selector);
+        return items.length > 0;
+      },
+      PROBLEM_SELECTOR,
+      { timeout: 5000 }
+    );
   }
-  await page.waitForTimeout(150);
   await page.screenshot({
     path: join(OUTPUT_DIR, `${combo.slug}-answers-off.png`),
     fullPage: true,
@@ -262,7 +293,18 @@ async function captureCombo(page, combo) {
 
   // Screenshot with answers on
   await answerToggle.check({ force: true });
-  await page.waitForTimeout(200);
+  // Wait for answers to appear in the DOM
+  await page.waitForFunction(
+    (selector) => {
+      const items = document.querySelectorAll(selector);
+      return (
+        items.length > 0 &&
+        [...items].some((el) => /answer|Answer|\d/.test(el.textContent ?? ''))
+      );
+    },
+    PROBLEM_SELECTOR,
+    { timeout: 5000 }
+  );
   const renderedOn = (await problemLocator.allInnerTexts()).map(normalizeText);
 
   // Validate multi-step answers when answers are visible

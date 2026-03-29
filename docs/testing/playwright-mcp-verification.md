@@ -95,7 +95,7 @@ For batch verification without interactive inspection:
 
 ```bash
 # All patterns (local dev server)
-npm run verify:playwright
+npm run verify:playwright:dev
 
 # Singapore patterns only (faster)
 npm run verify:singapore
@@ -103,9 +103,11 @@ npm run verify:singapore
 # Specific pattern
 node scripts/verify-playwright.mjs --pattern=word-en
 
-# Against production build
-npm run build && npm run preview &
-npm run verify:playwright:local
+# Against production build (run in separate terminals)
+# Terminal 1:
+npm run build && npm run preview
+# Terminal 2:
+npm run verify:playwright:preview
 ```
 
 The script captures screenshots to `artifacts/playwright-verify/` and validates:

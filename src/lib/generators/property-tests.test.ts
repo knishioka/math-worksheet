@@ -12,12 +12,10 @@ import {
   generateEnWordStory,
 } from './word-problem-en';
 import { generateProblems } from './index';
+import { assertNoDuplicateNames } from './assertions';
 
 const SAMPLE_SIZE = 200;
 const GRADES: Grade[] = [1, 2, 3, 4, 5, 6];
-
-const SELF_REFERENCE_RE =
-  /\b([A-Z][a-z]+)\b(?:\s+has\s+\d+.*?(?:more\s+than|fewer\s+than|times\s+as\s+many\s+as))\s+\1\b/;
 
 describe('property-based tests: Singapore Bar Model', () => {
   it.each(GRADES)(
@@ -33,7 +31,9 @@ describe('property-based tests: Singapore Bar Model', () => {
         expect(typeof p.answer).toBe('number');
         expect(Number.isFinite(p.answer)).toBe(true);
         expect(p.answer).toBeGreaterThan(0);
-        expect(SELF_REFERENCE_RE.test(p.problemText)).toBe(false);
+        expect(() =>
+          assertNoDuplicateNames(p.problemText, 'test')
+        ).not.toThrow();
       }
     }
   );
@@ -104,7 +104,9 @@ describe('property-based tests: Singapore Comparison', () => {
         expect(typeof p.answer).toBe('number');
         expect(Number.isFinite(p.answer)).toBe(true);
         expect(p.answer).toBeGreaterThan(0);
-        expect(SELF_REFERENCE_RE.test(p.problemText)).toBe(false);
+        expect(() =>
+          assertNoDuplicateNames(p.problemText, 'test')
+        ).not.toThrow();
       }
     }
   );
@@ -274,8 +276,7 @@ describe('property-based tests: pattern router integration', () => {
 
   // Test each English pattern at grade 3 (most patterns available)
   it.each(englishPatterns)('pattern %s generates valid problems', (pattern) => {
-    // Skip patterns not available at grade 3
-    const grade = pattern.includes('singapore-multi-step') ? 3 : 3;
+    const grade = 3;
     const count = 20;
 
     const problems = generateProblems({
