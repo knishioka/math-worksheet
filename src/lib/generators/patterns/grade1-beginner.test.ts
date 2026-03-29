@@ -49,8 +49,7 @@ describe('generateAddPlusOne (+1のたし算)', () => {
       const secondHalf = problems.slice(10, 20).map((p) => p.operand1);
 
       // 前半10問と後半10問が完全一致しないこと
-      const isIdentical = firstHalf.every((v, i) => v === secondHalf[i]);
-      expect(isIdentical).toBe(false);
+      expect(firstHalf).not.toEqual(secondHalf);
     }
   });
 });
@@ -86,8 +85,7 @@ describe('generateAddPlusTwo (+2のたし算)', () => {
       const firstHalf = problems.slice(0, 9).map((p) => p.operand1);
       const secondHalf = problems.slice(9, 18).map((p) => p.operand1);
 
-      const isIdentical = firstHalf.every((v, i) => v === secondHalf[i]);
-      expect(isIdentical).toBe(false);
+      expect(firstHalf).not.toEqual(secondHalf);
     }
   });
 });

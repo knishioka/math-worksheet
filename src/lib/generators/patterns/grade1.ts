@@ -6,7 +6,7 @@ import type {
 import { generateId, randomInt } from '../../utils/math';
 
 // Fisher-Yatesシャッフル
-function shuffleArray(arr: number[]): void {
+function shuffleArray<T>(arr: T[]): void {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = randomInt(0, i);
     [arr[i], arr[j]] = [arr[j], arr[i]];
@@ -322,12 +322,13 @@ export function generateAddTo10(
   ];
 
   // ペアをシャッフル
-  const shuffledPairs = [...pairs].sort(() => Math.random() - 0.5);
+  const shuffledPairs = [...pairs];
+  shuffleArray(shuffledPairs);
 
   for (let i = 0; i < count; i++) {
     // プールを使い切ったら再シャッフルして構造的重複を防ぐ
     if (i > 0 && i % shuffledPairs.length === 0) {
-      shuffledPairs.sort(() => Math.random() - 0.5);
+      shuffleArray(shuffledPairs);
     }
     const pair = shuffledPairs[i % shuffledPairs.length];
     const [operand1, operand2] =
