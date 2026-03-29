@@ -8,6 +8,7 @@ import type {
   BasicProblem,
   WordProblem,
   WordProblemEn,
+  SingaporeProblem,
   HissanProblem,
   WorksheetSettings,
 } from '../../types';
@@ -19,6 +20,7 @@ import {
   calculateMissingAnswer,
 } from '../../lib/utils/missing-number-calculator';
 import { WordProblemEnComponent } from '../Math/WordProblemEn';
+import { SingaporeProblemComponent } from '../Math/SingaporeProblemComponent';
 import { getPrintTemplate } from '../../config/print-templates';
 import { getEffectiveProblemType } from '../../lib/utils/problem-type-detector';
 import { estimateA4Fit } from '../../lib/utils/print-validator';
@@ -438,6 +440,29 @@ function ProblemItem({
         <div style={{ flex: 1 }}>
           <WordProblemEnComponent
             problem={wordProblemEn}
+            showAnswer={showAnswer}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Singapore Math問題の場合
+  if (problem.type === 'singapore') {
+    const sgProblem = problem as SingaporeProblem;
+    return (
+      <div
+        className="problem-item"
+        style={{
+          ...problemItemStyle,
+          display: 'flex',
+          gap: SPACING.gap.medium,
+        }}
+      >
+        <div style={wordEnNumberStyle}>({number})</div>
+        <div style={{ flex: 1 }}>
+          <SingaporeProblemComponent
+            problem={sgProblem}
             showAnswer={showAnswer}
           />
         </div>

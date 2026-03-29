@@ -1,4 +1,12 @@
-import type { Grade, Operation, WordProblemEn } from '../../types';
+import type {
+  Grade,
+  Operation,
+  SingaporeProblem,
+  BarModelPartWholeDiagram,
+  BarModelComparisonDiagram,
+  NumberBondDiagram,
+  ComparisonDiagram,
+} from '../../types';
 import { generateId, randomInt } from '../utils/math';
 
 type FractionScenario = {
@@ -80,7 +88,11 @@ function pickValidSequentialTotal(
 ): { total: number; usage: FractionUsageStep } {
   const validTotals: { total: number; usage: FractionUsageStep }[] = [];
 
-  for (let multiplier = multiplierMin; multiplier <= multiplierMax; multiplier++) {
+  for (
+    let multiplier = multiplierMin;
+    multiplier <= multiplierMax;
+    multiplier++
+  ) {
     const total = scenario.lcm * multiplier;
     const usage = calculateSequentialFractionUsage(total, scenario);
     if (usage) {
@@ -104,13 +116,13 @@ function pickValidSequentialTotal(
 }
 
 /**
- * Part-whole and comparison bar model problems.
+ * Part-whole and comparison bar model problems with visual diagrams.
  */
 export function generateSingaporeBarModel(
   grade: Grade,
   count: number
-): WordProblemEn[] {
-  const problems: WordProblemEn[] = [];
+): SingaporeProblem[] {
+  const problems: SingaporeProblem[] = [];
   const names = ['Aiden', 'Maya', 'Noah', 'Emma', 'Liam', 'Zoe'];
   const items = ['stickers', 'marbles', 'books', 'cards', 'erasers'];
 
@@ -119,6 +131,7 @@ export function generateSingaporeBarModel(
     const item = items[randomInt(0, items.length - 1)];
 
     if (problemType === 0) {
+      // Part-whole bar model
       const totalRange = getGradeRange(
         grade,
         { min: 12, max: 40 },
@@ -131,30 +144,49 @@ export function generateSingaporeBarModel(
       const askWhole = randomInt(0, 1) === 1;
 
       if (askWhole) {
+        // Ask for total: hide totalValue, show both segments
+        const diagram: BarModelPartWholeDiagram = {
+          diagramType: 'bar-model',
+          variant: 'part-whole',
+          totalValue: total,
+          segments: [{ value: part }, { value: remaining }],
+          hidden: 'total',
+        };
         problems.push({
           id: generateId(),
-          type: 'word-en',
+          type: 'singapore',
           operation: 'addition' as Operation,
-          problemText: `A bar model shows ${part} ${item} and ${remaining} ${item}. How many ${item} are there in all?`,
+          problemText: `How many ${item} are there in all?`,
           answer: total,
-          category: 'word-story',
+          category: 'bar-model',
+          diagram,
           showCalculation: true,
           language: 'en',
         });
       } else {
+        // Ask for a part: hide segment[1], show total and segment[0]
         const nameA = names[randomInt(0, names.length - 1)];
+        const diagram: BarModelPartWholeDiagram = {
+          diagramType: 'bar-model',
+          variant: 'part-whole',
+          totalValue: total,
+          segments: [{ value: part, label: 'red' }, { value: remaining }],
+          hidden: 1,
+        };
         problems.push({
           id: generateId(),
-          type: 'word-en',
+          type: 'singapore',
           operation: 'subtraction' as Operation,
-          problemText: `In a bar model, ${nameA} has ${total} ${item} in total. ${part} are red. How many are not red?`,
+          problemText: `${nameA} has ${total} ${item}. ${part} are red. How many are not red?`,
           answer: remaining,
-          category: 'word-story',
+          category: 'bar-model',
+          diagram,
           showCalculation: true,
           language: 'en',
         });
       }
     } else {
+      // Comparison bar model
       const nameA = names[randomInt(0, names.length - 1)];
       const nameB = pickDifferentName(names, nameA);
       const smallRange = getGradeRange(
@@ -169,24 +201,48 @@ export function generateSingaporeBarModel(
       const askBigger = randomInt(0, 1) === 1;
 
       if (askBigger) {
+        // Ask how many nameA has: hide nameA's bar (index 0), show nameB and difference
+        const diagram: BarModelComparisonDiagram = {
+          diagramType: 'bar-model',
+          variant: 'comparison',
+          bars: [
+            { value: bigger, label: nameA },
+            { value: smaller, label: nameB },
+          ],
+          differenceValue: difference,
+          hidden: 0,
+        };
         problems.push({
           id: generateId(),
-          type: 'word-en',
+          type: 'singapore',
           operation: 'addition' as Operation,
-          problemText: `A comparison bar model shows ${nameB} has ${smaller} ${item}. ${nameA} has ${difference} more than ${nameB}. How many ${item} does ${nameA} have?`,
+          problemText: `${nameB} has ${smaller} ${item}. ${nameA} has ${difference} more. How many does ${nameA} have?`,
           answer: bigger,
-          category: 'comparison',
+          category: 'bar-model',
+          diagram,
           showCalculation: true,
           language: 'en',
         });
       } else {
+        // Ask for the difference: hide difference, show both bars
+        const diagram: BarModelComparisonDiagram = {
+          diagramType: 'bar-model',
+          variant: 'comparison',
+          bars: [
+            { value: bigger, label: nameA },
+            { value: smaller, label: nameB },
+          ],
+          differenceValue: difference,
+          hidden: 'difference',
+        };
         problems.push({
           id: generateId(),
-          type: 'word-en',
+          type: 'singapore',
           operation: 'subtraction' as Operation,
-          problemText: `A comparison bar model shows ${nameA} has ${bigger} ${item} and ${nameB} has ${smaller} ${item}. How many more ${item} does ${nameA} have?`,
+          problemText: `How many more ${item} does ${nameA} have than ${nameB}?`,
           answer: difference,
-          category: 'comparison',
+          category: 'bar-model',
+          diagram,
           showCalculation: true,
           language: 'en',
         });
@@ -198,19 +254,20 @@ export function generateSingaporeBarModel(
 }
 
 /**
- * Number bond decomposition problems.
+ * Number bond decomposition problems with visual diagrams.
  */
 export function generateSingaporeNumberBond(
   grade: Grade,
   count: number
-): WordProblemEn[] {
-  const problems: WordProblemEn[] = [];
+): SingaporeProblem[] {
+  const problems: SingaporeProblem[] = [];
 
   for (let i = 0; i < count; i++) {
     const maxProblemType = grade <= 2 ? 1 : 2;
     const problemType = randomInt(0, maxProblemType);
 
     if (problemType === 0) {
+      // Simple 2-part bond
       const totalRange = getGradeRange(
         grade,
         { min: 10, max: 40 },
@@ -221,13 +278,21 @@ export function generateSingaporeNumberBond(
       const part = randomInt(5, Math.max(6, total - 5));
       const missingPart = total - part;
 
+      const diagram: NumberBondDiagram = {
+        diagramType: 'number-bond',
+        whole: total,
+        parts: [part, missingPart],
+        hidden: 1,
+      };
+
       problems.push({
         id: generateId(),
-        type: 'word-en',
+        type: 'singapore',
         operation: 'subtraction' as Operation,
-        problemText: `Use a number bond: ${total} is split into ${part} and ____. What number is missing?`,
+        problemText: `What is the missing number in the number bond?`,
         answer: missingPart,
-        category: 'missing-number',
+        category: 'number-bond',
+        diagram,
         showCalculation: false,
         language: 'en',
       });
@@ -235,6 +300,7 @@ export function generateSingaporeNumberBond(
     }
 
     if (problemType === 1) {
+      // Place value decomposition
       const base = getGradeRange(
         grade,
         { min: 10, max: 99 },
@@ -242,16 +308,26 @@ export function generateSingaporeNumberBond(
         { min: 1000, max: 9000 }
       );
       const value = randomInt(base.min, base.max);
+
       if (grade <= 2) {
         const tens = Math.floor(value / 10) * 10;
         const ones = value % 10;
+
+        const diagram: NumberBondDiagram = {
+          diagramType: 'number-bond',
+          whole: value,
+          parts: [tens, ones],
+          hidden: 1,
+        };
+
         problems.push({
           id: generateId(),
-          type: 'word-en',
+          type: 'singapore',
           operation: 'addition' as Operation,
-          problemText: `Complete the number bond for ${value}: ${tens} + ____ = ${value}.`,
+          problemText: `What is the missing part of ${value}?`,
           answer: ones,
-          category: 'missing-number',
+          category: 'number-bond',
+          diagram,
           showCalculation: false,
           language: 'en',
         });
@@ -259,13 +335,22 @@ export function generateSingaporeNumberBond(
         const hundreds = Math.floor(value / 100) * 100;
         const tens = Math.floor((value % 100) / 10) * 10;
         const ones = value % 10;
+
+        const diagram: NumberBondDiagram = {
+          diagramType: 'number-bond',
+          whole: value,
+          parts: [hundreds, tens, ones],
+          hidden: 2,
+        };
+
         problems.push({
           id: generateId(),
-          type: 'word-en',
+          type: 'singapore',
           operation: 'addition' as Operation,
-          problemText: `Complete the number bond for ${value}: ${hundreds} + ${tens} + ____ = ${value}.`,
+          problemText: `What is the missing part of ${value}?`,
           answer: ones,
-          category: 'missing-number',
+          category: 'number-bond',
+          diagram,
           showCalculation: false,
           language: 'en',
         });
@@ -273,6 +358,7 @@ export function generateSingaporeNumberBond(
       continue;
     }
 
+    // 3-part bond (grade 3+)
     const totalRange = getGradeRange(
       grade,
       { min: 15, max: 60 },
@@ -284,13 +370,21 @@ export function generateSingaporeNumberBond(
     const partB = randomInt(1, total - partA - 1);
     const missingPart = total - partA - partB;
 
+    const diagram: NumberBondDiagram = {
+      diagramType: 'number-bond',
+      whole: total,
+      parts: [partA, partB, missingPart],
+      hidden: 2,
+    };
+
     problems.push({
       id: generateId(),
-      type: 'word-en',
+      type: 'singapore',
       operation: 'subtraction' as Operation,
-      problemText: `A number bond has whole ${total} and parts ${partA}, ${partB}, and ____. Find the missing part.`,
+      problemText: `Find the missing part in the number bond.`,
       answer: missingPart,
-      category: 'missing-number',
+      category: 'number-bond',
+      diagram,
       showCalculation: false,
       language: 'en',
     });
@@ -300,13 +394,14 @@ export function generateSingaporeNumberBond(
 }
 
 /**
- * Comparison problems. Grade 2 uses additive comparison, Grade 3+ uses multiplicative comparison.
+ * Comparison problems with visual diagrams.
+ * Grade 2 uses additive comparison, Grade 3+ uses multiplicative comparison.
  */
 export function generateSingaporeComparison(
   grade: Grade,
   count: number
-): WordProblemEn[] {
-  const problems: WordProblemEn[] = [];
+): SingaporeProblem[] {
+  const problems: SingaporeProblem[] = [];
   const subjects = ['pencils', 'marbles', 'stickers', 'toy cars', 'notebooks'];
   const names = ['Ryan', 'Chloe', 'Ethan', 'Sofia', 'Lucas', 'Mia'];
 
@@ -314,6 +409,7 @@ export function generateSingaporeComparison(
     const subject = subjects[randomInt(0, subjects.length - 1)];
 
     if (grade <= 2) {
+      // Additive comparison
       const nameA = names[randomInt(0, names.length - 1)];
       const nameB = pickDifferentName(names, nameA);
       const smallerRange = getGradeRange(
@@ -328,24 +424,46 @@ export function generateSingaporeComparison(
       const askBigger = randomInt(0, 1) === 1;
 
       if (askBigger) {
+        // Ask for bigger: hide bar[0] (the bigger one)
+        const diagram: ComparisonDiagram = {
+          diagramType: 'comparison',
+          bars: [
+            { label: nameB, value: bigger },
+            { label: nameA, value: smaller },
+          ],
+          differenceValue: difference,
+          hidden: 0,
+        };
         problems.push({
           id: generateId(),
-          type: 'word-en',
+          type: 'singapore',
           operation: 'addition' as Operation,
-          problemText: `${nameA} has ${smaller} ${subject}. ${nameB} has ${difference} more than ${nameA}. How many ${subject} does ${nameB} have?`,
+          problemText: `${nameA} has ${smaller} ${subject}. ${nameB} has ${difference} more. How many does ${nameB} have?`,
           answer: bigger,
           category: 'comparison',
+          diagram,
           showCalculation: true,
           language: 'en',
         });
       } else {
+        // Ask for smaller: hide bar[1] (the smaller one)
+        const diagram: ComparisonDiagram = {
+          diagramType: 'comparison',
+          bars: [
+            { label: nameB, value: bigger },
+            { label: nameA, value: smaller },
+          ],
+          differenceValue: difference,
+          hidden: 1,
+        };
         problems.push({
           id: generateId(),
-          type: 'word-en',
+          type: 'singapore',
           operation: 'subtraction' as Operation,
-          problemText: `${nameB} has ${bigger} ${subject}. ${nameA} has ${difference} fewer than ${nameB}. How many ${subject} does ${nameA} have?`,
+          problemText: `${nameB} has ${bigger} ${subject}. ${nameA} has ${difference} fewer. How many does ${nameA} have?`,
           answer: smaller,
           category: 'comparison',
+          diagram,
           showCalculation: true,
           language: 'en',
         });
@@ -353,6 +471,7 @@ export function generateSingaporeComparison(
       continue;
     }
 
+    // Multiplicative comparison (grade 3+)
     const baseRange = getGradeRange(
       grade,
       { min: 2, max: 9 },
@@ -371,21 +490,40 @@ export function generateSingaporeComparison(
 
     const variant = randomInt(0, 1);
     let text: string;
+    // Ask for the result (bigger bar): hide bar[0]
+    let bars: ComparisonDiagram['bars'];
     if (variant === 0) {
       const nameA = names[randomInt(0, names.length - 1)];
       const nameB = pickDifferentName(names, nameA);
-      text = `${nameA} has ${baseAmount} ${subject}. ${nameB} has ${multiplier} times as many as ${nameA}. How many ${subject} does ${nameB} have?`;
+      bars = [
+        { label: nameB, value: result },
+        { label: nameA, value: baseAmount },
+      ];
+      text = `${nameA} has ${baseAmount} ${subject}. ${nameB} has ${multiplier} times as many. How many does ${nameB} have?`;
     } else {
-      text = `One box has ${baseAmount} crayons. A big box has ${multiplier} times as many crayons. How many crayons are in the big box?`;
+      bars = [
+        { label: 'Big box', value: result },
+        { label: 'Small box', value: baseAmount },
+      ];
+      text = `One box has ${baseAmount} crayons. A big box has ${multiplier} times as many. How many crayons are in the big box?`;
     }
+    const diagram: ComparisonDiagram = {
+      diagramType: 'comparison',
+      bars,
+      differenceValue: result - baseAmount,
+      multiplicative: true,
+      multiplier,
+      hidden: 0,
+    };
 
     problems.push({
       id: generateId(),
-      type: 'word-en',
+      type: 'singapore',
       operation: 'multiplication' as Operation,
       problemText: text,
       answer: result,
       category: 'comparison',
+      diagram,
       showCalculation: true,
       language: 'en',
     });
@@ -473,13 +611,13 @@ function getFractionScenariosByGrade(grade: Grade): FractionScenario[] {
 }
 
 /**
- * Multi-step word problems with fractions.
+ * Multi-step word problems with fractions (text-only, no diagram).
  */
 export function generateSingaporeMultiStep(
   grade: Grade,
   count: number
-): WordProblemEn[] {
-  const problems: WordProblemEn[] = [];
+): SingaporeProblem[] {
+  const problems: SingaporeProblem[] = [];
   const scenarios = getFractionScenariosByGrade(grade);
   const contexts = ['juice', 'rice', 'water', 'fruit slices', 'stickers'];
 
@@ -503,11 +641,11 @@ export function generateSingaporeMultiStep(
     if (problemType === 0) {
       problems.push({
         id: generateId(),
-        type: 'word-en',
+        type: 'singapore',
         operation: 'subtraction' as Operation,
         problemText: `A container has ${total} ${context}. In the morning, ${scenario.fraction1Numerator}/${scenario.fraction1Denominator} is used. In the afternoon, ${scenario.fraction2Numerator}/${scenario.fraction2Denominator} of the remaining amount is used. How much ${context} is left?`,
         answer: remaining,
-        category: 'word-story',
+        category: 'multi-step',
         showCalculation: true,
         language: 'en',
       });
@@ -534,11 +672,11 @@ export function generateSingaporeMultiStep(
 
     problems.push({
       id: generateId(),
-      type: 'word-en',
+      type: 'singapore',
       operation: 'division' as Operation,
       problemText: `There are ${total} ${context} in a box. First, ${scenario.fraction1Numerator}/${scenario.fraction1Denominator} of them are used. Then ${scenario.fraction2Numerator}/${scenario.fraction2Denominator} of the remaining amount is used. The rest are shared equally among ${groups} students. How many ${context} does each student get?`,
       answer: eachShare,
-      category: 'word-story',
+      category: 'multi-step',
       showCalculation: true,
       language: 'en',
     });

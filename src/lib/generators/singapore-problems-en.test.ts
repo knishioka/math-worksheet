@@ -10,58 +10,66 @@ import {
 } from './singapore-problems-en';
 
 describe('singapore-problems-en generators', () => {
-  it('generates bar model problems with valid shape', () => {
+  it('generates bar model problems with diagram data', () => {
     const problems = generateSingaporeBarModel(3, 12);
 
     expect(problems).toHaveLength(12);
     problems.forEach((problem) => {
-      expect(problem.type).toBe('word-en');
+      expect(problem.type).toBe('singapore');
       expect(problem.language).toBe('en');
-      expect(problem.problemText.toLowerCase()).toContain('bar model');
+      expect(problem.category).toBe('bar-model');
       expect(typeof problem.answer).toBe('number');
-      expect(problem.category === 'word-story' || problem.category === 'comparison').toBe(true);
+      expect(problem.diagram).toBeDefined();
+      expect(problem.diagram?.diagramType).toBe('bar-model');
     });
   });
 
-  it('generates number bond decomposition problems', () => {
+  it('generates number bond problems with diagram data', () => {
     const problems = generateSingaporeNumberBond(4, 10);
 
     expect(problems).toHaveLength(10);
     problems.forEach((problem) => {
-      expect(problem.type).toBe('word-en');
+      expect(problem.type).toBe('singapore');
       expect(problem.language).toBe('en');
-      expect(problem.category).toBe('missing-number');
-      expect(problem.problemText.toLowerCase()).toContain('number bond');
+      expect(problem.category).toBe('number-bond');
       expect(typeof problem.answer).toBe('number');
+      expect(problem.diagram).toBeDefined();
+      expect(problem.diagram?.diagramType).toBe('number-bond');
+      if (problem.diagram?.diagramType === 'number-bond') {
+        expect(problem.diagram.parts.length).toBeGreaterThanOrEqual(2);
+      }
     });
   });
 
-  it('generates multiplicative comparison problems', () => {
+  it('generates comparison problems with diagram data', () => {
     const problems = generateSingaporeComparison(5, 10);
 
     expect(problems).toHaveLength(10);
     problems.forEach((problem) => {
-      expect(problem.type).toBe('word-en');
+      expect(problem.type).toBe('singapore');
       expect(problem.operation).toBe('multiplication');
       expect(problem.category).toBe('comparison');
       expect(problem.problemText).toContain('times as many');
       expect(typeof problem.answer).toBe('number');
+      expect(problem.diagram).toBeDefined();
+      expect(problem.diagram?.diagramType).toBe('comparison');
     });
   });
 
-  it('generates multi-step fraction problems', () => {
+  it('generates multi-step fraction problems without diagrams', () => {
     const problems = generateSingaporeMultiStep(6, 8);
 
     expect(problems).toHaveLength(8);
     problems.forEach((problem) => {
-      expect(problem.type).toBe('word-en');
-      expect(problem.category).toBe('word-story');
+      expect(problem.type).toBe('singapore');
+      expect(problem.category).toBe('multi-step');
       expect(problem.problemText).toContain('/');
       expect(
         problem.operation === 'subtraction' || problem.operation === 'division'
       ).toBe(true);
       expect(typeof problem.answer).toBe('number');
       expect(Number.isInteger(problem.answer)).toBe(true);
+      expect(problem.diagram).toBeUndefined();
     });
   });
 
@@ -71,11 +79,9 @@ describe('singapore-problems-en generators', () => {
 
     const selfReferencePattern =
       /\b([A-Z][a-z]+)\b has \d+ (?:more than|times as many as) \1\b/;
-    const duplicatePairPattern = /shows ([A-Z][a-z]+) has .* and \1 has/;
 
     [...barModelProblems, ...comparisonProblems].forEach((problem) => {
       expect(selfReferencePattern.test(problem.problemText)).toBe(false);
-      expect(duplicatePairPattern.test(problem.problemText)).toBe(false);
     });
   });
 
@@ -84,11 +90,13 @@ describe('singapore-problems-en generators', () => {
 
     expect(problems).toHaveLength(80);
     problems.forEach((problem) => {
-      expect(problem.operation === 'addition' || problem.operation === 'subtraction').toBe(true);
+      expect(
+        problem.operation === 'addition' || problem.operation === 'subtraction'
+      ).toBe(true);
       expect(problem.problemText.includes('times as many')).toBe(false);
       expect(
-        problem.problemText.includes('more than') ||
-          problem.problemText.includes('fewer than')
+        problem.problemText.includes('more') ||
+          problem.problemText.includes('fewer')
       ).toBe(true);
     });
   });
@@ -127,7 +135,9 @@ describe('singapore-problems-en generators', () => {
     const problems = generateSingaporeMultiStep(3, 80);
 
     problems.forEach((problem) => {
-      const [fraction1, fraction2] = [...problem.problemText.matchAll(/(\d+)\/(\d+)/g)];
+      const [fraction1, fraction2] = [
+        ...problem.problemText.matchAll(/(\d+)\/(\d+)/g),
+      ];
       const totalMatch = problem.problemText.match(/(?:has|are) (\d+) /);
       expect(fraction1).toBeDefined();
       expect(fraction2).toBeDefined();
@@ -150,7 +160,9 @@ describe('singapore-problems-en generators', () => {
         const groupsMatch = problem.problemText.match(/among (\d+) students/);
         expect(groupsMatch).toBeDefined();
         const groups = Number(groupsMatch?.[1] ?? 1);
-        expect(problem.answer).toBe((usage?.remainingAfterSecond ?? 0) / groups);
+        expect(problem.answer).toBe(
+          (usage?.remainingAfterSecond ?? 0) / groups
+        );
       }
     });
   });
@@ -177,6 +189,8 @@ describe('singapore pattern router integration', () => {
     });
 
     expect(problems).toHaveLength(6);
-    expect(problems.every((problem) => problem.type === 'word-en')).toBe(true);
+    expect(problems.every((problem) => problem.type === 'singapore')).toBe(
+      true
+    );
   });
 });

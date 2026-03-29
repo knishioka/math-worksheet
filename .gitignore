@@ -59,3 +59,5 @@ logs/
 .cache/
 artifacts/
 eng.traineddata
+.cache/.claude/worktrees/
+.claude/worktrees/

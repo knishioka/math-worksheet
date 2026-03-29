@@ -168,6 +168,13 @@ export function isHissanPattern(pattern?: CalculationPattern): boolean {
 }
 
 /**
+ * パターンがSingapore Math問題かどうかを判定
+ */
+export function isSingaporePattern(pattern?: CalculationPattern): boolean {
+  return pattern !== undefined && SINGAPORE_MATH_PATTERNS.includes(pattern);
+}
+
+/**
  * パターンが暗算のコツ問題かどうかを判定
  */
 export function isAnzanPattern(pattern?: CalculationPattern): boolean {

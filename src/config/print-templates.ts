@@ -361,6 +361,37 @@ export const PRINT_TEMPLATES = {
       },
     },
   }),
+  // Singapore Math（ダイアグラム付き）
+  singapore: createPrintTemplate({
+    type: 'singapore',
+    displayName: 'Singapore Math',
+    description:
+      'Singapore Math with visual diagrams (bar models, number bonds). Larger spacing for diagrams.',
+    layout: {
+      rowGap: '8px',
+      colGap: '20px',
+      fontSize: '14px',
+      minProblemHeight: '120px',
+    },
+    recommendedCounts: {
+      1: 5,
+      2: 8,
+      3: 12,
+    },
+    maxCounts: {
+      1: 6,
+      2: 10,
+      3: 12,
+    },
+    fitsInA4: {
+      threshold: {
+        1: 5,
+        2: 8,
+        3: 12,
+      },
+    },
+  }),
+
   // 暗算のコツ（複数項の式）
   anzan: createPrintTemplate({
     type: 'anzan',
@@ -419,20 +450,20 @@ export const PATTERN_COUNT_OVERRIDES: Partial<
     maxCounts: { 1: 6, 2: 12, 3: 15 },
   },
   'singapore-bar-model': {
-    recommendedCounts: { 1: 7, 2: 14, 3: 18 },
-    maxCounts: { 1: 8, 2: 16, 3: 18 },
+    recommendedCounts: { 1: 5, 2: 8, 3: 12 },
+    maxCounts: { 1: 6, 2: 10, 3: 12 },
   },
   'singapore-number-bond': {
-    recommendedCounts: { 1: 8, 2: 16, 3: 18 },
-    maxCounts: { 1: 8, 2: 16, 3: 18 },
+    recommendedCounts: { 1: 5, 2: 8, 3: 12 },
+    maxCounts: { 1: 6, 2: 10, 3: 12 },
   },
   'singapore-comparison': {
-    recommendedCounts: { 1: 7, 2: 14, 3: 18 },
-    maxCounts: { 1: 8, 2: 16, 3: 18 },
+    recommendedCounts: { 1: 5, 2: 8, 3: 12 },
+    maxCounts: { 1: 6, 2: 10, 3: 12 },
   },
   'singapore-multi-step': {
-    recommendedCounts: { 1: 6, 2: 10, 3: 12 },
-    maxCounts: { 1: 8, 2: 12, 3: 15 },
+    recommendedCounts: { 1: 5, 2: 8, 3: 12 },
+    maxCounts: { 1: 6, 2: 10, 3: 12 },
   },
 };
 

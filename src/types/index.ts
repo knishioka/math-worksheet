@@ -14,6 +14,7 @@ export type ProblemType =
   | 'missing'
   | 'word'
   | 'word-en' // 英語文章問題
+  | 'singapore' // Singapore Math（ダイアグラム付き）
   | 'anzan'; // 暗算のコツ（複数項の式）
 
 export type Grade = 1 | 2 | 3 | 4 | 5 | 6;
@@ -134,6 +135,66 @@ export interface WordProblemEn {
   language: 'en';
 }
 
+// Singapore Math ダイアグラム型
+export interface BarModelPartWholeDiagram {
+  diagramType: 'bar-model';
+  variant: 'part-whole';
+  totalValue: number;
+  totalLabel?: string;
+  segments: Array<{ value: number; label?: string }>;
+  /** 'total' で全体を隠す、数値でそのインデックスのセグメントを隠す */
+  hidden: 'total' | number;
+}
+
+export interface BarModelComparisonDiagram {
+  diagramType: 'bar-model';
+  variant: 'comparison';
+  bars: Array<{ value: number; label: string }>;
+  differenceValue: number;
+  /** どの値を隠すか: 'difference' または barのインデックス */
+  hidden: 'difference' | number;
+}
+
+export type BarModelDiagram =
+  | BarModelPartWholeDiagram
+  | BarModelComparisonDiagram;
+
+export interface NumberBondDiagram {
+  diagramType: 'number-bond';
+  whole: number;
+  parts: number[];
+  /** 'whole' で全体を隠す、数値でそのインデックスのpartを隠す */
+  hidden: 'whole' | number;
+}
+
+export interface ComparisonDiagram {
+  diagramType: 'comparison';
+  bars: Array<{ label: string; value: number }>;
+  differenceValue: number;
+  multiplicative?: boolean;
+  multiplier?: number;
+  /** どの値を隠すか: 'difference' または barのインデックス */
+  hidden: 'difference' | number;
+}
+
+export type SingaporeDiagram =
+  | BarModelDiagram
+  | NumberBondDiagram
+  | ComparisonDiagram;
+
+export interface SingaporeProblem {
+  id: string;
+  type: 'singapore';
+  operation: Operation;
+  problemText: string;
+  answer: number | string;
+  unit?: string;
+  category: 'bar-model' | 'number-bond' | 'comparison' | 'multi-step';
+  diagram?: SingaporeDiagram;
+  showCalculation?: boolean;
+  language: 'en';
+}
+
 export type Problem =
   | BasicProblem
   | FractionProblem
@@ -142,7 +203,8 @@ export type Problem =
   | HissanProblem
   | MissingNumberProblem
   | WordProblem
-  | WordProblemEn;
+  | WordProblemEn
+  | SingaporeProblem;
 
 export interface WorksheetSettings {
   grade: Grade;

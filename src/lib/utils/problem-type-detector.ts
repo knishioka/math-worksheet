@@ -3,6 +3,7 @@ import {
   isWordProblemPattern,
   isHissanPattern,
   isAnzanPattern,
+  isSingaporePattern,
 } from '../../config/problem-patterns';
 
 /**
@@ -67,6 +68,9 @@ export function getEffectiveProblemType(
   problemType?: ProblemType,
   calculationPattern?: CalculationPattern
 ): ProblemType {
+  if (isSingaporePattern(calculationPattern)) {
+    return 'singapore';
+  }
   if (isWordEnProblem(calculationPattern)) {
     return 'word-en';
   }
