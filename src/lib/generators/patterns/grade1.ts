@@ -5,6 +5,14 @@ import type {
 } from '../../../types';
 import { generateId, randomInt } from '../../utils/math';
 
+// Fisher-Yatesシャッフル
+function shuffleArray(arr: number[]): void {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = randomInt(0, i);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
 // 1年生（入門）: +N のたし算（共通関数）
 function generateAddPlusN(
   count: number,
@@ -14,13 +22,14 @@ function generateAddPlusN(
   // シャッフルプールで重複なしを保証
   const pool: number[] = [];
   for (let i = 0; i <= maxOperand1; i++) pool.push(i);
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = randomInt(0, i);
-    [pool[i], pool[j]] = [pool[j], pool[i]];
-  }
+  shuffleArray(pool);
 
   const problems: BasicProblem[] = [];
   for (let i = 0; i < count; i++) {
+    // プールを使い切ったら再シャッフルして構造的重複を防ぐ
+    if (i > 0 && i % pool.length === 0) {
+      shuffleArray(pool);
+    }
     const operand1 = pool[i % pool.length];
     problems.push({
       id: generateId(),
@@ -316,6 +325,10 @@ export function generateAddTo10(
   const shuffledPairs = [...pairs].sort(() => Math.random() - 0.5);
 
   for (let i = 0; i < count; i++) {
+    // プールを使い切ったら再シャッフルして構造的重複を防ぐ
+    if (i > 0 && i % shuffledPairs.length === 0) {
+      shuffledPairs.sort(() => Math.random() - 0.5);
+    }
     const pair = shuffledPairs[i % shuffledPairs.length];
     const [operand1, operand2] =
       Math.random() < 0.5 ? pair : [pair[1], pair[0]];

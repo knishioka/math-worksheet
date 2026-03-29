@@ -38,6 +38,21 @@ describe('generateAddPlusOne (+1のたし算)', () => {
     const unique = new Set(operands);
     expect(unique.size).toBe(10); // 0-9 は10通りなので全てユニーク
   });
+
+  it('should not have structurally identical halves when count exceeds pool size (2列20問)', () => {
+    // 複数回テストして確率的に検証
+    for (let trial = 0; trial < 5; trial++) {
+      const problems = generateAddPlusOne(baseSettings, 20);
+      expect(problems).toHaveLength(20);
+
+      const firstHalf = problems.slice(0, 10).map((p) => p.operand1);
+      const secondHalf = problems.slice(10, 20).map((p) => p.operand1);
+
+      // 前半10問と後半10問が完全一致しないこと
+      const isIdentical = firstHalf.every((v, i) => v === secondHalf[i]);
+      expect(isIdentical).toBe(false);
+    }
+  });
 });
 
 describe('generateAddPlusTwo (+2のたし算)', () => {
@@ -61,6 +76,19 @@ describe('generateAddPlusTwo (+2のたし算)', () => {
     const operands = problems.map((p) => p.operand1);
     const unique = new Set(operands);
     expect(unique.size).toBe(9); // 0-8 は9通りなので全てユニーク
+  });
+
+  it('should not have structurally identical halves when count exceeds pool size (2列20問)', () => {
+    for (let trial = 0; trial < 5; trial++) {
+      const problems = generateAddPlusTwo(baseSettings, 20);
+      expect(problems).toHaveLength(20);
+
+      const firstHalf = problems.slice(0, 9).map((p) => p.operand1);
+      const secondHalf = problems.slice(9, 18).map((p) => p.operand1);
+
+      const isIdentical = firstHalf.every((v, i) => v === secondHalf[i]);
+      expect(isIdentical).toBe(false);
+    }
   });
 });
 
