@@ -76,6 +76,16 @@ export type CalculationPattern =
   | 'singapore-number-bond' // Singapore Math: number bond decomposition
   | 'singapore-comparison' // Singapore Math: grade-aware comparison
   | 'singapore-multi-step' // Singapore Math: multi-step with fractions
+  | 'singapore-fraction-set' // Singapore Math: fraction of a set (P4)
+  | 'singapore-decimal' // Singapore Math: decimal word problems (P4)
+  | 'singapore-ratio' // Singapore Math: ratio and proportion (P5)
+  | 'singapore-percentage' // Singapore Math: percentage (P5)
+  | 'singapore-rate' // Singapore Math: speed, distance, time (P5)
+  | 'singapore-volume' // Singapore Math: rectangular prism volume (P5)
+  | 'singapore-algebra' // Singapore Math: simple equations (P6)
+  | 'singapore-ratio-advanced' // Singapore Math: before/after ratio (P6)
+  | 'singapore-circle' // Singapore Math: circumference and area (P6)
+  | 'singapore-data-analysis' // Singapore Math: mean, median, mode (P6)
 
   // お金の計算（1-4年生）
   | 'money-change-jap' // おつりの計算（日本円）
@@ -347,6 +357,8 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'singapore-number-bond',
     'singapore-comparison',
     'singapore-multi-step',
+    'singapore-fraction-set',
+    'singapore-decimal',
     'time-reading-jap',
     'time-elapsed-jap',
     'time-calc-jap',
@@ -421,6 +433,12 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'singapore-number-bond',
     'singapore-comparison',
     'singapore-multi-step',
+    'singapore-fraction-set',
+    'singapore-decimal',
+    'singapore-ratio',
+    'singapore-percentage',
+    'singapore-rate',
+    'singapore-volume',
     'unit-length-jap',
     'unit-weight-jap',
     'unit-capacity-jap',
@@ -479,6 +497,16 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'singapore-number-bond',
     'singapore-comparison',
     'singapore-multi-step',
+    'singapore-fraction-set',
+    'singapore-decimal',
+    'singapore-ratio',
+    'singapore-percentage',
+    'singapore-rate',
+    'singapore-volume',
+    'singapore-algebra',
+    'singapore-ratio-advanced',
+    'singapore-circle',
+    'singapore-data-analysis',
     'unit-length-jap',
     'unit-weight-jap',
     'unit-capacity-jap',
@@ -608,6 +636,16 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'singapore-number-bond': 'Singapore Math: Number Bond',
   'singapore-comparison': 'Singapore Math: Comparison',
   'singapore-multi-step': 'Singapore Math: Multi-step Fractions',
+  'singapore-fraction-set': 'Singapore Math: Fraction of a Set',
+  'singapore-decimal': 'Singapore Math: Decimals',
+  'singapore-ratio': 'Singapore Math: Ratio',
+  'singapore-percentage': 'Singapore Math: Percentage',
+  'singapore-rate': 'Singapore Math: Speed/Distance/Time',
+  'singapore-volume': 'Singapore Math: Volume',
+  'singapore-algebra': 'Singapore Math: Algebra',
+  'singapore-ratio-advanced': 'Singapore Math: Advanced Ratio',
+  'singapore-circle': 'Singapore Math: Circle',
+  'singapore-data-analysis': 'Singapore Math: Data Analysis',
 
   // お金の計算
   'money-change-jap': 'おつりの計算',
@@ -793,6 +831,23 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
     'Comparison problems using "more/fewer than" in grade 2 and "times as many" in grade 3+',
   'singapore-multi-step':
     'Multi-step Singapore style word problems with fraction reasoning',
+  'singapore-fraction-set':
+    'Find a fraction of a set or identify equivalent fractions (Primary 4+)',
+  'singapore-decimal':
+    'Word problems involving addition and subtraction of decimals (Primary 4+)',
+  'singapore-ratio': 'Simple ratio and proportion problems (Primary 5+)',
+  'singapore-percentage':
+    'Finding percentage of a number or what percentage one number is of another (Primary 5+)',
+  'singapore-rate': 'Speed, distance and time word problems (Primary 5+)',
+  'singapore-volume':
+    'Rectangular prism volume calculations with missing dimensions (Primary 5+)',
+  'singapore-algebra':
+    'Simple algebraic expressions and linear equations (Primary 6)',
+  'singapore-ratio-advanced': 'Before/after ratio change problems (Primary 6)',
+  'singapore-circle':
+    'Circumference and area of circles using π = 3.14 (Primary 6)',
+  'singapore-data-analysis':
+    'Finding mean, median or mode from a data set (Primary 6)',
 
   // お金の計算
   'money-change-jap': '100円で68円のお菓子を買ったら、おつりはいくら？',

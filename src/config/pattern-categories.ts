@@ -295,6 +295,16 @@ const BASE_DIFFICULTY: Partial<Record<CalculationPattern, DifficultyLevel>> = {
   'singapore-number-bond': 1,
   'singapore-comparison': 2,
   'singapore-multi-step': 3,
+  'singapore-fraction-set': 2,
+  'singapore-decimal': 2,
+  'singapore-ratio': 3,
+  'singapore-percentage': 3,
+  'singapore-rate': 3,
+  'singapore-volume': 3,
+  'singapore-algebra': 3,
+  'singapore-ratio-advanced': 3,
+  'singapore-circle': 3,
+  'singapore-data-analysis': 3,
 
   // === 暗算のコツ (anzan) ===
   'anzan-complement-10': 1,

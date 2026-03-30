@@ -27,6 +27,16 @@ import {
   generateSingaporeComparison,
   generateSingaporeMultiStep,
   generateSingaporeNumberBond,
+  generateSingaporeFractionSet,
+  generateSingaporeDecimal,
+  generateSingaporeRatio,
+  generateSingaporePercentage,
+  generateSingaporeRate,
+  generateSingaporeVolume,
+  generateSingaporeAlgebra,
+  generateSingaporeRatioAdvanced,
+  generateSingaporeCircle,
+  generateSingaporeDataAnalysis,
 } from '../singapore-problems-en';
 import {
   generateComplement10,
@@ -278,6 +288,26 @@ export function generatePatternProblems(
       return generateSingaporeComparison(settings.grade, count);
     case 'singapore-multi-step':
       return generateSingaporeMultiStep(settings.grade, count);
+    case 'singapore-fraction-set':
+      return generateSingaporeFractionSet(settings.grade, count);
+    case 'singapore-decimal':
+      return generateSingaporeDecimal(settings.grade, count);
+    case 'singapore-ratio':
+      return generateSingaporeRatio(settings.grade, count);
+    case 'singapore-percentage':
+      return generateSingaporePercentage(settings.grade, count);
+    case 'singapore-rate':
+      return generateSingaporeRate(settings.grade, count);
+    case 'singapore-volume':
+      return generateSingaporeVolume(settings.grade, count);
+    case 'singapore-algebra':
+      return generateSingaporeAlgebra(settings.grade, count);
+    case 'singapore-ratio-advanced':
+      return generateSingaporeRatioAdvanced(settings.grade, count);
+    case 'singapore-circle':
+      return generateSingaporeCircle(settings.grade, count);
+    case 'singapore-data-analysis':
+      return generateSingaporeDataAnalysis(settings.grade, count);
 
     // お金の計算（日本円）
     case 'money-change-jap':
