@@ -449,62 +449,32 @@ export const PATTERN_COUNT_OVERRIDES: Partial<
     recommendedCounts: { 1: 5, 2: 10, 3: 15 },
     maxCounts: { 1: 6, 2: 12, 3: 15 },
   },
-  'singapore-bar-model': {
-    recommendedCounts: { 1: 5, 2: 8, 3: 12 },
-    maxCounts: { 1: 6, 2: 10, 3: 12 },
-  },
-  'singapore-number-bond': {
-    recommendedCounts: { 1: 5, 2: 8, 3: 12 },
-    maxCounts: { 1: 6, 2: 10, 3: 12 },
-  },
-  'singapore-comparison': {
-    recommendedCounts: { 1: 5, 2: 8, 3: 12 },
-    maxCounts: { 1: 6, 2: 10, 3: 12 },
-  },
-  'singapore-multi-step': {
-    recommendedCounts: { 1: 5, 2: 8, 3: 12 },
-    maxCounts: { 1: 6, 2: 10, 3: 12 },
-  },
-  'singapore-fraction-set': {
-    recommendedCounts: { 1: 5, 2: 8, 3: 12 },
-    maxCounts: { 1: 6, 2: 10, 3: 12 },
-  },
-  'singapore-decimal': {
-    recommendedCounts: { 1: 5, 2: 8, 3: 12 },
-    maxCounts: { 1: 6, 2: 10, 3: 12 },
-  },
-  'singapore-ratio': {
-    recommendedCounts: { 1: 5, 2: 8, 3: 12 },
-    maxCounts: { 1: 6, 2: 10, 3: 12 },
-  },
-  'singapore-percentage': {
-    recommendedCounts: { 1: 5, 2: 8, 3: 12 },
-    maxCounts: { 1: 6, 2: 10, 3: 12 },
-  },
-  'singapore-rate': {
-    recommendedCounts: { 1: 5, 2: 8, 3: 12 },
-    maxCounts: { 1: 6, 2: 10, 3: 12 },
-  },
-  'singapore-volume': {
-    recommendedCounts: { 1: 5, 2: 8, 3: 12 },
-    maxCounts: { 1: 6, 2: 10, 3: 12 },
-  },
-  'singapore-algebra': {
-    recommendedCounts: { 1: 5, 2: 8, 3: 12 },
-    maxCounts: { 1: 6, 2: 10, 3: 12 },
-  },
-  'singapore-ratio-advanced': {
-    recommendedCounts: { 1: 5, 2: 8, 3: 12 },
-    maxCounts: { 1: 6, 2: 10, 3: 12 },
-  },
-  'singapore-circle': {
-    recommendedCounts: { 1: 5, 2: 8, 3: 12 },
-    maxCounts: { 1: 6, 2: 10, 3: 12 },
-  },
-  'singapore-data-analysis': {
-    recommendedCounts: { 1: 5, 2: 8, 3: 12 },
-    maxCounts: { 1: 6, 2: 10, 3: 12 },
-  },
+  ...Object.fromEntries(
+    (
+      [
+        'singapore-bar-model',
+        'singapore-number-bond',
+        'singapore-comparison',
+        'singapore-multi-step',
+        'singapore-fraction-set',
+        'singapore-decimal',
+        'singapore-ratio',
+        'singapore-percentage',
+        'singapore-rate',
+        'singapore-volume',
+        'singapore-algebra',
+        'singapore-ratio-advanced',
+        'singapore-circle',
+        'singapore-data-analysis',
+      ] as const
+    ).map((pattern) => [
+      pattern,
+      {
+        recommendedCounts: { 1: 5, 2: 8, 3: 12 },
+        maxCounts: { 1: 6, 2: 10, 3: 12 },
+      },
+    ])
+  ),
 };
 
 /**

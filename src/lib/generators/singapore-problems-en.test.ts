@@ -421,6 +421,8 @@ describe('singapore-circle generator', () => {
       } else if (p.problemText.includes('circumference') && diameterMatch) {
         const d = Number(diameterMatch[1]);
         expect(p.answer).toBe(Math.round(PI * d * 100) / 100);
+      } else {
+        throw new Error(`Unhandled circle problem variant: "${p.problemText}"`);
       }
     });
   });
@@ -438,18 +440,35 @@ describe('singapore-data-analysis generator', () => {
     });
   });
 
-  it('verifies mean calculations across 200 samples', () => {
+  it('verifies mean, median, and mode calculations across 200 samples', () => {
     const problems = generateSingaporeDataAnalysis(6, 200);
     expect(problems).toHaveLength(200);
     problems.forEach((p) => {
+      const dataMatch = p.problemText.match(/: (.+)\.$/);
+      expect(dataMatch).not.toBeNull();
+      const numbers = dataMatch![1].split(', ').map(Number);
+
       if (p.problemText.includes('mean')) {
-        // Extract numbers from the problem text
-        const dataMatch = p.problemText.match(/: (.+)\.$/);
-        if (dataMatch) {
-          const numbers = dataMatch[1].split(', ').map(Number);
-          const sum = numbers.reduce((a, b) => a + b, 0);
-          expect(p.answer).toBe(sum / numbers.length);
-        }
+        const sum = numbers.reduce((a, b) => a + b, 0);
+        expect(p.answer).toBe(sum / numbers.length);
+      } else if (p.problemText.includes('median')) {
+        const sorted = [...numbers].sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        expect(p.answer).toBe(sorted[mid]);
+      } else if (p.problemText.includes('mode')) {
+        const freq = new Map<number, number>();
+        numbers.forEach((n) => freq.set(n, (freq.get(n) ?? 0) + 1));
+        let maxFreq = 0;
+        let mode = 0;
+        freq.forEach((count, val) => {
+          if (count > maxFreq) {
+            maxFreq = count;
+            mode = val;
+          }
+        });
+        expect(p.answer).toBe(mode);
+      } else {
+        throw new Error(`Unhandled data analysis type: "${p.problemText}"`);
       }
     });
   });

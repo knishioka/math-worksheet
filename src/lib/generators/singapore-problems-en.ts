@@ -914,13 +914,16 @@ export function generateSingaporeRatio(
       const b = randomInt(2, 5);
       const bigA = a * gcdBase;
       const bigB = b * gcdBase;
+      // a and b may share a common factor, so reduce to true simplest form
+      const commonFactor = gcd(a, b);
+      const simplifiedA = a / commonFactor;
 
       problems.push({
         id: generateId(),
         type: 'singapore',
         operation: 'division' as Operation,
         problemText: `Simplify the ratio ${bigA} : ${bigB}. What is the first term in the simplest form?`,
-        answer: a,
+        answer: simplifiedA,
         category: 'ratio',
         showCalculation: true,
         language: 'en',
@@ -979,13 +982,12 @@ export function generateSingaporePercentage(
       });
     } else {
       // Find what percentage one number is of another
-      const total = randomInt(grade <= 5 ? 20 : 40, grade <= 5 ? 100 : 200);
+      // Constructive: pick percent, compute base that guarantees integer part
       const percent = percentages[randomInt(0, percentages.length - 1)];
+      const base = 100 / gcd(percent, 100);
+      const multiplier = randomInt(grade <= 5 ? 1 : 2, grade <= 5 ? 5 : 10);
+      const total = base * multiplier;
       const part = (total * percent) / 100;
-      if (!Number.isInteger(part) || part <= 0) {
-        i--;
-        continue;
-      }
 
       problems.push({
         id: generateId(),
@@ -1114,24 +1116,16 @@ export function generateSingaporeVolume(
       });
     } else {
       // Find missing dimension: given V and 2 dims
-      const length = randomInt(2, maxDim);
-      const width = randomInt(2, maxDim);
-      const height = randomInt(2, maxDim);
-      const volume = length * width * height;
-      const dimToHide = randomInt(0, 2);
-
-      let text: string;
-      let answer: number;
-      if (dimToHide === 0) {
-        text = `A rectangular box has a volume of ${volume} cm³. Its width is ${width} cm and its height is ${height} cm. What is its length?`;
-        answer = length;
-      } else if (dimToHide === 1) {
-        text = `A rectangular box has a volume of ${volume} cm³. Its length is ${length} cm and its height is ${height} cm. What is its width?`;
-        answer = width;
-      } else {
-        text = `A rectangular box has a volume of ${volume} cm³. Its length is ${length} cm and its width is ${width} cm. What is its height?`;
-        answer = height;
-      }
+      const dims = [
+        { name: 'length', value: randomInt(2, maxDim) },
+        { name: 'width', value: randomInt(2, maxDim) },
+        { name: 'height', value: randomInt(2, maxDim) },
+      ];
+      const volume = dims[0].value * dims[1].value * dims[2].value;
+      const hiddenIdx = randomInt(0, 2);
+      const shown = dims.filter((_, idx) => idx !== hiddenIdx);
+      const text = `A rectangular box has a volume of ${volume} cm³. Its ${shown[0].name} is ${shown[0].value} cm and its ${shown[1].name} is ${shown[1].value} cm. What is its ${dims[hiddenIdx].name}?`;
+      const answer = dims[hiddenIdx].value;
 
       problems.push({
         id: generateId(),
@@ -1156,7 +1150,7 @@ export function generateSingaporeVolume(
  * Simple algebra / linear equation problems (Primary 6).
  */
 export function generateSingaporeAlgebra(
-  grade: Grade,
+  _grade: Grade,
   count: number
 ): SingaporeProblem[] {
   const problems: SingaporeProblem[] = [];
@@ -1167,9 +1161,9 @@ export function generateSingaporeAlgebra(
 
     if (problemType === 0) {
       // Solve ax + b = c
-      const a = randomInt(2, grade <= 5 ? 5 : 9);
-      const x = randomInt(2, grade <= 5 ? 10 : 15);
-      const b = randomInt(1, grade <= 5 ? 10 : 20);
+      const a = randomInt(2, 9);
+      const x = randomInt(2, 15);
+      const b = randomInt(1, 20);
       const c = a * x + b;
 
       problems.push({
@@ -1295,7 +1289,7 @@ export function generateSingaporeRatioAdvanced(
  * Uses π = 3.14 as per Singapore P6 curriculum.
  */
 export function generateSingaporeCircle(
-  grade: Grade,
+  _grade: Grade,
   count: number
 ): SingaporeProblem[] {
   const problems: SingaporeProblem[] = [];
@@ -1303,7 +1297,7 @@ export function generateSingaporeCircle(
 
   for (let i = 0; i < count; i++) {
     const problemType = randomInt(0, 2);
-    const radius = randomInt(2, grade <= 5 ? 10 : 20);
+    const radius = randomInt(2, 20);
     const diameter = radius * 2;
 
     if (problemType === 0) {
@@ -1355,6 +1349,13 @@ export function generateSingaporeCircle(
   return problems;
 }
 
+function shuffleArray(arr: number[]): void {
+  for (let j = arr.length - 1; j > 0; j--) {
+    const k = randomInt(0, j);
+    [arr[j], arr[k]] = [arr[k], arr[j]];
+  }
+}
+
 /**
  * Data analysis: mean, median, mode (Primary 6).
  */
@@ -1377,23 +1378,23 @@ export function generateSingaporeDataAnalysis(
     const dataSize = randomInt(5, 7);
 
     if (problemType === 0) {
-      // Find mean (ensure integer mean)
+      // Find mean (ensure integer mean with all values in reasonable range)
       const targetMean = randomInt(10, 50);
-      const data: number[] = [];
-      let sum = 0;
-      for (let j = 0; j < dataSize - 1; j++) {
-        const val = targetMean + randomInt(-10, 10);
-        data.push(val);
-        sum += val;
-      }
-      const lastVal = targetMean * dataSize - sum;
+      let data: number[];
+      let lastVal: number;
+      do {
+        data = [];
+        let sum = 0;
+        for (let j = 0; j < dataSize - 1; j++) {
+          const val = targetMean + randomInt(-5, 5);
+          data.push(val);
+          sum += val;
+        }
+        lastVal = targetMean * dataSize - sum;
+      } while (lastVal < 1 || lastVal > 99);
       data.push(lastVal);
 
-      // Shuffle data
-      for (let j = data.length - 1; j > 0; j--) {
-        const k = randomInt(0, j);
-        [data[j], data[k]] = [data[k], data[j]];
-      }
+      shuffleArray(data);
 
       problems.push({
         id: generateId(),
@@ -1415,11 +1416,7 @@ export function generateSingaporeDataAnalysis(
       const sorted = [...data].sort((a, b) => a - b);
       const median = sorted[Math.floor(oddSize / 2)];
 
-      // Shuffle data for presentation
-      for (let j = data.length - 1; j > 0; j--) {
-        const k = randomInt(0, j);
-        [data[j], data[k]] = [data[k], data[j]];
-      }
+      shuffleArray(data);
 
       problems.push({
         id: generateId(),
@@ -1444,11 +1441,7 @@ export function generateSingaporeDataAnalysis(
         data.push(val);
       }
 
-      // Shuffle
-      for (let j = data.length - 1; j > 0; j--) {
-        const k = randomInt(0, j);
-        [data[j], data[k]] = [data[k], data[j]];
-      }
+      shuffleArray(data);
 
       problems.push({
         id: generateId(),
