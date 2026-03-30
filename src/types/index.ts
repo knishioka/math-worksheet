@@ -189,7 +189,21 @@ export interface SingaporeProblem {
   problemText: string;
   answer: number | string;
   unit?: string;
-  category: 'bar-model' | 'number-bond' | 'comparison' | 'multi-step';
+  category:
+    | 'bar-model'
+    | 'number-bond'
+    | 'comparison'
+    | 'multi-step'
+    | 'fraction-set'
+    | 'decimal'
+    | 'ratio'
+    | 'percentage'
+    | 'rate'
+    | 'volume'
+    | 'algebra'
+    | 'ratio-advanced'
+    | 'circle'
+    | 'data-analysis';
   diagram?: SingaporeDiagram;
   showCalculation?: boolean;
   language: 'en';

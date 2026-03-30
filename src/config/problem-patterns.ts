@@ -13,6 +13,16 @@ export const SINGAPORE_MATH_PATTERNS: readonly CalculationPattern[] = [
   'singapore-number-bond',
   'singapore-comparison',
   'singapore-multi-step',
+  'singapore-fraction-set',
+  'singapore-decimal',
+  'singapore-ratio',
+  'singapore-percentage',
+  'singapore-rate',
+  'singapore-volume',
+  'singapore-algebra',
+  'singapore-ratio-advanced',
+  'singapore-circle',
+  'singapore-data-analysis',
 ] as const;
 
 export const WORD_PROBLEM_PATTERNS: readonly CalculationPattern[] = [
