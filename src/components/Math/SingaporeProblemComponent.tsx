@@ -41,62 +41,32 @@ export const SingaporeProblemComponent: React.FC<
       {/* Problem text */}
       <div style={{ marginBottom: '2px' }}>{problemText}</div>
 
-      {/* Answer line */}
-      {(category === 'bar-model' ||
-        category === 'comparison' ||
-        category === 'multi-step') && (
+      {/* Answer line — shown for all Singapore Math categories */}
+      <div
+        style={{
+          marginTop: '4px',
+          display: 'flex',
+          alignItems: 'flex-end',
+          gap: '6px',
+        }}
+      >
+        <span style={{ color: '#000', fontSize: '12px' }}>Answer:</span>
         <div
           style={{
-            marginTop: '4px',
-            display: 'flex',
-            alignItems: 'flex-end',
-            gap: '6px',
+            borderBottom: '1.5px solid #000',
+            minWidth: category === 'number-bond' ? '2.5rem' : '3.5rem',
+            padding: '0 6px',
+            height: '1.1em',
           }}
         >
-          <span style={{ color: '#000', fontSize: '12px' }}>Answer:</span>
-          <div
-            style={{
-              borderBottom: '1.5px solid #000',
-              minWidth: '3.5rem',
-              padding: '0 6px',
-              height: '1.1em',
-            }}
-          >
-            {showAnswer && (
-              <span style={{ fontWeight: 500, color: '#000' }}>
-                {answer}
-                {unit && ` ${unit}`}
-              </span>
-            )}
-          </div>
+          {showAnswer && (
+            <span style={{ fontWeight: 500, color: '#000' }}>
+              {answer}
+              {unit && ` ${unit}`}
+            </span>
+          )}
         </div>
-      )}
-
-      {/* Number bond: answer inline */}
-      {category === 'number-bond' && (
-        <div
-          style={{
-            marginTop: '4px',
-            display: 'flex',
-            alignItems: 'flex-end',
-            gap: '6px',
-          }}
-        >
-          <span style={{ color: '#000', fontSize: '12px' }}>Answer:</span>
-          <div
-            style={{
-              borderBottom: '1.5px solid #000',
-              minWidth: '2.5rem',
-              padding: '0 6px',
-              height: '1.1em',
-            }}
-          >
-            {showAnswer && (
-              <span style={{ fontWeight: 500, color: '#000' }}>{answer}</span>
-            )}
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 };
