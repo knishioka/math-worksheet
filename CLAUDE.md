@@ -93,6 +93,18 @@ const template = getPrintTemplate(effectiveType);
 | **Playwright MCP**         | 開発中のUI確認・インタラクティブなデバッグ | `.mcp.json`                      |
 | **check-print-layout.mjs** | CI/ローカルでの自動レイアウトチェック      | `scripts/check-print-layout.mjs` |
 
+### スクリーンショットの保存先
+
+スクリーンショットは必ず `.playwright-cli/` ディレクトリに保存する（`.gitignore`済み）。**リポジトリルート直下にpng/jpegを置かない。**
+
+```text
+# ✅ 正しい保存先
+mcp__playwright__browser_take_screenshot → filename: ".playwright-cli/check-bar-model.png"
+
+# ❌ ルート直下に置かない
+mcp__playwright__browser_take_screenshot → filename: "check-bar-model.png"
+```
+
 ### Playwright MCP（インタラクティブ確認）
 
 `.mcp.json` で設定済み。Claude Code から直接ブラウザを操作できる。
@@ -110,8 +122,8 @@ mcp__playwright__browser_select_option → ref: "e5", values: ["3"]
 # ボタンをクリック
 mcp__playwright__browser_click → ref: "e10"
 
-# スクリーンショット
-mcp__playwright__browser_take_screenshot
+# スクリーンショット（必ず .playwright-cli/ に保存）
+mcp__playwright__browser_take_screenshot → filename: ".playwright-cli/screenshot.png"
 ```
 
 **利点**: 状態がセッション間で維持される、`$`のシェル展開問題なし、複数行コード対応。
