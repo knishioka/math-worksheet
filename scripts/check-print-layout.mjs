@@ -95,6 +95,25 @@ const SCENARIOS = [
     label: '5年生 Singapore Comparison',
     minFillRatio: 0.25,
   },
+  // Singapore Math text-only patterns (should use word-en spacing)
+  {
+    grade: 4,
+    pattern: 'singapore-fraction-set',
+    label: '4年生 Singapore Fraction of Set',
+    minFillRatio: 0.45,
+  },
+  {
+    grade: 5,
+    pattern: 'singapore-ratio',
+    label: '5年生 Singapore Ratio',
+    minFillRatio: 0.45,
+  },
+  {
+    grade: 6,
+    pattern: 'singapore-algebra',
+    label: '6年生 Singapore Algebra',
+    minFillRatio: 0.45,
+  },
 ];
 
 /**

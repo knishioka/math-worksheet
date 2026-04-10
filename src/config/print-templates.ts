@@ -449,12 +449,26 @@ export const PATTERN_COUNT_OVERRIDES: Partial<
     recommendedCounts: { 1: 5, 2: 10, 3: 15 },
     maxCounts: { 1: 6, 2: 12, 3: 15 },
   },
+  // Singapore Math with diagrams — larger minProblemHeight
   ...Object.fromEntries(
     (
       [
         'singapore-bar-model',
         'singapore-number-bond',
         'singapore-comparison',
+      ] as const
+    ).map((pattern) => [
+      pattern,
+      {
+        recommendedCounts: { 1: 5, 2: 8, 3: 12 },
+        maxCounts: { 1: 6, 2: 10, 3: 12 },
+      },
+    ])
+  ),
+  // Singapore Math text-only — uses word-en-like spacing
+  ...Object.fromEntries(
+    (
+      [
         'singapore-multi-step',
         'singapore-fraction-set',
         'singapore-decimal',
@@ -470,8 +484,8 @@ export const PATTERN_COUNT_OVERRIDES: Partial<
     ).map((pattern) => [
       pattern,
       {
-        recommendedCounts: { 1: 5, 2: 8, 3: 12 },
-        maxCounts: { 1: 6, 2: 10, 3: 12 },
+        recommendedCounts: { 1: 8, 2: 16, 3: 18 },
+        maxCounts: { 1: 10, 2: 20, 3: 18 },
       },
     ])
   ),

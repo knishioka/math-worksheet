@@ -184,6 +184,22 @@ export function isSingaporePattern(pattern?: CalculationPattern): boolean {
   return pattern !== undefined && SINGAPORE_MATH_PATTERNS.includes(pattern);
 }
 
+/** Singapore Mathパターンのうちダイアグラム付きのもの */
+const SINGAPORE_DIAGRAM_PATTERNS: readonly CalculationPattern[] = [
+  'singapore-bar-model',
+  'singapore-number-bond',
+  'singapore-comparison',
+] as const;
+
+/**
+ * ダイアグラム付きSingapore Mathかどうかを判定
+ */
+export function isSingaporeDiagramPattern(
+  pattern?: CalculationPattern
+): boolean {
+  return pattern !== undefined && SINGAPORE_DIAGRAM_PATTERNS.includes(pattern);
+}
+
 /**
  * パターンが暗算のコツ問題かどうかを判定
  */
