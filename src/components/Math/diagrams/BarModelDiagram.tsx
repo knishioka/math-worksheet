@@ -8,6 +8,8 @@ interface BarModelDiagramProps {
 const BAR_HEIGHT = 28;
 const LABEL_HEIGHT = 16;
 const BRACKET_WIDTH = 8;
+const LABEL_WIDTH = 48;
+const MAX_BAR_WIDTH = 180;
 
 const barStyle: React.CSSProperties = {
   height: `${BAR_HEIGHT}px`,
@@ -36,7 +38,12 @@ function PartWholeDiagram({
   const hideTotal = hidden === 'total';
 
   return (
-    <div style={{ width: '100%', maxWidth: '260px' }}>
+    <div
+      style={{
+        width: '100%',
+        maxWidth: `${MAX_BAR_WIDTH + BRACKET_WIDTH + 4}px`,
+      }}
+    >
       {/* Total bracket + label */}
       <div
         style={{
@@ -100,12 +107,23 @@ function ComparisonBarDiagram({
 }): React.ReactElement {
   const { bars, differenceValue, hidden } = diagram;
   const maxValue = Math.max(...bars.map((b) => b.value));
+  const minValue = Math.min(...bars.map((b) => b.value));
   const hideDifference = hidden === 'difference';
+  const ratio = maxValue > 0 ? minValue / maxValue : 1;
 
   return (
-    <div style={{ width: '100%', maxWidth: '280px' }}>
+    <div
+      style={{
+        width: '100%',
+        maxWidth: `${LABEL_WIDTH + 6 + MAX_BAR_WIDTH}px`,
+      }}
+    >
       {bars.map((bar, i) => {
         const isHidden = typeof hidden === 'number' && hidden === i;
+        const isMax = bar.value === maxValue;
+        const barWidth = isMax
+          ? MAX_BAR_WIDTH
+          : Math.max(40, MAX_BAR_WIDTH * ratio);
         return (
           <div
             key={i}
@@ -118,7 +136,7 @@ function ComparisonBarDiagram({
           >
             <div
               style={{
-                width: '48px',
+                width: `${LABEL_WIDTH}px`,
                 fontSize: '11px',
                 textAlign: 'right',
                 flexShrink: 0,
@@ -129,9 +147,7 @@ function ComparisonBarDiagram({
             <div
               style={{
                 ...barStyle,
-                width: `${(bar.value / maxValue) * 100}%`,
-                minWidth: '40px',
-                maxWidth: '100%',
+                width: `${barWidth}px`,
                 flex: 'none',
               }}
             >
@@ -145,22 +161,18 @@ function ComparisonBarDiagram({
       {differenceValue > 0 && bars.length === 2 && (
         <div
           style={{
-            marginLeft: '54px',
+            marginLeft: `${LABEL_WIDTH + 6}px`,
             marginTop: '2px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
           }}
         >
           <div
             style={{
-              width: `${(Math.abs(bars[0].value - bars[1].value) / maxValue) * 100}%`,
-              minWidth: '30px',
+              width: `${Math.max(30, MAX_BAR_WIDTH * (1 - ratio))}px`,
+              marginLeft: `${Math.max(40, MAX_BAR_WIDTH * ratio)}px`,
               textAlign: 'center',
               fontSize: '11px',
               borderTop: '1.5px solid #666',
               paddingTop: '1px',
-              marginLeft: `${(Math.min(bars[0].value, bars[1].value) / maxValue) * 100}%`,
             }}
           >
             {hideDifference ? '?' : differenceValue}

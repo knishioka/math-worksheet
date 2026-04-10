@@ -136,11 +136,14 @@ export function generateSingaporeBarModel(
       const totalRange = getGradeRange(
         grade,
         { min: 12, max: 40 },
-        { min: 30, max: 120 },
-        { min: 80, max: 240 }
+        { min: 200, max: 5000 },
+        { min: 1000, max: 10000 }
       );
       const total = randomInt(totalRange.min, totalRange.max);
-      const part = randomInt(5, Math.max(6, total - 4));
+      const part = randomInt(
+        Math.max(5, Math.floor(total * 0.2)),
+        Math.max(6, Math.floor(total * 0.8))
+      );
       const remaining = total - part;
       const askWhole = randomInt(0, 1) === 1;
 
@@ -193,11 +196,14 @@ export function generateSingaporeBarModel(
       const smallRange = getGradeRange(
         grade,
         { min: 8, max: 25 },
-        { min: 20, max: 90 },
-        { min: 60, max: 180 }
+        { min: 100, max: 3000 },
+        { min: 500, max: 8000 }
       );
       const smaller = randomInt(smallRange.min, smallRange.max);
-      const difference = randomInt(3, Math.max(4, Math.floor(smaller * 0.7)));
+      const difference = randomInt(
+        Math.max(3, Math.floor(smaller * 0.1)),
+        Math.max(4, Math.floor(smaller * 0.7))
+      );
       const bigger = smaller + difference;
       const askBigger = randomInt(0, 1) === 1;
 
