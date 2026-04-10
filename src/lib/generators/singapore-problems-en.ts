@@ -1,12 +1,4 @@
-import type {
-  Grade,
-  Operation,
-  SingaporeProblem,
-  BarModelPartWholeDiagram,
-  BarModelComparisonDiagram,
-  NumberBondDiagram,
-  ComparisonDiagram,
-} from '../../types';
+import type { Grade, Operation, SingaporeProblem } from '../../types';
 import { generateId, randomInt } from '../utils/math';
 import { assertValidProblem } from './assertions';
 
@@ -128,130 +120,287 @@ export function generateSingaporeBarModel(
   const items = ['stickers', 'marbles', 'books', 'cards', 'erasers'];
 
   for (let i = 0; i < count; i++) {
-    const problemType = randomInt(0, 1);
     const item = items[randomInt(0, items.length - 1)];
 
-    if (problemType === 0) {
-      // Part-whole bar model
-      const totalRange = getGradeRange(
-        grade,
-        { min: 12, max: 40 },
-        { min: 200, max: 5000 },
-        { min: 1000, max: 10000 }
-      );
-      const total = randomInt(totalRange.min, totalRange.max);
-      const part = randomInt(
-        Math.max(5, Math.floor(total * 0.2)),
-        Math.max(6, Math.floor(total * 0.8))
-      );
-      const remaining = total - part;
-      const askWhole = randomInt(0, 1) === 1;
-
-      if (askWhole) {
-        // Ask for total: hide totalValue, show both segments
-        const diagram: BarModelPartWholeDiagram = {
-          diagramType: 'bar-model',
-          variant: 'part-whole',
-          totalValue: total,
-          segments: [{ value: part }, { value: remaining }],
-          hidden: 'total',
-        };
+    if (grade <= 2) {
+      // Grade 1-2: simple part-whole or comparison
+      const problemType = randomInt(0, 1);
+      if (problemType === 0) {
+        const total = randomInt(12, 40);
+        const part = randomInt(5, Math.max(6, total - 4));
+        const remaining = total - part;
+        const askWhole = randomInt(0, 1) === 1;
+        if (askWhole) {
+          problems.push({
+            id: generateId(),
+            type: 'singapore',
+            operation: 'addition' as Operation,
+            problemText: `How many ${item} are there in all?`,
+            answer: total,
+            category: 'bar-model',
+            language: 'en',
+            showCalculation: true,
+            diagram: {
+              diagramType: 'bar-model',
+              variant: 'part-whole',
+              totalValue: total,
+              segments: [{ value: part }, { value: remaining }],
+              hidden: 'total',
+            },
+          });
+        } else {
+          const nameA = names[randomInt(0, names.length - 1)];
+          problems.push({
+            id: generateId(),
+            type: 'singapore',
+            operation: 'subtraction' as Operation,
+            problemText: `${nameA} has ${total} ${item}. ${part} are red. How many are not red?`,
+            answer: remaining,
+            category: 'bar-model',
+            language: 'en',
+            showCalculation: true,
+            diagram: {
+              diagramType: 'bar-model',
+              variant: 'part-whole',
+              totalValue: total,
+              segments: [{ value: part, label: 'red' }, { value: remaining }],
+              hidden: 1,
+            },
+          });
+        }
+      } else {
+        const nameA = names[randomInt(0, names.length - 1)];
+        const nameB = pickDifferentName(names, nameA);
+        const smaller = randomInt(8, 25);
+        const difference = randomInt(3, Math.max(4, Math.floor(smaller * 0.7)));
+        const bigger = smaller + difference;
+        const askBigger = randomInt(0, 1) === 1;
+        if (askBigger) {
+          problems.push({
+            id: generateId(),
+            type: 'singapore',
+            operation: 'addition' as Operation,
+            problemText: `${nameB} has ${smaller} ${item}. ${nameA} has ${difference} more. How many does ${nameA} have?`,
+            answer: bigger,
+            category: 'bar-model',
+            language: 'en',
+            showCalculation: true,
+            diagram: {
+              diagramType: 'bar-model',
+              variant: 'comparison',
+              bars: [
+                { value: bigger, label: nameA },
+                { value: smaller, label: nameB },
+              ],
+              differenceValue: difference,
+              hidden: 0,
+            },
+          });
+        } else {
+          problems.push({
+            id: generateId(),
+            type: 'singapore',
+            operation: 'subtraction' as Operation,
+            problemText: `How many more ${item} does ${nameA} have than ${nameB}?`,
+            answer: difference,
+            category: 'bar-model',
+            language: 'en',
+            showCalculation: true,
+            diagram: {
+              diagramType: 'bar-model',
+              variant: 'comparison',
+              bars: [
+                { value: bigger, label: nameA },
+                { value: smaller, label: nameB },
+              ],
+              differenceValue: difference,
+              hidden: 'difference',
+            },
+          });
+        }
+      }
+    } else if (grade <= 4) {
+      // Grade 3-4: multi-step, 3-part split, before/after
+      const variant = randomInt(0, 2);
+      if (variant === 0) {
+        // Multi-step: "A has N times as many as B. Together they have T."
+        const multiplier = randomInt(2, 4);
+        const unitValue = randomInt(50, 500);
+        const bValue = unitValue;
+        const aValue = unitValue * multiplier;
+        const total = aValue + bValue;
+        const nameA = names[randomInt(0, names.length - 1)];
+        const nameB = pickDifferentName(names, nameA);
         problems.push({
           id: generateId(),
           type: 'singapore',
-          operation: 'addition' as Operation,
-          problemText: `How many ${item} are there in all?`,
-          answer: total,
+          operation: 'division' as Operation,
+          problemText: `${nameA} has ${multiplier} times as many ${item} as ${nameB}. Together they have ${total}. How many does ${nameB} have?`,
+          answer: bValue,
           category: 'bar-model',
-          diagram,
-          showCalculation: true,
           language: 'en',
+          showCalculation: true,
+          diagram: {
+            diagramType: 'bar-model',
+            variant: 'comparison',
+            bars: [
+              { value: aValue, label: nameA },
+              { value: bValue, label: nameB },
+            ],
+            differenceValue: aValue - bValue,
+            hidden: 1,
+          },
         });
-      } else {
-        // Ask for a part: hide segment[1], show total and segment[0]
-        const nameA = names[randomInt(0, names.length - 1)];
-        const diagram: BarModelPartWholeDiagram = {
-          diagramType: 'bar-model',
-          variant: 'part-whole',
-          totalValue: total,
-          segments: [{ value: part, label: 'red' }, { value: remaining }],
-          hidden: 1,
-        };
+      } else if (variant === 1) {
+        // 3-part bar model: total split into 3 pieces with conditions
+        const a = randomInt(100, 800);
+        const b = randomInt(100, 800);
+        const c = randomInt(100, 800);
+        const total = a + b + c;
         problems.push({
           id: generateId(),
           type: 'singapore',
           operation: 'subtraction' as Operation,
-          problemText: `${nameA} has ${total} ${item}. ${part} are red. How many are not red?`,
+          problemText: `A rope is ${total} cm. It is cut into 3 pieces. The first piece is ${a} cm and the second is ${b} cm. How long is the third piece?`,
+          answer: c,
+          category: 'bar-model',
+          language: 'en',
+          showCalculation: true,
+          diagram: {
+            diagramType: 'bar-model',
+            variant: 'part-whole',
+            totalValue: total,
+            segments: [
+              { value: a, label: `${a} cm` },
+              { value: b, label: `${b} cm` },
+              { value: c },
+            ],
+            hidden: 2,
+          },
+        });
+      } else {
+        // Before/after: gave away a fraction
+        const denominators = [2, 4, 5, 10];
+        const denom = denominators[randomInt(0, denominators.length - 1)];
+        const numer = 1;
+        const multiplier = randomInt(10, 100);
+        const total = denom * multiplier;
+        const gaveAway = (total * numer) / denom;
+        const remaining = total - gaveAway;
+        const nameA = names[randomInt(0, names.length - 1)];
+        problems.push({
+          id: generateId(),
+          type: 'singapore',
+          operation: 'subtraction' as Operation,
+          problemText: `${nameA} had ${total} ${item}. ${nameA} gave away ${numer}/${denom} of them. How many are left?`,
           answer: remaining,
           category: 'bar-model',
-          diagram,
-          showCalculation: true,
           language: 'en',
+          showCalculation: true,
+          diagram: {
+            diagramType: 'bar-model',
+            variant: 'part-whole',
+            totalValue: total,
+            segments: [
+              { value: gaveAway, label: 'gave away' },
+              { value: remaining },
+            ],
+            hidden: 1,
+          },
         });
       }
     } else {
-      // Comparison bar model
-      const nameA = names[randomInt(0, names.length - 1)];
-      const nameB = pickDifferentName(names, nameA);
-      const smallRange = getGradeRange(
-        grade,
-        { min: 8, max: 25 },
-        { min: 100, max: 3000 },
-        { min: 500, max: 8000 }
-      );
-      const smaller = randomInt(smallRange.min, smallRange.max);
-      const difference = randomInt(
-        Math.max(3, Math.floor(smaller * 0.1)),
-        Math.max(4, Math.floor(smaller * 0.7))
-      );
-      const bigger = smaller + difference;
-      const askBigger = randomInt(0, 1) === 1;
-
-      if (askBigger) {
-        // Ask how many nameA has: hide nameA's bar (index 0), show nameB and difference
-        const diagram: BarModelComparisonDiagram = {
-          diagramType: 'bar-model',
-          variant: 'comparison',
-          bars: [
-            { value: bigger, label: nameA },
-            { value: smaller, label: nameB },
-          ],
-          differenceValue: difference,
-          hidden: 0,
-        };
+      // Grade 5-6: ratio-based, transfer, fraction multi-step
+      const variant = randomInt(0, 2);
+      if (variant === 0) {
+        // Ratio-based: "A:B = r1:r2. Difference is D."
+        const r1 = randomInt(2, 5);
+        const r2 = randomInt(r1 + 1, r1 + 4);
+        const unitValue = randomInt(50, 400);
+        const aValue = r1 * unitValue;
+        const bValue = r2 * unitValue;
+        const diff = bValue - aValue;
+        const nameA = names[randomInt(0, names.length - 1)];
+        const nameB = pickDifferentName(names, nameA);
+        problems.push({
+          id: generateId(),
+          type: 'singapore',
+          operation: 'multiplication' as Operation,
+          problemText: `The ratio of ${nameA}'s ${item} to ${nameB}'s ${item} is ${r1} : ${r2}. The difference is ${diff}. How many does ${nameA} have?`,
+          answer: aValue,
+          category: 'bar-model',
+          language: 'en',
+          showCalculation: true,
+          diagram: {
+            diagramType: 'bar-model',
+            variant: 'comparison',
+            bars: [
+              { value: bValue, label: nameB },
+              { value: aValue, label: nameA },
+            ],
+            differenceValue: diff,
+            hidden: 1,
+          },
+        });
+      } else if (variant === 1) {
+        // Transfer: "A gives B some items so they have equal."
+        const nameA = names[randomInt(0, names.length - 1)];
+        const nameB = pickDifferentName(names, nameA);
+        const equalValue = randomInt(100, 500);
+        const transfer = randomInt(20, 150);
+        const aOriginal = equalValue + transfer;
+        const bOriginal = equalValue - transfer;
         problems.push({
           id: generateId(),
           type: 'singapore',
           operation: 'addition' as Operation,
-          problemText: `${nameB} has ${smaller} ${item}. ${nameA} has ${difference} more. How many does ${nameA} have?`,
-          answer: bigger,
+          problemText: `${nameA} has ${aOriginal} ${item} and ${nameB} has ${bOriginal}. ${nameA} gives some to ${nameB} so they have the same number. How many does each have now?`,
+          answer: equalValue,
           category: 'bar-model',
-          diagram,
-          showCalculation: true,
           language: 'en',
+          showCalculation: true,
+          diagram: {
+            diagramType: 'bar-model',
+            variant: 'comparison',
+            bars: [
+              { value: aOriginal, label: nameA },
+              { value: bOriginal, label: nameB },
+            ],
+            differenceValue: aOriginal - bOriginal,
+            hidden: 'difference',
+          },
         });
       } else {
-        // Ask for the difference: hide difference, show both bars
-        const diagram: BarModelComparisonDiagram = {
-          diagramType: 'bar-model',
-          variant: 'comparison',
-          bars: [
-            { value: bigger, label: nameA },
-            { value: smaller, label: nameB },
-          ],
-          differenceValue: difference,
-          hidden: 'difference',
-        };
+        // Fraction multi-step: "Used 2/5, then gave away 1/3 of the rest."
+        const denom1 = randomInt(2, 5);
+        const denom2 = randomInt(2, 4);
+        const lcm = denom1 * denom2;
+        const multiplier = randomInt(5, 30);
+        const total = lcm * multiplier;
+        const usedFirst = total / denom1;
+        const afterFirst = total - usedFirst;
+        const usedSecond = afterFirst / denom2;
+        const remaining = afterFirst - usedSecond;
         problems.push({
           id: generateId(),
           type: 'singapore',
           operation: 'subtraction' as Operation,
-          problemText: `How many more ${item} does ${nameA} have than ${nameB}?`,
-          answer: difference,
+          problemText: `There are ${total} ${item}. First, 1/${denom1} are used. Then 1/${denom2} of the remainder are given away. How many are left?`,
+          answer: remaining,
           category: 'bar-model',
-          diagram,
-          showCalculation: true,
           language: 'en',
+          showCalculation: true,
+          diagram: {
+            diagramType: 'bar-model',
+            variant: 'part-whole',
+            totalValue: total,
+            segments: [
+              { value: usedFirst, label: 'used' },
+              { value: usedSecond, label: 'given' },
+              { value: remaining },
+            ],
+            hidden: 2,
+          },
         });
       }
     }
@@ -271,90 +420,34 @@ export function generateSingaporeNumberBond(
   const problems: SingaporeProblem[] = [];
 
   for (let i = 0; i < count; i++) {
-    const maxProblemType = grade <= 2 ? 1 : 2;
-    const problemType = randomInt(0, maxProblemType);
-
-    if (problemType === 0) {
-      // Simple 2-part bond
-      const totalRange = getGradeRange(
-        grade,
-        { min: 10, max: 40 },
-        { min: 30, max: 200 },
-        { min: 120, max: 500 }
-      );
-      const total = randomInt(totalRange.min, totalRange.max);
-      const part = randomInt(5, Math.max(6, total - 5));
-      const missingPart = total - part;
-
-      const diagram: NumberBondDiagram = {
-        diagramType: 'number-bond',
-        whole: total,
-        parts: [part, missingPart],
-        hidden: 1,
-      };
-
-      problems.push({
-        id: generateId(),
-        type: 'singapore',
-        operation: 'subtraction' as Operation,
-        problemText: `What is the missing number in the number bond?`,
-        answer: missingPart,
-        category: 'number-bond',
-        diagram,
-        showCalculation: false,
-        language: 'en',
-      });
-      continue;
-    }
-
-    if (problemType === 1) {
-      // Place value decomposition
-      const base = getGradeRange(
-        grade,
-        { min: 10, max: 99 },
-        { min: 100, max: 900 },
-        { min: 1000, max: 9000 }
-      );
-      // Ensure the hidden part (ones digit) is non-zero
-      let value = randomInt(base.min, base.max);
-      while (value % 10 === 0) {
-        value = randomInt(base.min, base.max);
-      }
-
-      if (grade <= 2) {
-        const tens = Math.floor(value / 10) * 10;
-        const ones = value % 10;
-
-        const diagram: NumberBondDiagram = {
-          diagramType: 'number-bond',
-          whole: value,
-          parts: [tens, ones],
-          hidden: 1,
-        };
-
+    if (grade <= 2) {
+      // Grade 1-2: simple 2-part bond or tens/ones decomposition
+      const variant = randomInt(0, 1);
+      if (variant === 0) {
+        const total = randomInt(10, 40);
+        const part = randomInt(5, Math.max(6, total - 5));
+        const missingPart = total - part;
         problems.push({
           id: generateId(),
           type: 'singapore',
-          operation: 'addition' as Operation,
-          problemText: `What is the missing part of ${value}?`,
-          answer: ones,
+          operation: 'subtraction' as Operation,
+          problemText: `What is the missing number in the number bond?`,
+          answer: missingPart,
           category: 'number-bond',
-          diagram,
-          showCalculation: false,
           language: 'en',
+          showCalculation: false,
+          diagram: {
+            diagramType: 'number-bond',
+            whole: total,
+            parts: [part, missingPart],
+            hidden: 1,
+          },
         });
       } else {
-        const hundreds = Math.floor(value / 100) * 100;
-        const tens = Math.floor((value % 100) / 10) * 10;
+        let value = randomInt(10, 99);
+        while (value % 10 === 0) value = randomInt(10, 99);
+        const tens = Math.floor(value / 10) * 10;
         const ones = value % 10;
-
-        const diagram: NumberBondDiagram = {
-          diagramType: 'number-bond',
-          whole: value,
-          parts: [hundreds, tens, ones],
-          hidden: 2,
-        };
-
         problems.push({
           id: generateId(),
           type: 'singapore',
@@ -362,44 +455,176 @@ export function generateSingaporeNumberBond(
           problemText: `What is the missing part of ${value}?`,
           answer: ones,
           category: 'number-bond',
-          diagram,
-          showCalculation: false,
           language: 'en',
+          showCalculation: false,
+          diagram: {
+            diagramType: 'number-bond',
+            whole: value,
+            parts: [tens, ones],
+            hidden: 1,
+          },
         });
       }
-      continue;
+    } else if (grade <= 4) {
+      // Grade 3-4: 4-digit place value, sum-difference puzzle, 3-part bond
+      const variant = randomInt(0, 2);
+      if (variant === 0) {
+        // 4-digit place value decomposition — ensure all digits non-zero
+        let value = randomInt(1111, 9999);
+        while (
+          value % 10 === 0 ||
+          Math.floor((value % 100) / 10) === 0 ||
+          Math.floor((value % 1000) / 100) === 0
+        ) {
+          value = randomInt(1111, 9999);
+        }
+        const thousands = Math.floor(value / 1000) * 1000;
+        const hundreds = Math.floor((value % 1000) / 100) * 100;
+        const tens = Math.floor((value % 100) / 10) * 10;
+        const ones = value % 10;
+        const hiddenIdx = randomInt(1, 3);
+        const parts = [thousands, hundreds, tens, ones];
+        const answer = parts[hiddenIdx];
+        problems.push({
+          id: generateId(),
+          type: 'singapore',
+          operation: 'addition' as Operation,
+          problemText: `What is the missing part of ${value}?`,
+          answer,
+          category: 'number-bond',
+          language: 'en',
+          showCalculation: false,
+          diagram: {
+            diagramType: 'number-bond',
+            whole: value,
+            parts,
+            hidden: hiddenIdx,
+          },
+        });
+      } else if (variant === 1) {
+        // Sum and difference puzzle
+        const half = randomInt(20, 200);
+        const offset = randomInt(5, Math.max(6, half - 5));
+        const a = half + offset;
+        const b = half - offset;
+        const sum = a + b;
+        problems.push({
+          id: generateId(),
+          type: 'singapore',
+          operation: 'subtraction' as Operation,
+          problemText: `Two numbers add up to ${sum}. One number is ${a}. What is the other?`,
+          answer: b,
+          category: 'number-bond',
+          language: 'en',
+          showCalculation: false,
+          diagram: {
+            diagramType: 'number-bond',
+            whole: sum,
+            parts: [a, b],
+            hidden: 1,
+          },
+        });
+      } else {
+        // 3-part bond with larger numbers
+        const total = randomInt(200, 2000);
+        const partA = randomInt(50, Math.floor(total * 0.5));
+        const partB = randomInt(50, Math.max(51, total - partA - 50));
+        const partC = total - partA - partB;
+        problems.push({
+          id: generateId(),
+          type: 'singapore',
+          operation: 'subtraction' as Operation,
+          problemText: `Find the missing part in the number bond.`,
+          answer: partC,
+          category: 'number-bond',
+          language: 'en',
+          showCalculation: false,
+          diagram: {
+            diagramType: 'number-bond',
+            whole: total,
+            parts: [partA, partB, partC],
+            hidden: 2,
+          },
+        });
+      }
+    } else {
+      // Grade 5-6: fraction decomposition, decimal decomposition, complement to target
+      const variant = randomInt(0, 2);
+      if (variant === 0) {
+        // Fraction decomposition expressed as whole numbers
+        const denom = [4, 5, 8, 10][randomInt(0, 3)];
+        const numer1 = randomInt(1, denom - 1);
+        const numer2 = denom - numer1;
+        const multiplier = randomInt(2, 20);
+        const total = denom * multiplier;
+        const part1 = numer1 * multiplier;
+        const part2 = numer2 * multiplier;
+        problems.push({
+          id: generateId(),
+          type: 'singapore',
+          operation: 'subtraction' as Operation,
+          problemText: `${total} items are split into ${numer1}/${denom} and the rest. How many are in the rest?`,
+          answer: part2,
+          category: 'number-bond',
+          language: 'en',
+          showCalculation: false,
+          diagram: {
+            diagramType: 'number-bond',
+            whole: total,
+            parts: [part1, part2],
+            hidden: 1,
+          },
+        });
+      } else if (variant === 1) {
+        // Decimal decomposition (displayed as ×10 integers in diagram)
+        const whole = randomInt(5, 20);
+        const tenths1 = randomInt(1, 9);
+        const part1 = Math.round((whole - 1 + tenths1 * 0.1) * 10);
+        const part2 = whole * 10 - part1;
+        problems.push({
+          id: generateId(),
+          type: 'singapore',
+          operation: 'subtraction' as Operation,
+          problemText: `${whole}.0 = ${part1 / 10} + ? What is the missing number?`,
+          answer: part2,
+          category: 'number-bond',
+          language: 'en',
+          showCalculation: false,
+          unit: '(×10)',
+          diagram: {
+            diagramType: 'number-bond',
+            whole: whole * 10,
+            parts: [part1, part2],
+            hidden: 1,
+          },
+        });
+      } else {
+        // Complement to target
+        const targets = [100, 1000, 10000];
+        const target = targets[randomInt(0, targets.length - 1)];
+        const part = randomInt(
+          Math.floor(target * 0.1),
+          Math.floor(target * 0.9)
+        );
+        const complement = target - part;
+        problems.push({
+          id: generateId(),
+          type: 'singapore',
+          operation: 'subtraction' as Operation,
+          problemText: `What number added to ${part} makes ${target}?`,
+          answer: complement,
+          category: 'number-bond',
+          language: 'en',
+          showCalculation: false,
+          diagram: {
+            diagramType: 'number-bond',
+            whole: target,
+            parts: [part, complement],
+            hidden: 1,
+          },
+        });
+      }
     }
-
-    // 3-part bond (grade 3+)
-    const totalRange = getGradeRange(
-      grade,
-      { min: 15, max: 60 },
-      { min: 50, max: 250 },
-      { min: 200, max: 800 }
-    );
-    const total = randomInt(totalRange.min, totalRange.max);
-    const partA = randomInt(5, total - 2);
-    const partB = randomInt(1, total - partA - 1);
-    const missingPart = total - partA - partB;
-
-    const diagram: NumberBondDiagram = {
-      diagramType: 'number-bond',
-      whole: total,
-      parts: [partA, partB, missingPart],
-      hidden: 2,
-    };
-
-    problems.push({
-      id: generateId(),
-      type: 'singapore',
-      operation: 'subtraction' as Operation,
-      problemText: `Find the missing part in the number bond.`,
-      answer: missingPart,
-      category: 'number-bond',
-      diagram,
-      showCalculation: false,
-      language: 'en',
-    });
   }
 
   problems.forEach((p) => assertValidProblem(p, 'singapore-number-bond'));
@@ -408,7 +633,7 @@ export function generateSingaporeNumberBond(
 
 /**
  * Comparison problems with visual diagrams.
- * Grade 2 uses additive comparison, Grade 3+ uses multiplicative comparison.
+ * Grade 1-2: additive, Grade 3-4: multiplicative, Grade 5-6: combined/ratio/percentage.
  */
 export function generateSingaporeComparison(
   grade: Grade,
@@ -420,126 +645,147 @@ export function generateSingaporeComparison(
 
   for (let i = 0; i < count; i++) {
     const subject = subjects[randomInt(0, subjects.length - 1)];
+    const nameA = names[randomInt(0, names.length - 1)];
+    const nameB = pickDifferentName(names, nameA);
 
     if (grade <= 2) {
       // Additive comparison
-      const nameA = names[randomInt(0, names.length - 1)];
-      const nameB = pickDifferentName(names, nameA);
-      const smallerRange = getGradeRange(
-        grade,
-        { min: 8, max: 30 },
-        { min: 20, max: 90 },
-        { min: 60, max: 180 }
-      );
-      const smaller = randomInt(smallerRange.min, smallerRange.max);
+      const smaller = randomInt(8, 30);
       const difference = randomInt(2, Math.max(3, Math.floor(smaller * 0.6)));
       const bigger = smaller + difference;
       const askBigger = randomInt(0, 1) === 1;
-
-      if (askBigger) {
-        // Ask for bigger: hide bar[0] (the bigger one)
-        const diagram: ComparisonDiagram = {
+      problems.push({
+        id: generateId(),
+        type: 'singapore',
+        operation: askBigger
+          ? ('addition' as Operation)
+          : ('subtraction' as Operation),
+        problemText: askBigger
+          ? `${nameA} has ${smaller} ${subject}. ${nameB} has ${difference} more. How many does ${nameB} have?`
+          : `${nameB} has ${bigger} ${subject}. ${nameA} has ${difference} fewer. How many does ${nameA} have?`,
+        answer: askBigger ? bigger : smaller,
+        category: 'comparison',
+        language: 'en',
+        showCalculation: true,
+        diagram: {
           diagramType: 'comparison',
           bars: [
             { label: nameB, value: bigger },
             { label: nameA, value: smaller },
           ],
           differenceValue: difference,
+          hidden: askBigger ? 0 : 1,
+        },
+      });
+    } else if (grade <= 4) {
+      // Multiplicative comparison
+      const baseAmount = randomInt(4, 18);
+      const multiplier = randomInt(2, 6);
+      const result = baseAmount * multiplier;
+      problems.push({
+        id: generateId(),
+        type: 'singapore',
+        operation: 'multiplication' as Operation,
+        problemText: `${nameA} has ${baseAmount} ${subject}. ${nameB} has ${multiplier} times as many. How many does ${nameB} have?`,
+        answer: result,
+        category: 'comparison',
+        language: 'en',
+        showCalculation: true,
+        diagram: {
+          diagramType: 'comparison',
+          bars: [
+            { label: nameB, value: result },
+            { label: nameA, value: baseAmount },
+          ],
+          differenceValue: result - baseAmount,
+          multiplicative: true,
+          multiplier,
           hidden: 0,
-        };
+        },
+      });
+    } else {
+      // Grade 5-6: combined, ratio-based, percentage-based
+      const variant = randomInt(0, 2);
+      if (variant === 0) {
+        // Combined: "A is N times B plus M more"
+        const baseAmount = randomInt(10, 30);
+        const multiplier = randomInt(2, 4);
+        const extra = randomInt(5, 30);
+        const result = baseAmount * multiplier + extra;
         problems.push({
           id: generateId(),
           type: 'singapore',
-          operation: 'addition' as Operation,
-          problemText: `${nameA} has ${smaller} ${subject}. ${nameB} has ${difference} more. How many does ${nameB} have?`,
-          answer: bigger,
+          operation: 'multiplication' as Operation,
+          problemText: `${nameA} has ${baseAmount} ${subject}. ${nameB} has ${multiplier} times as many plus ${extra} more. How many does ${nameB} have?`,
+          answer: result,
           category: 'comparison',
-          diagram,
-          showCalculation: true,
           language: 'en',
+          showCalculation: true,
+          diagram: {
+            diagramType: 'comparison',
+            bars: [
+              { label: nameB, value: result },
+              { label: nameA, value: baseAmount },
+            ],
+            differenceValue: result - baseAmount,
+            multiplicative: true,
+            multiplier,
+            hidden: 0,
+          },
+        });
+      } else if (variant === 1) {
+        // Ratio-based: "A:B = r1:r2. B is 56. What is A?"
+        const r1 = randomInt(2, 5);
+        const r2 = randomInt(r1 + 1, r1 + 5);
+        const unitValue = randomInt(4, 20);
+        const aValue = r1 * unitValue;
+        const bValue = r2 * unitValue;
+        problems.push({
+          id: generateId(),
+          type: 'singapore',
+          operation: 'multiplication' as Operation,
+          problemText: `The ratio of ${nameA}'s ${subject} to ${nameB}'s is ${r1} : ${r2}. ${nameB} has ${bValue}. How many does ${nameA} have?`,
+          answer: aValue,
+          category: 'comparison',
+          language: 'en',
+          showCalculation: true,
+          diagram: {
+            diagramType: 'comparison',
+            bars: [
+              { label: nameB, value: bValue },
+              { label: nameA, value: aValue },
+            ],
+            differenceValue: bValue - aValue,
+            hidden: 1,
+          },
         });
       } else {
-        // Ask for smaller: hide bar[1] (the smaller one)
-        const diagram: ComparisonDiagram = {
-          diagramType: 'comparison',
-          bars: [
-            { label: nameB, value: bigger },
-            { label: nameA, value: smaller },
-          ],
-          differenceValue: difference,
-          hidden: 1,
-        };
+        // Percentage-based: "A is 120% of B"
+        const percentages = [110, 120, 125, 150, 200];
+        const pct = percentages[randomInt(0, percentages.length - 1)];
+        const bValue = randomInt(20, 100) * (pct <= 125 ? 4 : 2);
+        const aValue = (bValue * pct) / 100;
         problems.push({
           id: generateId(),
           type: 'singapore',
-          operation: 'subtraction' as Operation,
-          problemText: `${nameB} has ${bigger} ${subject}. ${nameA} has ${difference} fewer. How many does ${nameA} have?`,
-          answer: smaller,
+          operation: 'multiplication' as Operation,
+          problemText: `${nameA}'s score is ${pct}% of ${nameB}'s score. ${nameB} scored ${bValue}. What is ${nameA}'s score?`,
+          answer: aValue,
           category: 'comparison',
-          diagram,
-          showCalculation: true,
           language: 'en',
+          showCalculation: true,
+          diagram: {
+            diagramType: 'comparison',
+            bars: [
+              { label: nameA, value: aValue },
+              { label: nameB, value: bValue },
+            ],
+            differenceValue: Math.abs(aValue - bValue),
+            hidden: 0,
+          },
         });
       }
-      continue;
     }
-
-    // Multiplicative comparison (grade 3+)
-    const baseRange = getGradeRange(
-      grade,
-      { min: 2, max: 9 },
-      { min: 4, max: 18 },
-      { min: 6, max: 30 }
-    );
-    const multiplierRange = getGradeRange(
-      grade,
-      { min: 2, max: 4 },
-      { min: 2, max: 6 },
-      { min: 3, max: 8 }
-    );
-    const baseAmount = randomInt(baseRange.min, baseRange.max);
-    const multiplier = randomInt(multiplierRange.min, multiplierRange.max);
-    const result = baseAmount * multiplier;
-
-    const variant = randomInt(0, 1);
-    let text: string;
-    // Ask for the result (bigger bar): hide bar[0]
-    let bars: ComparisonDiagram['bars'];
-    if (variant === 0) {
-      const nameA = names[randomInt(0, names.length - 1)];
-      const nameB = pickDifferentName(names, nameA);
-      bars = [
-        { label: nameB, value: result },
-        { label: nameA, value: baseAmount },
-      ];
-      text = `${nameA} has ${baseAmount} ${subject}. ${nameB} has ${multiplier} times as many. How many does ${nameB} have?`;
-    } else {
-      bars = [
-        { label: 'Big box', value: result },
-        { label: 'Small box', value: baseAmount },
-      ];
-      text = `One box has ${baseAmount} crayons. A big box has ${multiplier} times as many. How many crayons are in the big box?`;
-    }
-    const diagram: ComparisonDiagram = {
-      diagramType: 'comparison',
-      bars,
-      differenceValue: result - baseAmount,
-      multiplicative: true,
-      multiplier,
-      hidden: 0,
-    };
-
-    problems.push({
-      id: generateId(),
-      type: 'singapore',
-      operation: 'multiplication' as Operation,
-      problemText: text,
-      answer: result,
-      category: 'comparison',
-      diagram,
-      showCalculation: true,
-      language: 'en',
-    });
   }
 
   problems.forEach((p) => assertValidProblem(p, 'singapore-comparison'));

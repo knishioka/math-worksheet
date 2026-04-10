@@ -59,7 +59,12 @@ describe('singapore-problems-en generators', () => {
       expect(problem.type).toBe('singapore');
       expect(problem.operation).toBe('multiplication');
       expect(problem.category).toBe('comparison');
-      expect(problem.problemText).toContain('times as many');
+      // Grade 5 uses varied comparison: times, ratio, or percentage
+      expect(
+        problem.problemText.includes('times') ||
+          problem.problemText.includes('ratio') ||
+          problem.problemText.includes('%')
+      ).toBe(true);
       expect(typeof problem.answer).toBe('number');
       expect(problem.diagram).toBeDefined();
       expect(problem.diagram?.diagramType).toBe('comparison');
@@ -174,6 +179,98 @@ describe('singapore-problems-en generators', () => {
           (usage?.remainingAfterSecond ?? 0) / groups
         );
       }
+    });
+  });
+});
+
+// ── Structure diversity tests ────────────────────────────────────────
+
+describe('bar model structure diversity', () => {
+  it('grade 3-4: produces multi-step, 3-part, and before/after variants', () => {
+    const problems = generateSingaporeBarModel(4, 200);
+    const hasMultiStep = problems.some((p) =>
+      p.problemText.includes('times as many')
+    );
+    const has3Part = problems.some((p) => p.problemText.includes('3 pieces'));
+    const hasBeforeAfter = problems.some((p) =>
+      p.problemText.includes('gave away')
+    );
+    expect(hasMultiStep).toBe(true);
+    expect(has3Part).toBe(true);
+    expect(hasBeforeAfter).toBe(true);
+  });
+
+  it('grade 5-6: produces ratio-based, transfer, and fraction multi-step variants', () => {
+    const problems = generateSingaporeBarModel(6, 200);
+    const hasRatio = problems.some((p) => p.problemText.includes('ratio'));
+    const hasTransfer = problems.some((p) =>
+      p.problemText.includes('gives some')
+    );
+    const hasFractionStep = problems.some((p) =>
+      p.problemText.includes('remainder')
+    );
+    expect(hasRatio).toBe(true);
+    expect(hasTransfer).toBe(true);
+    expect(hasFractionStep).toBe(true);
+  });
+
+  it('grade 1-2: only produces simple part-whole and comparison', () => {
+    const problems = generateSingaporeBarModel(1, 200);
+    problems.forEach((p) => {
+      expect(p.problemText.includes('ratio')).toBe(false);
+      expect(p.problemText.includes('gave away')).toBe(false);
+      expect(p.problemText.includes('3 pieces')).toBe(false);
+    });
+  });
+});
+
+describe('number bond structure diversity', () => {
+  it('grade 3-4: produces 4-digit place value, sum-difference, and 3-part bonds', () => {
+    const problems = generateSingaporeNumberBond(4, 200);
+    const has4Digit = problems.some((p) => {
+      if (p.diagram?.diagramType !== 'number-bond') return false;
+      return p.diagram.parts.length === 4;
+    });
+    const hasSumDiff = problems.some((p) =>
+      p.problemText.includes('add up to')
+    );
+    const has3Part = problems.some((p) => {
+      if (p.diagram?.diagramType !== 'number-bond') return false;
+      return p.diagram.parts.length === 3;
+    });
+    expect(has4Digit).toBe(true);
+    expect(hasSumDiff).toBe(true);
+    expect(has3Part).toBe(true);
+  });
+
+  it('grade 5-6: produces fraction, decimal, and complement problems', () => {
+    const problems = generateSingaporeNumberBond(6, 200);
+    const hasFraction = problems.some((p) => p.problemText.includes('/'));
+    const hasDecimal = problems.some((p) => p.problemText.includes('.0'));
+    const hasComplement = problems.some((p) => p.problemText.includes('makes'));
+    expect(hasFraction).toBe(true);
+    expect(hasDecimal).toBe(true);
+    expect(hasComplement).toBe(true);
+  });
+});
+
+describe('comparison structure diversity', () => {
+  it('grade 5-6: produces combined, ratio-based, and percentage-based variants', () => {
+    const problems = generateSingaporeComparison(6, 200);
+    const hasCombined = problems.some((p) => p.problemText.includes('plus'));
+    const hasRatio = problems.some((p) => p.problemText.includes('ratio'));
+    const hasPercentage = problems.some((p) => p.problemText.includes('%'));
+    expect(hasCombined).toBe(true);
+    expect(hasRatio).toBe(true);
+    expect(hasPercentage).toBe(true);
+  });
+
+  it('grade 3-4: only produces multiplicative comparison (times as many)', () => {
+    const problems = generateSingaporeComparison(4, 200);
+    problems.forEach((p) => {
+      expect(p.problemText).toContain('times as many');
+      expect(p.problemText.includes('ratio')).toBe(false);
+      expect(p.problemText.includes('%')).toBe(false);
     });
   });
 });

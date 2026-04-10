@@ -125,7 +125,7 @@ describe('property-based tests: Singapore Comparison', () => {
     }
   });
 
-  it.each([3, 4, 5, 6] as Grade[])(
+  it.each([3, 4] as Grade[])(
     'grade %i: uses multiplicative comparison',
     (grade) => {
       const problems = generateSingaporeComparison(grade, SAMPLE_SIZE);
@@ -133,6 +133,23 @@ describe('property-based tests: Singapore Comparison', () => {
       for (const p of problems) {
         expect(p.operation).toBe('multiplication');
         expect(p.problemText).toContain('times as many');
+      }
+    }
+  );
+
+  it.each([5, 6] as Grade[])(
+    'grade %i: uses advanced comparison (combined/ratio/percentage)',
+    (grade) => {
+      const problems = generateSingaporeComparison(grade, SAMPLE_SIZE);
+
+      for (const p of problems) {
+        expect(p.operation).toBe('multiplication');
+        // Grade 5-6 has varied comparison types
+        expect(
+          p.problemText.includes('times') ||
+            p.problemText.includes('ratio') ||
+            p.problemText.includes('%')
+        ).toBe(true);
       }
     }
   );
