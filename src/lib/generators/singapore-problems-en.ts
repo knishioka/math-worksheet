@@ -759,9 +759,17 @@ export function generateSingaporeComparison(
         });
       } else {
         // Percentage-based: "A is 120% of B"
-        const percentages = [110, 120, 125, 150, 200];
-        const pct = percentages[randomInt(0, percentages.length - 1)];
-        const bValue = randomInt(20, 100) * (pct <= 125 ? 4 : 2);
+        // Each percentage needs bValue to be a multiple of its denominator to get integer result
+        const pctOptions: Array<{ pct: number; divisor: number }> = [
+          { pct: 110, divisor: 10 },
+          { pct: 120, divisor: 5 },
+          { pct: 125, divisor: 4 },
+          { pct: 150, divisor: 2 },
+          { pct: 200, divisor: 1 },
+        ];
+        const chosen = pctOptions[randomInt(0, pctOptions.length - 1)];
+        const pct = chosen.pct;
+        const bValue = randomInt(10, 50) * chosen.divisor;
         const aValue = (bValue * pct) / 100;
         problems.push({
           id: generateId(),
