@@ -184,11 +184,10 @@ export function isSingaporePattern(pattern?: CalculationPattern): boolean {
   return pattern !== undefined && SINGAPORE_MATH_PATTERNS.includes(pattern);
 }
 
-/** Singapore Mathパターンのうちダイアグラム付きのもの */
+/** Singapore Mathパターンのうちダイアグラム付きのもの（Grade 1-2のみ図が有効） */
 const SINGAPORE_DIAGRAM_PATTERNS: readonly CalculationPattern[] = [
   'singapore-bar-model',
   'singapore-number-bond',
-  'singapore-comparison',
 ] as const;
 
 /**

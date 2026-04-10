@@ -451,24 +451,21 @@ export const PATTERN_COUNT_OVERRIDES: Partial<
   },
   // Singapore Math with diagrams — larger minProblemHeight
   ...Object.fromEntries(
-    (
-      [
-        'singapore-bar-model',
-        'singapore-number-bond',
-        'singapore-comparison',
-      ] as const
-    ).map((pattern) => [
-      pattern,
-      {
-        recommendedCounts: { 1: 5, 2: 8, 3: 12 },
-        maxCounts: { 1: 6, 2: 10, 3: 12 },
-      },
-    ])
+    (['singapore-bar-model', 'singapore-number-bond'] as const).map(
+      (pattern) => [
+        pattern,
+        {
+          recommendedCounts: { 1: 5, 2: 8, 3: 12 },
+          maxCounts: { 1: 6, 2: 10, 3: 12 },
+        },
+      ]
+    )
   ),
   // Singapore Math text-only — uses word-en-like spacing
   ...Object.fromEntries(
     (
       [
+        'singapore-comparison',
         'singapore-multi-step',
         'singapore-fraction-set',
         'singapore-decimal',

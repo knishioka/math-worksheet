@@ -155,15 +155,11 @@ describe('property-based tests: Singapore Comparison', () => {
   );
 
   it.each(GRADES)(
-    'grade %i: comparison diagram math is consistent',
+    'grade %i: comparison problems have no diagram (text-only)',
     (grade) => {
       const problems = generateSingaporeComparison(grade, SAMPLE_SIZE);
-
       for (const p of problems) {
-        if (!p.diagram || p.diagram.diagramType !== 'comparison') continue;
-        const bigger = Math.max(...p.diagram.bars.map((b) => b.value));
-        const smaller = Math.min(...p.diagram.bars.map((b) => b.value));
-        expect(bigger - smaller).toBe(p.diagram.differenceValue);
+        expect(p.diagram).toBeUndefined();
       }
     }
   );

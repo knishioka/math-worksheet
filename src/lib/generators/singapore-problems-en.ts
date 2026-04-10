@@ -647,7 +647,7 @@ export function generateSingaporeComparison(
     const nameB = pickDifferentName(names, nameA);
 
     if (grade <= 2) {
-      // Additive comparison
+      // Additive comparison (text-only)
       const smaller = randomInt(8, 30);
       const difference = randomInt(2, Math.max(3, Math.floor(smaller * 0.6)));
       const bigger = smaller + difference;
@@ -665,18 +665,9 @@ export function generateSingaporeComparison(
         category: 'comparison',
         language: 'en',
         showCalculation: true,
-        diagram: {
-          diagramType: 'comparison',
-          bars: [
-            { label: nameB, value: bigger },
-            { label: nameA, value: smaller },
-          ],
-          differenceValue: difference,
-          hidden: askBigger ? 0 : 1,
-        },
       });
     } else if (grade <= 4) {
-      // Multiplicative comparison
+      // Multiplicative comparison (text-only)
       const baseAmount = randomInt(4, 18);
       const multiplier = randomInt(2, 6);
       const result = baseAmount * multiplier;
@@ -689,20 +680,9 @@ export function generateSingaporeComparison(
         category: 'comparison',
         language: 'en',
         showCalculation: true,
-        diagram: {
-          diagramType: 'comparison',
-          bars: [
-            { label: nameB, value: result },
-            { label: nameA, value: baseAmount },
-          ],
-          differenceValue: result - baseAmount,
-          multiplicative: true,
-          multiplier,
-          hidden: 0,
-        },
       });
     } else {
-      // Grade 5-6: combined, ratio-based, percentage-based
+      // Grade 5-6: combined, ratio-based, percentage-based (text-only)
       const variant = randomInt(0, 2);
       if (variant === 0) {
         // Combined: "A is N times B plus M more"
@@ -719,17 +699,6 @@ export function generateSingaporeComparison(
           category: 'comparison',
           language: 'en',
           showCalculation: true,
-          diagram: {
-            diagramType: 'comparison',
-            bars: [
-              { label: nameB, value: result },
-              { label: nameA, value: baseAmount },
-            ],
-            differenceValue: result - baseAmount,
-            multiplicative: true,
-            multiplier,
-            hidden: 0,
-          },
         });
       } else if (variant === 1) {
         // Ratio-based: "A:B = r1:r2. B is 56. What is A?"
@@ -747,15 +716,6 @@ export function generateSingaporeComparison(
           category: 'comparison',
           language: 'en',
           showCalculation: true,
-          diagram: {
-            diagramType: 'comparison',
-            bars: [
-              { label: nameB, value: bValue },
-              { label: nameA, value: aValue },
-            ],
-            differenceValue: bValue - aValue,
-            hidden: 1,
-          },
         });
       } else {
         // Percentage-based: "A is 120% of B"
@@ -780,15 +740,6 @@ export function generateSingaporeComparison(
           category: 'comparison',
           language: 'en',
           showCalculation: true,
-          diagram: {
-            diagramType: 'comparison',
-            bars: [
-              { label: nameA, value: aValue },
-              { label: nameB, value: bValue },
-            ],
-            differenceValue: Math.abs(aValue - bValue),
-            hidden: 0,
-          },
         });
       }
     }

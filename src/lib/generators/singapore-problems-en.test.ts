@@ -66,8 +66,8 @@ describe('singapore-problems-en generators', () => {
           problem.problemText.includes('%')
       ).toBe(true);
       expect(typeof problem.answer).toBe('number');
-      expect(problem.diagram).toBeDefined();
-      expect(problem.diagram?.diagramType).toBe('comparison');
+      // Comparison is text-only (no diagram)
+      expect(problem.diagram).toBeUndefined();
     });
   });
 
