@@ -220,15 +220,13 @@ export function generateSingaporeBarModel(
         }
       }
     } else if (grade <= 4) {
-      // Grade 3-4: multi-step, 3-part split, before/after
+      // Grade 3-4: multi-step, 3-part split, before/after (text-only)
       const variant = randomInt(0, 2);
       if (variant === 0) {
-        // Multi-step: "A has N times as many as B. Together they have T."
         const multiplier = randomInt(2, 4);
         const unitValue = randomInt(50, 500);
         const bValue = unitValue;
-        const aValue = unitValue * multiplier;
-        const total = aValue + bValue;
+        const total = unitValue * multiplier + bValue;
         const nameA = names[randomInt(0, names.length - 1)];
         const nameB = pickDifferentName(names, nameA);
         problems.push({
@@ -240,19 +238,8 @@ export function generateSingaporeBarModel(
           category: 'bar-model',
           language: 'en',
           showCalculation: true,
-          diagram: {
-            diagramType: 'bar-model',
-            variant: 'comparison',
-            bars: [
-              { value: aValue, label: nameA },
-              { value: bValue, label: nameB },
-            ],
-            differenceValue: aValue - bValue,
-            hidden: 1,
-          },
         });
       } else if (variant === 1) {
-        // 3-part bar model: total split into 3 pieces with conditions
         const a = randomInt(100, 800);
         const b = randomInt(100, 800);
         const c = randomInt(100, 800);
@@ -266,54 +253,30 @@ export function generateSingaporeBarModel(
           category: 'bar-model',
           language: 'en',
           showCalculation: true,
-          diagram: {
-            diagramType: 'bar-model',
-            variant: 'part-whole',
-            totalValue: total,
-            segments: [
-              { value: a, label: `${a} cm` },
-              { value: b, label: `${b} cm` },
-              { value: c },
-            ],
-            hidden: 2,
-          },
         });
       } else {
-        // Before/after: gave away a fraction
         const denominators = [2, 4, 5, 10];
         const denom = denominators[randomInt(0, denominators.length - 1)];
-        const numer = 1;
         const multiplier = randomInt(10, 100);
         const total = denom * multiplier;
-        const gaveAway = (total * numer) / denom;
+        const gaveAway = total / denom;
         const remaining = total - gaveAway;
         const nameA = names[randomInt(0, names.length - 1)];
         problems.push({
           id: generateId(),
           type: 'singapore',
           operation: 'subtraction' as Operation,
-          problemText: `${nameA} had ${total} ${item}. ${nameA} gave away ${numer}/${denom} of them. How many are left?`,
+          problemText: `${nameA} had ${total} ${item}. ${nameA} gave away 1/${denom} of them. How many are left?`,
           answer: remaining,
           category: 'bar-model',
           language: 'en',
           showCalculation: true,
-          diagram: {
-            diagramType: 'bar-model',
-            variant: 'part-whole',
-            totalValue: total,
-            segments: [
-              { value: gaveAway, label: 'gave away' },
-              { value: remaining },
-            ],
-            hidden: 1,
-          },
         });
       }
     } else {
-      // Grade 5-6: ratio-based, transfer, fraction multi-step
+      // Grade 5-6: ratio-based, transfer, fraction multi-step (text-only)
       const variant = randomInt(0, 2);
       if (variant === 0) {
-        // Ratio-based: "A:B = r1:r2. Difference is D."
         const r1 = randomInt(2, 5);
         const r2 = randomInt(r1 + 1, r1 + 4);
         const unitValue = randomInt(50, 400);
@@ -331,19 +294,8 @@ export function generateSingaporeBarModel(
           category: 'bar-model',
           language: 'en',
           showCalculation: true,
-          diagram: {
-            diagramType: 'bar-model',
-            variant: 'comparison',
-            bars: [
-              { value: bValue, label: nameB },
-              { value: aValue, label: nameA },
-            ],
-            differenceValue: diff,
-            hidden: 1,
-          },
         });
       } else if (variant === 1) {
-        // Transfer: "A gives B some items so they have equal."
         const nameA = names[randomInt(0, names.length - 1)];
         const nameB = pickDifferentName(names, nameA);
         const equalValue = randomInt(100, 500);
@@ -359,19 +311,8 @@ export function generateSingaporeBarModel(
           category: 'bar-model',
           language: 'en',
           showCalculation: true,
-          diagram: {
-            diagramType: 'bar-model',
-            variant: 'comparison',
-            bars: [
-              { value: aOriginal, label: nameA },
-              { value: bOriginal, label: nameB },
-            ],
-            differenceValue: aOriginal - bOriginal,
-            hidden: 'difference',
-          },
         });
       } else {
-        // Fraction multi-step: "Used 2/5, then gave away 1/3 of the rest."
         const denom1 = randomInt(2, 5);
         const denom2 = randomInt(2, 4);
         const lcm = denom1 * denom2;
@@ -390,17 +331,6 @@ export function generateSingaporeBarModel(
           category: 'bar-model',
           language: 'en',
           showCalculation: true,
-          diagram: {
-            diagramType: 'bar-model',
-            variant: 'part-whole',
-            totalValue: total,
-            segments: [
-              { value: usedFirst, label: 'used' },
-              { value: usedSecond, label: 'given' },
-              { value: remaining },
-            ],
-            hidden: 2,
-          },
         });
       }
     }
@@ -420,12 +350,12 @@ export function generateSingaporeNumberBond(
   const problems: SingaporeProblem[] = [];
 
   for (let i = 0; i < count; i++) {
-    if (grade <= 2) {
-      // Grade 1-2: simple 2-part bond or tens/ones decomposition
+    if (grade === 1) {
+      // Grade 1 only: diagram for concept introduction
       const variant = randomInt(0, 1);
       if (variant === 0) {
-        const total = randomInt(10, 40);
-        const part = randomInt(5, Math.max(6, total - 5));
+        const total = randomInt(10, 20);
+        const part = randomInt(2, Math.max(3, total - 2));
         const missingPart = total - part;
         problems.push({
           id: generateId(),
@@ -444,8 +374,8 @@ export function generateSingaporeNumberBond(
           },
         });
       } else {
-        let value = randomInt(10, 99);
-        while (value % 10 === 0) value = randomInt(10, 99);
+        let value = randomInt(10, 20);
+        while (value % 10 === 0) value = randomInt(11, 19);
         const tens = Math.floor(value / 10) * 10;
         const ones = value % 10;
         problems.push({
@@ -465,11 +395,43 @@ export function generateSingaporeNumberBond(
           },
         });
       }
+    } else if (grade === 2) {
+      // Grade 2: text-only, slightly harder numbers
+      const variant = randomInt(0, 1);
+      if (variant === 0) {
+        const total = randomInt(20, 100);
+        const part = randomInt(5, Math.max(6, total - 5));
+        const missingPart = total - part;
+        problems.push({
+          id: generateId(),
+          type: 'singapore',
+          operation: 'subtraction' as Operation,
+          problemText: `${total} is split into ${part} and another number. What is the other number?`,
+          answer: missingPart,
+          category: 'number-bond',
+          language: 'en',
+          showCalculation: false,
+        });
+      } else {
+        let value = randomInt(10, 99);
+        while (value % 10 === 0) value = randomInt(10, 99);
+        const tens = Math.floor(value / 10) * 10;
+        const ones = value % 10;
+        problems.push({
+          id: generateId(),
+          type: 'singapore',
+          operation: 'addition' as Operation,
+          problemText: `${tens} + ? = ${value}. What is the missing number?`,
+          answer: ones,
+          category: 'number-bond',
+          language: 'en',
+          showCalculation: false,
+        });
+      }
     } else if (grade <= 4) {
-      // Grade 3-4: 4-digit place value, sum-difference puzzle, 3-part bond
+      // Grade 3-4: text-only number bond problems
       const variant = randomInt(0, 2);
       if (variant === 0) {
-        // 4-digit place value decomposition — ensure all digits non-zero
         let value = randomInt(1111, 9999);
         while (
           value % 10 === 0 ||
@@ -482,50 +444,34 @@ export function generateSingaporeNumberBond(
         const hundreds = Math.floor((value % 1000) / 100) * 100;
         const tens = Math.floor((value % 100) / 10) * 10;
         const ones = value % 10;
-        const hiddenIdx = randomInt(1, 3);
         const parts = [thousands, hundreds, tens, ones];
-        const answer = parts[hiddenIdx];
+        const hiddenIdx = randomInt(1, 3);
         problems.push({
           id: generateId(),
           type: 'singapore',
           operation: 'addition' as Operation,
-          problemText: `What is the missing part of ${value}?`,
-          answer,
+          problemText: `${value} = ${parts.map((p, idx) => (idx === hiddenIdx ? '?' : p)).join(' + ')}. What is the missing number?`,
+          answer: parts[hiddenIdx],
           category: 'number-bond',
           language: 'en',
           showCalculation: false,
-          diagram: {
-            diagramType: 'number-bond',
-            whole: value,
-            parts,
-            hidden: hiddenIdx,
-          },
         });
       } else if (variant === 1) {
-        // Sum and difference puzzle
         const half = randomInt(20, 200);
         const offset = randomInt(5, Math.max(6, half - 5));
         const a = half + offset;
         const b = half - offset;
-        const sum = a + b;
         problems.push({
           id: generateId(),
           type: 'singapore',
           operation: 'subtraction' as Operation,
-          problemText: `Two numbers add up to ${sum}. One number is ${a}. What is the other?`,
+          problemText: `Two numbers add up to ${a + b}. One number is ${a}. What is the other?`,
           answer: b,
           category: 'number-bond',
           language: 'en',
           showCalculation: false,
-          diagram: {
-            diagramType: 'number-bond',
-            whole: sum,
-            parts: [a, b],
-            hidden: 1,
-          },
         });
       } else {
-        // 3-part bond with larger numbers
         const total = randomInt(200, 2000);
         const partA = randomInt(50, Math.floor(total * 0.5));
         const partB = randomInt(50, Math.max(51, total - partA - 50));
@@ -534,31 +480,23 @@ export function generateSingaporeNumberBond(
           id: generateId(),
           type: 'singapore',
           operation: 'subtraction' as Operation,
-          problemText: `Find the missing part in the number bond.`,
+          problemText: `${total} = ${partA} + ${partB} + ?. What is the missing number?`,
           answer: partC,
           category: 'number-bond',
           language: 'en',
           showCalculation: false,
-          diagram: {
-            diagramType: 'number-bond',
-            whole: total,
-            parts: [partA, partB, partC],
-            hidden: 2,
-          },
         });
       }
     } else {
-      // Grade 5-6: fraction decomposition, decimal decomposition, complement to target
+      // Grade 5-6: text-only fraction decomposition, complement problems
       const variant = randomInt(0, 2);
       if (variant === 0) {
-        // Fraction decomposition expressed as whole numbers
         const denom = [4, 5, 8, 10][randomInt(0, 3)];
         const numer1 = randomInt(1, denom - 1);
-        const numer2 = denom - numer1;
         const multiplier = randomInt(2, 20);
         const total = denom * multiplier;
         const part1 = numer1 * multiplier;
-        const part2 = numer2 * multiplier;
+        const part2 = total - part1;
         problems.push({
           id: generateId(),
           type: 'singapore',
@@ -568,15 +506,8 @@ export function generateSingaporeNumberBond(
           category: 'number-bond',
           language: 'en',
           showCalculation: false,
-          diagram: {
-            diagramType: 'number-bond',
-            whole: total,
-            parts: [part1, part2],
-            hidden: 1,
-          },
         });
       } else if (variant === 1) {
-        // Decomposition into two parts (larger numbers for grade 5-6)
         const total = randomInt(200, 2000);
         const part1 = randomInt(50, total - 50);
         const part2 = total - part1;
@@ -584,20 +515,13 @@ export function generateSingaporeNumberBond(
           id: generateId(),
           type: 'singapore',
           operation: 'subtraction' as Operation,
-          problemText: `${total} = ${part1} + ? What is the missing number?`,
+          problemText: `${total} = ${part1} + ?. What is the missing number?`,
           answer: part2,
           category: 'number-bond',
           language: 'en',
           showCalculation: false,
-          diagram: {
-            diagramType: 'number-bond',
-            whole: total,
-            parts: [part1, part2],
-            hidden: 1,
-          },
         });
       } else {
-        // Complement to target
         const targets = [100, 1000, 10000];
         const target = targets[randomInt(0, targets.length - 1)];
         const part = randomInt(
@@ -614,12 +538,6 @@ export function generateSingaporeNumberBond(
           category: 'number-bond',
           language: 'en',
           showCalculation: false,
-          diagram: {
-            diagramType: 'number-bond',
-            whole: target,
-            parts: [part, complement],
-            hidden: 1,
-          },
         });
       }
     }

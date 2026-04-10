@@ -20,34 +20,47 @@ import {
 } from './singapore-problems-en';
 
 describe('singapore-problems-en generators', () => {
-  it('generates bar model problems with diagram data', () => {
-    const problems = generateSingaporeBarModel(3, 12);
-
+  it('generates bar model problems with diagrams for grade 1-2', () => {
+    const problems = generateSingaporeBarModel(1, 12);
     expect(problems).toHaveLength(12);
     problems.forEach((problem) => {
       expect(problem.type).toBe('singapore');
-      expect(problem.language).toBe('en');
       expect(problem.category).toBe('bar-model');
       expect(typeof problem.answer).toBe('number');
       expect(problem.diagram).toBeDefined();
-      expect(problem.diagram?.diagramType).toBe('bar-model');
     });
   });
 
-  it('generates number bond problems with diagram data', () => {
-    const problems = generateSingaporeNumberBond(4, 10);
+  it('generates bar model problems without diagrams for grade 3+', () => {
+    const problems = generateSingaporeBarModel(4, 12);
+    expect(problems).toHaveLength(12);
+    problems.forEach((problem) => {
+      expect(problem.type).toBe('singapore');
+      expect(problem.category).toBe('bar-model');
+      expect(typeof problem.answer).toBe('number');
+      expect(problem.diagram).toBeUndefined();
+    });
+  });
 
+  it('generates number bond problems with diagrams for grade 1', () => {
+    const problems = generateSingaporeNumberBond(1, 10);
     expect(problems).toHaveLength(10);
     problems.forEach((problem) => {
       expect(problem.type).toBe('singapore');
-      expect(problem.language).toBe('en');
       expect(problem.category).toBe('number-bond');
       expect(typeof problem.answer).toBe('number');
       expect(problem.diagram).toBeDefined();
-      expect(problem.diagram?.diagramType).toBe('number-bond');
-      if (problem.diagram?.diagramType === 'number-bond') {
-        expect(problem.diagram.parts.length).toBeGreaterThanOrEqual(2);
-      }
+    });
+  });
+
+  it('generates number bond problems without diagrams for grade 2+', () => {
+    const problems = generateSingaporeNumberBond(4, 10);
+    expect(problems).toHaveLength(10);
+    problems.forEach((problem) => {
+      expect(problem.type).toBe('singapore');
+      expect(problem.category).toBe('number-bond');
+      expect(typeof problem.answer).toBe('number');
+      expect(problem.diagram).toBeUndefined();
     });
   });
 
@@ -225,19 +238,19 @@ describe('bar model structure diversity', () => {
 });
 
 describe('number bond structure diversity', () => {
-  it('grade 3-4: produces 4-digit place value, sum-difference, and 3-part bonds', () => {
+  it('grade 3-4: produces 4-digit place value, sum-difference, and 3-part text problems', () => {
     const problems = generateSingaporeNumberBond(4, 200);
-    const has4Digit = problems.some((p) => {
-      if (p.diagram?.diagramType !== 'number-bond') return false;
-      return p.diagram.parts.length === 4;
-    });
+    // All grade 3-4 are text-only (no diagram)
+    problems.forEach((p) => expect(p.diagram).toBeUndefined());
+    const has4Digit = problems.some(
+      (p) => p.problemText.includes(' + ? + ') || p.problemText.match(/\d{4} =/)
+    );
     const hasSumDiff = problems.some((p) =>
       p.problemText.includes('add up to')
     );
-    const has3Part = problems.some((p) => {
-      if (p.diagram?.diagramType !== 'number-bond') return false;
-      return p.diagram.parts.length === 3;
-    });
+    const has3Part = problems.some(
+      (p) => p.problemText.includes(' + ') && p.problemText.includes('+ ?.')
+    );
     expect(has4Digit).toBe(true);
     expect(hasSumDiff).toBe(true);
     expect(has3Part).toBe(true);
