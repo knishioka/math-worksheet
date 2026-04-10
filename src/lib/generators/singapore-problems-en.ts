@@ -347,7 +347,7 @@ export function generateSingaporeBarModel(
         const nameA = names[randomInt(0, names.length - 1)];
         const nameB = pickDifferentName(names, nameA);
         const equalValue = randomInt(100, 500);
-        const transfer = randomInt(20, 150);
+        const transfer = randomInt(20, Math.max(21, equalValue - 10));
         const aOriginal = equalValue + transfer;
         const bOriginal = equalValue - transfer;
         problems.push({
@@ -576,24 +576,22 @@ export function generateSingaporeNumberBond(
           },
         });
       } else if (variant === 1) {
-        // Decimal decomposition (displayed as ×10 integers in diagram)
-        const whole = randomInt(5, 20);
-        const tenths1 = randomInt(1, 9);
-        const part1 = Math.round((whole - 1 + tenths1 * 0.1) * 10);
-        const part2 = whole * 10 - part1;
+        // Decomposition into two parts (larger numbers for grade 5-6)
+        const total = randomInt(200, 2000);
+        const part1 = randomInt(50, total - 50);
+        const part2 = total - part1;
         problems.push({
           id: generateId(),
           type: 'singapore',
           operation: 'subtraction' as Operation,
-          problemText: `${whole}.0 = ${part1 / 10} + ? What is the missing number?`,
+          problemText: `${total} = ${part1} + ? What is the missing number?`,
           answer: part2,
           category: 'number-bond',
           language: 'en',
           showCalculation: false,
-          unit: '(×10)',
           diagram: {
             diagramType: 'number-bond',
-            whole: whole * 10,
+            whole: total,
             parts: [part1, part2],
             hidden: 1,
           },

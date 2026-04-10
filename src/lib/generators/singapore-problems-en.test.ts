@@ -246,10 +246,12 @@ describe('number bond structure diversity', () => {
   it('grade 5-6: produces fraction, decimal, and complement problems', () => {
     const problems = generateSingaporeNumberBond(6, 200);
     const hasFraction = problems.some((p) => p.problemText.includes('/'));
-    const hasDecimal = problems.some((p) => p.problemText.includes('.0'));
+    const hasDecomposition = problems.some(
+      (p) => p.problemText.includes('= ') && p.problemText.includes('+ ?')
+    );
     const hasComplement = problems.some((p) => p.problemText.includes('makes'));
     expect(hasFraction).toBe(true);
-    expect(hasDecimal).toBe(true);
+    expect(hasDecomposition).toBe(true);
     expect(hasComplement).toBe(true);
   });
 });
