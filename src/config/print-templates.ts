@@ -461,31 +461,6 @@ export const PATTERN_COUNT_OVERRIDES: Partial<
       ]
     )
   ),
-  // Singapore Math text-only — uses word-en-like spacing
-  ...Object.fromEntries(
-    (
-      [
-        'singapore-comparison',
-        'singapore-multi-step',
-        'singapore-fraction-set',
-        'singapore-decimal',
-        'singapore-ratio',
-        'singapore-percentage',
-        'singapore-rate',
-        'singapore-volume',
-        'singapore-algebra',
-        'singapore-ratio-advanced',
-        'singapore-circle',
-        'singapore-data-analysis',
-      ] as const
-    ).map((pattern) => [
-      pattern,
-      {
-        recommendedCounts: { 1: 8, 2: 16, 3: 18 },
-        maxCounts: { 1: 10, 2: 20, 3: 18 },
-      },
-    ])
-  ),
 };
 
 /**

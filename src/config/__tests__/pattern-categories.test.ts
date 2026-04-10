@@ -60,8 +60,6 @@ describe('pattern-categories', () => {
     it('should categorize Singapore Math patterns', () => {
       expect(getPatternCategory('singapore-bar-model')).toBe('singapore');
       expect(getPatternCategory('singapore-number-bond')).toBe('singapore');
-      expect(getPatternCategory('singapore-comparison')).toBe('singapore');
-      expect(getPatternCategory('singapore-multi-step')).toBe('singapore');
     });
 
     it('should categorize anzan patterns', () => {
@@ -84,7 +82,6 @@ describe('pattern-categories', () => {
       expect(getPatternLanguage('word-en')).toBe('en');
       expect(getPatternLanguage('singapore-bar-model')).toBe('en');
       expect(getPatternLanguage('singapore-number-bond')).toBe('en');
-      expect(getPatternLanguage('singapore-comparison')).toBe('en');
     });
 
     it('should identify language-neutral patterns', () => {

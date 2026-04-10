@@ -12,42 +12,17 @@ const COMBOS = [
   { grade: 1, pattern: 'singapore-number-bond', slug: 'grade1-number-bond' },
   { grade: 2, pattern: 'singapore-bar-model', slug: 'grade2-bar-model' },
   { grade: 2, pattern: 'singapore-number-bond', slug: 'grade2-number-bond' },
-  { grade: 2, pattern: 'singapore-comparison', slug: 'grade2-comparison' },
   { grade: 3, pattern: 'singapore-bar-model', slug: 'grade3-bar-model' },
   { grade: 3, pattern: 'singapore-number-bond', slug: 'grade3-number-bond' },
-  { grade: 3, pattern: 'singapore-comparison', slug: 'grade3-comparison' },
-  { grade: 3, pattern: 'singapore-multi-step', slug: 'grade3-multi-step' },
   // Grade 4
   { grade: 4, pattern: 'singapore-bar-model', slug: 'grade4-bar-model' },
   { grade: 4, pattern: 'singapore-number-bond', slug: 'grade4-number-bond' },
-  { grade: 4, pattern: 'singapore-comparison', slug: 'grade4-comparison' },
-  { grade: 4, pattern: 'singapore-multi-step', slug: 'grade4-multi-step' },
-  { grade: 4, pattern: 'singapore-fraction-set', slug: 'grade4-fraction-set' },
-  { grade: 4, pattern: 'singapore-decimal', slug: 'grade4-decimal' },
   // Grade 5
-  { grade: 5, pattern: 'singapore-fraction-set', slug: 'grade5-fraction-set' },
-  { grade: 5, pattern: 'singapore-decimal', slug: 'grade5-decimal' },
-  { grade: 5, pattern: 'singapore-ratio', slug: 'grade5-ratio' },
-  { grade: 5, pattern: 'singapore-percentage', slug: 'grade5-percentage' },
-  { grade: 5, pattern: 'singapore-rate', slug: 'grade5-rate' },
-  { grade: 5, pattern: 'singapore-volume', slug: 'grade5-volume' },
+  { grade: 5, pattern: 'singapore-bar-model', slug: 'grade5-bar-model' },
+  { grade: 5, pattern: 'singapore-number-bond', slug: 'grade5-number-bond' },
   // Grade 6
-  { grade: 6, pattern: 'singapore-ratio', slug: 'grade6-ratio' },
-  { grade: 6, pattern: 'singapore-percentage', slug: 'grade6-percentage' },
-  { grade: 6, pattern: 'singapore-rate', slug: 'grade6-rate' },
-  { grade: 6, pattern: 'singapore-volume', slug: 'grade6-volume' },
-  { grade: 6, pattern: 'singapore-algebra', slug: 'grade6-algebra' },
-  {
-    grade: 6,
-    pattern: 'singapore-ratio-advanced',
-    slug: 'grade6-ratio-advanced',
-  },
-  { grade: 6, pattern: 'singapore-circle', slug: 'grade6-circle' },
-  {
-    grade: 6,
-    pattern: 'singapore-data-analysis',
-    slug: 'grade6-data-analysis',
-  },
+  { grade: 6, pattern: 'singapore-bar-model', slug: 'grade6-bar-model' },
+  { grade: 6, pattern: 'singapore-number-bond', slug: 'grade6-number-bond' },
 ];
 
 const SELF_REFERENCE_RE =
@@ -66,74 +41,6 @@ function validateNameAndDifficulty(combo, renderedProblems) {
       );
     }
   });
-
-  if (combo.pattern === 'singapore-comparison' && combo.grade === 2) {
-    renderedProblems.forEach((renderedProblem) => {
-      if (renderedProblem.includes('times as many')) {
-        throw new Error(
-          `Grade 2 comparison used multiplicative phrasing in ${combo.slug}: "${renderedProblem}"`
-        );
-      }
-    });
-  }
-
-  if (combo.pattern === 'singapore-comparison' && combo.grade >= 3) {
-    renderedProblems.forEach((renderedProblem) => {
-      if (!renderedProblem.includes('times as many')) {
-        throw new Error(
-          `Grade 3+ comparison missed multiplicative phrasing in ${combo.slug}: "${renderedProblem}"`
-        );
-      }
-    });
-  }
-}
-
-function validateMultiStepAnswer(renderedProblem, combo) {
-  if (combo.pattern !== 'singapore-multi-step') {
-    return;
-  }
-
-  const answerMatch = renderedProblem.match(/Answer:\s*([0-9]+(?:\.[0-9]+)?)/);
-  const totalMatch = renderedProblem.match(/(?:has|are) (\d+) /);
-  const fractions = [...renderedProblem.matchAll(/(\d+)\/(\d+)/g)];
-  if (!answerMatch || !totalMatch || fractions.length < 2) {
-    throw new Error(
-      `Could not parse multi-step problem in ${combo.slug}: "${renderedProblem}"`
-    );
-  }
-
-  const answer = Number(answerMatch[1]);
-  const total = Number(totalMatch[1]);
-  const numerator1 = Number(fractions[0][1]);
-  const denominator1 = Number(fractions[0][2]);
-  const numerator2 = Number(fractions[1][1]);
-  const denominator2 = Number(fractions[1][2]);
-
-  const usedFirst = (total * numerator1) / denominator1;
-  const remainingAfterFirst = total - usedFirst;
-  const usedSecond = (remainingAfterFirst * numerator2) / denominator2;
-  const remainingAfterSecond = remainingAfterFirst - usedSecond;
-
-  let expectedAnswer = remainingAfterSecond;
-  if (renderedProblem.includes('shared equally among')) {
-    const groupsMatch = renderedProblem.match(/among (\d+) students/);
-    if (!groupsMatch) {
-      throw new Error(
-        `Could not parse group count in ${combo.slug}: "${renderedProblem}"`
-      );
-    }
-    const groups = Number(groupsMatch[1]);
-    expectedAnswer = remainingAfterSecond / groups;
-  }
-
-  if (
-    !Number.isFinite(expectedAnswer) ||
-    Math.abs(answer - expectedAnswer) > 1e-9
-  ) {
-    throw new Error(
-      `Multi-step answer mismatch in ${combo.slug}: expected ${expectedAnswer}, got ${answer}, text="${renderedProblem}"`
-    );
-  }
 }
 
 async function captureCombo(page, combo) {
@@ -189,10 +96,6 @@ async function captureCombo(page, combo) {
 
   await answerToggle.check({ force: true });
   await page.waitForTimeout(200);
-  const renderedOn = (await problemLocator.allInnerTexts()).map(normalizeText);
-  renderedOn.forEach((renderedProblem) =>
-    validateMultiStepAnswer(renderedProblem, combo)
-  );
   await page.screenshot({
     path: join(OUTPUT_DIR, `${combo.slug}-answers-on.png`),
     fullPage: true,
