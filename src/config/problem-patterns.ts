@@ -11,18 +11,6 @@ import type { CalculationPattern } from '../types/calculation-patterns';
 export const SINGAPORE_MATH_PATTERNS: readonly CalculationPattern[] = [
   'singapore-bar-model',
   'singapore-number-bond',
-  'singapore-comparison',
-  'singapore-multi-step',
-  'singapore-fraction-set',
-  'singapore-decimal',
-  'singapore-ratio',
-  'singapore-percentage',
-  'singapore-rate',
-  'singapore-volume',
-  'singapore-algebra',
-  'singapore-ratio-advanced',
-  'singapore-circle',
-  'singapore-data-analysis',
 ] as const;
 
 export const WORD_PROBLEM_PATTERNS: readonly CalculationPattern[] = [
@@ -182,6 +170,25 @@ export function isHissanPattern(pattern?: CalculationPattern): boolean {
  */
 export function isSingaporePattern(pattern?: CalculationPattern): boolean {
   return pattern !== undefined && SINGAPORE_MATH_PATTERNS.includes(pattern);
+}
+
+/**
+ * Singapore Mathパターンのうちダイアグラム付きのもの
+ * Grade 1-2のBar ModelとGrade 1のNumber Bondのみダイアグラムが教育的に有効。
+ * ただしパターン単位でテンプレートを切り替えるため、これらは広めのスペースを確保。
+ */
+const SINGAPORE_DIAGRAM_PATTERNS: readonly CalculationPattern[] = [
+  'singapore-bar-model',
+  'singapore-number-bond',
+] as const;
+
+/**
+ * ダイアグラム付きSingapore Mathかどうかを判定
+ */
+export function isSingaporeDiagramPattern(
+  pattern?: CalculationPattern
+): boolean {
+  return pattern !== undefined && SINGAPORE_DIAGRAM_PATTERNS.includes(pattern);
 }
 
 /**

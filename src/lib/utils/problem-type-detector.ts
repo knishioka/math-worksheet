@@ -4,6 +4,7 @@ import {
   isHissanPattern,
   isAnzanPattern,
   isSingaporePattern,
+  isSingaporeDiagramPattern,
 } from '../../config/problem-patterns';
 
 /**
@@ -68,8 +69,11 @@ export function getEffectiveProblemType(
   problemType?: ProblemType,
   calculationPattern?: CalculationPattern
 ): ProblemType {
-  if (isSingaporePattern(calculationPattern)) {
+  if (isSingaporeDiagramPattern(calculationPattern)) {
     return 'singapore';
+  }
+  if (isSingaporePattern(calculationPattern)) {
+    return 'word-en';
   }
   if (isWordEnProblem(calculationPattern)) {
     return 'word-en';

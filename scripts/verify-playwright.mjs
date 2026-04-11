@@ -37,23 +37,14 @@ const SINGAPORE_COMBOS = [
   { grade: 1, pattern: 'singapore-number-bond', slug: 'grade1-number-bond' },
   { grade: 2, pattern: 'singapore-bar-model', slug: 'grade2-bar-model' },
   { grade: 2, pattern: 'singapore-number-bond', slug: 'grade2-number-bond' },
-  { grade: 2, pattern: 'singapore-comparison', slug: 'grade2-comparison' },
   { grade: 3, pattern: 'singapore-bar-model', slug: 'grade3-bar-model' },
   { grade: 3, pattern: 'singapore-number-bond', slug: 'grade3-number-bond' },
-  { grade: 3, pattern: 'singapore-comparison', slug: 'grade3-comparison' },
-  { grade: 3, pattern: 'singapore-multi-step', slug: 'grade3-multi-step' },
   { grade: 4, pattern: 'singapore-bar-model', slug: 'grade4-bar-model' },
   { grade: 4, pattern: 'singapore-number-bond', slug: 'grade4-number-bond' },
-  { grade: 4, pattern: 'singapore-comparison', slug: 'grade4-comparison' },
-  { grade: 4, pattern: 'singapore-multi-step', slug: 'grade4-multi-step' },
   { grade: 5, pattern: 'singapore-bar-model', slug: 'grade5-bar-model' },
   { grade: 5, pattern: 'singapore-number-bond', slug: 'grade5-number-bond' },
-  { grade: 5, pattern: 'singapore-comparison', slug: 'grade5-comparison' },
-  { grade: 5, pattern: 'singapore-multi-step', slug: 'grade5-multi-step' },
   { grade: 6, pattern: 'singapore-bar-model', slug: 'grade6-bar-model' },
   { grade: 6, pattern: 'singapore-number-bond', slug: 'grade6-number-bond' },
-  { grade: 6, pattern: 'singapore-comparison', slug: 'grade6-comparison' },
-  { grade: 6, pattern: 'singapore-multi-step', slug: 'grade6-multi-step' },
 ];
 
 const ENGLISH_WORD_COMBOS = [
@@ -143,85 +134,6 @@ function validateRenderedProblems(combo, renderedProblems) {
       );
     }
   });
-
-  // Singapore-specific validations
-  if (combo.pattern === 'singapore-comparison' && combo.grade === 2) {
-    renderedProblems.forEach((text) => {
-      if (text.includes('times as many')) {
-        throw new Error(
-          `Grade 2 comparison used multiplicative phrasing in ${combo.slug}: "${text}"`
-        );
-      }
-    });
-  }
-
-  if (combo.pattern === 'singapore-comparison' && combo.grade >= 3) {
-    renderedProblems.forEach((text) => {
-      if (!text.includes('times as many')) {
-        throw new Error(
-          `Grade 3+ comparison missed multiplicative phrasing in ${combo.slug}: "${text}"`
-        );
-      }
-    });
-  }
-}
-
-function validateMultiStepAnswer(renderedProblem, combo) {
-  if (combo.pattern !== 'singapore-multi-step') {
-    return;
-  }
-
-  const answerMatch = renderedProblem.match(/Answer:\s*([0-9]+(?:\.[0-9]+)?)/);
-  if (!answerMatch) {
-    throw new Error(
-      `Could not find answer in multi-step problem in ${combo.slug}: "${renderedProblem}"`
-    );
-  }
-  const totalMatch = renderedProblem.match(/(?:has|are) (\d+) /);
-  if (!totalMatch) {
-    throw new Error(
-      `Could not find total value in multi-step problem in ${combo.slug}: "${renderedProblem}"`
-    );
-  }
-  const fractions = [...renderedProblem.matchAll(/(\d+)\/(\d+)/g)];
-  if (fractions.length < 2) {
-    throw new Error(
-      `Expected at least 2 fractions but found ${fractions.length} in ${combo.slug}: "${renderedProblem}"`
-    );
-  }
-
-  const answer = Number(answerMatch[1]);
-  const total = Number(totalMatch[1]);
-  const numerator1 = Number(fractions[0][1]);
-  const denominator1 = Number(fractions[0][2]);
-  const numerator2 = Number(fractions[1][1]);
-  const denominator2 = Number(fractions[1][2]);
-
-  const usedFirst = (total * numerator1) / denominator1;
-  const remainingAfterFirst = total - usedFirst;
-  const usedSecond = (remainingAfterFirst * numerator2) / denominator2;
-  const remainingAfterSecond = remainingAfterFirst - usedSecond;
-
-  let expectedAnswer = remainingAfterSecond;
-  if (renderedProblem.includes('shared equally among')) {
-    const groupsMatch = renderedProblem.match(/among (\d+) students/);
-    if (!groupsMatch) {
-      throw new Error(
-        `Could not parse group count in ${combo.slug}: "${renderedProblem}"`
-      );
-    }
-    const groups = Number(groupsMatch[1]);
-    expectedAnswer = remainingAfterSecond / groups;
-  }
-
-  if (
-    !Number.isFinite(expectedAnswer) ||
-    Math.abs(answer - expectedAnswer) > 1e-9
-  ) {
-    throw new Error(
-      `Multi-step answer mismatch in ${combo.slug}: expected ${expectedAnswer}, got ${answer}, text="${renderedProblem}"`
-    );
-  }
 }
 
 // ─── Capture & verify ────────────────────────────────────────────────
@@ -305,11 +217,6 @@ async function captureCombo(page, combo) {
     PROBLEM_SELECTOR,
     { timeout: 5000 }
   );
-  const renderedOn = (await problemLocator.allInnerTexts()).map(normalizeText);
-
-  // Validate multi-step answers when answers are visible
-  renderedOn.forEach((text) => validateMultiStepAnswer(text, combo));
-
   await page.screenshot({
     path: join(OUTPUT_DIR, `${combo.slug}-answers-on.png`),
     fullPage: true,

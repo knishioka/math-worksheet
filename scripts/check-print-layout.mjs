@@ -70,6 +70,25 @@ const SCENARIOS = [
     label: '6年生 暗算混合',
     minFillRatio: 0.45,
   },
+  // Singapore Math layout checks
+  {
+    grade: 1,
+    pattern: 'singapore-bar-model',
+    label: '1年生 Singapore Bar Model',
+    minFillRatio: 0.25,
+  },
+  {
+    grade: 4,
+    pattern: 'singapore-bar-model',
+    label: '4年生 Singapore Bar Model',
+    minFillRatio: 0.25,
+  },
+  {
+    grade: 6,
+    pattern: 'singapore-number-bond',
+    label: '6年生 Singapore Number Bond',
+    minFillRatio: 0.25,
+  },
 ];
 
 /**
