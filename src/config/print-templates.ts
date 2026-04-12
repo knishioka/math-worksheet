@@ -422,6 +422,37 @@ export const PRINT_TEMPLATES = {
       },
     },
   }),
+
+  // 数字なぞり書き（幼児向け）
+  'number-tracing': createPrintTemplate({
+    type: 'number-tracing',
+    displayName: '数字なぞり書き',
+    description:
+      '幼児向けの数字書き方練習。書き順付きのお手本、なぞり書き、自由練習マスを横並びで表示。',
+    layout: {
+      rowGap: '4px',
+      colGap: '16px',
+      fontSize: '14px',
+      minProblemHeight: '55px',
+    },
+    recommendedCounts: {
+      1: 10,
+      2: 10,
+      3: 10,
+    },
+    maxCounts: {
+      1: 10,
+      2: 10,
+      3: 10,
+    },
+    fitsInA4: {
+      threshold: {
+        1: 10,
+        2: 10,
+        3: 10,
+      },
+    },
+  }),
 } satisfies Record<ProblemType, PrintTemplate>;
 
 /**

@@ -21,6 +21,8 @@ import {
 } from '../../lib/utils/missing-number-calculator';
 import { WordProblemEnComponent } from '../Math/WordProblemEn';
 import { SingaporeProblemComponent } from '../Math/SingaporeProblemComponent';
+import { NumberTracingRow } from '../Math/NumberTracingRow';
+import type { NumberTracingProblem } from '../../types';
 import { getPrintTemplate } from '../../config/print-templates';
 import { getEffectiveProblemType } from '../../lib/utils/problem-type-detector';
 import { estimateA4Fit } from '../../lib/utils/print-validator';
@@ -256,6 +258,21 @@ function ProblemItem({
     multiplication: '×',
     division: '÷',
   }[problem.operation];
+
+  // 数字なぞり書きの場合
+  if (problem.type === 'number-tracing') {
+    const tracingProblem = problem as NumberTracingProblem;
+    return (
+      <div style={problemItemStyle}>
+        <NumberTracingRow
+          digit={tracingProblem.digit}
+          traceCount={tracingProblem.traceCount}
+          practiceCount={tracingProblem.practiceCount}
+          cellHeight={48}
+        />
+      </div>
+    );
+  }
 
   // 分数問題の場合
   if (problem.type === 'fraction') {

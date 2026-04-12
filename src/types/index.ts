@@ -15,9 +15,10 @@ export type ProblemType =
   | 'word'
   | 'word-en' // 英語文章問題
   | 'singapore' // Singapore Math（ダイアグラム付き）
-  | 'anzan'; // 暗算のコツ（複数項の式）
+  | 'anzan' // 暗算のコツ（複数項の式）
+  | 'number-tracing'; // 数字なぞり書き（幼児向け）
 
-export type Grade = 1 | 2 | 3 | 4 | 5 | 6;
+export type Grade = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 export type Language = 'ja' | 'en';
 
@@ -209,6 +210,15 @@ export interface SingaporeProblem {
   language: 'en';
 }
 
+export interface NumberTracingProblem {
+  id: string;
+  type: 'number-tracing';
+  operation: 'addition'; // placeholder（なぞり書きには演算なし）
+  digit: number; // 0-9
+  traceCount: number;
+  practiceCount: number;
+}
+
 export type Problem =
   | BasicProblem
   | FractionProblem
@@ -218,7 +228,8 @@ export type Problem =
   | MissingNumberProblem
   | WordProblem
   | WordProblemEn
-  | SingaporeProblem;
+  | SingaporeProblem
+  | NumberTracingProblem;
 
 export interface WorksheetSettings {
   grade: Grade;

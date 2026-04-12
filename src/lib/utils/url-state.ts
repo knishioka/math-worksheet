@@ -9,7 +9,7 @@ import { PATTERN_LABELS } from '../../types';
 import { getPrintTemplate } from '../../config/print-templates';
 import { getEffectiveProblemType } from './problem-type-detector';
 
-const VALID_GRADES: readonly number[] = [1, 2, 3, 4, 5, 6];
+const VALID_GRADES: readonly number[] = [0, 1, 2, 3, 4, 5, 6];
 const VALID_PROBLEM_TYPES: readonly string[] = [
   'basic',
   'fraction',
@@ -21,6 +21,7 @@ const VALID_PROBLEM_TYPES: readonly string[] = [
   'word',
   'word-en',
   'anzan',
+  'number-tracing',
 ];
 const VALID_COLUMNS: readonly number[] = [1, 2, 3];
 

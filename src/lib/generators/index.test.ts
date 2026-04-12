@@ -233,7 +233,7 @@ describe('validateSettings', () => {
 
   it('should detect invalid grade', () => {
     const settings: WorksheetSettings = {
-      grade: 0 as 1 | 2 | 3 | 4 | 5 | 6,
+      grade: 7 as 0 | 1 | 2 | 3 | 4 | 5 | 6,
       problemType: 'basic',
       operation: 'addition',
       problemCount: 20,
@@ -243,7 +243,7 @@ describe('validateSettings', () => {
     const result = validateSettings(settings);
 
     expect(result.valid).toBe(false);
-    expect(result.errors).toContain('Grade must be between 1 and 6');
+    expect(result.errors).toContain('Grade must be between 0 and 6');
   });
 
   it('should detect invalid layout columns', () => {
