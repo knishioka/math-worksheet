@@ -77,9 +77,9 @@ describe('parseUrlSettings', () => {
   });
 
   it('clamps problemCount to max for problem type', () => {
-    // hissan with 1 column has maxCounts[1] = 6
+    // hissan with 1 column has maxCounts[1] = 4
     const result = parseUrlSettings('?type=hissan&cols=1&count=99', defaults);
-    expect(result.problemCount).toBe(6);
+    expect(result.problemCount).toBe(4);
   });
 
   it('ignores non-positive count', () => {

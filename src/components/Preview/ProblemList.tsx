@@ -242,6 +242,90 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
 
 ProblemList.displayName = 'ProblemList';
 
+/** 筆算の答え行（記入欄または解答表示） */
+const HissanAnswerRow: React.FC<{
+  answerWidth: number;
+  answerDigits: string[];
+  showAnswer: boolean;
+}> = ({ answerWidth, answerDigits, showAnswer }) => (
+  <div
+    style={{
+      whiteSpace: 'nowrap',
+      display: 'flex',
+      gap: `${HISSAN_ANSWER_GAP}px`,
+      justifyContent: 'flex-end',
+    }}
+  >
+    {showAnswer ? (
+      <>
+        {Array(Math.max(answerWidth - answerDigits.length, 0))
+          .fill('')
+          .concat(answerDigits)
+          .map((d, i) => (
+            <span
+              key={i}
+              style={{
+                ...hissanCellStyle,
+                ...answerDisplayStyle,
+              }}
+            >
+              {d === '' ? '\u00A0' : d}
+            </span>
+          ))}
+      </>
+    ) : (
+      <>
+        {Array(answerWidth)
+          .fill(0)
+          .map((_, i) => (
+            <span key={i} style={hissanAnswerBoxStyle} />
+          ))}
+      </>
+    )}
+  </div>
+);
+
+/** 多桁乗算の部分積記入欄 */
+const PartialProductBoxes: React.FC<{
+  digits1Length: number;
+  digits2Length: number;
+}> = ({ digits1Length, digits2Length }) => {
+  const partialWidth = digits1Length + 1;
+  const totalWidth = digits1Length + digits2Length;
+  return (
+    <>
+      {Array.from({ length: digits2Length }).map((_, idx) => {
+        const rightPad = idx;
+        const leftPad = totalWidth - partialWidth - rightPad;
+        return (
+          <div key={`partial-${idx}`} style={{ whiteSpace: 'nowrap' }}>
+            {Array(Math.max(leftPad, 0))
+              .fill('')
+              .map((_, i) => (
+                <span key={`lpad-${i}`} style={hissanCellStyle}>
+                  {'\u00A0'}
+                </span>
+              ))}
+            {Array(partialWidth)
+              .fill(0)
+              .map((_, i) => (
+                <span key={`pp-${i}`} style={hissanAnswerBoxStyle} />
+              ))}
+            {Array(Math.max(rightPad, 0))
+              .fill('')
+              .map((_, i) => (
+                <span key={`rpad-${i}`} style={hissanCellStyle}>
+                  {'\u00A0'}
+                </span>
+              ))}
+          </div>
+        );
+      })}
+      <div style={getHissanLineStyle(totalWidth)} />
+    </>
+  );
+};
+
 interface ProblemItemProps {
   problem: Problem;
   number: number;
@@ -572,42 +656,26 @@ function ProblemItem({
           {/* 横線 */}
           <div style={getHissanLineStyle(maxLength)} />
 
-          {/* 答え */}
-          <div
-            style={{
-              whiteSpace: 'nowrap',
-              display: 'flex',
-              gap: `${HISSAN_ANSWER_GAP}px`,
-              justifyContent: 'flex-end',
-            }}
-          >
-            {showAnswer && hissanProblem.answer ? (
-              <>
-                {Array(maxLength + 1 - answerDigits.length)
-                  .fill('')
-                  .concat(answerDigits)
-                  .map((d, i) => (
-                    <span
-                      key={i}
-                      style={{
-                        ...hissanCellStyle,
-                        ...answerDisplayStyle,
-                      }}
-                    >
-                      {d === '' ? '\u00A0' : d}
-                    </span>
-                  ))}
-              </>
-            ) : (
-              <>
-                {Array(maxLength + 1)
-                  .fill(0)
-                  .map((_, i) => (
-                    <span key={i} style={hissanAnswerBoxStyle} />
-                  ))}
-              </>
+          {/* 多桁乗算の部分積記入欄（digits2 が 2 桁以上のかけ算のみ） */}
+          {hissanProblem.operation === 'multiplication' &&
+            digits2.length >= 2 &&
+            !showAnswer && (
+              <PartialProductBoxes
+                digits1Length={digits1.length}
+                digits2Length={digits2.length}
+              />
             )}
-          </div>
+
+          {/* 答え（かけ算は最大 digits1+digits2 桁、それ以外は maxLength+1 桁） */}
+          <HissanAnswerRow
+            answerWidth={
+              hissanProblem.operation === 'multiplication'
+                ? digits1.length + digits2.length
+                : maxLength + 1
+            }
+            answerDigits={answerDigits}
+            showAnswer={showAnswer && !!hissanProblem.answer}
+          />
         </div>
       </div>
     );
