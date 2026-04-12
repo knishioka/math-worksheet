@@ -47,6 +47,32 @@ const StrokeArrow: React.FC<{
   );
 };
 
+/** 書き順番号バッジ（viewBox外へのはみ出しをクランプ） */
+const StrokeOrderBadge: React.FC<{
+  arrowStart: { x: number; y: number };
+  order: number;
+}> = ({ arrowStart, order }) => {
+  const r = 7;
+  const cx = Math.min(Math.max(arrowStart.x - 8, r), DIGIT_VIEWBOX.width - r);
+  const cy = Math.min(Math.max(arrowStart.y - 8, r), DIGIT_VIEWBOX.height - r);
+  return (
+    <>
+      <circle cx={cx} cy={cy} r={r} fill="#dc2626" />
+      <text
+        x={cx}
+        y={cy}
+        fontSize="10"
+        fill="white"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontWeight="bold"
+      >
+        {order}
+      </text>
+    </>
+  );
+};
+
 /** お手本：書き順番号・矢印付き */
 const StrokeOrderDigit: React.FC<{ digit: number; size: number }> = ({
   digit,
@@ -78,23 +104,10 @@ const StrokeOrderDigit: React.FC<{ digit: number; size: number }> = ({
             to={stroke.arrowDirection}
             color="#dc2626"
           />
-          <circle
-            cx={stroke.arrowStart.x - 8}
-            cy={stroke.arrowStart.y - 8}
-            r={7}
-            fill="#dc2626"
+          <StrokeOrderBadge
+            arrowStart={stroke.arrowStart}
+            order={stroke.order}
           />
-          <text
-            x={stroke.arrowStart.x - 8}
-            y={stroke.arrowStart.y - 8}
-            fontSize="10"
-            fill="white"
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontWeight="bold"
-          >
-            {stroke.order}
-          </text>
         </g>
       ))}
     </svg>

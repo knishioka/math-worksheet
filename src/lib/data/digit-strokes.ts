@@ -68,18 +68,11 @@ export const DIGIT_STROKES: Record<number, DigitStrokeData> = {
     digit: 3,
     strokes: [
       {
-        // 上半分の弧
-        path: 'M 25 30 C 25 12, 80 12, 75 40 C 72 55, 55 62, 50 65',
+        // 一筆書き：上の弧 → 中央 → 下の弧
+        path: 'M 25 30 C 25 12, 80 12, 75 40 C 72 55, 55 62, 50 65 C 60 65, 82 75, 80 95 C 78 118, 25 125, 22 105',
         order: 1,
         arrowStart: { x: 25, y: 30 },
         arrowDirection: { x: 35, y: 18 },
-      },
-      {
-        // 下半分の弧
-        path: 'M 50 65 C 60 65, 82 75, 80 95 C 78 118, 25 125, 22 105',
-        order: 2,
-        arrowStart: { x: 50, y: 65 },
-        arrowDirection: { x: 62, y: 68 },
       },
     ],
   },
@@ -113,18 +106,18 @@ export const DIGIT_STROKES: Record<number, DigitStrokeData> = {
     digit: 5,
     strokes: [
       {
-        // 上の横線（右から左）
-        path: 'M 75 20 L 30 20',
-        order: 1,
-        arrowStart: { x: 75, y: 20 },
-        arrowDirection: { x: 60, y: 20 },
-      },
-      {
-        // 縦→カーブ
+        // 縦→カーブ（先に書く）
         path: 'M 30 20 L 28 65 C 28 55, 80 50, 82 85 C 84 115, 30 130, 20 108',
-        order: 2,
+        order: 1,
         arrowStart: { x: 30, y: 20 },
         arrowDirection: { x: 29, y: 40 },
+      },
+      {
+        // 上の横線（最後に書く：左から右）
+        path: 'M 30 20 L 75 20',
+        order: 2,
+        arrowStart: { x: 30, y: 20 },
+        arrowDirection: { x: 50, y: 20 },
       },
     ],
   },
@@ -163,18 +156,11 @@ export const DIGIT_STROKES: Record<number, DigitStrokeData> = {
     digit: 8,
     strokes: [
       {
-        // 上の丸（右回り）
-        path: 'M 50 65 C 30 65, 20 50, 22 38 C 24 22, 40 15, 50 15 C 60 15, 78 22, 78 40 C 78 52, 70 65, 50 65',
+        // 一筆書き：上の丸 → 中央交差 → 下の丸 → 戻り
+        path: 'M 60 22 C 35 22, 22 35, 22 50 C 22 60, 35 65, 50 65 C 70 65, 85 80, 85 100 C 85 118, 68 128, 50 128 C 32 128, 15 118, 15 100 C 15 80, 30 65, 50 65 C 65 65, 78 60, 78 50 C 78 35, 65 22, 50 22',
         order: 1,
-        arrowStart: { x: 50, y: 65 },
-        arrowDirection: { x: 38, y: 62 },
-      },
-      {
-        // 下の丸（左回り）
-        path: 'M 50 65 C 72 68, 85 80, 85 95 C 85 115, 68 128, 50 128 C 32 128, 15 115, 15 95 C 15 80, 28 68, 50 65',
-        order: 2,
-        arrowStart: { x: 50, y: 65 },
-        arrowDirection: { x: 63, y: 69 },
+        arrowStart: { x: 60, y: 22 },
+        arrowDirection: { x: 48, y: 24 },
       },
     ],
   },

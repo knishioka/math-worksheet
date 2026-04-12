@@ -217,6 +217,7 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
                     problem={problem}
                     number={originalNumber}
                     showAnswer={showAnswers}
+                    layoutColumns={layoutColumns}
                   />
                 </div>
               );
@@ -245,12 +246,14 @@ interface ProblemItemProps {
   problem: Problem;
   number: number;
   showAnswer?: boolean;
+  layoutColumns?: LayoutColumns;
 }
 
 function ProblemItem({
   problem,
   number,
   showAnswer = false,
+  layoutColumns = 1,
 }: ProblemItemProps): React.ReactElement {
   const operationSymbol = {
     addition: '+',
@@ -262,13 +265,17 @@ function ProblemItem({
   // 数字なぞり書きの場合
   if (problem.type === 'number-tracing') {
     const tracingProblem = problem as NumberTracingProblem;
+    // 列数に応じてセルサイズと練習マス数を調整
+    const cellHeight = layoutColumns === 1 ? 56 : layoutColumns === 2 ? 44 : 36;
+    const traceCount = layoutColumns === 1 ? 3 : layoutColumns === 2 ? 2 : 1;
+    const practiceCount = layoutColumns === 1 ? 3 : layoutColumns === 2 ? 2 : 1;
     return (
       <div style={problemItemStyle}>
         <NumberTracingRow
           digit={tracingProblem.digit}
-          traceCount={tracingProblem.traceCount}
-          practiceCount={tracingProblem.practiceCount}
-          cellHeight={48}
+          traceCount={Math.min(tracingProblem.traceCount, traceCount)}
+          practiceCount={Math.min(tracingProblem.practiceCount, practiceCount)}
+          cellHeight={cellHeight}
         />
       </div>
     );

@@ -437,19 +437,19 @@ export const PRINT_TEMPLATES = {
     },
     recommendedCounts: {
       1: 10,
-      2: 10,
-      3: 10,
+      2: 20,
+      3: 30,
     },
     maxCounts: {
       1: 10,
-      2: 10,
-      3: 10,
+      2: 20,
+      3: 30,
     },
     fitsInA4: {
       threshold: {
         1: 10,
-        2: 10,
-        3: 10,
+        2: 20,
+        3: 30,
       },
     },
   }),
