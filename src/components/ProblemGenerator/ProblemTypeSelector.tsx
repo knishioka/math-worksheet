@@ -35,6 +35,13 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
   // Check which problem types are available for the current grade
   const isProblemTypeAvailable = React.useCallback(
     (type: ProblemType): boolean => {
+      if (grade === 0) {
+        // 幼児はなぞり書きのみ
+        return type === 'number-tracing';
+      }
+      if (type === 'number-tracing') {
+        return false; // 幼児以外では提供しない
+      }
       if (type === 'fraction') {
         return grade >= 2; // 2年生以降で分数を学習
       }
@@ -54,10 +61,10 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [grade, operation, isOperationAvailable]);
 
-  // If current problem type is not available for the new grade, switch to basic
+  // If current problem type is not available for the new grade, switch to default
   React.useEffect(() => {
     if (!isProblemTypeAvailable(problemType)) {
-      onProblemTypeChange('basic');
+      onProblemTypeChange(grade === 0 ? 'number-tracing' : 'basic');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [grade, problemType, isProblemTypeAvailable]);
@@ -73,6 +80,7 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
           onChange={(e) => onGradeChange(Number(e.target.value) as Grade)}
           className="w-full rounded-xl border border-sky-200 bg-white/80 px-4 py-2 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-300"
         >
+          <option value={0}>幼児（年長）</option>
           <option value={1}>1年生</option>
           <option value={2}>2年生</option>
           <option value={3}>3年生</option>
@@ -84,7 +92,8 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
 
       <div className="rounded-2xl border border-sky-100 bg-sky-50/80 p-4">
         <h4 className="mb-2 text-sm font-semibold text-sky-900">
-          {grade}年生 {getProblemTypeDescription(problemType)}
+          {grade === 0 ? '幼児（年長）' : `${grade}年生`}{' '}
+          {getProblemTypeDescription(problemType)}
         </h4>
         <p className="text-sm text-slate-600 leading-relaxed">
           {getGradeProblemTypeDescription(grade, problemType, operation)}
@@ -110,6 +119,8 @@ function getProblemTypeDescription(problemType: ProblemType): string {
       return '虫食い算';
     case 'word':
       return '文章題';
+    case 'number-tracing':
+      return '数字なぞり書き';
     default:
       return '計算';
   }
@@ -120,8 +131,17 @@ function getGradeProblemTypeDescription(
   problemType: ProblemType,
   operation: Operation
 ): string {
+  if (problemType === 'number-tracing') {
+    return '0〜9の数字の書き順・なぞり書き・自由練習ができるプリントです。';
+  }
+
+  if (grade === 0) {
+    return '幼児向けの学習メニューです。現在は数字なぞり書きが利用できます。';
+  }
+
   if (problemType === 'fraction') {
     const fractionDescriptions: Record<Grade, string> = {
+      0: '（この学年では分数を学習しません）',
       1: '（この学年では分数を学習しません）',
       2: '簡単な分数の概念（1/2、1/3、1/4など）を学習します。',
       3: '同分母分数の加減算を学習します。',
@@ -134,6 +154,7 @@ function getGradeProblemTypeDescription(
 
   if (problemType === 'decimal') {
     const decimalDescriptions: Record<Grade, string> = {
+      0: '（この学年では小数を学習しません）',
       1: '（この学年では小数を学習しません）',
       2: '（この学年では小数を学習しません）',
       3: '0.1の位までの小数、小数のたし算・ひき算を学習します。',
@@ -153,6 +174,7 @@ function getGradeOperationDescription(
   operation: Operation
 ): string {
   const descriptions: Record<Grade, Partial<Record<Operation, string>>> = {
+    0: {},
     1: {
       addition:
         '1〜100の範囲でのたし算。繰り上がりのある計算は2学期後半から学習します。',

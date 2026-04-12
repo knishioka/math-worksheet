@@ -65,7 +65,11 @@ function App(): React.ReactElement {
 
   // 設定変更時に自動で問題を生成 + URL を同期
   useEffect(() => {
-    if (settings.grade && settings.operation && settings.problemCount > 0) {
+    if (
+      settings.grade !== undefined &&
+      settings.operation &&
+      settings.problemCount > 0
+    ) {
       handleGenerate();
       syncUrlFromSettings(settings);
     }

@@ -215,28 +215,28 @@ export const PRINT_TEMPLATES = {
     type: 'hissan',
     displayName: '筆算',
     description:
-      '筆算形式。縦書きのため大きなスペースが必要。lineHeight: 1.2で最適化。',
+      '筆算形式。多桁の乗算では部分積と合計を書くスペースが必要なため余白を広めに確保。',
     layout: {
-      rowGap: '32px',
+      rowGap: '56px',
       colGap: '32px',
       fontSize: '18px',
-      minProblemHeight: '100px',
+      minProblemHeight: '140px',
     },
     recommendedCounts: {
-      1: 6,
-      2: 12,
-      3: 18,
+      1: 4,
+      2: 8,
+      3: 12,
     },
     maxCounts: {
-      1: 6,
-      2: 12,
-      3: 18,
+      1: 4,
+      2: 8,
+      3: 12,
     },
     fitsInA4: {
       threshold: {
-        1: 6,
-        2: 12,
-        3: 18,
+        1: 4,
+        2: 8,
+        3: 12,
       },
     },
   }),
@@ -419,6 +419,37 @@ export const PRINT_TEMPLATES = {
         1: 6,
         2: 12,
         3: 18,
+      },
+    },
+  }),
+
+  // 数字なぞり書き（幼児向け）
+  'number-tracing': createPrintTemplate({
+    type: 'number-tracing',
+    displayName: '数字なぞり書き',
+    description:
+      '幼児向けの数字書き方練習。書き順付きのお手本、なぞり書き、自由練習マスを横並びで表示。',
+    layout: {
+      rowGap: '4px',
+      colGap: '16px',
+      fontSize: '14px',
+      minProblemHeight: '55px',
+    },
+    recommendedCounts: {
+      1: 10,
+      2: 20,
+      3: 30,
+    },
+    maxCounts: {
+      1: 10,
+      2: 20,
+      3: 30,
+    },
+    fitsInA4: {
+      threshold: {
+        1: 10,
+        2: 20,
+        3: 30,
       },
     },
   }),

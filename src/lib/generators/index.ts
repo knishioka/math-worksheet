@@ -19,6 +19,7 @@ import { generateGradeFractionProblems } from './fraction';
 import { generateGradeDecimalProblems } from './decimal';
 import { generatePatternProblems } from './patterns';
 import { generateGradeEnWordProblems } from './word-problem-en';
+import { generateNumberTracingProblems } from './number-tracing';
 
 /**
  * Main problem generator that routes to appropriate operation generator
@@ -33,6 +34,10 @@ export function generateProblems(settings: WorksheetSettings): Problem[] {
   }
 
   // 問題タイプ別の処理
+  if (problemType === 'number-tracing') {
+    return generateNumberTracingProblems(problemCount);
+  }
+
   if (problemType === 'fraction') {
     return generateGradeFractionProblems(grade, problemCount);
   }
@@ -190,8 +195,8 @@ export function validateSettings(settings: WorksheetSettings): {
     errors.push('Problem count should not exceed 100');
   }
 
-  if (settings.grade < 1 || settings.grade > 6) {
-    errors.push('Grade must be between 1 and 6');
+  if (settings.grade < 0 || settings.grade > 6) {
+    errors.push('Grade must be between 0 and 6');
   }
 
   if (settings.layoutColumns < 1 || settings.layoutColumns > 3) {
@@ -213,3 +218,4 @@ export * from './fraction';
 export * from './decimal';
 export * from './patterns';
 export * from './word-problem-en';
+export * from './number-tracing';

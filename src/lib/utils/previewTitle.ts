@@ -36,7 +36,9 @@ const DEFAULT_FORMAT: Required<PreviewTitleFormatOptions> = {
   separator: ' ',
 };
 
-const DEFAULT_LABELS: Required<Omit<PreviewTitleLabelOverrides, 'patternLabels'>> = {
+const DEFAULT_LABELS: Required<
+  Omit<PreviewTitleLabelOverrides, 'patternLabels'>
+> = {
   gradeSuffix: '年生',
   fractionPrefix: '分数の',
   decimalPrefix: '小数の',
@@ -54,11 +56,14 @@ export function buildPreviewTitle({
   const effectiveLabels: Required<
     Omit<PreviewTitleLabelOverrides, 'patternLabels'>
   > = { ...DEFAULT_LABELS, ...labelOverrides };
-  const gradeLabel = `${settings.grade}${effectiveLabels.gradeSuffix}`;
+  const gradeLabel =
+    settings.grade === 0
+      ? '幼児'
+      : `${settings.grade}${effectiveLabels.gradeSuffix}`;
 
   const patternLabel = settings.calculationPattern
-    ? patternLabels?.[settings.calculationPattern] ??
-      PATTERN_LABELS[settings.calculationPattern]
+    ? (patternLabels?.[settings.calculationPattern] ??
+      PATTERN_LABELS[settings.calculationPattern])
     : undefined;
 
   const operationName = operationNameFn(
@@ -106,6 +111,8 @@ function getTitleTopic({
       return `${labels.decimalPrefix}${operationName}`;
     case 'mixed':
       return `${labels.mixedNumberPrefix}${operationName}`;
+    case 'number-tracing':
+      return '数字なぞり書き';
     default:
       return operationName;
   }
