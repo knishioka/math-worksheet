@@ -69,6 +69,12 @@ export function getEffectiveProblemType(
   problemType?: ProblemType,
   calculationPattern?: CalculationPattern
 ): ProblemType {
+  if (calculationPattern === 'frac-to-decimal') {
+    return 'decimal';
+  }
+  if (calculationPattern === 'decimal-to-frac') {
+    return 'fraction';
+  }
   if (isSingaporeDiagramPattern(calculationPattern)) {
     return 'singapore';
   }

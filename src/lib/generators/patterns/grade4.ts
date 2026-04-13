@@ -1,5 +1,16 @@
-import type { BasicProblem, Problem, WorksheetSettings } from '../../../types';
+import type {
+  BasicProblem,
+  DecimalProblem,
+  Problem,
+  WorksheetSettings,
+} from '../../../types';
 import { generateId, randomInt } from '../../utils/math';
+
+const TERMINATING_FRACTION_DENOMINATORS = [2, 4, 5, 10, 20, 25, 50, 100];
+
+function gcd(a: number, b: number): number {
+  return b === 0 ? a : gcd(b, a % b);
+}
 
 // 4年生: 大きな数のたし算
 export function generateAddLargeNumbers(
@@ -315,6 +326,51 @@ export function generateFracMixedNumber(
         answerDenominator: denominator,
       });
     }
+  }
+
+  return problems;
+}
+
+// 4-5年生: 分数→小数
+export function generateFracToDecimal(
+  _settings: WorksheetSettings,
+  count: number
+): DecimalProblem[] {
+  const problems: DecimalProblem[] = [];
+  const usedFractions = new Set<string>();
+  let attempts = 0;
+  const maxAttempts = count * 40;
+
+  while (problems.length < count && attempts < maxAttempts) {
+    const denominator =
+      TERMINATING_FRACTION_DENOMINATORS[
+        randomInt(0, TERMINATING_FRACTION_DENOMINATORS.length - 1)
+      ];
+    const numerator = randomInt(1, denominator - 1);
+
+    if (gcd(numerator, denominator) !== 1) {
+      attempts++;
+      continue;
+    }
+
+    const key = `${numerator}/${denominator}`;
+    if (usedFractions.has(key)) {
+      attempts++;
+      continue;
+    }
+
+    const scaledValue = (numerator * 100) / denominator;
+
+    usedFractions.add(key);
+    problems.push({
+      id: generateId(),
+      type: 'decimal',
+      operation: 'division',
+      operand1: numerator,
+      operand2: denominator,
+      answer: scaledValue / 100,
+      decimalPlaces: scaledValue % 10 === 0 ? 1 : 2,
+    });
   }
 
   return problems;

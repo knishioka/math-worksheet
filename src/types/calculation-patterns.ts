@@ -52,6 +52,7 @@ export type CalculationPattern =
   | 'mult-dec-int' // 整数×小数
   | 'div-dec-int' // 整数÷小数
   | 'frac-mixed-number' // 帯分数の計算
+  | 'frac-to-decimal' // 分数→小数
   | 'hissan-mult-advanced' // 3桁×2桁のかけ算の筆算
   | 'hissan-div-basic' // わり算の筆算
 
@@ -60,6 +61,7 @@ export type CalculationPattern =
   | 'div-dec-dec' // 小数÷小数
   | 'frac-different-denom' // 異分母分数の加減算
   | 'frac-simplify' // 分数の約分
+  | 'decimal-to-frac' // 小数→分数
   | 'percent-basic' // 百分率の基本
   | 'area-volume' // 面積・体積
 
@@ -329,6 +331,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'mult-dec-int',
     'div-dec-int',
     'frac-mixed-number',
+    'frac-to-decimal',
     'hissan-mult-advanced',
     'hissan-div-basic',
     'word-en',
@@ -407,6 +410,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'div-dec-dec',
     'frac-different-denom',
     'frac-simplify',
+    'decimal-to-frac',
     'percent-basic',
     'area-volume',
     'word-en',
@@ -573,6 +577,7 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'mult-dec-int': '整数×小数',
   'div-dec-int': '整数÷小数',
   'frac-mixed-number': '帯分数の計算',
+  'frac-to-decimal': '分数を小数に直す',
   'hissan-mult-advanced': '3桁×2桁のかけ算の筆算',
   'hissan-div-basic': 'わり算の筆算',
 
@@ -581,6 +586,7 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'div-dec-dec': '小数÷小数',
   'frac-different-denom': '異なる分母の分数',
   'frac-simplify': '分数の約分',
+  'decimal-to-frac': '小数を分数に直す',
   'percent-basic': '百分率（％）',
   'area-volume': '面積・体積',
 
@@ -751,6 +757,7 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'mult-dec-int': '25×2.3などの整数×小数',
   'div-dec-int': '7.2÷2.4などの整数÷小数',
   'frac-mixed-number': '1と2/3＋2と1/4などの帯分数',
+  'frac-to-decimal': '1/2や3/25などを有限小数で表す変換問題',
   'hissan-mult-advanced': '3桁×2桁の筆算形式（例：234×56）',
   'hissan-div-basic': 'わり算の筆算形式（例：84÷7）',
 
@@ -759,6 +766,7 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'div-dec-dec': '5.6÷1.4などの小数同士のわり算',
   'frac-different-denom': '1/2＋1/3などの異なる分母の分数',
   'frac-simplify': '6/9を24/3に約分する計算',
+  'decimal-to-frac': '0.4や0.25などを既約分数で表す変換問題',
   'percent-basic': '50％は0.5など百分率の計算',
   'area-volume': '長方形の面積や直方体の体積',
 

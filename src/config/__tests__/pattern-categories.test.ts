@@ -38,6 +38,8 @@ describe('pattern-categories', () => {
     it('should categorize fraction and decimal patterns', () => {
       expect(getPatternCategory('frac-same-denom')).toBe('fraction');
       expect(getPatternCategory('frac-mult')).toBe('fraction');
+      expect(getPatternCategory('frac-to-decimal')).toBe('fraction');
+      expect(getPatternCategory('decimal-to-frac')).toBe('fraction');
       expect(getPatternCategory('dec-add-simple' as CalculationPattern)).toBe(
         'fraction'
       );
@@ -288,6 +290,8 @@ describe('pattern-categories', () => {
       expect(getPatternDifficulty('add-single-digit-carry')).toBe(2);
       expect(getPatternDifficulty('mult-single-digit')).toBe(2);
       expect(getPatternDifficulty('time-elapsed-jap')).toBe(2);
+      expect(getPatternDifficulty('frac-to-decimal')).toBe(2);
+      expect(getPatternDifficulty('decimal-to-frac')).toBe(2);
     });
 
     it('should return difficulty level 3 for challenging patterns', () => {

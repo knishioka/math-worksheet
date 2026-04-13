@@ -28,6 +28,9 @@ const VALID_COLUMNS: readonly number[] = [1, 2, 3];
 export function getOperationFromPattern(
   pattern: CalculationPattern
 ): WorksheetSettings['operation'] {
+  if (pattern === 'frac-to-decimal' || pattern === 'decimal-to-frac') {
+    return 'division';
+  }
   if (pattern.includes('add')) return 'addition';
   if (pattern.includes('sub')) return 'subtraction';
   if (pattern.includes('mult')) return 'multiplication';

@@ -79,6 +79,7 @@ import {
   generateMultDecInt,
   generateDivDecInt,
   generateFracMixedNumber,
+  generateFracToDecimal,
 } from './grade4';
 
 import {
@@ -86,6 +87,7 @@ import {
   generateDivDecDec,
   generateFracDifferentDenom,
   generateFracSimplify,
+  generateDecimalToFrac,
   generatePercentBasic,
   generateAreaVolume,
 } from './grade5';
@@ -234,6 +236,8 @@ export function generatePatternProblems(
       return generateDivDecInt(settings, count);
     case 'frac-mixed-number':
       return generateFracMixedNumber(settings, count);
+    case 'frac-to-decimal':
+      return generateFracToDecimal(settings, count);
     case 'hissan-mult-advanced':
       return generateHissanMultAdvanced(settings, count);
     case 'hissan-div-basic':
@@ -248,6 +252,8 @@ export function generatePatternProblems(
       return generateFracDifferentDenom(settings, count);
     case 'frac-simplify':
       return generateFracSimplify(settings, count);
+    case 'decimal-to-frac':
+      return generateDecimalToFrac(settings, count);
     case 'percent-basic':
       return generatePercentBasic(settings, count);
     case 'area-volume':

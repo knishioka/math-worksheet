@@ -121,7 +121,14 @@ describe('Print Integration Tests', () => {
       // 2列レイアウトの場合、縦順になっているか確認
       // 期待される順序: (1), (4), (2), (5), (3), (6)
       const problemNumbers = html.match(/\(\d+\)/g);
-      expect(problemNumbers).toEqual(['(1)', '(4)', '(2)', '(5)', '(3)', '(6)']);
+      expect(problemNumbers).toEqual([
+        '(1)',
+        '(4)',
+        '(2)',
+        '(5)',
+        '(3)',
+        '(6)',
+      ]);
     });
 
     it('should show answers when showAnswers is true', () => {
@@ -234,6 +241,64 @@ describe('Print Integration Tests', () => {
       // 小数が表示されているか確認
       expect(html).toContain('12.5');
       expect(html).toContain('3.7');
+    });
+
+    it('should render fraction-to-decimal conversion problems correctly', () => {
+      const decimalProblem: DecimalProblem = {
+        id: '1',
+        type: 'decimal',
+        operation: 'division',
+        operand1: 1,
+        operand2: 4,
+        answer: 0.25,
+        decimalPlaces: 2,
+      };
+
+      const { container } = render(
+        <ProblemList
+          problems={[decimalProblem]}
+          layoutColumns={2}
+          showAnswers={true}
+          settings={{
+            ...createSettings('basic'),
+            calculationPattern: 'frac-to-decimal',
+          }}
+        />
+      );
+
+      const html = container.innerHTML;
+      expect(html).toContain('0.25');
+      expect(html).toContain('1');
+      expect(html).toContain('4');
+    });
+
+    it('should render decimal-to-fraction conversion problems correctly', () => {
+      const fractionProblem: FractionProblem = {
+        id: '1',
+        type: 'fraction',
+        operation: 'division',
+        numerator1: 25,
+        denominator1: 100,
+        answerNumerator: 1,
+        answerDenominator: 4,
+      };
+
+      const { container } = render(
+        <ProblemList
+          problems={[fractionProblem]}
+          layoutColumns={2}
+          showAnswers={true}
+          settings={{
+            ...createSettings('basic'),
+            calculationPattern: 'decimal-to-frac',
+          }}
+        />
+      );
+
+      const html = container.innerHTML;
+      expect(html).toContain('0.25');
+      expect(html).toContain('100');
+      expect(html).toContain('4');
     });
 
     it('should render mixed number problems correctly', () => {
@@ -445,14 +510,17 @@ describe('Print Integration Tests', () => {
 
   describe('Dynamic Padding and A4 Fit', () => {
     it('should show warning when problems exceed A4 size', () => {
-      const manyProblems: BasicProblem[] = Array.from({ length: 50 }, (_, i) => ({
-        id: `${i + 1}`,
-        type: 'basic',
-        operation: 'addition',
-        operand1: i + 1,
-        operand2: i + 1,
-        answer: (i + 1) * 2,
-      }));
+      const manyProblems: BasicProblem[] = Array.from(
+        { length: 50 },
+        (_, i) => ({
+          id: `${i + 1}`,
+          type: 'basic',
+          operation: 'addition',
+          operand1: i + 1,
+          operand2: i + 1,
+          answer: (i + 1) * 2,
+        })
+      );
 
       const { container } = render(
         <ProblemList
@@ -475,14 +543,17 @@ describe('Print Integration Tests', () => {
     });
 
     it('should not show warning when problems fit in A4', () => {
-      const fewProblems: BasicProblem[] = Array.from({ length: 10 }, (_, i) => ({
-        id: `${i + 1}`,
-        type: 'basic',
-        operation: 'addition',
-        operand1: i + 1,
-        operand2: i + 1,
-        answer: (i + 1) * 2,
-      }));
+      const fewProblems: BasicProblem[] = Array.from(
+        { length: 10 },
+        (_, i) => ({
+          id: `${i + 1}`,
+          type: 'basic',
+          operation: 'addition',
+          operand1: i + 1,
+          operand2: i + 1,
+          answer: (i + 1) * 2,
+        })
+      );
 
       const { container } = render(
         <ProblemList
@@ -524,20 +595,25 @@ describe('Print Integration Tests', () => {
 
       const html = container.innerHTML;
       // 空状態メッセージが表示されているか確認
-      expect(html).toContain('設定を確認して「問題を生成」ボタンをクリックしてください');
+      expect(html).toContain(
+        '設定を確認して「問題を生成」ボタンをクリックしてください'
+      );
     });
   });
 
   describe('Print Mode', () => {
     it('should not show A4 warning in print mode', () => {
-      const manyProblems: BasicProblem[] = Array.from({ length: 50 }, (_, i) => ({
-        id: `${i + 1}`,
-        type: 'basic',
-        operation: 'addition',
-        operand1: i + 1,
-        operand2: i + 1,
-        answer: (i + 1) * 2,
-      }));
+      const manyProblems: BasicProblem[] = Array.from(
+        { length: 50 },
+        (_, i) => ({
+          id: `${i + 1}`,
+          type: 'basic',
+          operation: 'addition',
+          operand1: i + 1,
+          operand2: i + 1,
+          answer: (i + 1) * 2,
+        })
+      );
 
       const { container } = render(
         <ProblemList

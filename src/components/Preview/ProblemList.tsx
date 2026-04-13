@@ -216,6 +216,7 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
                   <ProblemItem
                     problem={problem}
                     number={originalNumber}
+                    calculationPattern={settings.calculationPattern}
                     showAnswer={showAnswers}
                     layoutColumns={layoutColumns}
                   />
@@ -329,6 +330,7 @@ const PartialProductBoxes: React.FC<{
 interface ProblemItemProps {
   problem: Problem;
   number: number;
+  calculationPattern?: WorksheetSettings['calculationPattern'];
   showAnswer?: boolean;
   layoutColumns?: LayoutColumns;
 }
@@ -336,6 +338,7 @@ interface ProblemItemProps {
 function ProblemItem({
   problem,
   number,
+  calculationPattern,
   showAnswer = false,
   layoutColumns = 1,
 }: ProblemItemProps): React.ReactElement {
@@ -368,6 +371,39 @@ function ProblemItem({
   // 分数問題の場合
   if (problem.type === 'fraction') {
     const fractionProblem = problem as FractionProblem;
+
+    if (calculationPattern === 'decimal-to-frac') {
+      const decimalValue =
+        fractionProblem.numerator1 / fractionProblem.denominator1;
+
+      return (
+        <div className="problem-text space-y-1">
+          <div className="text-xs text-gray-600">({number})</div>
+          <div className="flex items-center space-x-2">
+            <MathDecimal value={decimalValue} />
+            <span className="font-mono text-lg">=</span>
+            {showAnswer ? (
+              <span
+                style={{
+                  ...answerDisplayStyle,
+                  ...fractionContainerStyle,
+                }}
+              >
+                <span style={fractionAnswerNumeratorStyle}>
+                  {fractionProblem.answerNumerator}
+                </span>
+                <span style={fractionDenominatorStyle}>
+                  {fractionProblem.answerDenominator}
+                </span>
+              </span>
+            ) : (
+              <span style={answerUnderlineStyle} />
+            )}
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="problem-text" style={problemItemStyle}>
         <div style={problemNumberStyle}>({number})</div>
@@ -421,6 +457,37 @@ function ProblemItem({
   // 小数問題の場合
   if (problem.type === 'decimal') {
     const decimalProblem = problem as DecimalProblem;
+
+    if (calculationPattern === 'frac-to-decimal') {
+      return (
+        <div className="problem-text" style={problemItemStyle}>
+          <div style={problemNumberStyle}>({number})</div>
+          <div style={problemTextStyle}>
+            <span style={fractionContainerStyle}>
+              <span style={fractionNumeratorStyle}>
+                {decimalProblem.operand1}
+              </span>
+              <span style={fractionDenominatorStyle}>
+                {decimalProblem.operand2}
+              </span>
+            </span>
+            {' = '}
+            {showAnswer ? (
+              <MathDecimal
+                value={decimalProblem.answer}
+                className="text-red-600 font-bold"
+              />
+            ) : (
+              <span
+                className="inline-block w-16 border-b border-black mx-1 align-bottom"
+                style={{ height: '1.5rem' }}
+              />
+            )}
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="problem-text space-y-1">
         <div className="text-xs text-gray-600">({number})</div>

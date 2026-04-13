@@ -2,6 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { generateProblems } from './index';
 import type { WorksheetSettings } from '../../types';
 
+function gcd(a: number, b: number): number {
+  return b === 0 ? a : gcd(b, a % b);
+}
+
 describe('pattern-generators', () => {
   describe('hissan-mult-basic (2桁×1桁のかけ算)', () => {
     const settings: WorksheetSettings = {
@@ -591,6 +595,80 @@ describe('pattern-generators', () => {
             expect(problem.answer).toBeGreaterThan(0);
           }
         });
+      });
+    });
+  });
+
+  describe('fraction and decimal conversion patterns', () => {
+    it('should generate unique terminating fraction-to-decimal problems', () => {
+      const settings: WorksheetSettings = {
+        grade: 4,
+        problemType: 'basic',
+        operation: 'division',
+        problemCount: 20,
+        layoutColumns: 2,
+        calculationPattern: 'frac-to-decimal',
+      };
+
+      const problems = generateProblems(settings);
+      const allowedDenominators = new Set([2, 4, 5, 10, 20, 25, 50, 100]);
+
+      expect(problems).toHaveLength(20);
+
+      const uniqueProblems = new Set(
+        problems
+          .filter((problem) => problem.type === 'decimal')
+          .map((problem) => `${problem.operand1}/${problem.operand2}`)
+      );
+      expect(uniqueProblems.size).toBe(20);
+
+      problems.forEach((problem) => {
+        expect(problem.type).toBe('decimal');
+
+        if (problem.type === 'decimal') {
+          expect(allowedDenominators.has(problem.operand2)).toBe(true);
+          expect(problem.decimalPlaces).toBeGreaterThanOrEqual(1);
+          expect(problem.decimalPlaces).toBeLessThanOrEqual(2);
+          expect(problem.answer).toBe(
+            (problem.operand1 * 100) / problem.operand2 / 100
+          );
+        }
+      });
+    });
+
+    it('should generate unique reduced decimal-to-fraction problems', () => {
+      const settings: WorksheetSettings = {
+        grade: 5,
+        problemType: 'basic',
+        operation: 'division',
+        problemCount: 20,
+        layoutColumns: 2,
+        calculationPattern: 'decimal-to-frac',
+      };
+
+      const problems = generateProblems(settings);
+
+      expect(problems).toHaveLength(20);
+
+      const uniqueProblems = new Set(
+        problems
+          .filter((problem) => problem.type === 'fraction')
+          .map((problem) => `${problem.numerator1}/${problem.denominator1}`)
+      );
+      expect(uniqueProblems.size).toBe(20);
+
+      problems.forEach((problem) => {
+        expect(problem.type).toBe('fraction');
+
+        if (problem.type === 'fraction') {
+          expect([10, 100]).toContain(problem.denominator1);
+          expect(problem.answerNumerator / problem.answerDenominator).toBe(
+            problem.numerator1 / problem.denominator1
+          );
+          expect(gcd(problem.answerNumerator, problem.answerDenominator)).toBe(
+            1
+          );
+        }
       });
     });
   });

@@ -58,3 +58,15 @@ describe('problem-type-detector anzan classification', () => {
     expect(getEffectiveProblemType('fraction', undefined)).toBe('fraction');
   });
 });
+
+describe('problem-type-detector conversion classification', () => {
+  it('routes frac-to-decimal through the decimal template', () => {
+    expect(getEffectiveProblemType('basic', 'frac-to-decimal')).toBe('decimal');
+  });
+
+  it('routes decimal-to-frac through the fraction template', () => {
+    expect(getEffectiveProblemType('basic', 'decimal-to-frac')).toBe(
+      'fraction'
+    );
+  });
+});

@@ -55,6 +55,20 @@ describe('parseUrlSettings', () => {
     expect(result.operation).toBe('subtraction');
   });
 
+  it('derives division operation for conversion patterns', () => {
+    const fracToDecimal = parseUrlSettings(
+      '?pattern=frac-to-decimal',
+      defaults
+    );
+    const decimalToFrac = parseUrlSettings(
+      '?pattern=decimal-to-frac',
+      defaults
+    );
+
+    expect(fracToDecimal.operation).toBe('division');
+    expect(decimalToFrac.operation).toBe('division');
+  });
+
   it('ignores invalid calculationPattern', () => {
     const result = parseUrlSettings('?pattern=does-not-exist', defaults);
     expect(result.calculationPattern).toBeUndefined();

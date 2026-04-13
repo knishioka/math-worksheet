@@ -6,6 +6,10 @@ import type {
 } from '../../../types';
 import { generateId, randomInt } from '../../utils/math';
 
+function gcd(a: number, b: number): number {
+  return b === 0 ? a : gcd(b, a % b);
+}
+
 // 5年生: 小数×小数
 export function generateMultDecDec(
   _settings: WorksheetSettings,
@@ -209,6 +213,50 @@ export function generateFracSimplify(
       denominator1: denominator,
       answerNumerator: simplifiedNum,
       answerDenominator: simplifiedDenom,
+      simplified: true,
+    });
+  }
+
+  return problems;
+}
+
+// 4-5年生: 小数→分数
+export function generateDecimalToFrac(
+  _settings: WorksheetSettings,
+  count: number
+): FractionProblem[] {
+  const problems: FractionProblem[] = [];
+  const usedDecimals = new Set<string>();
+  let attempts = 0;
+  const maxAttempts = count * 50;
+
+  while (problems.length < count && attempts < maxAttempts) {
+    const useHundredths = Math.random() < 0.5;
+    const denominator1 = useHundredths ? 100 : 10;
+    const numerator1 = useHundredths ? randomInt(1, 99) : randomInt(1, 9);
+
+    if (useHundredths && numerator1 % 10 === 0) {
+      attempts++;
+      continue;
+    }
+
+    const key = `${numerator1}/${denominator1}`;
+    if (usedDecimals.has(key)) {
+      attempts++;
+      continue;
+    }
+
+    const divisor = gcd(numerator1, denominator1);
+
+    usedDecimals.add(key);
+    problems.push({
+      id: generateId(),
+      type: 'fraction',
+      operation: 'division',
+      numerator1,
+      denominator1,
+      answerNumerator: numerator1 / divisor,
+      answerDenominator: denominator1 / divisor,
       simplified: true,
     });
   }
