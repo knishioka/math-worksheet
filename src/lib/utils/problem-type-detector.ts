@@ -93,10 +93,10 @@ export function getEffectiveProblemType(
   if (isAnzanPattern(calculationPattern)) {
     return 'anzan';
   }
-  if (isMixedNumberPattern(calculationPattern)) {
+  if (problemType === 'basic' && isMixedNumberPattern(calculationPattern)) {
     return 'mixed';
   }
-  if (isFractionPattern(calculationPattern)) {
+  if (problemType === 'basic' && isFractionPattern(calculationPattern)) {
     return 'fraction';
   }
   return problemType || 'basic';

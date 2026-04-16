@@ -58,3 +58,23 @@ describe('problem-type-detector anzan classification', () => {
     expect(getEffectiveProblemType('fraction', undefined)).toBe('fraction');
   });
 });
+
+describe('problem-type-detector explicit problem type priority', () => {
+  it('keeps explicit decimal type even if stale fraction pattern remains', () => {
+    expect(getEffectiveProblemType('decimal', 'frac-mult')).toBe('decimal');
+  });
+
+  it('keeps explicit basic-derived type when not in basic mode', () => {
+    expect(getEffectiveProblemType('hissan', 'frac-div')).toBe('hissan');
+    expect(getEffectiveProblemType('missing', 'frac-simplify')).toBe('missing');
+  });
+
+  it('still routes fraction and mixed templates in basic mode', () => {
+    expect(getEffectiveProblemType('basic', 'frac-same-denom')).toBe(
+      'fraction'
+    );
+    expect(getEffectiveProblemType('basic', 'frac-mixed-number')).toBe(
+      'mixed'
+    );
+  });
+});
