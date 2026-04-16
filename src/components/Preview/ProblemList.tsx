@@ -57,7 +57,7 @@ import {
   hissanCellStyle,
   hissanAnswerBoxStyle,
   getHissanLineStyle,
-  HISSAN_ANSWER_GAP,
+  hissanRowStyle,
   SPACING,
 } from '../../config/styles';
 
@@ -248,14 +248,7 @@ const HissanAnswerRow: React.FC<{
   answerDigits: string[];
   showAnswer: boolean;
 }> = ({ answerWidth, answerDigits, showAnswer }) => (
-  <div
-    style={{
-      whiteSpace: 'nowrap',
-      display: 'flex',
-      gap: `${HISSAN_ANSWER_GAP}px`,
-      justifyContent: 'flex-end',
-    }}
-  >
+  <div style={hissanRowStyle}>
     {showAnswer ? (
       <>
         {Array(Math.max(answerWidth - answerDigits.length, 0))
@@ -299,7 +292,7 @@ const PartialProductBoxes: React.FC<{
         const rightPad = idx;
         const leftPad = totalWidth - partialWidth - rightPad;
         return (
-          <div key={`partial-${idx}`} style={{ whiteSpace: 'nowrap' }}>
+          <div key={`partial-${idx}`} style={hissanRowStyle}>
             {Array(Math.max(leftPad, 0))
               .fill('')
               .map((_, i) => (
@@ -635,7 +628,7 @@ function ProblemItem({
         <div style={problemNumberStyle}>({number})</div>
         <div style={hissanContainerStyle}>
           {/* 1つ目の数 */}
-          <div style={{ whiteSpace: 'nowrap' }}>
+          <div style={hissanRowStyle}>
             {paddedDigits1.map((d, i) => (
               <span key={i} style={hissanCellStyle}>
                 {d === '' ? '\u00A0' : d}
@@ -644,7 +637,7 @@ function ProblemItem({
           </div>
 
           {/* 演算子と2つ目の数 */}
-          <div style={{ whiteSpace: 'nowrap' }}>
+          <div style={hissanRowStyle}>
             {/* 演算子を数字の左に配置（digits2の長さに応じて左側にパディング） */}
             {Array(maxLength - digits2.length)
               .fill('')

@@ -253,6 +253,16 @@ export const hissanAnswerBoxStyle: CSSProperties = {
 export const HISSAN_ANSWER_GAP = 4;
 
 /**
+ * 筆算の行スタイル（全行で同じ gap を使い列を揃える）
+ */
+export const hissanRowStyle: CSSProperties = {
+  display: 'flex',
+  gap: `${HISSAN_ANSWER_GAP}px`,
+  justifyContent: 'flex-end',
+  whiteSpace: 'nowrap',
+};
+
+/**
  * 筆算のコンテナスタイル
  */
 export const hissanContainerStyle: CSSProperties = {
