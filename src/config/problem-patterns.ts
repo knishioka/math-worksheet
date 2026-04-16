@@ -132,6 +132,24 @@ export const HISSAN_PATTERNS: readonly CalculationPattern[] = [
   'hissan-div-basic', // わり算の筆算
 ] as const;
 
+/**
+ * 分数を生成する計算パターン（帯分数は MIXED_NUMBER_PATTERNS）
+ */
+export const FRACTION_PATTERNS: readonly CalculationPattern[] = [
+  'frac-same-denom', // 同分母分数の加減
+  'frac-different-denom', // 異分母分数の加減算
+  'frac-simplify', // 分数の約分
+  'frac-mult', // 分数×分数
+  'frac-div', // 分数÷分数
+] as const;
+
+/**
+ * 帯分数を生成する計算パターン
+ */
+export const MIXED_NUMBER_PATTERNS: readonly CalculationPattern[] = [
+  'frac-mixed-number', // 帯分数の計算
+] as const;
+
 export const ANZAN_PATTERNS: readonly CalculationPattern[] = [
   'anzan-complement-10',
   'anzan-complement-100',
@@ -196,4 +214,18 @@ export function isSingaporeDiagramPattern(
  */
 export function isAnzanPattern(pattern?: CalculationPattern): boolean {
   return pattern !== undefined && ANZAN_PATTERNS.includes(pattern);
+}
+
+/**
+ * パターンが分数問題かどうかを判定
+ */
+export function isFractionPattern(pattern?: CalculationPattern): boolean {
+  return pattern !== undefined && FRACTION_PATTERNS.includes(pattern);
+}
+
+/**
+ * パターンが帯分数問題かどうかを判定
+ */
+export function isMixedNumberPattern(pattern?: CalculationPattern): boolean {
+  return pattern !== undefined && MIXED_NUMBER_PATTERNS.includes(pattern);
 }
