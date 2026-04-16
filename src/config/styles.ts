@@ -261,7 +261,7 @@ export const hissanContainerStyle: CSSProperties = {
   display: 'inline-block',
   textAlign: 'right',
   lineHeight: HISSAN_STYLES.lineHeight,
-  margin: `${SPACING.margin.medium} 0`,
+  margin: `${SPACING.margin.small} 0`,
 };
 
 /**

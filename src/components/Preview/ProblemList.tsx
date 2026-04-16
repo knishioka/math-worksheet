@@ -289,7 +289,8 @@ const HissanAnswerRow: React.FC<{
 const PartialProductBoxes: React.FC<{
   digits1Length: number;
   digits2Length: number;
-}> = ({ digits1Length, digits2Length }) => {
+  lineBoxCount: number;
+}> = ({ digits1Length, digits2Length, lineBoxCount }) => {
   const partialWidth = digits1Length + 1;
   const totalWidth = digits1Length + digits2Length;
   return (
@@ -321,7 +322,7 @@ const PartialProductBoxes: React.FC<{
           </div>
         );
       })}
-      <div style={getHissanLineStyle(totalWidth)} />
+      <div style={getHissanLineStyle(lineBoxCount - 1)} />
     </>
   );
 };
@@ -622,6 +623,13 @@ function ProblemItem({
         ? hissanProblem.answer.toString().split('')
         : [];
 
+    // 答え行の桁数（かけ算は digits1+digits2、それ以外は maxLength+1）
+    // 横線は答え行と同じ幅に揃える
+    const answerWidth =
+      hissanProblem.operation === 'multiplication'
+        ? digits1.length + digits2.length
+        : maxLength + 1;
+
     return (
       <div className="problem-text" style={problemItemStyle}>
         <div style={problemNumberStyle}>({number})</div>
@@ -653,8 +661,8 @@ function ProblemItem({
             ))}
           </div>
 
-          {/* 横線 */}
-          <div style={getHissanLineStyle(maxLength)} />
+          {/* 横線（答え行と同じ幅に揃える） */}
+          <div style={getHissanLineStyle(answerWidth - 1)} />
 
           {/* 多桁乗算の部分積記入欄（digits2 が 2 桁以上のかけ算のみ） */}
           {hissanProblem.operation === 'multiplication' &&
@@ -663,16 +671,13 @@ function ProblemItem({
               <PartialProductBoxes
                 digits1Length={digits1.length}
                 digits2Length={digits2.length}
+                lineBoxCount={answerWidth}
               />
             )}
 
-          {/* 答え（かけ算は最大 digits1+digits2 桁、それ以外は maxLength+1 桁） */}
+          {/* 答え */}
           <HissanAnswerRow
-            answerWidth={
-              hissanProblem.operation === 'multiplication'
-                ? digits1.length + digits2.length
-                : maxLength + 1
-            }
+            answerWidth={answerWidth}
             answerDigits={answerDigits}
             showAnswer={showAnswer && !!hissanProblem.answer}
           />
