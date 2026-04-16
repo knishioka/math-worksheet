@@ -215,12 +215,13 @@ export const PRINT_TEMPLATES = {
     type: 'hissan',
     displayName: '筆算',
     description:
-      '筆算形式。多桁の乗算では部分積と合計を書くスペースが必要なため余白を広めに確保。',
+      '筆算形式。3桁×2桁のかけ算など部分積を書く問題に合わせて最小高さを設定。' +
+      '行間は広げすぎず alignContent:space-between で均等配分する。',
     layout: {
-      rowGap: '56px',
+      rowGap: '32px',
       colGap: '32px',
       fontSize: '18px',
-      minProblemHeight: '140px',
+      minProblemHeight: '200px',
     },
     recommendedCounts: {
       1: 4,
