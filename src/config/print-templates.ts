@@ -124,28 +124,30 @@ export const PRINT_TEMPLATES = {
   fraction: createPrintTemplate({
     type: 'fraction',
     displayName: '分数',
-    description: '分数の計算。MathML表示のため標準より少し広め。',
+    description:
+      '分数の計算。分子・分母を縦に表示するため1問あたりの高さが大きく、' +
+      '7行（1列7問/2列14問/3列21問）でA4に収まる想定。',
     layout: {
       rowGap: '24px',
       colGap: '32px',
       fontSize: '18px',
-      minProblemHeight: '50px',
+      minProblemHeight: '100px',
     },
     recommendedCounts: {
-      1: 10,
-      2: 18,
-      3: 27,
+      1: 7,
+      2: 14,
+      3: 21,
     },
     maxCounts: {
-      1: 10,
-      2: 18,
-      3: 27,
+      1: 7,
+      2: 14,
+      3: 21,
     },
     fitsInA4: {
       threshold: {
-        1: 10,
-        2: 18,
-        3: 27,
+        1: 7,
+        2: 14,
+        3: 21,
       },
     },
   }),
@@ -184,28 +186,30 @@ export const PRINT_TEMPLATES = {
   mixed: createPrintTemplate({
     type: 'mixed',
     displayName: '帯分数',
-    description: '帯分数の計算。MathML表示のため広めの間隔。',
+    description:
+      '帯分数の計算。帯分数 + 分数の縦組みMathML表示のため1問あたりの高さが大きく、' +
+      '7行（1列7問/2列14問/3列21問）でA4に収まる想定。',
     layout: {
       rowGap: '24px',
       colGap: '32px',
       fontSize: '18px',
-      minProblemHeight: '55px',
+      minProblemHeight: '100px',
     },
     recommendedCounts: {
-      1: 8,
-      2: 16,
-      3: 24,
+      1: 7,
+      2: 14,
+      3: 21,
     },
     maxCounts: {
-      1: 10,
-      2: 18,
-      3: 27,
+      1: 7,
+      2: 14,
+      3: 21,
     },
     fitsInA4: {
       threshold: {
-        1: 8,
-        2: 16,
-        3: 24,
+        1: 7,
+        2: 14,
+        3: 21,
       },
     },
   }),

@@ -5,6 +5,8 @@ import {
   isAnzanPattern,
   isSingaporePattern,
   isSingaporeDiagramPattern,
+  isFractionPattern,
+  isMixedNumberPattern,
 } from '../../config/problem-patterns';
 
 /**
@@ -90,6 +92,12 @@ export function getEffectiveProblemType(
   }
   if (isAnzanPattern(calculationPattern)) {
     return 'anzan';
+  }
+  if (problemType === 'basic' && isMixedNumberPattern(calculationPattern)) {
+    return 'mixed';
+  }
+  if (problemType === 'basic' && isFractionPattern(calculationPattern)) {
+    return 'fraction';
   }
   return problemType || 'basic';
 }
