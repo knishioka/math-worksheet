@@ -279,6 +279,8 @@ const NumberTracingGrid: React.FC<{ problems: Problem[] }> = ({ problems }) => {
   const cellHeight = NUMBER_TRACING_CELL_HEIGHT_PX;
   const traceCount = 2;
   const practiceCount = 1;
+  // 1問あたり2行構成にして余白を活用（4マス追加で練習量を倍増）
+  const extraPracticeCount = 4;
 
   const renderColumn = (items: NumberTracingProblem[]): React.ReactElement => (
     <div
@@ -297,6 +299,7 @@ const NumberTracingGrid: React.FC<{ problems: Problem[] }> = ({ problems }) => {
             traceCount={Math.min(p.traceCount, traceCount)}
             practiceCount={Math.min(p.practiceCount, practiceCount)}
             cellHeight={cellHeight}
+            extraPracticeCount={extraPracticeCount}
           />
         </div>
       ))}
