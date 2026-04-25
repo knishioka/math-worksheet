@@ -24,6 +24,11 @@ import { SingaporeProblemComponent } from '../Math/SingaporeProblemComponent';
 import { NumberTracingRow } from '../Math/NumberTracingRow';
 import type { NumberTracingProblem } from '../../types';
 import { getPrintTemplate } from '../../config/print-templates';
+import {
+  NUMBER_TRACING_CELL_HEIGHT_PX,
+  NUMBER_TRACING_COL_GAP_PX,
+  NUMBER_TRACING_ROW_GAP_PX,
+} from '../../config/number-tracing-layout';
 import { getEffectiveProblemType } from '../../lib/utils/problem-type-detector';
 import { estimateA4Fit } from '../../lib/utils/print-validator';
 import { buildPreviewTitle } from '../../lib/utils/previewTitle';
@@ -270,11 +275,8 @@ const NumberTracingGrid: React.FC<{ problems: Problem[] }> = ({ problems }) => {
     if (p) right.push(p);
   }
 
-  // A4 縦印刷で 5 行 × 2 側 に収まる大きめのセル
-  // 1セル幅は cellHeight × (100/140) + border + padding ≈ cellHeight*0.714 + 6
-  // 1列の利用可能幅 ≈ (210mm − 30mm side padding − 24px gap) / 2 ≈ 328px
-  // 1行 = ラベル(28) + 4セル + 4ギャップ(8) ≈ 28 + 4*(70*0.714+6) + 32 ≈ 284px ✓
-  const cellHeight = 70;
+  // レイアウト定数はテンプレート定義と共有し、A4判定との乖離を防ぐ
+  const cellHeight = NUMBER_TRACING_CELL_HEIGHT_PX;
   const traceCount = 2;
   const practiceCount = 1;
 
@@ -283,7 +285,7 @@ const NumberTracingGrid: React.FC<{ problems: Problem[] }> = ({ problems }) => {
       style={{
         display: 'flex',
         flexDirection: 'column',
-        rowGap: 12,
+        rowGap: NUMBER_TRACING_ROW_GAP_PX,
         flex: 1,
         minWidth: 0,
       }}
@@ -307,7 +309,7 @@ const NumberTracingGrid: React.FC<{ problems: Problem[] }> = ({ problems }) => {
       style={{
         display: 'flex',
         flexDirection: 'row',
-        columnGap: 24,
+        columnGap: NUMBER_TRACING_COL_GAP_PX,
         flex: 1,
         alignItems: 'stretch',
         justifyContent: 'space-between',
