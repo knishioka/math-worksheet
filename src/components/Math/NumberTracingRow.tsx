@@ -206,7 +206,7 @@ const Cell: React.FC<{
           visibility: label ? 'visible' : 'hidden',
         }}
       >
-        {label ?? ' '}
+        {label || '\u00a0'}
       </div>
       <div
         style={{
