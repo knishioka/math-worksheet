@@ -271,9 +271,12 @@ const NumberTracingGrid: React.FC<{ problems: Problem[] }> = ({ problems }) => {
   }
 
   // A4 縦印刷で 5 行 × 2 側 に収まる大きめのセル
+  // 1セル幅は cellHeight × (100/140) + border + padding ≈ cellHeight*0.714 + 6
+  // 1列の利用可能幅 ≈ (210mm − 30mm side padding − 24px gap) / 2 ≈ 328px
+  // 1行 = ラベル(28) + 4セル + 4ギャップ(8) ≈ 28 + 4*(70*0.714+6) + 32 ≈ 284px ✓
   const cellHeight = 70;
   const traceCount = 2;
-  const practiceCount = 2;
+  const practiceCount = 1;
 
   const renderColumn = (items: NumberTracingProblem[]): React.ReactElement => (
     <div

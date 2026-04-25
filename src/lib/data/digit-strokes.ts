@@ -50,8 +50,8 @@ export const DIGIT_STROKES: Record<number, DigitStrokeData> = {
     digit: 1,
     strokes: [
       {
-        // 教科書体の1：左上に短いフラッグ → 中心へ縦線。底部にわずかな横線
-        path: 'M 28 35 L 50 18 L 50 124 M 32 124 L 68 124',
+        // 教科書体の1：左上に短いフラッグ → 中心へ縦線（1画で書く）
+        path: 'M 28 35 L 50 18 L 50 124',
         order: 1,
         arrowStart: { x: 28, y: 35 },
         arrowDirection: { x: 42, y: 24 },
