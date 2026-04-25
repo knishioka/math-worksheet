@@ -87,7 +87,9 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
               問題プレビュー - {buildPreviewTitle({ settings })}
             </h2>
             <div className="text-sm text-slate-500">
-              {problems.length}問 • {settings.layoutColumns}列レイアウト
+              {settings.problemType === 'number-tracing'
+                ? `${problems.length}問 • 0〜4 / 5〜9 の左右レイアウト`
+                : `${problems.length}問 • ${settings.layoutColumns}列レイアウト`}
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">

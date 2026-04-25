@@ -429,32 +429,34 @@ export const PRINT_TEMPLATES = {
   }),
 
   // 数字なぞり書き（幼児向け）
+  // レイアウトは左右 2 分割固定（0〜4 を左、5〜9 を右）で、実際は 5 行のみ。
+  // ただし validator は 1/2/3 列汎用で計算するため、minProblemHeight は控えめに。
   'number-tracing': createPrintTemplate({
     type: 'number-tracing',
     displayName: '数字なぞり書き',
     description:
-      '幼児向けの数字書き方練習。書き順付きのお手本、なぞり書き、自由練習マスを横並びで表示。',
+      '幼児向けの数字書き方練習。0〜4を左、5〜9を右に配置し、書き順付きお手本・なぞり書き・自由練習マスを表示。',
     layout: {
       rowGap: '4px',
-      colGap: '16px',
+      colGap: '24px',
       fontSize: '14px',
-      minProblemHeight: '55px',
+      minProblemHeight: '70px',
     },
     recommendedCounts: {
       1: 10,
-      2: 20,
-      3: 30,
+      2: 10,
+      3: 10,
     },
     maxCounts: {
       1: 10,
-      2: 20,
-      3: 30,
+      2: 10,
+      3: 10,
     },
     fitsInA4: {
       threshold: {
         1: 10,
-        2: 20,
-        3: 30,
+        2: 10,
+        3: 10,
       },
     },
   }),

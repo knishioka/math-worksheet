@@ -199,30 +199,33 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
             </div>
           </div>
 
-          <div data-problem-grid className={gridCols} style={gridGapStyle}>
-            {reorderedProblems.map((problem, index) => {
-              if (!problem) {
-                // 空のセルを配置（レイアウトを保つため）
-                return <div key={`empty-${index}`} className="avoid-break" />;
-              }
+          {effectiveProblemType === 'number-tracing' ? (
+            <NumberTracingGrid problems={problems} />
+          ) : (
+            <div data-problem-grid className={gridCols} style={gridGapStyle}>
+              {reorderedProblems.map((problem, index) => {
+                if (!problem) {
+                  // 空のセルを配置（レイアウトを保つため）
+                  return <div key={`empty-${index}`} className="avoid-break" />;
+                }
 
-              // 元のインデックスを計算（縦順から横順へ）
-              const col = index % layoutColumns;
-              const row = Math.floor(index / layoutColumns);
-              const originalNumber = col * rowCount + row + 1;
+                // 元のインデックスを計算（縦順から横順へ）
+                const col = index % layoutColumns;
+                const row = Math.floor(index / layoutColumns);
+                const originalNumber = col * rowCount + row + 1;
 
-              return (
-                <div key={problem.id} className="avoid-break">
-                  <ProblemItem
-                    problem={problem}
-                    number={originalNumber}
-                    showAnswer={showAnswers}
-                    layoutColumns={layoutColumns}
-                  />
-                </div>
-              );
-            })}
-          </div>
+                return (
+                  <div key={problem.id} className="avoid-break">
+                    <ProblemItem
+                      problem={problem}
+                      number={originalNumber}
+                      showAnswer={showAnswers}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </>
     );
@@ -241,6 +244,77 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
 );
 
 ProblemList.displayName = 'ProblemList';
+
+/**
+ * 数字なぞり書き専用のレイアウト
+ * 0〜4 を左、5〜9 を右に配置し、各セルを大きく表示する
+ */
+const NumberTracingGrid: React.FC<{ problems: Problem[] }> = ({ problems }) => {
+  // digit ごとに 1 つだけ採用（重複や count > 10 を防ぐ）
+  const byDigit = new Map<number, NumberTracingProblem>();
+  for (const p of problems) {
+    if (p.type !== 'number-tracing') continue;
+    const tp = p as NumberTracingProblem;
+    if (!byDigit.has(tp.digit)) {
+      byDigit.set(tp.digit, tp);
+    }
+  }
+  const left: NumberTracingProblem[] = [];
+  const right: NumberTracingProblem[] = [];
+  for (let d = 0; d <= 4; d++) {
+    const p = byDigit.get(d);
+    if (p) left.push(p);
+  }
+  for (let d = 5; d <= 9; d++) {
+    const p = byDigit.get(d);
+    if (p) right.push(p);
+  }
+
+  // A4 縦印刷で 5 行 × 2 側 に収まる大きめのセル
+  const cellHeight = 70;
+  const traceCount = 2;
+  const practiceCount = 2;
+
+  const renderColumn = (items: NumberTracingProblem[]): React.ReactElement => (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        rowGap: 12,
+        flex: 1,
+        minWidth: 0,
+      }}
+    >
+      {items.map((p) => (
+        <div key={p.id} className="avoid-break">
+          <NumberTracingRow
+            digit={p.digit}
+            traceCount={Math.min(p.traceCount, traceCount)}
+            practiceCount={Math.min(p.practiceCount, practiceCount)}
+            cellHeight={cellHeight}
+          />
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <div
+      data-problem-grid
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        columnGap: 24,
+        flex: 1,
+        alignItems: 'stretch',
+        justifyContent: 'space-between',
+      }}
+    >
+      {renderColumn(left)}
+      {renderColumn(right)}
+    </div>
+  );
+};
 
 /** 筆算の答え行（記入欄または解答表示） */
 const HissanAnswerRow: React.FC<{
@@ -324,14 +398,12 @@ interface ProblemItemProps {
   problem: Problem;
   number: number;
   showAnswer?: boolean;
-  layoutColumns?: LayoutColumns;
 }
 
 function ProblemItem({
   problem,
   number,
   showAnswer = false,
-  layoutColumns = 1,
 }: ProblemItemProps): React.ReactElement {
   const operationSymbol = {
     addition: '+',
@@ -339,25 +411,6 @@ function ProblemItem({
     multiplication: '×',
     division: '÷',
   }[problem.operation];
-
-  // 数字なぞり書きの場合
-  if (problem.type === 'number-tracing') {
-    const tracingProblem = problem as NumberTracingProblem;
-    // 列数に応じてセルサイズと練習マス数を調整
-    const cellHeight = layoutColumns === 1 ? 56 : layoutColumns === 2 ? 44 : 36;
-    const traceCount = layoutColumns === 1 ? 3 : layoutColumns === 2 ? 2 : 1;
-    const practiceCount = layoutColumns === 1 ? 3 : layoutColumns === 2 ? 2 : 1;
-    return (
-      <div style={problemItemStyle}>
-        <NumberTracingRow
-          digit={tracingProblem.digit}
-          traceCount={Math.min(tracingProblem.traceCount, traceCount)}
-          practiceCount={Math.min(tracingProblem.practiceCount, practiceCount)}
-          cellHeight={cellHeight}
-        />
-      </div>
-    );
-  }
 
   // 分数問題の場合
   if (problem.type === 'fraction') {
