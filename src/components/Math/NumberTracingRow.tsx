@@ -4,6 +4,7 @@ import {
   DIGIT_VIEWBOX,
   type StrokeSegment,
 } from '../../lib/data/digit-strokes';
+import { NUMBER_TRACING_CELL_GAP_PX } from '../../config/number-tracing-layout';
 
 interface NumberTracingRowProps {
   digit: number;
@@ -240,7 +241,7 @@ export const NumberTracingRow: React.FC<NumberTracingRowProps> = ({
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        gap: NUMBER_TRACING_CELL_GAP_PX,
         width: '100%',
       }}
     >
@@ -260,7 +261,7 @@ export const NumberTracingRow: React.FC<NumberTracingRowProps> = ({
         style={{
           display: 'flex',
           flexDirection: 'column',
-          rowGap: 8,
+          rowGap: NUMBER_TRACING_CELL_GAP_PX,
           flex: 1,
           minWidth: 0,
         }}
@@ -271,7 +272,7 @@ export const NumberTracingRow: React.FC<NumberTracingRowProps> = ({
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 8,
+            gap: NUMBER_TRACING_CELL_GAP_PX,
           }}
         >
           <Cell size={cellHeight} label="おてほん">
@@ -303,7 +304,7 @@ export const NumberTracingRow: React.FC<NumberTracingRowProps> = ({
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 8,
+              gap: NUMBER_TRACING_CELL_GAP_PX,
             }}
           >
             {Array.from({ length: extraPracticeCount }).map((_, i) => (

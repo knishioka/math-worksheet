@@ -9,6 +9,9 @@ export const NUMBER_TRACING_CELL_HEIGHT_PX = 70;
 /** 数字ブロック間の縦ギャップ（複数の数字の間） */
 export const NUMBER_TRACING_ROW_GAP_PX = 8;
 
+/** 1問内の各セル間ギャップ（横方向のセル間／2行構成時の上下行間） */
+export const NUMBER_TRACING_CELL_GAP_PX = 8;
+
 /** 列間（左右カラム間） */
 export const NUMBER_TRACING_COL_GAP_PX = 24;
 
