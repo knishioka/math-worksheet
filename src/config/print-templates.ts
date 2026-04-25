@@ -2,6 +2,11 @@ import {
   estimatePageLayout,
   A4_HEIGHT_MM,
 } from '../components/Export/fitPageToA4';
+import {
+  NUMBER_TRACING_COL_GAP_PX,
+  NUMBER_TRACING_MIN_PROBLEM_HEIGHT_PX,
+  NUMBER_TRACING_ROW_GAP_PX,
+} from './number-tracing-layout';
 import type { ProblemType, LayoutColumns } from '../types';
 import type { CalculationPattern } from '../types/calculation-patterns';
 
@@ -429,32 +434,34 @@ export const PRINT_TEMPLATES = {
   }),
 
   // 数字なぞり書き（幼児向け）
+  // レイアウトは左右 2 分割固定（0〜4 を左、5〜9 を右）で、実際は 5 行のみ。
+  // プレビューと同一の定数を共有し、A4判定ロジックとの乖離を抑える。
   'number-tracing': createPrintTemplate({
     type: 'number-tracing',
     displayName: '数字なぞり書き',
     description:
-      '幼児向けの数字書き方練習。書き順付きのお手本、なぞり書き、自由練習マスを横並びで表示。',
+      '幼児向けの数字書き方練習。0〜4を左、5〜9を右に配置し、書き順付きお手本・なぞり書き・自由練習マスを表示。',
     layout: {
-      rowGap: '4px',
-      colGap: '16px',
+      rowGap: `${NUMBER_TRACING_ROW_GAP_PX}px`,
+      colGap: `${NUMBER_TRACING_COL_GAP_PX}px`,
       fontSize: '14px',
-      minProblemHeight: '55px',
+      minProblemHeight: `${NUMBER_TRACING_MIN_PROBLEM_HEIGHT_PX}px`,
     },
     recommendedCounts: {
-      1: 10,
-      2: 20,
-      3: 30,
+      1: 5,
+      2: 5,
+      3: 5,
     },
     maxCounts: {
-      1: 10,
-      2: 20,
-      3: 30,
+      1: 5,
+      2: 5,
+      3: 5,
     },
     fitsInA4: {
       threshold: {
-        1: 10,
-        2: 20,
-        3: 30,
+        1: 5,
+        2: 5,
+        3: 5,
       },
     },
   }),

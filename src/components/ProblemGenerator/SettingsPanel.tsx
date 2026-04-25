@@ -42,6 +42,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   );
   const template = getPrintTemplate(effectiveProblemType);
   const isAnzan = effectiveProblemType === 'anzan';
+  const isNumberTracing = effectiveProblemType === 'number-tracing';
 
   // 列数に応じた最大問題数と推奨問題数を取得（パターン固有オーバーライド対応）
   const patternOverride = calculationPattern
@@ -106,6 +107,22 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     lessCount >= minProblems && problemCountOptions.includes(lessCount);
   const showMoreOption =
     moreCount <= maxProblems && problemCountOptions.includes(moreCount);
+
+  // なぞり書きはレイアウト・問題数固定（10問・2分割）なので設定UIを省略
+  if (isNumberTracing) {
+    return (
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-sky-100 bg-sky-50/80 p-4">
+          <h4 className="mb-2 text-sm font-semibold text-sky-900">
+            レイアウトと問題数
+          </h4>
+          <p className="text-sm text-slate-600 leading-relaxed">
+            数字なぞり書きはA4一枚に0〜4を左、5〜9を右に配置した固定レイアウトです（10問）。
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

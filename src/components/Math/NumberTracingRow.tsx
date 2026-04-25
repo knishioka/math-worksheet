@@ -237,9 +237,9 @@ export const NumberTracingRow: React.FC<NumberTracingRowProps> = ({
       {/* 数字ラベル */}
       <div
         style={{
-          fontSize: 18,
+          fontSize: 24,
           fontWeight: 'bold',
-          minWidth: 24,
+          minWidth: 28,
           textAlign: 'center',
           color: '#0f172a',
         }}

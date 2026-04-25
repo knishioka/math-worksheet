@@ -35,7 +35,8 @@ export function generateProblems(settings: WorksheetSettings): Problem[] {
 
   // 問題タイプ別の処理
   if (problemType === 'number-tracing') {
-    return generateNumberTracingProblems(problemCount);
+    // なぞり書きは 0〜9 の 10 問固定（左右 5 つずつのレイアウト）
+    return generateNumberTracingProblems(10);
   }
 
   if (problemType === 'fraction') {
