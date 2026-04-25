@@ -11,6 +11,8 @@ interface NumberTracingRowProps {
   practiceCount: number;
   /** 各セルの高さ(px)。列数に応じて親が調整する */
   cellHeight?: number;
+  /** 2行目に追加する練習マスの数。0 のときは2行目を描画しない */
+  extraPracticeCount?: number;
 }
 
 const STROKE_WIDTH = 4;
@@ -230,17 +232,19 @@ export const NumberTracingRow: React.FC<NumberTracingRowProps> = ({
   traceCount,
   practiceCount,
   cellHeight = 48,
+  extraPracticeCount = 0,
 }) => {
   return (
     <div
       style={{
         display: 'flex',
+        flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
         width: '100%',
       }}
     >
-      {/* 数字ラベル */}
+      {/* 数字ラベル（2行構成のときも左側に1つだけ表示する） */}
       <div
         style={{
           fontSize: 24,
@@ -252,30 +256,64 @@ export const NumberTracingRow: React.FC<NumberTracingRowProps> = ({
       >
         {digit}
       </div>
-      {/* お手本 */}
-      <Cell size={cellHeight} label="おてほん">
-        <StrokeOrderDigit digit={digit} size={cellHeight} />
-      </Cell>
-      {/* なぞり書き */}
-      {Array.from({ length: traceCount }).map((_, i) => (
-        <Cell
-          key={`trace-${i}`}
-          size={cellHeight}
-          label={i === 0 ? 'なぞる' : undefined}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          rowGap: 8,
+          flex: 1,
+          minWidth: 0,
+        }}
+      >
+        {/* 1行目: お手本 + なぞる + 自由練習 */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+          }}
         >
-          <TracingDigit digit={digit} size={cellHeight} />
-        </Cell>
-      ))}
-      {/* 自由練習 */}
-      {Array.from({ length: practiceCount }).map((_, i) => (
-        <Cell
-          key={`practice-${i}`}
-          size={cellHeight}
-          label={i === 0 ? 'かいてみよう' : undefined}
-        >
-          <PracticeBox size={cellHeight} />
-        </Cell>
-      ))}
+          <Cell size={cellHeight} label="おてほん">
+            <StrokeOrderDigit digit={digit} size={cellHeight} />
+          </Cell>
+          {Array.from({ length: traceCount }).map((_, i) => (
+            <Cell
+              key={`trace-${i}`}
+              size={cellHeight}
+              label={i === 0 ? 'なぞる' : undefined}
+            >
+              <TracingDigit digit={digit} size={cellHeight} />
+            </Cell>
+          ))}
+          {Array.from({ length: practiceCount }).map((_, i) => (
+            <Cell
+              key={`practice-${i}`}
+              size={cellHeight}
+              label={i === 0 ? 'かいてみよう' : undefined}
+            >
+              <PracticeBox size={cellHeight} />
+            </Cell>
+          ))}
+        </div>
+        {/* 2行目: 追加の自由練習マス（余白を活用） */}
+        {extraPracticeCount > 0 && (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            {Array.from({ length: extraPracticeCount }).map((_, i) => (
+              <Cell key={`extra-practice-${i}`} size={cellHeight}>
+                <PracticeBox size={cellHeight} />
+              </Cell>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
