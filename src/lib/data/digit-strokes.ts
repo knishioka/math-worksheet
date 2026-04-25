@@ -152,10 +152,11 @@ export const DIGIT_STROKES: Record<number, DigitStrokeData> = {
       },
       {
         // 2画目: 上の横棒から続けて斜め下へ一筆で書く（横→斜め）
+        // arrowStart はパスの実際の書き始め位置 (22, 26) と一致させる（教科書順序の正確性を優先）
         path: 'M 22 26 L 80 26 L 36 124',
         order: 2,
-        arrowStart: { x: 32, y: 26 },
-        arrowDirection: { x: 50, y: 26 },
+        arrowStart: { x: 22, y: 26 },
+        arrowDirection: { x: 42, y: 26 },
       },
     ],
   },
