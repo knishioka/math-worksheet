@@ -197,11 +197,17 @@ const Cell: React.FC<{
         gap: 2,
       }}
     >
-      {label && (
-        <div style={{ fontSize: 9, color: '#6b7280', lineHeight: 1 }}>
-          {label}
-        </div>
-      )}
+      {/* ラベルなしの場合も同じ高さを確保してボックス位置を揃える */}
+      <div
+        style={{
+          fontSize: 9,
+          color: '#6b7280',
+          lineHeight: 1,
+          visibility: label ? 'visible' : 'hidden',
+        }}
+      >
+        {label || '\u00a0'}
+      </div>
       <div
         style={{
           width: size * aspect,
