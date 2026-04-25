@@ -143,18 +143,18 @@ export const DIGIT_STROKES: Record<number, DigitStrokeData> = {
     digit: 7,
     strokes: [
       {
-        // 1画目: 鋭く水平な横線（教科書体の7は水平を強調）
-        path: 'M 18 24 L 82 24',
+        // 1画目: 左上の短い縦の棒（教科書体の serif として上から下へ）
+        path: 'M 22 14 L 22 26',
         order: 1,
-        arrowStart: { x: 18, y: 24 },
-        arrowDirection: { x: 38, y: 24 },
+        arrowStart: { x: 22, y: 14 },
+        arrowDirection: { x: 22, y: 22 },
       },
       {
-        // 2画目: 右端から左下へ直線。鋭角を保つため角の丸めなしの直線
-        path: 'M 78 24 L 36 124',
+        // 2画目: 上の横棒から続けて斜め下へ一筆で書く（横→斜め）
+        path: 'M 22 26 L 80 26 L 36 124',
         order: 2,
-        arrowStart: { x: 78, y: 24 },
-        arrowDirection: { x: 70, y: 44 },
+        arrowStart: { x: 22, y: 26 },
+        arrowDirection: { x: 42, y: 26 },
       },
     ],
   },
