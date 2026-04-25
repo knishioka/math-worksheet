@@ -143,14 +143,16 @@ export const DIGIT_STROKES: Record<number, DigitStrokeData> = {
     digit: 7,
     strokes: [
       {
-        // 1画目: 左上の短い縦の棒（教科書体の serif として上から下へ）
-        path: 'M 22 14 L 22 26',
+        // 1画目: 上の横棒の左端から下へ伸びる短い縦の棒（教科書体 serif）
+        // 横棒(y=26)の起点から長さ約30で下へ。幼児でも書きやすいサイズ
+        path: 'M 22 26 L 22 56',
         order: 1,
-        arrowStart: { x: 22, y: 14 },
-        arrowDirection: { x: 22, y: 22 },
+        arrowStart: { x: 22, y: 30 },
+        arrowDirection: { x: 22, y: 44 },
       },
       {
         // 2画目: 上の横棒から続けて斜め下へ一筆で書く（横→斜め）
+        // arrowStart はパスの実際の書き始め位置 (22, 26) と一致させる（教科書順序の正確性を優先）
         path: 'M 22 26 L 80 26 L 36 124',
         order: 2,
         arrowStart: { x: 22, y: 26 },
