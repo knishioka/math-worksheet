@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   generateFractionProblem,
   generateGradeFractionProblems,
@@ -34,6 +34,42 @@ describe('generateFractionProblem', () => {
 
     expect(problem.operation).toBe('subtraction');
     expect(problem.answerNumerator).toBeGreaterThanOrEqual(0);
+  });
+
+  it('should generate subtraction problems that require simplification without exhausting retries', () => {
+    const randomSpy = vi
+      .spyOn(Math, 'random')
+      // 3/6 - 1/6 = 2/6, which simplifies to 1/3.
+      .mockReturnValueOnce(0.3)
+      .mockReturnValueOnce(0.2)
+      .mockReturnValueOnce(0.3)
+      .mockReturnValueOnce(0.01)
+      .mockReturnValue(0.5);
+
+    try {
+      const problem = generateFractionProblem(
+        {
+          ...baseSettings,
+          operation: 'subtraction',
+        },
+        {
+          maxNumerator: 12,
+          maxDenominator: 15,
+          allowImproper: true,
+          requireSimplification: true,
+        }
+      );
+
+      expect(problem.numerator1).toBe(3);
+      expect(problem.denominator1).toBe(6);
+      expect(problem.numerator2).toBe(1);
+      expect(problem.denominator2).toBe(6);
+      expect(problem.answerNumerator).toBe(1);
+      expect(problem.answerDenominator).toBe(3);
+      expect(randomSpy.mock.calls.length).toBeLessThan(10);
+    } finally {
+      randomSpy.mockRestore();
+    }
   });
 
   it('should handle multiplication correctly', () => {

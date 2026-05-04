@@ -134,6 +134,8 @@ export function generateFractionProblem(
     denominator2: number = 2;
   let answerNumerator: number = 1,
     answerDenominator: number = 2;
+  let rawAnswerNumerator: number = 1,
+    rawAnswerDenominator: number = 2;
 
   let attempts = 0;
   const maxAttempts = 100;
@@ -159,7 +161,12 @@ export function generateFractionProblem(
 
     // 計算実行
     switch (settings.operation) {
-      case 'addition':
+      case 'addition': {
+        const commonDen = lcm(denominator1, denominator2);
+        rawAnswerNumerator =
+          numerator1 * (commonDen / denominator1) +
+          numerator2 * (commonDen / denominator2);
+        rawAnswerDenominator = commonDen;
         [answerNumerator, answerDenominator] = addFractions(
           numerator1,
           denominator1,
@@ -167,7 +174,13 @@ export function generateFractionProblem(
           denominator2
         );
         break;
-      case 'subtraction':
+      }
+      case 'subtraction': {
+        const commonDen = lcm(denominator1, denominator2);
+        const newNum1 = numerator1 * (commonDen / denominator1);
+        const newNum2 = numerator2 * (commonDen / denominator2);
+        rawAnswerNumerator = Math.abs(newNum1 - newNum2);
+        rawAnswerDenominator = commonDen;
         [answerNumerator, answerDenominator] = subtractFractions(
           numerator1,
           denominator1,
@@ -175,7 +188,10 @@ export function generateFractionProblem(
           denominator2
         );
         break;
+      }
       case 'multiplication':
+        rawAnswerNumerator = numerator1 * numerator2;
+        rawAnswerDenominator = denominator1 * denominator2;
         [answerNumerator, answerDenominator] = multiplyFractions(
           numerator1,
           denominator1,
@@ -184,6 +200,8 @@ export function generateFractionProblem(
         );
         break;
       case 'division':
+        rawAnswerNumerator = numerator1 * denominator2;
+        rawAnswerDenominator = denominator1 * numerator2;
         [answerNumerator, answerDenominator] = divideFractions(
           numerator1,
           denominator1,
@@ -195,21 +213,13 @@ export function generateFractionProblem(
         throw new Error(`Unsupported operation: ${settings.operation}`);
     }
 
-    // 制約チェック
-    if (requireSimplification) {
-      // 約分が必要な問題を求める場合
-      const [origNum, origDen] =
-        settings.operation === 'addition'
-          ? [
-              numerator1 * denominator2 + numerator2 * denominator1,
-              denominator1 * denominator2,
-            ]
-          : [answerNumerator, answerDenominator];
-      if (gcd(origNum, origDen) === 1) continue;
-    }
-
     // 答えが0になるケースは避ける（同値の減算など）
     if (answerNumerator === 0) continue;
+
+    // 制約チェック
+    if (requireSimplification) {
+      if (gcd(rawAnswerNumerator, rawAnswerDenominator) === 1) continue;
+    }
 
     // 答えが仮分数で、それが許可されていない場合は続行
     if (!allowImproper && answerNumerator >= answerDenominator) continue;
