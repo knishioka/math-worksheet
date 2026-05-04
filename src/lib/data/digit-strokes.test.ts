@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { DIGIT_STROKES } from './digit-strokes';
 
+const SVG_NUMBER = String.raw`-?(?:\d+(?:\.\d+)?|\.\d+)`;
+const SVG_MOVE_START_RE = new RegExp(
+  String.raw`^M\s*(${SVG_NUMBER})[\s,]+(${SVG_NUMBER})`
+);
+
 describe('DIGIT_STROKES', () => {
   it('0〜9の全数字にストロークデータがある', () => {
     for (let digit = 0; digit <= 9; digit++) {
@@ -12,7 +17,7 @@ describe('DIGIT_STROKES', () => {
   it('矢印の始点が各ストロークの実際の書き始め位置と一致する', () => {
     for (const data of Object.values(DIGIT_STROKES)) {
       for (const stroke of data.strokes) {
-        const match = stroke.path.match(/^M\s+(\d+)\s+(\d+)/);
+        const match = stroke.path.match(SVG_MOVE_START_RE);
 
         expect(match).not.toBeNull();
         expect(stroke.arrowStart).toEqual({
