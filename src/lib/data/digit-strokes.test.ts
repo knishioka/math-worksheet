@@ -28,23 +28,27 @@ describe('DIGIT_STROKES', () => {
     }
   });
 
-  it('7は左端の縦棒を足さず、横棒から斜め下へ一筆で書く', () => {
-    expect(DIGIT_STROKES[7].strokes).toHaveLength(1);
-    expect(DIGIT_STROKES[7].strokes[0].path).toBe('M 20 26 L 82 26 L 38 124');
+  it('7は短い左縦を入れてから、横棒と斜め線を書く', () => {
+    expect(DIGIT_STROKES[7].strokes).toHaveLength(2);
+    expect(DIGIT_STROKES[7].strokes[0].path).toBe('M 22 28 L 22 52');
+    expect(DIGIT_STROKES[7].strokes[1].path).toBe('M 22 26 L 80 26 L 38 124');
+    expect(DIGIT_STROKES[7].strokes[1].badgeOffset).toEqual({ x: 18, y: 0 });
   });
 
-  it('8は上下同径の丸ではなく、中央のくびれと大きめの下ループを持つ', () => {
+  it('8は上下に丸を重ねず、中央で交差する一筆の字形にする', () => {
     const path = DIGIT_STROKES[8].strokes[0].path;
 
+    expect(path).toContain('M 64 38');
+    expect(path).toContain('42 62');
     expect(path).toContain('50 68');
-    expect(path).toContain('76 103');
-    expect(path).toContain('50 128');
+    expect(path).toContain('66 80');
+    expect(path).toContain('64 38');
   });
 
-  it('9は上の輪から続けて下へ伸ばし、下端を巻かずに止める', () => {
+  it('9は右上から輪を書き、同じ流れで下へ下ろす', () => {
     expect(DIGIT_STROKES[9].strokes).toHaveLength(1);
     expect(DIGIT_STROKES[9].strokes[0].path).toBe(
-      'M 74 50 C 74 32, 62 20, 50 20 C 34 20, 24 33, 24 50 C 24 66, 36 76, 50 76 C 65 76, 74 66, 74 50 L 74 124'
+      'M 72 44 C 72 28, 60 20, 46 22 C 29 24, 22 38, 24 54 C 27 73, 45 81, 60 72 C 70 66, 74 55, 72 44 C 74 66, 70 96, 62 124'
     );
   });
 });

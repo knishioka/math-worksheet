@@ -13,6 +13,8 @@ export interface StrokeSegment {
   arrowStart: { x: number; y: number };
   /** 矢印の方向を示す点（始点から少し先） */
   arrowDirection: { x: number; y: number };
+  /** 書き順番号バッジだけを微調整したい場合のオフセット */
+  badgeOffset?: { x: number; y: number };
 }
 
 export interface DigitStrokeData {
@@ -30,9 +32,9 @@ export const DIGIT_VIEWBOX = { width: 100, height: 140 };
  * 字形ルール:
  *   - 上端 y=18, 下端 y=125 を基本ベースライン
  *   - 横幅は概ね x=18..82 に収める
- *   - 0,1,2,3,6,7,8,9 = 1画 / 5 = 2画 / 4 = 3画
+ *   - 0,1,2,3,6,8,9 = 1画 / 5,7 = 2画 / 4 = 3画
  *   - フォントの輪郭ではなく、手書きの運筆でなぞれる中心線として定義する
- *   - 9の下端は巻かずに止める。8は上を小さめ、下を大きめにして中央をくびれさせる
+ *   - 7は短い左縦から横・斜めへ。8は中央で交差する一筆。9は右上から輪を書いて下ろす
  */
 export const DIGIT_STROKES: Record<number, DigitStrokeData> = {
   0: {
@@ -144,11 +146,19 @@ export const DIGIT_STROKES: Record<number, DigitStrokeData> = {
     digit: 7,
     strokes: [
       {
-        // 横棒から斜め下へ一筆で書く。不要な左縦棒は付けない
-        path: 'M 20 26 L 82 26 L 38 124',
+        // 参考画像に合わせた短い左縦。上から下へ止める
+        path: 'M 22 28 L 22 52',
         order: 1,
-        arrowStart: { x: 20, y: 26 },
-        arrowDirection: { x: 42, y: 26 },
+        arrowStart: { x: 22, y: 28 },
+        arrowDirection: { x: 22, y: 45 },
+      },
+      {
+        // 横棒から斜め下へ。書くときの主線として長く伸ばす
+        path: 'M 22 26 L 80 26 L 38 124',
+        order: 2,
+        arrowStart: { x: 22, y: 26 },
+        arrowDirection: { x: 44, y: 26 },
+        badgeOffset: { x: 18, y: 0 },
       },
     ],
   },
@@ -156,11 +166,11 @@ export const DIGIT_STROKES: Record<number, DigitStrokeData> = {
     digit: 8,
     strokes: [
       {
-        // 小さめの上ループから細いくびれを通り、大きめの下ループへ戻る
-        path: 'M 56 20 C 40 20, 30 30, 30 44 C 30 56, 40 64, 50 68 C 62 73, 76 84, 76 103 C 76 119, 64 128, 50 128 C 35 128, 24 118, 24 103 C 24 84, 38 74, 50 68 C 62 60, 70 54, 70 43 C 70 30, 62 20, 56 20',
+        // 右上から入り、中央で交差して下ループを回り、再び中央を通って戻る
+        path: 'M 64 38 C 64 24, 50 18, 38 24 C 24 32, 26 52, 42 62 C 50 67, 58 72, 66 80 C 82 96, 74 122, 52 126 C 30 130, 18 112, 28 94 C 34 83, 42 76, 50 68 C 58 60, 72 51, 64 38',
         order: 1,
-        arrowStart: { x: 56, y: 20 },
-        arrowDirection: { x: 44, y: 24 },
+        arrowStart: { x: 64, y: 38 },
+        arrowDirection: { x: 59, y: 25 },
       },
     ],
   },
@@ -168,11 +178,11 @@ export const DIGIT_STROKES: Record<number, DigitStrokeData> = {
     digit: 9,
     strokes: [
       {
-        // 上の輪から続けて下へ伸ばし、下端は巻かずにまっすぐ止める
-        path: 'M 74 50 C 74 32, 62 20, 50 20 C 34 20, 24 33, 24 50 C 24 66, 36 76, 50 76 C 65 76, 74 66, 74 50 L 74 124',
+        // 右上から輪を書き、同じ流れで右側の縦線を下ろす
+        path: 'M 72 44 C 72 28, 60 20, 46 22 C 29 24, 22 38, 24 54 C 27 73, 45 81, 60 72 C 70 66, 74 55, 72 44 C 74 66, 70 96, 62 124',
         order: 1,
-        arrowStart: { x: 74, y: 50 },
-        arrowDirection: { x: 72, y: 36 },
+        arrowStart: { x: 72, y: 44 },
+        arrowDirection: { x: 68, y: 30 },
       },
     ],
   },
