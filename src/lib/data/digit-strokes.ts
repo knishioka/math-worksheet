@@ -180,7 +180,7 @@ export const DIGIT_STROKES: Record<number, DigitStrokeData> = {
     strokes: [
       {
         // 右上から輪を書き、右側を少し斜めに下ろす
-        path: 'M 72 42 C 70 27, 58 19, 44 22 C 28 25, 21 39, 24 55 C 27 73, 45 81, 60 72 C 71 65, 76 53, 72 42 L 66 124',
+        path: 'M 72 42 C 70 27, 58 19, 44 22 C 28 25, 21 39, 24 55 C 27 73, 45 81, 60 72 C 71 65, 76 53, 72 42 L 68 124',
         order: 1,
         arrowStart: { x: 72, y: 42 },
         arrowDirection: { x: 68, y: 28 },

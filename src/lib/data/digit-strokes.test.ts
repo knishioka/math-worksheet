@@ -54,7 +54,7 @@ describe('DIGIT_STROKES', () => {
   it('9は右上から輪を書き、同じ流れで下へ下ろす', () => {
     expect(DIGIT_STROKES[9].strokes).toHaveLength(1);
     expect(DIGIT_STROKES[9].strokes[0].path).toBe(
-      'M 72 42 C 70 27, 58 19, 44 22 C 28 25, 21 39, 24 55 C 27 73, 45 81, 60 72 C 71 65, 76 53, 72 42 L 66 124'
+      'M 72 42 C 70 27, 58 19, 44 22 C 28 25, 21 39, 24 55 C 27 73, 45 81, 60 72 C 71 65, 76 53, 72 42 L 68 124'
     );
   });
 });
