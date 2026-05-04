@@ -151,6 +151,7 @@ export const DIGIT_STROKES: Record<number, DigitStrokeData> = {
         order: 1,
         arrowStart: { x: 22, y: 28 },
         arrowDirection: { x: 22, y: 45 },
+        badgeOffset: { x: -7, y: 9 },
       },
       {
         // 横棒から斜め下へ。書くときの主線として長く伸ばす
@@ -158,7 +159,7 @@ export const DIGIT_STROKES: Record<number, DigitStrokeData> = {
         order: 2,
         arrowStart: { x: 22, y: 26 },
         arrowDirection: { x: 44, y: 26 },
-        badgeOffset: { x: 18, y: 0 },
+        badgeOffset: { x: 21, y: -7 },
       },
     ],
   },
@@ -166,11 +167,11 @@ export const DIGIT_STROKES: Record<number, DigitStrokeData> = {
     digit: 8,
     strokes: [
       {
-        // 右上から入り、中央で交差して下ループを回り、再び中央を通って戻る
-        path: 'M 64 38 C 64 24, 50 18, 38 24 C 24 32, 26 52, 42 62 C 50 67, 58 72, 66 80 C 82 96, 74 122, 52 126 C 30 130, 18 112, 28 94 C 34 83, 42 76, 50 68 C 58 60, 72 51, 64 38',
+        // 右上から入り、中央を斜めに交差して下ループを回り、再び中央を通る
+        path: 'M 68 42 C 68 26, 54 18, 40 22 C 23 27, 22 50, 40 62 C 52 70, 64 76, 72 90 C 82 108, 68 126, 50 126 C 30 126, 20 112, 27 96 C 32 83, 43 75, 54 68 C 66 60, 76 52, 68 42',
         order: 1,
-        arrowStart: { x: 64, y: 38 },
-        arrowDirection: { x: 59, y: 25 },
+        arrowStart: { x: 68, y: 42 },
+        arrowDirection: { x: 64, y: 28 },
       },
     ],
   },
@@ -179,10 +180,10 @@ export const DIGIT_STROKES: Record<number, DigitStrokeData> = {
     strokes: [
       {
         // 右上から輪を書き、同じ流れで右側の縦線を下ろす
-        path: 'M 72 44 C 72 28, 60 20, 46 22 C 29 24, 22 38, 24 54 C 27 73, 45 81, 60 72 C 70 66, 74 55, 72 44 C 74 66, 70 96, 62 124',
+        path: 'M 72 42 C 70 27, 58 19, 44 22 C 28 25, 21 39, 24 55 C 27 73, 45 81, 60 72 C 71 65, 76 53, 72 42 C 78 63, 75 94, 63 124',
         order: 1,
-        arrowStart: { x: 72, y: 44 },
-        arrowDirection: { x: 68, y: 30 },
+        arrowStart: { x: 72, y: 42 },
+        arrowDirection: { x: 68, y: 28 },
       },
     ],
   },

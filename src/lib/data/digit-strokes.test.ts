@@ -32,23 +32,24 @@ describe('DIGIT_STROKES', () => {
     expect(DIGIT_STROKES[7].strokes).toHaveLength(2);
     expect(DIGIT_STROKES[7].strokes[0].path).toBe('M 22 28 L 22 52');
     expect(DIGIT_STROKES[7].strokes[1].path).toBe('M 22 26 L 80 26 L 38 124');
-    expect(DIGIT_STROKES[7].strokes[1].badgeOffset).toEqual({ x: 18, y: 0 });
+    expect(DIGIT_STROKES[7].strokes[0].badgeOffset).toEqual({ x: -7, y: 9 });
+    expect(DIGIT_STROKES[7].strokes[1].badgeOffset).toEqual({ x: 21, y: -7 });
   });
 
   it('8は上下に丸を重ねず、中央で交差する一筆の字形にする', () => {
     const path = DIGIT_STROKES[8].strokes[0].path;
 
-    expect(path).toContain('M 64 38');
-    expect(path).toContain('42 62');
-    expect(path).toContain('50 68');
-    expect(path).toContain('66 80');
-    expect(path).toContain('64 38');
+    expect(path).toContain('M 68 42');
+    expect(path).toContain('40 62');
+    expect(path).toContain('72 90');
+    expect(path).toContain('54 68');
+    expect(path).toContain('68 42');
   });
 
   it('9は右上から輪を書き、同じ流れで下へ下ろす', () => {
     expect(DIGIT_STROKES[9].strokes).toHaveLength(1);
     expect(DIGIT_STROKES[9].strokes[0].path).toBe(
-      'M 72 44 C 72 28, 60 20, 46 22 C 29 24, 22 38, 24 54 C 27 73, 45 81, 60 72 C 70 66, 74 55, 72 44 C 74 66, 70 96, 62 124'
+      'M 72 42 C 70 27, 58 19, 44 22 C 28 25, 21 39, 24 55 C 27 73, 45 81, 60 72 C 71 65, 76 53, 72 42 C 78 63, 75 94, 63 124'
     );
   });
 });
