@@ -28,6 +28,11 @@ describe('DIGIT_STROKES', () => {
     }
   });
 
+  it('1は左上のはねを付けず、上から下への一本線にする', () => {
+    expect(DIGIT_STROKES[1].strokes).toHaveLength(1);
+    expect(DIGIT_STROKES[1].strokes[0].path).toBe('M 50 20 L 50 124');
+  });
+
   it('7は短い左縦を入れてから、横棒と斜め線を書く', () => {
     expect(DIGIT_STROKES[7].strokes).toHaveLength(2);
     expect(DIGIT_STROKES[7].strokes[0].path).toBe('M 22 28 L 22 52');
@@ -49,7 +54,7 @@ describe('DIGIT_STROKES', () => {
   it('9は右上から輪を書き、同じ流れで下へ下ろす', () => {
     expect(DIGIT_STROKES[9].strokes).toHaveLength(1);
     expect(DIGIT_STROKES[9].strokes[0].path).toBe(
-      'M 72 42 C 70 27, 58 19, 44 22 C 28 25, 21 39, 24 55 C 27 73, 45 81, 60 72 C 71 65, 76 53, 72 42 C 78 63, 75 94, 63 124'
+      'M 72 42 C 70 27, 58 19, 44 22 C 28 25, 21 39, 24 55 C 27 73, 45 81, 60 72 C 71 65, 76 53, 72 42 L 74 124'
     );
   });
 });

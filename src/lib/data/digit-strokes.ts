@@ -53,11 +53,11 @@ export const DIGIT_STROKES: Record<number, DigitStrokeData> = {
     digit: 1,
     strokes: [
       {
-        // 教科書体の1：左上に短いフラッグ → 中心へ縦線（1画で書く）
-        path: 'M 28 35 L 50 18 L 50 124',
+        // 手書き練習では左上のはねを付けず、上から下へまっすぐ書く
+        path: 'M 50 20 L 50 124',
         order: 1,
-        arrowStart: { x: 28, y: 35 },
-        arrowDirection: { x: 42, y: 24 },
+        arrowStart: { x: 50, y: 20 },
+        arrowDirection: { x: 50, y: 42 },
       },
     ],
   },
@@ -179,8 +179,8 @@ export const DIGIT_STROKES: Record<number, DigitStrokeData> = {
     digit: 9,
     strokes: [
       {
-        // 右上から輪を書き、同じ流れで右側の縦線を下ろす
-        path: 'M 72 42 C 70 27, 58 19, 44 22 C 28 25, 21 39, 24 55 C 27 73, 45 81, 60 72 C 71 65, 76 53, 72 42 C 78 63, 75 94, 63 124',
+        // 右上から輪を書き、右側をほぼ直線で下ろす
+        path: 'M 72 42 C 70 27, 58 19, 44 22 C 28 25, 21 39, 24 55 C 27 73, 45 81, 60 72 C 71 65, 76 53, 72 42 L 74 124',
         order: 1,
         arrowStart: { x: 72, y: 42 },
         arrowDirection: { x: 68, y: 28 },
