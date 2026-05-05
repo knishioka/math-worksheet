@@ -42,13 +42,10 @@ describe('DIGIT_STROKES', () => {
   });
 
   it('8は上下に丸を重ねず、中央で交差する一筆の字形にする', () => {
-    const path = DIGIT_STROKES[8].strokes[0].path;
-
-    expect(path).toContain('M 68 42');
-    expect(path).toContain('40 62');
-    expect(path).toContain('72 90');
-    expect(path).toContain('54 68');
-    expect(path).toContain('68 42');
+    expect(DIGIT_STROKES[8].strokes).toHaveLength(1);
+    expect(DIGIT_STROKES[8].strokes[0].path).toBe(
+      'M 68 42 C 68 26, 54 18, 40 22 C 23 27, 22 50, 40 62 C 52 70, 64 76, 72 90 C 82 108, 68 126, 50 126 C 30 126, 20 112, 27 96 C 32 83, 43 75, 54 68 C 66 60, 76 52, 68 42'
+    );
   });
 
   it('9は右上から輪を書き、同じ流れで下へ下ろす', () => {
