@@ -54,10 +54,17 @@ const StrokeArrow: React.FC<{
 const StrokeOrderBadge: React.FC<{
   arrowStart: { x: number; y: number };
   order: number;
-}> = ({ arrowStart, order }) => {
+  offset?: { x: number; y: number };
+}> = ({ arrowStart, order, offset = { x: 0, y: 0 } }) => {
   const r = 7;
-  const cx = Math.min(Math.max(arrowStart.x - 8, r), DIGIT_VIEWBOX.width - r);
-  const cy = Math.min(Math.max(arrowStart.y - 8, r), DIGIT_VIEWBOX.height - r);
+  const cx = Math.min(
+    Math.max(arrowStart.x - 8 + offset.x, r),
+    DIGIT_VIEWBOX.width - r
+  );
+  const cy = Math.min(
+    Math.max(arrowStart.y - 8 + offset.y, r),
+    DIGIT_VIEWBOX.height - r
+  );
   return (
     <>
       <circle cx={cx} cy={cy} r={r} fill="#dc2626" />
@@ -110,6 +117,7 @@ const StrokeOrderDigit: React.FC<{ digit: number; size: number }> = ({
           <StrokeOrderBadge
             arrowStart={stroke.arrowStart}
             order={stroke.order}
+            offset={stroke.badgeOffset}
           />
         </g>
       ))}
