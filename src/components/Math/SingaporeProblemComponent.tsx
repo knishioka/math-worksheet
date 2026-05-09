@@ -48,15 +48,18 @@ export const SingaporeProblemComponent: React.FC<
           display: 'flex',
           alignItems: 'flex-end',
           gap: '6px',
+          minHeight: '30px',
         }}
       >
         <span style={{ color: '#000', fontSize: '12px' }}>Answer:</span>
         <div
           style={{
             borderBottom: '1.5px solid #000',
+            flex: category === 'number-bond' ? '0 1 4rem' : '1 1 4.5rem',
             minWidth: category === 'number-bond' ? '2.5rem' : '3.5rem',
+            maxWidth: category === 'number-bond' ? '5rem' : '10rem',
             padding: '0 6px',
-            height: '1.1em',
+            height: '24px',
           }}
         >
           {showAnswer && (

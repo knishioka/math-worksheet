@@ -58,6 +58,9 @@ import {
   fractionDenominatorStyle,
   fractionAnswerNumeratorStyle,
   wordEnNumberStyle,
+  symbolProblemAnswerRowStyle,
+  wordProblemAnswerLabelStyle,
+  wordProblemAnswerRowStyle,
   hissanContainerStyle,
   hissanCellStyle,
   hissanAnswerBoxStyle,
@@ -568,7 +571,13 @@ function ProblemItem({
             {wordProblem.problemText}
           </div>
         )}
-        <div style={{ marginTop: SPACING.gap.small }}>
+        <div
+          style={
+            isCountingProblem
+              ? symbolProblemAnswerRowStyle
+              : wordProblemAnswerRowStyle
+          }
+        >
           {showAnswer ? (
             <span style={answerDisplayStyle}>
               答え: {wordProblem.answer}
@@ -576,7 +585,8 @@ function ProblemItem({
             </span>
           ) : (
             <>
-              答え: <span style={wordProblemAnswerUnderlineStyle} />
+              <span style={wordProblemAnswerLabelStyle}>答え:</span>
+              <span style={wordProblemAnswerUnderlineStyle} />
               {wordProblem.unit && (
                 <span style={{ fontSize: '14px' }}>{wordProblem.unit}</span>
               )}

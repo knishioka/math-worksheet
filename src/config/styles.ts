@@ -202,10 +202,40 @@ export const fractionAnswerUnderlineStyle: CSSProperties = {
  * 文章問題用の答え下線（さらに広め）
  */
 export const wordProblemAnswerUnderlineStyle: CSSProperties = {
-  display: 'inline-block',
-  width: '96px',
+  display: 'block',
+  flex: '1 1 120px',
+  minWidth: '96px',
+  maxWidth: '180px',
+  height: '28px',
   borderBottom: BORDERS.standard,
-  margin: '0 4px',
+  margin: '0 4px 2px',
+};
+
+/**
+ * 文章問題用の答え記入行
+ */
+export const wordProblemAnswerRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'flex-end',
+  gap: SPACING.gap.small,
+  minHeight: '34px',
+  marginTop: SPACING.gap.small,
+};
+
+/**
+ * 記号を数える問題用の答え記入行
+ */
+export const symbolProblemAnswerRowStyle: CSSProperties = {
+  ...wordProblemAnswerRowStyle,
+  minHeight: '56px',
+  marginTop: '0',
+};
+
+/**
+ * 文章問題用の答えラベル
+ */
+export const wordProblemAnswerLabelStyle: CSSProperties = {
+  flexShrink: 0,
 };
 
 /**
