@@ -1,5 +1,9 @@
 import React from 'react';
 import type { WordProblemEn } from '../../types';
+import {
+  wordProblemAnswerRowStyle,
+  wordProblemAnswerUnderlineStyle,
+} from '../../config/styles';
 
 interface WordProblemEnProps {
   problem: WordProblemEn;
@@ -35,24 +39,13 @@ export const WordProblemEnComponent: React.FC<WordProblemEnProps> = ({
       <div style={{ marginBottom: '2px' }}>{problem.problemText}</div>
 
       {ANSWER_LINE_CATEGORIES.has(problem.category) && (
-        <div
-          style={{
-            marginTop: '4px',
-            display: 'flex',
-            alignItems: 'flex-end',
-            gap: '6px',
-            minHeight: '30px',
-          }}
-        >
+        <div style={wordProblemAnswerRowStyle}>
           <span style={{ color: '#000', fontSize: '13px' }}>Answer:</span>
           <div
             style={{
-              borderBottom: '1.5px solid #000',
-              flex: '1 1 4.5rem',
+              ...wordProblemAnswerUnderlineStyle,
               minWidth: '3.5rem',
               maxWidth: '10rem',
-              padding: '0 6px',
-              height: '24px',
             }}
           >
             {showAnswer && (

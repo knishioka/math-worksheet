@@ -202,13 +202,15 @@ export const fractionAnswerUnderlineStyle: CSSProperties = {
  * 文章問題用の答え下線（さらに広め）
  */
 export const wordProblemAnswerUnderlineStyle: CSSProperties = {
-  display: 'block',
+  display: 'flex',
+  alignItems: 'flex-end',
   flex: '1 1 120px',
   minWidth: '96px',
   maxWidth: '180px',
   height: '28px',
   borderBottom: BORDERS.standard,
   margin: '0 4px 2px',
+  padding: '0 6px',
 };
 
 /**
