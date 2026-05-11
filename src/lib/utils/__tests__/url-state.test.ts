@@ -104,6 +104,16 @@ describe('parseUrlSettings', () => {
     expect(result.layoutColumns).toBe(2);
     expect(result.problemCount).toBe(10);
   });
+
+  it('parses equation line flag for word problem settings', () => {
+    const result = parseUrlSettings('?type=word&eq=1', defaults);
+    expect(result.showEquationLine).toBe(true);
+  });
+
+  it('ignores equation line flag for non-word problem settings', () => {
+    const result = parseUrlSettings('?type=basic&eq=1', defaults);
+    expect(result.showEquationLine).toBeUndefined();
+  });
 });
 
 describe('settingsToUrlParams', () => {
@@ -128,6 +138,21 @@ describe('settingsToUrlParams', () => {
   it('does not include operation in URL', () => {
     const params = settingsToUrlParams(defaults);
     expect(params).not.toContain('operation=');
+  });
+
+  it('serializes equation line flag only for word problem settings', () => {
+    const wordParams = settingsToUrlParams({
+      ...defaults,
+      problemType: 'word',
+      showEquationLine: true,
+    });
+    expect(wordParams).toContain('eq=1');
+
+    const basicParams = settingsToUrlParams({
+      ...defaults,
+      showEquationLine: true,
+    });
+    expect(basicParams).not.toContain('eq=');
   });
 });
 

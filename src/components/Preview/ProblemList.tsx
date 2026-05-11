@@ -61,6 +61,8 @@ import {
   symbolProblemAnswerRowStyle,
   wordProblemAnswerLabelStyle,
   wordProblemAnswerRowStyle,
+  wordProblemEquationRowStyle,
+  wordProblemEquationUnderlineStyle,
   hissanContainerStyle,
   hissanCellStyle,
   hissanAnswerBoxStyle,
@@ -146,14 +148,19 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
 
     // 動的余白の計算（印刷プレビューと同じロジック）
     // A4サイズオーバーフロー判定
+    // テンプレートから gap を取得
+    const template = getPrintTemplate(effectiveProblemType);
+    const showEquationLine =
+      settings.showEquationLine === true &&
+      (effectiveProblemType === 'word' ||
+        effectiveProblemType === 'word-en' ||
+        effectiveProblemType === 'singapore');
     const a4FitResult = estimateA4Fit(
       problems.length,
       layoutColumns,
-      effectiveProblemType
+      effectiveProblemType,
+      showEquationLine
     );
-
-    // テンプレートから gap を取得
-    const template = getPrintTemplate(effectiveProblemType);
     // A4に収まる場合は align-content: space-between で行間を自動拡張し余白を均等配分
     const gridGapStyle: React.CSSProperties = {
       display: 'grid',
@@ -228,6 +235,7 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
                       problem={problem}
                       number={originalNumber}
                       showAnswer={showAnswers}
+                      showEquationLine={showEquationLine}
                     />
                   </div>
                 );
@@ -405,16 +413,25 @@ const PartialProductBoxes: React.FC<{
   );
 };
 
+const EquationLine: React.FC<{ label: string }> = ({ label }) => (
+  <div style={wordProblemEquationRowStyle}>
+    <span style={wordProblemAnswerLabelStyle}>{label}</span>
+    <span style={wordProblemEquationUnderlineStyle} />
+  </div>
+);
+
 interface ProblemItemProps {
   problem: Problem;
   number: number;
   showAnswer?: boolean;
+  showEquationLine?: boolean;
 }
 
 function ProblemItem({
   problem,
   number,
   showAnswer = false,
+  showEquationLine = false,
 }: ProblemItemProps): React.ReactElement {
   const operationSymbol = {
     addition: '+',
@@ -571,6 +588,7 @@ function ProblemItem({
             {wordProblem.problemText}
           </div>
         )}
+        {showEquationLine && <EquationLine label="式:" />}
         <div
           style={
             isCountingProblem
@@ -614,6 +632,7 @@ function ProblemItem({
           <WordProblemEnComponent
             problem={wordProblemEn}
             showAnswer={showAnswer}
+            showEquationLine={showEquationLine}
           />
         </div>
       </div>
@@ -637,6 +656,7 @@ function ProblemItem({
           <SingaporeProblemComponent
             problem={sgProblem}
             showAnswer={showAnswer}
+            showEquationLine={showEquationLine}
           />
         </div>
       </div>

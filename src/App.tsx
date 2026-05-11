@@ -81,6 +81,7 @@ function App(): React.ReactElement {
     settings.calculationPattern,
     settings.problemCount,
     settings.layoutColumns,
+    settings.showEquationLine,
   ]);
 
   return (
@@ -174,11 +175,15 @@ function App(): React.ReactElement {
                       layoutColumns={settings.layoutColumns}
                       problemType={settings.problemType}
                       calculationPattern={settings.calculationPattern}
+                      showEquationLine={settings.showEquationLine}
                       onProblemCountChange={(problemCount) =>
                         updateSettings({ problemCount })
                       }
                       onLayoutColumnsChange={(layoutColumns) =>
                         updateSettings({ layoutColumns })
+                      }
+                      onShowEquationLineChange={(showEquationLine) =>
+                        updateSettings({ showEquationLine })
                       }
                     />
                   </div>

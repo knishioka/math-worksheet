@@ -25,6 +25,18 @@ const VALID_PROBLEM_TYPES: readonly string[] = [
 ];
 const VALID_COLUMNS: readonly number[] = [1, 2, 3];
 
+function supportsEquationLine(settings: Partial<WorksheetSettings>): boolean {
+  const effectiveType = getEffectiveProblemType(
+    settings.problemType,
+    settings.calculationPattern
+  );
+  return (
+    effectiveType === 'word' ||
+    effectiveType === 'word-en' ||
+    effectiveType === 'singapore'
+  );
+}
+
 export function getOperationFromPattern(
   pattern: CalculationPattern
 ): WorksheetSettings['operation'] {
@@ -89,6 +101,12 @@ export function parseUrlSettings(
     }
   }
 
+  const equationParam = params.get('eq');
+  if (equationParam !== null && supportsEquationLine(result)) {
+    result.showEquationLine =
+      equationParam === '1' || equationParam.toLowerCase() === 'true';
+  }
+
   return result;
 }
 
@@ -101,6 +119,9 @@ export function settingsToUrlParams(settings: WorksheetSettings): string {
   }
   params.set('cols', String(settings.layoutColumns));
   params.set('count', String(settings.problemCount));
+  if (settings.showEquationLine && supportsEquationLine(settings)) {
+    params.set('eq', '1');
+  }
   return params.toString();
 }
 

@@ -4,18 +4,22 @@ import { BarModelDiagramComponent } from './diagrams/BarModelDiagram';
 import { NumberBondDiagramComponent } from './diagrams/NumberBondDiagram';
 import { ComparisonDiagramComponent } from './diagrams/ComparisonDiagram';
 import {
+  wordProblemAnswerLabelStyle,
   wordProblemAnswerRowStyle,
   wordProblemAnswerUnderlineStyle,
+  wordProblemEquationRowStyle,
+  wordProblemEquationUnderlineStyle,
 } from '../../config/styles';
 
 interface SingaporeProblemComponentProps {
   problem: SingaporeProblem;
   showAnswer?: boolean;
+  showEquationLine?: boolean;
 }
 
 export const SingaporeProblemComponent: React.FC<
   SingaporeProblemComponentProps
-> = ({ problem, showAnswer = false }) => {
+> = ({ problem, showAnswer = false, showEquationLine = false }) => {
   const { diagram, problemText, answer, unit, category } = problem;
 
   return (
@@ -44,6 +48,26 @@ export const SingaporeProblemComponent: React.FC<
 
       {/* Problem text */}
       <div style={{ marginBottom: '2px' }}>{problemText}</div>
+
+      {showEquationLine && (
+        <div style={wordProblemEquationRowStyle}>
+          <span
+            style={{
+              ...wordProblemAnswerLabelStyle,
+              color: '#000',
+              fontSize: '12px',
+            }}
+          >
+            Equation:
+          </span>
+          <span
+            style={{
+              ...wordProblemEquationUnderlineStyle,
+              minWidth: category === 'number-bond' ? '2.5rem' : '3.5rem',
+            }}
+          />
+        </div>
+      )}
 
       {/* Answer line — shown for all Singapore Math categories */}
       <div style={wordProblemAnswerRowStyle}>

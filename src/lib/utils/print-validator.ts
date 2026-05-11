@@ -97,13 +97,22 @@ export function validateProblemType(html: string, problemType: ProblemType): boo
 export function estimateA4Fit(
   problemCount: number,
   layoutColumns: LayoutColumns,
-  problemType: ProblemType
+  problemType: ProblemType,
+  showEquationLine: boolean = false
 ): { fits: boolean; estimatedHeight: number; a4Height: number } {
   const template = getPrintTemplate(problemType);
   const rowCount = Math.ceil(problemCount / layoutColumns);
 
   // 問題タイプごとの推定高さ（mm）
-  const minProblemHeightMm = parseInt(template.layout.minProblemHeight) * 0.26; // px to mm (96dpi)
+  const equationLineHeightMm =
+    showEquationLine &&
+    (problemType === 'word' ||
+      problemType === 'word-en' ||
+      problemType === 'singapore')
+      ? 8
+      : 0;
+  const minProblemHeightMm =
+    parseInt(template.layout.minProblemHeight) * 0.26 + equationLineHeightMm; // px to mm (96dpi)
   const rowGapMm = parseInt(template.layout.rowGap) * 0.26;
 
   // 必要な高さを計算

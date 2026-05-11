@@ -10,6 +10,7 @@ import type {
   MixedNumberProblem,
   WordProblem,
   WordProblemEn,
+  SingaporeProblem,
   HissanProblem,
 } from '../../../types';
 
@@ -291,6 +292,76 @@ describe('Print Integration Tests', () => {
       expect(html).toContain('cm²');
     });
 
+    it('should render equation line before answer line for word problems when enabled', () => {
+      const wordProblem: WordProblem = {
+        id: '1',
+        type: 'word',
+        operation: 'multiplication',
+        problemText: 'たて5cm、よこ3cmの長方形の面積は？',
+        answer: 15,
+        unit: 'cm²',
+      };
+
+      const { container } = render(
+        <ProblemList
+          problems={[wordProblem]}
+          layoutColumns={2}
+          showAnswers={true}
+          settings={{ ...createSettings('word'), showEquationLine: true }}
+        />
+      );
+
+      const html = container.innerHTML;
+      expect(html).toContain('式:');
+      expect(html.indexOf('式:')).toBeLessThan(html.indexOf('答え:'));
+      expect(html).toContain('15');
+    });
+
+    it('should keep current word problem layout when equation line is disabled', () => {
+      const wordProblem: WordProblem = {
+        id: '1',
+        type: 'word',
+        operation: 'addition',
+        problemText: 'りんごが3こ、みかんが2こあります。あわせて何こですか？',
+        answer: 5,
+        unit: 'こ',
+      };
+
+      const { container } = render(
+        <ProblemList
+          problems={[wordProblem]}
+          layoutColumns={2}
+          showAnswers={false}
+          settings={{ ...createSettings('word'), showEquationLine: false }}
+        />
+      );
+
+      expect(container.innerHTML).not.toContain('式:');
+    });
+
+    it('should not render equation line for basic problems even if setting remains true', () => {
+      const basicProblem: BasicProblem = {
+        id: '1',
+        type: 'basic',
+        operation: 'addition',
+        operand1: 1,
+        operand2: 2,
+        answer: 3,
+      };
+
+      const { container } = render(
+        <ProblemList
+          problems={[basicProblem]}
+          layoutColumns={2}
+          showAnswers={false}
+          settings={{ ...createSettings('basic'), showEquationLine: true }}
+        />
+      );
+
+      expect(container.innerHTML).not.toContain('式:');
+      expect(container.innerHTML).not.toContain('Equation:');
+    });
+
     it('should render missing number problems correctly', () => {
       const missingProblem: BasicProblem = {
         id: '1',
@@ -440,6 +511,64 @@ describe('Print Integration Tests', () => {
       // 問題番号が表示されているか確認
       expect(html).toContain('(1)');
       expect(html).toContain('(2)');
+    });
+
+    it('should render equation line before answer line for word-en problems when enabled', () => {
+      const problems = createWordEnProblems(1);
+      const { container } = render(
+        <ProblemList
+          problems={problems}
+          layoutColumns={2}
+          showAnswers={true}
+          settings={{
+            ...wordEnSettings,
+            problemCount: 1,
+            showEquationLine: true,
+          }}
+        />
+      );
+
+      const html = container.innerHTML;
+      expect(html).toContain('Equation:');
+      expect(html.indexOf('Equation:')).toBeLessThan(html.indexOf('Answer:'));
+      expect(html).toContain('1');
+    });
+  });
+
+  describe('Singapore Math Layout', () => {
+    const singaporeSettings: WorksheetSettings = {
+      grade: 2,
+      problemType: 'basic',
+      operation: 'addition',
+      calculationPattern: 'singapore-bar-model',
+      problemCount: 1,
+      layoutColumns: 2,
+    };
+
+    it('should render equation line before answer line for Singapore Math when enabled', () => {
+      const singaporeProblem: SingaporeProblem = {
+        id: 'sg-1',
+        type: 'singapore',
+        operation: 'addition',
+        problemText:
+          'Mia has 3 red beads and 4 blue beads. How many beads does she have?',
+        answer: 7,
+        category: 'bar-model',
+        language: 'en',
+      };
+
+      const { container } = render(
+        <ProblemList
+          problems={[singaporeProblem]}
+          layoutColumns={2}
+          showAnswers={false}
+          settings={{ ...singaporeSettings, showEquationLine: true }}
+        />
+      );
+
+      const html = container.innerHTML;
+      expect(html).toContain('Equation:');
+      expect(html.indexOf('Equation:')).toBeLessThan(html.indexOf('Answer:'));
     });
   });
 
