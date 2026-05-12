@@ -7,6 +7,7 @@ import {
 import {
   MONEY_STORIES,
   MIXED_OPERATION_STORIES,
+  TIME_STORIES,
 } from './templates/en-word-story';
 import type { WordProblemEn } from '../../types';
 
@@ -180,6 +181,40 @@ describe('English Word Problem Generator', () => {
           expect(isMultipleOfFive || isFiveMoreThanTotal).toBe(true);
         }
       }
+    });
+
+    it('"minutes past the hour" answers must stay under 60 across all grades', () => {
+      // Regression: TIME_STORIES[1] used to allow startMinute + duration >= 60
+      // for grade 5-6, producing nonsensical answers like "80 minutes past the hour".
+      const minutesPastHourTemplate = TIME_STORIES[1];
+
+      for (let grade = 2; grade <= 6; grade++) {
+        for (let i = 0; i < 50; i++) {
+          const { answer } = minutesPastHourTemplate.generateProblem(grade);
+          expect(answer).toBeGreaterThan(0);
+          expect(answer).toBeLessThan(60);
+        }
+      }
+    });
+
+    it('multi-step shopping problems never reuse the main item as the fixed-cost item', () => {
+      // Regression: T4-MULTI-1 used to hard-code "calculator" as the fixed-cost
+      // item, which collided with the main item when "calculators" was picked.
+      const problems = generateEnWordStory(5, 200);
+      problems.forEach((p) => {
+        const match = p.problemText.match(
+          /bought \d+ (\S+(?:\s\S+)?) at \$\d+ each and one (\S+(?:\s\S+)?) for/
+        );
+        if (!match) return;
+        const mainItemPlural = match[1];
+        const fixedItem = match[2];
+        // Strip plural "s" or "es" for a loose comparison; the fixed item is
+        // always singular so they must differ as nouns.
+        const mainSingularGuess = mainItemPlural
+          .replace(/ies$/, 'y')
+          .replace(/s$/, '');
+        expect(fixedItem).not.toBe(mainSingularGuess);
+      });
     });
   });
 

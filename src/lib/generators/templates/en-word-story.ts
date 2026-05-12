@@ -313,12 +313,12 @@ function generateFriendlyPayment(price: number, maxPaid: number): number {
   }
 
   if (candidates.size === 0) {
-    // Last-resort: next multiple of 5 strictly greater than price
+    // Last-resort: next multiple of 5 strictly greater than price.
+    // We intentionally ignore maxPaid here so the helper never returns
+    // a value <= price (which would produce a non-positive change).
     const safeMultipleOfFive =
       price % 5 === 0 ? price + 5 : Math.ceil(price / 5) * 5;
-    addCandidate(
-      Math.min(Math.max(maxPaid, safeMultipleOfFive), safeMultipleOfFive)
-    );
+    addCandidate(safeMultipleOfFive);
   }
 
   const options = Array.from(candidates);
@@ -1071,14 +1071,6 @@ export const TIME_STORIES: WordStoryTemplate[] = [
     generateProblem: (grade) => {
       const name = getRandomName();
       const pronouns = getPronouns(name);
-      const startMinute = gradeRandomInt(
-        grade,
-        [
-          { upTo: 3, min: 10, max: 30 },
-          { upTo: 4, min: 12, max: 40 },
-        ],
-        { upTo: 6, min: 15, max: 50 }
-      );
       const duration = gradeRandomInt(
         grade,
         [
@@ -1087,6 +1079,18 @@ export const TIME_STORIES: WordStoryTemplate[] = [
         ],
         { upTo: 6, min: 10, max: 30 }
       );
+      const startMinuteRaw = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 10, max: 30 },
+          { upTo: 4, min: 12, max: 40 },
+        ],
+        { upTo: 6, min: 15, max: 50 }
+      );
+      // The answer is "minutes past the same hour", so we must keep
+      // startMinute + duration < 60. Without this clamp, grade 5-6 ranges
+      // can yield nonsensical answers like "80 minutes past the hour".
+      const startMinute = Math.max(5, Math.min(startMinuteRaw, 59 - duration));
       const answer = startMinute + duration;
 
       return {
@@ -2575,7 +2579,20 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
     generateProblem: (grade) => {
       const name = getAdvancedName();
       const pronouns = getPronouns(name);
-      const item = getAdvancedItem(true);
+      const itemObj = ADVANCED_ITEMS[randomInt(0, ADVANCED_ITEMS.length - 1)];
+      // Pick a fixed-cost item that is NOT the same as the main item so the
+      // sentence never asks about two of the same thing.
+      const fixedItemPool = [
+        'calculator',
+        'science kit',
+        'sketchbook',
+        'pencil case',
+      ] as const;
+      const fixedItemCandidates = fixedItemPool.filter(
+        (c) => c !== itemObj.singular
+      );
+      const fixedItem =
+        fixedItemCandidates[randomInt(0, fixedItemCandidates.length - 1)];
       const price = gradeRandomInt(
         grade,
         [
@@ -2604,11 +2621,9 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
       const budgetMin = spent + 5;
       const budget = Math.ceil(budgetMin / 10) * 10 + randomInt(0, 3) * 10;
       const answer = budget - spent;
-      // singular form of item is harder to derive here; use plural in sentence
-      const singular = item.replace(/s$/, '');
 
       return {
-        text: `${name} went to the school supply store with $${budget}. ${pronouns.subject} bought ${quantity} ${item} at $${price} each and one calculator for $${fixedCost}. How much money did ${pronouns.lowerSubject} have left after the purchase, given that the prices include tax? (The calculator is unrelated to the ${singular}.)`,
+        text: `${name} went to the school supply store with $${budget}. ${pronouns.subject} bought ${quantity} ${itemObj.plural} at $${price} each and one ${fixedItem} for $${fixedCost}. How much money did ${pronouns.lowerSubject} have left?`,
         answer,
         operation: 'subtraction' as Operation,
       };
