@@ -38,9 +38,7 @@ describe('English Word Problem Generator', () => {
     it('should generate varied templates', () => {
       const problems = generateEnMissingNumber(1, 20);
       const texts = problems.map((p) => p.problemText);
-      const uniquePatterns = new Set(
-        texts.map((t) => t.replace(/\d+/g, 'N'))
-      );
+      const uniquePatterns = new Set(texts.map((t) => t.replace(/\d+/g, 'N')));
 
       // Should have at least 3 different patterns
       expect(uniquePatterns.size).toBeGreaterThanOrEqual(3);
@@ -97,8 +95,9 @@ describe('English Word Problem Generator', () => {
     });
 
     it('should scale numeric ranges for upper elementary grades', () => {
-      const grade4Problems = generateEnWordStory(4, 40);
-      const grade5Problems = generateEnWordStory(5, 40);
+      const grade4Problems = generateEnWordStory(4, 60);
+      const grade5Problems = generateEnWordStory(5, 80);
+      const grade6Problems = generateEnWordStory(6, 100);
 
       const grade4Max = Math.max(
         ...grade4Problems.map((problem) => problem.answer as number)
@@ -106,9 +105,16 @@ describe('English Word Problem Generator', () => {
       const grade5Max = Math.max(
         ...grade5Problems.map((problem) => problem.answer as number)
       );
+      const grade6Max = Math.max(
+        ...grade6Problems.map((problem) => problem.answer as number)
+      );
 
-      expect(grade4Max).toBeGreaterThanOrEqual(50);
-      expect(grade5Max).toBeGreaterThanOrEqual(80);
+      // Grade 4 should regularly reach 3-digit territory.
+      expect(grade4Max).toBeGreaterThanOrEqual(250);
+      // Grade 5 should reach 4-digit answers at least sometimes.
+      expect(grade5Max).toBeGreaterThanOrEqual(800);
+      // Grade 6 should produce multi-thousand answers at least sometimes.
+      expect(grade6Max).toBeGreaterThanOrEqual(2000);
     });
 
     it('should include proper English grammar', () => {
@@ -174,6 +180,74 @@ describe('English Word Problem Generator', () => {
           expect(isMultipleOfFive || isFiveMoreThanTotal).toBe(true);
         }
       }
+    });
+  });
+
+  describe('Upper-elementary difficulty (grade 4+)', () => {
+    it('grade 4 should produce some answers at or above 200', () => {
+      const problems = generateEnWordStory(4, 80);
+      const max = Math.max(...problems.map((p) => p.answer as number));
+      expect(max).toBeGreaterThanOrEqual(200);
+    });
+
+    it('grade 5 should sometimes produce 4-digit answers', () => {
+      const problems = generateEnWordStory(5, 100);
+      expect(problems.some((p) => (p.answer as number) >= 1000)).toBe(true);
+    });
+
+    it('grade 6 should sometimes produce answers at or above 5000', () => {
+      const problems = generateEnWordStory(6, 120);
+      expect(problems.some((p) => (p.answer as number) >= 5000)).toBe(true);
+    });
+
+    it('grade 4 should produce multi-sentence problems in a noticeable share of output', () => {
+      const problems = generateEnWordStory(4, 80);
+      const multiSentence = problems.filter((p) => {
+        const periods = (p.problemText.match(/[.!]/g) ?? []).length;
+        return periods >= 2;
+      });
+      // At least 30% of grade 4 problems should be two-or-more-sentence stories.
+      expect(multiSentence.length).toBeGreaterThan(problems.length * 0.3);
+    });
+
+    it('grade 5+ should sometimes use subordinate-clause connectives', () => {
+      const problems = generateEnWordStory(5, 100);
+      const hasClause = problems.some((p) =>
+        /\b(if|since|because|after|although|while)\b/i.test(p.problemText)
+      );
+      expect(hasClause).toBe(true);
+    });
+
+    it('grade 4+ should sometimes use advanced school/event vocabulary', () => {
+      const problems = generateEnWordStory(4, 100);
+      const advancedRegex =
+        /\b(library|auditorium|cafeteria|gymnasium|festival|concert|tournament|exhibition|fundraiser|marathon|drive|talent show|fair|charity)\b/i;
+      expect(problems.some((p) => advancedRegex.test(p.problemText))).toBe(
+        true
+      );
+    });
+
+    it('grade 4+ should include area or perimeter problems sometimes', () => {
+      const problems = generateEnWordStory(4, 120);
+      expect(
+        problems.some((p) =>
+          /square meters|perimeter|area of/i.test(p.problemText)
+        )
+      ).toBe(true);
+    });
+
+    it('grade 5+ should sometimes include fraction-of or ratio problems', () => {
+      const problems = generateEnWordStory(5, 150);
+      expect(
+        problems.some((p) => /\d+\/\d+|ratio of/i.test(p.problemText))
+      ).toBe(true);
+    });
+
+    it('grade 4 should include multiplication and division problems', () => {
+      const problems = generateEnWordStory(4, 100);
+      const ops = new Set(problems.map((p) => p.operation));
+      expect(ops.has('multiplication')).toBe(true);
+      expect(ops.has('division')).toBe(true);
     });
   });
 
@@ -247,14 +321,15 @@ describe('English Word Problem Generator', () => {
         // Value checks
         expect(typeof problem.id).toBe('string');
         expect(problem.type).toBe('word-en');
-        expect(['addition', 'subtraction', 'multiplication', 'division']).toContain(
-          problem.operation
-        );
+        expect([
+          'addition',
+          'subtraction',
+          'multiplication',
+          'division',
+        ]).toContain(problem.operation);
         expect(typeof problem.problemText).toBe('string');
         expect(['number', 'string']).toContain(typeof problem.answer);
-        expect(['word-story', 'comparison']).toContain(
-          problem.category
-        );
+        expect(['word-story', 'comparison']).toContain(problem.category);
         expect(problem.language).toBe('en');
       });
     });
@@ -289,7 +364,7 @@ describe('English Word Problem Generator', () => {
         // but the absolute value should be reasonable
         expect(Number.isFinite(answer as number)).toBe(true);
         expect(Math.abs(answer as number)).toBeGreaterThanOrEqual(0);
-        expect(Math.abs(answer as number)).toBeLessThan(10000);
+        expect(Math.abs(answer as number)).toBeLessThan(200000);
       });
     });
 
