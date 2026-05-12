@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   getEffectiveProblemType,
   isWordProblem,
+  supportsEquationLine,
 } from './problem-type-detector';
 
 describe('problem-type-detector allowance classification', () => {
@@ -73,8 +74,26 @@ describe('problem-type-detector explicit problem type priority', () => {
     expect(getEffectiveProblemType('basic', 'frac-same-denom')).toBe(
       'fraction'
     );
-    expect(getEffectiveProblemType('basic', 'frac-mixed-number')).toBe(
-      'mixed'
-    );
+    expect(getEffectiveProblemType('basic', 'frac-mixed-number')).toBe('mixed');
+  });
+});
+
+describe('supportsEquationLine', () => {
+  it('returns true for word problem types', () => {
+    expect(supportsEquationLine('word')).toBe(true);
+    expect(supportsEquationLine('word-en')).toBe(true);
+    expect(supportsEquationLine('singapore')).toBe(true);
+  });
+
+  it('returns false for non-word problem types', () => {
+    expect(supportsEquationLine('basic')).toBe(false);
+    expect(supportsEquationLine('fraction')).toBe(false);
+    expect(supportsEquationLine('decimal')).toBe(false);
+    expect(supportsEquationLine('mixed')).toBe(false);
+    expect(supportsEquationLine('hissan')).toBe(false);
+    expect(supportsEquationLine('hissan-div')).toBe(false);
+    expect(supportsEquationLine('missing')).toBe(false);
+    expect(supportsEquationLine('anzan')).toBe(false);
+    expect(supportsEquationLine('number-tracing')).toBe(false);
   });
 });

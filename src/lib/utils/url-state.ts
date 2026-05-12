@@ -7,7 +7,10 @@ import type {
 } from '../../types';
 import { PATTERN_LABELS } from '../../types';
 import { getPrintTemplate } from '../../config/print-templates';
-import { getEffectiveProblemType } from './problem-type-detector';
+import {
+  getEffectiveProblemType,
+  supportsEquationLine as supportsEquationLineForType,
+} from './problem-type-detector';
 
 const VALID_GRADES: readonly number[] = [0, 1, 2, 3, 4, 5, 6];
 const VALID_PROBLEM_TYPES: readonly string[] = [
@@ -30,11 +33,7 @@ function supportsEquationLine(settings: Partial<WorksheetSettings>): boolean {
     settings.problemType,
     settings.calculationPattern
   );
-  return (
-    effectiveType === 'word' ||
-    effectiveType === 'word-en' ||
-    effectiveType === 'singapore'
-  );
+  return supportsEquationLineForType(effectiveType);
 }
 
 export function getOperationFromPattern(

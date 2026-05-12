@@ -6,6 +6,13 @@
 
 import type { ProblemType, LayoutColumns } from '../../types';
 import { getPrintTemplate } from '../../config/print-templates';
+import { supportsEquationLine } from './problem-type-detector';
+
+/**
+ * 式記入行の高さ（mm）
+ * estimateA4Fit でレイアウト計算に使用
+ */
+export const EQUATION_LINE_HEIGHT_MM = 8;
 
 /**
  * 生成されたHTMLから問題番号をカウントする
@@ -43,7 +50,10 @@ export function countProblemsInHTML(html: string): number {
  * }
  * ```
  */
-export function validateProblemType(html: string, problemType: ProblemType): boolean {
+export function validateProblemType(
+  html: string,
+  problemType: ProblemType
+): boolean {
   switch (problemType) {
     case 'fraction':
       // MathMLの分数タグを確認
@@ -105,11 +115,8 @@ export function estimateA4Fit(
 
   // 問題タイプごとの推定高さ（mm）
   const equationLineHeightMm =
-    showEquationLine &&
-    (problemType === 'word' ||
-      problemType === 'word-en' ||
-      problemType === 'singapore')
-      ? 8
+    showEquationLine && supportsEquationLine(problemType)
+      ? EQUATION_LINE_HEIGHT_MM
       : 0;
   const minProblemHeightMm =
     parseInt(template.layout.minProblemHeight) * 0.26 + equationLineHeightMm; // px to mm (96dpi)
@@ -119,7 +126,8 @@ export function estimateA4Fit(
   const headerHeight = 25; // ヘッダー部分の高さ (mm)
   const verticalMarginMin = 5; // 最小余白 (mm)
 
-  const contentHeight = headerHeight + (minProblemHeightMm + rowGapMm) * rowCount;
+  const contentHeight =
+    headerHeight + (minProblemHeightMm + rowGapMm) * rowCount;
   const estimatedHeight = contentHeight + verticalMarginMin * 2;
 
   const a4Height = 297; // A4の高さ (mm)

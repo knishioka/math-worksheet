@@ -12,6 +12,7 @@ import {
   isWordEnProblem,
   isWordProblem,
   getEffectiveProblemType,
+  supportsEquationLine,
 } from '../../lib/utils/problem-type-detector';
 
 interface SettingsPanelProps {
@@ -47,10 +48,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const template = getPrintTemplate(effectiveProblemType);
   const isAnzan = effectiveProblemType === 'anzan';
   const isNumberTracing = effectiveProblemType === 'number-tracing';
-  const supportsEquationLine =
-    effectiveProblemType === 'word' ||
-    effectiveProblemType === 'word-en' ||
-    effectiveProblemType === 'singapore';
+  const showEquationLineToggle = supportsEquationLine(effectiveProblemType);
 
   // 列数に応じた最大問題数と推奨問題数を取得（パターン固有オーバーライド対応）
   const patternOverride = calculationPattern
@@ -315,7 +313,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         )}
       </div>
 
-      {supportsEquationLine && (
+      {showEquationLineToggle && (
         <div className="rounded-2xl border border-sky-100 bg-slate-50/80 p-3">
           <label className="flex items-center justify-between gap-4 text-sm text-slate-700">
             <span className="font-semibold">式を書く欄</span>

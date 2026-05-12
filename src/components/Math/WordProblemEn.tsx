@@ -1,11 +1,9 @@
 import React from 'react';
 import type { WordProblemEn } from '../../types';
+import { EquationLine } from './EquationLine';
 import {
-  wordProblemAnswerLabelStyle,
   wordProblemAnswerRowStyle,
   wordProblemAnswerUnderlineStyle,
-  wordProblemEquationRowStyle,
-  wordProblemEquationUnderlineStyle,
 } from '../../config/styles';
 
 interface WordProblemEnProps {
@@ -46,23 +44,12 @@ export const WordProblemEnComponent: React.FC<WordProblemEnProps> = ({
       {ANSWER_LINE_CATEGORIES.has(problem.category) && (
         <>
           {showEquationLine && (
-            <div style={wordProblemEquationRowStyle}>
-              <span
-                style={{
-                  ...wordProblemAnswerLabelStyle,
-                  color: '#000',
-                  fontSize: '13px',
-                }}
-              >
-                Equation:
-              </span>
-              <span
-                style={{
-                  ...wordProblemEquationUnderlineStyle,
-                  minWidth: '3.5rem',
-                }}
-              />
-            </div>
+            <EquationLine
+              label="Equation:"
+              labelColor="#000"
+              labelFontSize="13px"
+              minWidth="3.5rem"
+            />
           )}
           <div style={wordProblemAnswerRowStyle}>
             <span style={{ color: '#000', fontSize: '13px' }}>Answer:</span>

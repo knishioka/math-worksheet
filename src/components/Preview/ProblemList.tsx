@@ -21,6 +21,7 @@ import {
 } from '../../lib/utils/missing-number-calculator';
 import { WordProblemEnComponent } from '../Math/WordProblemEn';
 import { SingaporeProblemComponent } from '../Math/SingaporeProblemComponent';
+import { EquationLine } from '../Math/EquationLine';
 import { NumberTracingRow } from '../Math/NumberTracingRow';
 import type { NumberTracingProblem } from '../../types';
 import { getPrintTemplate } from '../../config/print-templates';
@@ -29,7 +30,10 @@ import {
   NUMBER_TRACING_COL_GAP_PX,
   NUMBER_TRACING_ROW_GAP_PX,
 } from '../../config/number-tracing-layout';
-import { getEffectiveProblemType } from '../../lib/utils/problem-type-detector';
+import {
+  getEffectiveProblemType,
+  supportsEquationLine,
+} from '../../lib/utils/problem-type-detector';
 import { estimateA4Fit } from '../../lib/utils/print-validator';
 import { buildPreviewTitle } from '../../lib/utils/previewTitle';
 import {
@@ -61,8 +65,6 @@ import {
   symbolProblemAnswerRowStyle,
   wordProblemAnswerLabelStyle,
   wordProblemAnswerRowStyle,
-  wordProblemEquationRowStyle,
-  wordProblemEquationUnderlineStyle,
   hissanContainerStyle,
   hissanCellStyle,
   hissanAnswerBoxStyle,
@@ -152,9 +154,7 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
     const template = getPrintTemplate(effectiveProblemType);
     const showEquationLine =
       settings.showEquationLine === true &&
-      (effectiveProblemType === 'word' ||
-        effectiveProblemType === 'word-en' ||
-        effectiveProblemType === 'singapore');
+      supportsEquationLine(effectiveProblemType);
     const a4FitResult = estimateA4Fit(
       problems.length,
       layoutColumns,
@@ -412,13 +412,6 @@ const PartialProductBoxes: React.FC<{
     </>
   );
 };
-
-const EquationLine: React.FC<{ label: string }> = ({ label }) => (
-  <div style={wordProblemEquationRowStyle}>
-    <span style={wordProblemAnswerLabelStyle}>{label}</span>
-    <span style={wordProblemEquationUnderlineStyle} />
-  </div>
-);
 
 interface ProblemItemProps {
   problem: Problem;
