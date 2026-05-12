@@ -64,6 +64,18 @@ export function isDivisionHissanProblem(
 }
 
 /**
+ * 式記入行（Equation line）をサポートする問題タイプかどうかを判定
+ * 文章問題（日本語・英語）とシンガポール式問題で利用可能
+ */
+export function supportsEquationLine(effectiveType: ProblemType): boolean {
+  return (
+    effectiveType === 'word' ||
+    effectiveType === 'word-en' ||
+    effectiveType === 'singapore'
+  );
+}
+
+/**
  * 問題タイプと計算パターンから実効的な問題タイプを取得
  * 計算パターンによって実際の問題タイプが変わる場合に使用
  */

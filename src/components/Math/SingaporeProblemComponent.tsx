@@ -3,6 +3,7 @@ import type { SingaporeProblem } from '../../types';
 import { BarModelDiagramComponent } from './diagrams/BarModelDiagram';
 import { NumberBondDiagramComponent } from './diagrams/NumberBondDiagram';
 import { ComparisonDiagramComponent } from './diagrams/ComparisonDiagram';
+import { EquationLine } from './EquationLine';
 import {
   wordProblemAnswerRowStyle,
   wordProblemAnswerUnderlineStyle,
@@ -11,11 +12,12 @@ import {
 interface SingaporeProblemComponentProps {
   problem: SingaporeProblem;
   showAnswer?: boolean;
+  showEquationLine?: boolean;
 }
 
 export const SingaporeProblemComponent: React.FC<
   SingaporeProblemComponentProps
-> = ({ problem, showAnswer = false }) => {
+> = ({ problem, showAnswer = false, showEquationLine = false }) => {
   const { diagram, problemText, answer, unit, category } = problem;
 
   return (
@@ -44,6 +46,15 @@ export const SingaporeProblemComponent: React.FC<
 
       {/* Problem text */}
       <div style={{ marginBottom: '2px' }}>{problemText}</div>
+
+      {showEquationLine && (
+        <EquationLine
+          label="Equation:"
+          labelColor="#000"
+          labelFontSize="12px"
+          minWidth={category === 'number-bond' ? '2.5rem' : '3.5rem'}
+        />
+      )}
 
       {/* Answer line — shown for all Singapore Math categories */}
       <div style={wordProblemAnswerRowStyle}>

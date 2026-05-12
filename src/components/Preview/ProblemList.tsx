@@ -21,6 +21,7 @@ import {
 } from '../../lib/utils/missing-number-calculator';
 import { WordProblemEnComponent } from '../Math/WordProblemEn';
 import { SingaporeProblemComponent } from '../Math/SingaporeProblemComponent';
+import { EquationLine } from '../Math/EquationLine';
 import { NumberTracingRow } from '../Math/NumberTracingRow';
 import type { NumberTracingProblem } from '../../types';
 import { getPrintTemplate } from '../../config/print-templates';
@@ -29,7 +30,10 @@ import {
   NUMBER_TRACING_COL_GAP_PX,
   NUMBER_TRACING_ROW_GAP_PX,
 } from '../../config/number-tracing-layout';
-import { getEffectiveProblemType } from '../../lib/utils/problem-type-detector';
+import {
+  getEffectiveProblemType,
+  supportsEquationLine,
+} from '../../lib/utils/problem-type-detector';
 import { estimateA4Fit } from '../../lib/utils/print-validator';
 import { buildPreviewTitle } from '../../lib/utils/previewTitle';
 import {
@@ -146,14 +150,17 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
 
     // 動的余白の計算（印刷プレビューと同じロジック）
     // A4サイズオーバーフロー判定
+    // テンプレートから gap を取得
+    const template = getPrintTemplate(effectiveProblemType);
+    const showEquationLine =
+      settings.showEquationLine === true &&
+      supportsEquationLine(effectiveProblemType);
     const a4FitResult = estimateA4Fit(
       problems.length,
       layoutColumns,
-      effectiveProblemType
+      effectiveProblemType,
+      showEquationLine
     );
-
-    // テンプレートから gap を取得
-    const template = getPrintTemplate(effectiveProblemType);
     // A4に収まる場合は align-content: space-between で行間を自動拡張し余白を均等配分
     const gridGapStyle: React.CSSProperties = {
       display: 'grid',
@@ -228,6 +235,7 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
                       problem={problem}
                       number={originalNumber}
                       showAnswer={showAnswers}
+                      showEquationLine={showEquationLine}
                     />
                   </div>
                 );
@@ -409,12 +417,14 @@ interface ProblemItemProps {
   problem: Problem;
   number: number;
   showAnswer?: boolean;
+  showEquationLine?: boolean;
 }
 
 function ProblemItem({
   problem,
   number,
   showAnswer = false,
+  showEquationLine = false,
 }: ProblemItemProps): React.ReactElement {
   const operationSymbol = {
     addition: '+',
@@ -571,6 +581,7 @@ function ProblemItem({
             {wordProblem.problemText}
           </div>
         )}
+        {showEquationLine && <EquationLine label="式:" />}
         <div
           style={
             isCountingProblem
@@ -614,6 +625,7 @@ function ProblemItem({
           <WordProblemEnComponent
             problem={wordProblemEn}
             showAnswer={showAnswer}
+            showEquationLine={showEquationLine}
           />
         </div>
       </div>
@@ -637,6 +649,7 @@ function ProblemItem({
           <SingaporeProblemComponent
             problem={sgProblem}
             showAnswer={showAnswer}
+            showEquationLine={showEquationLine}
           />
         </div>
       </div>

@@ -238,6 +238,7 @@ export interface WorksheetSettings {
   calculationPattern?: CalculationPattern;
   problemCount: number;
   layoutColumns: LayoutColumns;
+  showEquationLine?: boolean;
   title?: string;
   studentName?: string;
   date?: string;

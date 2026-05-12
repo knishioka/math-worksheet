@@ -7,7 +7,10 @@ import type {
 } from '../../types';
 import { PATTERN_LABELS } from '../../types';
 import { getPrintTemplate } from '../../config/print-templates';
-import { getEffectiveProblemType } from './problem-type-detector';
+import {
+  getEffectiveProblemType,
+  supportsEquationLine as supportsEquationLineForType,
+} from './problem-type-detector';
 
 const VALID_GRADES: readonly number[] = [0, 1, 2, 3, 4, 5, 6];
 const VALID_PROBLEM_TYPES: readonly string[] = [
@@ -24,6 +27,14 @@ const VALID_PROBLEM_TYPES: readonly string[] = [
   'number-tracing',
 ];
 const VALID_COLUMNS: readonly number[] = [1, 2, 3];
+
+function supportsEquationLine(settings: Partial<WorksheetSettings>): boolean {
+  const effectiveType = getEffectiveProblemType(
+    settings.problemType,
+    settings.calculationPattern
+  );
+  return supportsEquationLineForType(effectiveType);
+}
 
 export function getOperationFromPattern(
   pattern: CalculationPattern
@@ -89,6 +100,12 @@ export function parseUrlSettings(
     }
   }
 
+  const equationParam = params.get('eq');
+  if (equationParam !== null && supportsEquationLine(result)) {
+    result.showEquationLine =
+      equationParam === '1' || equationParam.toLowerCase() === 'true';
+  }
+
   return result;
 }
 
@@ -101,6 +118,9 @@ export function settingsToUrlParams(settings: WorksheetSettings): string {
   }
   params.set('cols', String(settings.layoutColumns));
   params.set('count', String(settings.problemCount));
+  if (settings.showEquationLine && supportsEquationLine(settings)) {
+    params.set('eq', '1');
+  }
   return params.toString();
 }
 

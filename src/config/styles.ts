@@ -241,6 +241,24 @@ export const wordProblemAnswerLabelStyle: CSSProperties = {
 };
 
 /**
+ * 文章問題用の式記入行
+ */
+export const wordProblemEquationRowStyle: CSSProperties = {
+  ...wordProblemAnswerRowStyle,
+  minHeight: '30px',
+  marginTop: '2px',
+};
+
+/**
+ * 文章問題用の式下線
+ */
+export const wordProblemEquationUnderlineStyle: CSSProperties = {
+  ...wordProblemAnswerUnderlineStyle,
+  maxWidth: 'none',
+  height: '24px',
+};
+
+/**
  * 答え表示スタイル（赤字・太字）
  */
 export const answerDisplayStyle: CSSProperties = {
