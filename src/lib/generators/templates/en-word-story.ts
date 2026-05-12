@@ -90,6 +90,96 @@ function getRandomCollectionItem(): string {
   return COLLECTION_ITEMS[randomInt(0, COLLECTION_ITEMS.length - 1)];
 }
 
+/**
+ * Grade 4+ advanced vocabulary: longer names, school/community contexts,
+ * event-themed scenarios. Used inside grade>=4 branches and ADVANCED_STORIES.
+ */
+const ADVANCED_NAMES = [
+  'Olivia',
+  'Sophia',
+  'Isabella',
+  'Aiden',
+  'Ethan',
+  'Lucas',
+  'Mason',
+  'Hannah',
+  'Charlotte',
+  'Amelia',
+  'Daniel',
+  'Henry',
+  'Caleb',
+  'Nora',
+  'Ava',
+] as const;
+
+const ADVANCED_VENUES = [
+  'school library',
+  'auditorium',
+  'cafeteria',
+  'gymnasium',
+  'playground',
+  'science lab',
+  'art studio',
+  'computer lab',
+  'community center',
+] as const;
+
+const ADVANCED_EVENTS = [
+  'school festival',
+  'spring concert',
+  'science fair',
+  'sports tournament',
+  'art exhibition',
+  'reading marathon',
+  'recycling drive',
+  'fundraiser',
+  'charity walk',
+  'talent show',
+] as const;
+
+const ADVANCED_ITEMS = [
+  { singular: 'notebook', plural: 'notebooks' },
+  { singular: 'calculator', plural: 'calculators' },
+  { singular: 'science kit', plural: 'science kits' },
+  { singular: 'bottle cap', plural: 'bottle caps' },
+  { singular: 'donation can', plural: 'donation cans' },
+  { singular: 'concert ticket', plural: 'concert tickets' },
+  { singular: 'medal', plural: 'medals' },
+  { singular: 'trophy', plural: 'trophies' },
+  { singular: 'auditorium chair', plural: 'auditorium chairs' },
+  { singular: 'science book', plural: 'science books' },
+] as const;
+
+function getAdvancedName(): string {
+  return ADVANCED_NAMES[randomInt(0, ADVANCED_NAMES.length - 1)];
+}
+
+function getDifferentAdvancedName(exclude: string | string[]): string {
+  const excludedNames = Array.isArray(exclude) ? exclude : [exclude];
+  if (excludedNames.length >= ADVANCED_NAMES.length) {
+    throw new Error('Cannot select a unique advanced name: all excluded');
+  }
+  const excludedSet = new Set(excludedNames);
+  let name = getAdvancedName();
+  while (excludedSet.has(name)) {
+    name = getAdvancedName();
+  }
+  return name;
+}
+
+function getAdvancedVenue(): string {
+  return ADVANCED_VENUES[randomInt(0, ADVANCED_VENUES.length - 1)];
+}
+
+function getAdvancedEvent(): string {
+  return ADVANCED_EVENTS[randomInt(0, ADVANCED_EVENTS.length - 1)];
+}
+
+function getAdvancedItem(plural = false): string {
+  const item = ADVANCED_ITEMS[randomInt(0, ADVANCED_ITEMS.length - 1)];
+  return plural ? item.plural : item.singular;
+}
+
 const FEMALE_NAMES = new Set([
   'Jen',
   'Ann',
@@ -99,6 +189,15 @@ const FEMALE_NAMES = new Set([
   'Mia',
   'Zoe',
   'Lucy',
+  // Advanced (grade 4+) female names
+  'Olivia',
+  'Sophia',
+  'Isabella',
+  'Hannah',
+  'Charlotte',
+  'Amelia',
+  'Nora',
+  'Ava',
 ]);
 
 function isFemaleName(name: string): boolean {
@@ -153,6 +252,23 @@ function gradeRandomInt(
   return randomInt(min, max);
 }
 
+/**
+ * Per-grade scalar (e.g. for max factor in multiplication / division).
+ * Lets us replace inline ternaries with a single readable call.
+ */
+function gradeFactor(
+  grade: number,
+  g3OrBelow: number,
+  g4: number,
+  g5: number,
+  g6: number
+): number {
+  if (grade <= 3) return g3OrBelow;
+  if (grade === 4) return g4;
+  if (grade === 5) return g5;
+  return g6;
+}
+
 function generateFriendlyPayment(price: number, maxPaid: number): number {
   const candidates = new Set<number>();
   const addCandidate = (value: number) => {
@@ -176,14 +292,33 @@ function generateFriendlyPayment(price: number, maxPaid: number): number {
     addCandidate(nextMultipleOfTwenty);
   }
 
-  [50, 100].forEach((bill) => {
-    if (bill >= price && bill - price <= 30) {
+  [50, 100, 200, 500, 1000, 2000, 5000].forEach((bill) => {
+    if (
+      bill >= price &&
+      bill - price <= Math.max(30, Math.floor(price * 0.3))
+    ) {
       addCandidate(bill);
     }
   });
 
+  // High-price fallbacks: next round hundred / thousand
+  if (price > 100) {
+    const nextHundred = Math.ceil(price / 100) * 100;
+    if (nextHundred > price) addCandidate(nextHundred);
+    if (nextHundred + 50 > price) addCandidate(nextHundred + 50);
+  }
+  if (price > 500) {
+    const nextThousand = Math.ceil(price / 1000) * 1000;
+    if (nextThousand > price) addCandidate(nextThousand);
+  }
+
   if (candidates.size === 0) {
-    addCandidate(Math.min(maxPaid, price + 5));
+    // Last-resort: next multiple of 5 strictly greater than price.
+    // We intentionally ignore maxPaid here so the helper never returns
+    // a value <= price (which would produce a non-positive change).
+    const safeMultipleOfFive =
+      price % 5 === 0 ? price + 5 : Math.ceil(price / 5) * 5;
+    addCandidate(safeMultipleOfFive);
   }
 
   const options = Array.from(candidates);
@@ -283,21 +418,24 @@ export const SIMPLE_ADDITION_STORIES: WordStoryTemplate[] = [
 ];
 
 /**
- * Grade 2-4: Multi-step and categorization problems
+ * Grade 2-6: Multi-step and categorization problems
  */
 export const MULTI_STEP_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
-      const name = getRandomName();
-      const item = getRandomItem(true);
+      const name = grade >= 4 ? getAdvancedName() : getRandomName();
+      const useAdvanced = grade >= 4;
+      const item = useAdvanced ? getAdvancedItem(true) : getRandomItem(true);
+      const event = useAdvanced ? getAdvancedEvent() : null;
       const total = gradeRandomInt(
         grade,
         [
           { upTo: 2, min: 18, max: 36 },
           { upTo: 3, min: 24, max: 50 },
-          { upTo: 4, min: 28, max: 60 },
+          { upTo: 4, min: 60, max: 140 },
+          { upTo: 5, min: 120, max: 280 },
         ],
-        { upTo: 6, min: 36, max: 90 }
+        { upTo: 6, min: 200, max: 480 }
       );
       const red = randomInt(
         Math.max(3, Math.floor(total * 0.2)),
@@ -309,62 +447,77 @@ export const MULTI_STEP_STORIES: WordStoryTemplate[] = [
       );
       const blue = total - red - green;
 
+      const text = useAdvanced
+        ? `After the ${event}, ${name} sorted ${total} ${item} from the donation box. ${red} were red and ${green} were green, while the rest were blue. How many blue ${item} were there?`
+        : `${name} has ${total} ${item}. ${red} of them are red and ${green} are green. The rest are blue. How many blue ${item} are there?`;
+
       return {
-        text: `${name} has ${total} ${item}. ${red} of them are red and ${green} are green. The rest are blue. How many blue ${item} are there?`,
+        text,
         answer: blue,
         operation: 'subtraction' as Operation,
       };
     },
     minGrade: 2,
-    maxGrade: 4,
+    maxGrade: 6,
     category: 'word-story',
   },
   {
     generateProblem: (grade) => {
-      const name1 = getRandomName();
-      const name2 = getDifferentName(name1);
-      const item = getRandomItem(true);
+      const useAdvanced = grade >= 4;
+      const name1 = useAdvanced ? getAdvancedName() : getRandomName();
+      const name2 = useAdvanced
+        ? getDifferentAdvancedName(name1)
+        : getDifferentName(name1);
+      const item = useAdvanced ? getAdvancedItem(true) : getRandomItem(true);
+      const event = useAdvanced ? getAdvancedEvent() : null;
       const count1 = gradeRandomInt(
         grade,
         [
           { upTo: 2, min: 14, max: 32 },
           { upTo: 3, min: 18, max: 48 },
-          { upTo: 4, min: 22, max: 60 },
+          { upTo: 4, min: 55, max: 160 },
+          { upTo: 5, min: 120, max: 320 },
         ],
-        { upTo: 6, min: 28, max: 90 }
+        { upTo: 6, min: 240, max: 680 }
       );
       const count2 = gradeRandomInt(
         grade,
         [
           { upTo: 2, min: 8, max: 18 },
           { upTo: 3, min: 10, max: 25 },
-          { upTo: 4, min: 12, max: 30 },
+          { upTo: 4, min: 35, max: 90 },
+          { upTo: 5, min: 60, max: 180 },
         ],
-        { upTo: 6, min: 14, max: 36 }
+        { upTo: 6, min: 120, max: 360 }
       );
       const answer = count1 + count2;
 
+      const text = useAdvanced
+        ? `For the ${event}, ${name1} contributed ${count1} ${item} while ${name2} contributed ${count2} ${item}. How many ${item} did the two of them contribute altogether?`
+        : `${name1} has ${count1} ${item} and ${name2} has ${count2} ${item}. How many ${item} do they have together?`;
+
       return {
-        text: `${name1} has ${count1} ${item} and ${name2} has ${count2} ${item}. How many ${item} do they have together?`,
+        text,
         answer,
         operation: 'addition' as Operation,
       };
     },
     minGrade: 2,
-    maxGrade: 4,
+    maxGrade: 6,
     category: 'word-story',
   },
 ];
 
 /**
- * Grade 2-3: Multiplication stories
+ * Grade 2-6: Multiplication stories
  */
 export const MULTIPLICATION_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const item = getRandomItem(true);
-      const groups = randomInt(2, grade === 2 ? 9 : 12);
-      const perGroup = randomInt(2, grade === 2 ? 9 : 12);
+      const factorMax = gradeFactor(grade, 9, 20, 40, 60);
+      const groups = randomInt(2, factorMax);
+      const perGroup = randomInt(2, factorMax);
       const answer = groups * perGroup;
 
       return {
@@ -380,8 +533,9 @@ export const MULTIPLICATION_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const item = getRandomItem(true);
-      const groups = randomInt(2, grade === 2 ? 9 : 12);
-      const perGroup = randomInt(2, grade === 2 ? 9 : 12);
+      const factorMax = gradeFactor(grade, 9, 20, 40, 60);
+      const groups = randomInt(2, factorMax);
+      const perGroup = randomInt(2, factorMax);
       const answer = groups * perGroup;
 
       return {
@@ -397,8 +551,9 @@ export const MULTIPLICATION_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const item = getRandomItem(true);
-      const rows = randomInt(2, grade === 2 ? 9 : 12);
-      const cols = randomInt(2, grade === 2 ? 9 : 12);
+      const factorMax = gradeFactor(grade, 9, 20, 40, 60);
+      const rows = randomInt(2, factorMax);
+      const cols = randomInt(2, factorMax);
       const answer = rows * cols;
 
       return {
@@ -413,30 +568,39 @@ export const MULTIPLICATION_STORIES: WordStoryTemplate[] = [
   },
   {
     generateProblem: (grade) => {
-      const name = getRandomName();
-      const item = getRandomItem(true);
+      const useAdvanced = grade >= 4;
+      const name = useAdvanced ? getAdvancedName() : getRandomName();
+      const item = useAdvanced ? getAdvancedItem(true) : getRandomItem(true);
       const pronouns = getPronouns(name);
-      const friendName = getDifferentName(name);
+      const friendName = useAdvanced
+        ? getDifferentAdvancedName(name)
+        : getDifferentName(name);
       const multiplier = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 2, max: 7 },
-          { upTo: 4, min: 3, max: 9 },
+          { upTo: 4, min: 4, max: 14 },
+          { upTo: 5, min: 6, max: 20 },
         ],
-        { upTo: 6, min: 4, max: 12 }
+        { upTo: 6, min: 8, max: 30 }
       );
       const base = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 2, max: 8 },
-          { upTo: 4, min: 3, max: 12 },
+          { upTo: 4, min: 8, max: 25 },
+          { upTo: 5, min: 15, max: 60 },
         ],
-        { upTo: 6, min: 4, max: 14 }
+        { upTo: 6, min: 25, max: 120 }
       );
       const answer = multiplier * base;
 
+      const text = useAdvanced
+        ? `Since ${name} has ${multiplier} times as many ${item} as ${pronouns.possessive} friend ${friendName}, who already owns ${base}, how many ${item} does ${pronouns.lowerSubject} have in total?`
+        : `${name} has ${multiplier} times as many ${item} as ${pronouns.possessive} friend ${friendName}, who has ${base}. How many ${item} does ${pronouns.lowerSubject} have?`;
+
       return {
-        text: `${name} has ${multiplier} times as many ${item} as ${pronouns.possessive} friend ${friendName}, who has ${base}. How many ${item} does ${pronouns.lowerSubject} have?`,
+        text,
         answer,
         operation: 'multiplication' as Operation,
       };
@@ -447,28 +611,37 @@ export const MULTIPLICATION_STORIES: WordStoryTemplate[] = [
   },
   {
     generateProblem: (grade) => {
-      const name = getRandomName();
+      const useAdvanced = grade >= 4;
+      const name = useAdvanced ? getAdvancedName() : getRandomName();
       const pronouns = getPronouns(name);
       const perDay = gradeRandomInt(
         grade,
         [
           { upTo: 2, min: 2, max: 6 },
-          { upTo: 4, min: 4, max: 10 },
+          { upTo: 3, min: 4, max: 10 },
+          { upTo: 4, min: 8, max: 22 },
+          { upTo: 5, min: 15, max: 40 },
         ],
-        { upTo: 6, min: 5, max: 14 }
+        { upTo: 6, min: 20, max: 60 }
       );
       const days = gradeRandomInt(
         grade,
         [
           { upTo: 2, min: 2, max: 6 },
-          { upTo: 4, min: 3, max: 8 },
+          { upTo: 3, min: 3, max: 8 },
+          { upTo: 4, min: 5, max: 14 },
+          { upTo: 5, min: 7, max: 21 },
         ],
-        { upTo: 6, min: 4, max: 12 }
+        { upTo: 6, min: 10, max: 30 }
       );
       const answer = perDay * days;
 
+      const text = useAdvanced
+        ? `Since ${name} reads ${perDay} pages each evening, how many pages will ${pronouns.lowerSubject} have read after ${days} days of the summer reading challenge?`
+        : `${name} reads ${perDay} pages every day. How many pages does ${pronouns.lowerSubject} read in ${days} days?`;
+
       return {
-        text: `${name} reads ${perDay} pages every day. How many pages does ${pronouns.lowerSubject} read in ${days} days?`,
+        text,
         answer,
         operation: 'multiplication' as Operation,
       };
@@ -479,10 +652,31 @@ export const MULTIPLICATION_STORIES: WordStoryTemplate[] = [
   },
   {
     generateProblem: (grade) => {
-      const price = randomInt(2, grade === 2 ? 9 : 12);
-      const quantity = randomInt(2, grade === 2 ? 9 : 12);
+      const useAdvanced = grade >= 4;
+      const price = gradeRandomInt(
+        grade,
+        [
+          { upTo: 2, min: 2, max: 9 },
+          { upTo: 3, min: 2, max: 12 },
+          { upTo: 4, min: 4, max: 18 },
+          { upTo: 5, min: 8, max: 30 },
+        ],
+        { upTo: 6, min: 12, max: 50 }
+      );
+      const quantity = gradeRandomInt(
+        grade,
+        [
+          { upTo: 2, min: 2, max: 9 },
+          { upTo: 3, min: 2, max: 12 },
+          { upTo: 4, min: 5, max: 14 },
+          { upTo: 5, min: 6, max: 20 },
+        ],
+        { upTo: 6, min: 8, max: 28 }
+      );
       const answer = price * quantity;
-      const item = getRandomItemPair();
+      const item = useAdvanced
+        ? ADVANCED_ITEMS[randomInt(0, ADVANCED_ITEMS.length - 1)]
+        : getRandomItemPair();
 
       return {
         text: `One ${item.singular} costs $${price}. How much do ${quantity} ${item.plural} cost?`,
@@ -503,8 +697,10 @@ export const DIVISION_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const item = getRandomItem(true);
-      const groups = randomInt(2, grade === 3 ? 9 : 12);
-      const perGroup = randomInt(2, grade === 3 ? 9 : 12);
+      const divisorMax = gradeFactor(grade, 9, 12, 25, 40);
+      const quotientMax = gradeFactor(grade, 9, 25, 80, 200);
+      const groups = randomInt(2, divisorMax);
+      const perGroup = randomInt(2, quotientMax);
       const total = groups * perGroup;
       const answer = perGroup;
 
@@ -521,8 +717,10 @@ export const DIVISION_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const item = getRandomItem(true);
-      const perBox = randomInt(2, grade === 3 ? 9 : 12);
-      const numBoxes = randomInt(2, grade === 3 ? 9 : 12);
+      const divisorMax = gradeFactor(grade, 9, 12, 25, 40);
+      const quotientMax = gradeFactor(grade, 9, 25, 80, 200);
+      const perBox = randomInt(2, divisorMax);
+      const numBoxes = randomInt(2, quotientMax);
       const total = perBox * numBoxes;
       const answer = numBoxes;
 
@@ -539,8 +737,10 @@ export const DIVISION_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const item = getRandomItem(true);
-      const perRow = randomInt(2, grade === 3 ? 9 : 12);
-      const numRows = randomInt(2, grade === 3 ? 9 : 12);
+      const divisorMax = gradeFactor(grade, 9, 12, 25, 40);
+      const quotientMax = gradeFactor(grade, 9, 25, 80, 200);
+      const perRow = randomInt(2, quotientMax);
+      const numRows = randomInt(2, divisorMax);
       const total = perRow * numRows;
       const answer = perRow;
 
@@ -556,31 +756,38 @@ export const DIVISION_STORIES: WordStoryTemplate[] = [
   },
   {
     generateProblem: (grade) => {
-      const name = getRandomName();
-      const totalCost = gradeRandomInt(
-        grade,
-        [
-          { upTo: 3, min: 24, max: 72 },
-          { upTo: 4, min: 32, max: 96 },
-        ],
-        { upTo: 6, min: 40, max: 144 }
-      );
+      const useAdvanced = grade >= 4;
+      const name = useAdvanced ? getAdvancedName() : getRandomName();
       const numItems = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 2, max: 8 },
-          { upTo: 5, min: 3, max: 10 },
+          { upTo: 4, min: 4, max: 12 },
+          { upTo: 5, min: 6, max: 18 },
         ],
-        { upTo: 6, min: 4, max: 12 }
+        { upTo: 6, min: 8, max: 24 }
       );
-      // Ensure division is exact
-      const unitPrice = Math.floor(totalCost / numItems);
+      const unitPrice = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 3, max: 9 },
+          { upTo: 4, min: 6, max: 30 },
+          { upTo: 5, min: 12, max: 80 },
+        ],
+        { upTo: 6, min: 20, max: 180 }
+      );
       const actualTotal = unitPrice * numItems;
       const answer = unitPrice;
-      const item = getRandomItemPair();
+      const item = useAdvanced
+        ? ADVANCED_ITEMS[randomInt(0, ADVANCED_ITEMS.length - 1)]
+        : getRandomItemPair();
+
+      const text = useAdvanced
+        ? `${name} bought ${numItems} ${item.plural} at the school store. The total bill came to $${actualTotal}, and every ${item.singular} cost the same amount. How much did one ${item.singular} cost?`
+        : `${name} pays $${actualTotal} for ${numItems} ${item.plural}. How much does one ${item.singular} cost?`;
 
       return {
-        text: `${name} pays $${actualTotal} for ${numItems} ${item.plural}. How much does one ${item.singular} cost?`,
+        text,
         answer,
         operation: 'division' as Operation,
       };
@@ -593,24 +800,24 @@ export const DIVISION_STORIES: WordStoryTemplate[] = [
     generateProblem: (grade) => {
       const name = getRandomName();
       const pronouns = getPronouns(name);
-      const totalPages = gradeRandomInt(
-        grade,
-        [
-          { upTo: 3, min: 18, max: 63 },
-          { upTo: 4, min: 30, max: 84 },
-        ],
-        { upTo: 6, min: 42, max: 120 }
-      );
       const pagesPerDay = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 2, max: 8 },
-          { upTo: 4, min: 3, max: 10 },
+          { upTo: 4, min: 6, max: 20 },
+          { upTo: 5, min: 10, max: 40 },
         ],
-        { upTo: 6, min: 4, max: 12 }
+        { upTo: 6, min: 15, max: 60 }
       );
-      // Ensure division is exact
-      const days = Math.floor(totalPages / pagesPerDay);
+      const days = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 3, max: 8 },
+          { upTo: 4, min: 5, max: 14 },
+          { upTo: 5, min: 7, max: 21 },
+        ],
+        { upTo: 6, min: 10, max: 30 }
+      );
       const actualTotal = pagesPerDay * days;
       const answer = days;
 
@@ -627,8 +834,10 @@ export const DIVISION_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const item = getRandomItem(true);
-      const perBag = randomInt(2, grade === 3 ? 9 : 12);
-      const numBags = randomInt(2, grade === 3 ? 9 : 12);
+      const divisorMax = gradeFactor(grade, 9, 12, 25, 40);
+      const quotientMax = gradeFactor(grade, 9, 25, 80, 200);
+      const perBag = randomInt(2, quotientMax);
+      const numBags = randomInt(2, divisorMax);
       const total = perBag * numBags;
       const answer = perBag;
 
@@ -836,15 +1045,16 @@ export const TIME_STORIES: WordStoryTemplate[] = [
     generateProblem: (grade) => {
       const name = getRandomName();
       const pronouns = getPronouns(name);
-      const startHour = randomInt(8, 15);
       const duration = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 1, max: 3 },
-          { upTo: 4, min: 1, max: 4 },
+          { upTo: 4, min: 2, max: 6 },
+          { upTo: 5, min: 3, max: 8 },
         ],
-        { upTo: 5, min: 2, max: 5 }
+        { upTo: 6, min: 4, max: 10 }
       );
+      const startHour = randomInt(7, Math.max(8, 22 - duration));
       const answer = startHour + duration;
 
       return {
@@ -854,29 +1064,33 @@ export const TIME_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 2,
-    maxGrade: 5,
+    maxGrade: 6,
     category: 'word-story',
   },
   {
     generateProblem: (grade) => {
       const name = getRandomName();
       const pronouns = getPronouns(name);
-      const startMinute = gradeRandomInt(
-        grade,
-        [
-          { upTo: 3, min: 10, max: 30 },
-          { upTo: 4, min: 12, max: 40 },
-        ],
-        { upTo: 5, min: 15, max: 50 }
-      );
       const duration = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 5, max: 15 },
           { upTo: 4, min: 8, max: 20 },
         ],
-        { upTo: 5, min: 10, max: 30 }
+        { upTo: 6, min: 10, max: 30 }
       );
+      const startMinuteRaw = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 10, max: 30 },
+          { upTo: 4, min: 12, max: 40 },
+        ],
+        { upTo: 6, min: 15, max: 50 }
+      );
+      // The answer is "minutes past the same hour", so we must keep
+      // startMinute + duration < 60. Without this clamp, grade 5-6 ranges
+      // can yield nonsensical answers like "80 minutes past the hour".
+      const startMinute = Math.max(5, Math.min(startMinuteRaw, 59 - duration));
       const answer = startMinute + duration;
 
       return {
@@ -886,7 +1100,7 @@ export const TIME_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 2,
-    maxGrade: 5,
+    maxGrade: 6,
     category: 'word-story',
   },
   {
@@ -897,9 +1111,10 @@ export const TIME_STORIES: WordStoryTemplate[] = [
         grade,
         [
           { upTo: 3, min: 30, max: 75 },
-          { upTo: 4, min: 40, max: 100 },
+          { upTo: 4, min: 75, max: 240 },
+          { upTo: 5, min: 150, max: 420 },
         ],
-        { upTo: 5, min: 55, max: 130 }
+        { upTo: 6, min: 200, max: 600 }
       );
       const passed = randomInt(
         Math.max(10, Math.floor(duration * 0.25)),
@@ -914,7 +1129,7 @@ export const TIME_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 2,
-    maxGrade: 5,
+    maxGrade: 6,
     category: 'word-story',
   },
   {
@@ -925,17 +1140,19 @@ export const TIME_STORIES: WordStoryTemplate[] = [
         grade,
         [
           { upTo: 3, min: 5, max: 15 },
-          { upTo: 4, min: 6, max: 18 },
+          { upTo: 4, min: 10, max: 30 },
+          { upTo: 5, min: 15, max: 45 },
         ],
-        { upTo: 5, min: 8, max: 22 }
+        { upTo: 6, min: 20, max: 60 }
       );
       const numTasks = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 2, max: 4 },
-          { upTo: 4, min: 3, max: 5 },
+          { upTo: 4, min: 4, max: 8 },
+          { upTo: 5, min: 5, max: 10 },
         ],
-        { upTo: 5, min: 4, max: 6 }
+        { upTo: 6, min: 6, max: 12 }
       );
       const answer = timePerTask * numTasks;
 
@@ -946,29 +1163,29 @@ export const TIME_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 3,
-    maxGrade: 5,
+    maxGrade: 6,
     category: 'word-story',
   },
   {
     generateProblem: (grade) => {
-      const totalMinutes = gradeRandomInt(
-        grade,
-        [
-          { upTo: 3, min: 36, max: 72 },
-          { upTo: 4, min: 50, max: 110 },
-        ],
-        { upTo: 5, min: 60, max: 150 }
-      );
       const numPeople = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 2, max: 4 },
-          { upTo: 4, min: 3, max: 5 },
+          { upTo: 4, min: 4, max: 8 },
+          { upTo: 5, min: 5, max: 12 },
         ],
-        { upTo: 5, min: 4, max: 6 }
+        { upTo: 6, min: 6, max: 20 }
       );
-      // Ensure division is exact
-      const minutesEach = Math.floor(totalMinutes / numPeople);
+      const minutesEach = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 8, max: 18 },
+          { upTo: 4, min: 15, max: 45 },
+          { upTo: 5, min: 25, max: 80 },
+        ],
+        { upTo: 6, min: 40, max: 120 }
+      );
       const actualTotal = minutesEach * numPeople;
       const answer = minutesEach;
 
@@ -979,7 +1196,7 @@ export const TIME_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 3,
-    maxGrade: 5,
+    maxGrade: 6,
     category: 'word-story',
   },
 ];
@@ -990,38 +1207,49 @@ export const TIME_STORIES: WordStoryTemplate[] = [
 export const MONEY_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
-      const name = getRandomName();
+      const useAdvanced = grade >= 4;
+      const name = useAdvanced ? getAdvancedName() : getRandomName();
       const pronouns = getPronouns(name);
       const price = gradeRandomInt(
         grade,
         [
           { upTo: 2, min: 5, max: 30 },
           { upTo: 3, min: 8, max: 45 },
+          { upTo: 4, min: 18, max: 120 },
+          { upTo: 5, min: 30, max: 280 },
         ],
-        { upTo: 5, min: 12, max: 75 }
+        { upTo: 6, min: 50, max: 500 }
       );
-      const paidUpperBound = gradeRandomInt(
-        grade,
-        [
-          { upTo: 2, min: price + 5, max: Math.max(price + 10, 40) },
-          { upTo: 3, min: price + 5, max: Math.max(price + 20, 70) },
-        ],
-        { upTo: 5, min: price + 5, max: Math.max(price + 30, 100) }
-      );
+      const paidUpperBound =
+        Math.ceil(price / 10) * 10 +
+        gradeRandomInt(
+          grade,
+          [
+            { upTo: 2, min: 5, max: 15 },
+            { upTo: 3, min: 5, max: 25 },
+            { upTo: 4, min: 10, max: 50 },
+            { upTo: 5, min: 20, max: 150 },
+          ],
+          { upTo: 6, min: 50, max: 300 }
+        );
       const paid = generateFriendlyPayment(
         price,
         Math.max(paidUpperBound, price + 5)
       );
       const answer = paid - price;
 
+      const text = useAdvanced
+        ? `If ${name} buys a toy for $${price} and pays with $${paid}, how much change does ${pronouns.lowerSubject} get back?`
+        : `${name} buys a toy for $${price}. ${pronouns.subject} pays with $${paid}. How much change does ${pronouns.lowerSubject} get?`;
+
       return {
-        text: `${name} buys a toy for $${price}. ${pronouns.subject} pays with $${paid}. How much change does ${pronouns.lowerSubject} get?`,
+        text,
         answer,
         operation: 'subtraction' as Operation,
       };
     },
     minGrade: 2,
-    maxGrade: 5,
+    maxGrade: 6,
     category: 'word-story',
   },
   {
@@ -1033,16 +1261,20 @@ export const MONEY_STORIES: WordStoryTemplate[] = [
         [
           { upTo: 2, min: 10, max: 35 },
           { upTo: 3, min: 15, max: 60 },
+          { upTo: 4, min: 35, max: 180 },
+          { upTo: 5, min: 60, max: 400 },
         ],
-        { upTo: 5, min: 20, max: 90 }
+        { upTo: 6, min: 120, max: 900 }
       );
       const earned = gradeRandomInt(
         grade,
         [
           { upTo: 2, min: 5, max: 15 },
           { upTo: 3, min: 8, max: 25 },
+          { upTo: 4, min: 20, max: 80 },
+          { upTo: 5, min: 40, max: 180 },
         ],
-        { upTo: 5, min: 10, max: 35 }
+        { upTo: 6, min: 80, max: 400 }
       );
       const answer = saved + earned;
 
@@ -1053,7 +1285,7 @@ export const MONEY_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 2,
-    maxGrade: 5,
+    maxGrade: 6,
     category: 'word-story',
   },
   {
@@ -1069,17 +1301,19 @@ export const MONEY_STORIES: WordStoryTemplate[] = [
         grade,
         [
           { upTo: 3, min: 2, max: 8 },
-          { upTo: 4, min: 3, max: 10 },
+          { upTo: 4, min: 4, max: 18 },
+          { upTo: 5, min: 8, max: 30 },
         ],
-        { upTo: 5, min: 4, max: 12 }
+        { upTo: 6, min: 12, max: 50 }
       );
       const quantity = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 2, max: 6 },
-          { upTo: 4, min: 3, max: 7 },
+          { upTo: 4, min: 5, max: 12 },
+          { upTo: 5, min: 6, max: 18 },
         ],
-        { upTo: 5, min: 4, max: 9 }
+        { upTo: 6, min: 8, max: 25 }
       );
       const answer = price * quantity;
 
@@ -1090,7 +1324,7 @@ export const MONEY_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 3,
-    maxGrade: 5,
+    maxGrade: 6,
     category: 'word-story',
   },
   {
@@ -1102,16 +1336,20 @@ export const MONEY_STORIES: WordStoryTemplate[] = [
         [
           { upTo: 2, min: 5, max: 12 },
           { upTo: 3, min: 6, max: 15 },
+          { upTo: 4, min: 10, max: 30 },
+          { upTo: 5, min: 15, max: 50 },
         ],
-        { upTo: 5, min: 8, max: 22 }
+        { upTo: 6, min: 25, max: 80 }
       );
       const weeks = gradeRandomInt(
         grade,
         [
           { upTo: 2, min: 2, max: 4 },
           { upTo: 3, min: 2, max: 5 },
+          { upTo: 4, min: 4, max: 8 },
+          { upTo: 5, min: 6, max: 12 },
         ],
-        { upTo: 5, min: 3, max: 6 }
+        { upTo: 6, min: 8, max: 20 }
       );
       const answer = weeklyAmount * weeks;
 
@@ -1122,29 +1360,29 @@ export const MONEY_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 3,
-    maxGrade: 5,
+    maxGrade: 6,
     category: 'word-story',
   },
   {
     generateProblem: (grade) => {
-      const totalCost = gradeRandomInt(
-        grade,
-        [
-          { upTo: 3, min: 24, max: 60 },
-          { upTo: 4, min: 30, max: 80 },
-        ],
-        { upTo: 5, min: 40, max: 100 }
-      );
       const numFriends = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 2, max: 5 },
-          { upTo: 4, min: 3, max: 6 },
+          { upTo: 4, min: 3, max: 8 },
+          { upTo: 5, min: 4, max: 12 },
         ],
-        { upTo: 5, min: 4, max: 6 }
+        { upTo: 6, min: 5, max: 15 }
       );
-      // Ensure division is exact
-      const costEach = Math.floor(totalCost / numFriends);
+      const costEach = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 6, max: 18 },
+          { upTo: 4, min: 12, max: 60 },
+          { upTo: 5, min: 30, max: 150 },
+        ],
+        { upTo: 6, min: 60, max: 400 }
+      );
       const actualTotal = costEach * numFriends;
       const answer = costEach;
 
@@ -1155,7 +1393,7 @@ export const MONEY_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 3,
-    maxGrade: 5,
+    maxGrade: 6,
     category: 'word-story',
   },
 ];
@@ -1166,34 +1404,44 @@ export const MONEY_STORIES: WordStoryTemplate[] = [
 export const MEASUREMENT_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
-      const name = getRandomName();
+      const useAdvanced = grade >= 4;
+      const name = useAdvanced ? getAdvancedName() : getRandomName();
       const pronouns = getPronouns(name);
+      const venue = useAdvanced ? getAdvancedVenue() : null;
       const distance1 = gradeRandomInt(
         grade,
         [
           { upTo: 2, min: 10, max: 40 },
           { upTo: 3, min: 15, max: 60 },
+          { upTo: 4, min: 80, max: 350 },
+          { upTo: 5, min: 180, max: 900 },
         ],
-        { upTo: 5, min: 20, max: 120 }
+        { upTo: 6, min: 400, max: 1800 }
       );
       const distance2 = gradeRandomInt(
         grade,
         [
           { upTo: 2, min: 5, max: 20 },
           { upTo: 3, min: 8, max: 40 },
+          { upTo: 4, min: 60, max: 240 },
+          { upTo: 5, min: 120, max: 600 },
         ],
-        { upTo: 5, min: 12, max: 90 }
+        { upTo: 6, min: 300, max: 1500 }
       );
       const answer = distance1 + distance2;
 
+      const text = useAdvanced
+        ? `After morning assembly, ${name} walked ${distance1} meters to the ${venue} and then ${distance2} meters more to the field. How many meters did ${pronouns.lowerSubject} walk in total?`
+        : `${name} walks ${distance1} meters to school and then ${distance2} meters more to the library. How many meters does ${pronouns.lowerSubject} walk in total?`;
+
       return {
-        text: `${name} walks ${distance1} meters to school and then ${distance2} meters more to the library. How many meters does ${pronouns.lowerSubject} walk in total?`,
+        text,
         answer,
         operation: 'addition' as Operation,
       };
     },
     minGrade: 2,
-    maxGrade: 5,
+    maxGrade: 6,
     category: 'word-story',
   },
   {
@@ -1205,16 +1453,18 @@ export const MEASUREMENT_STORIES: WordStoryTemplate[] = [
         [
           { upTo: 3, min: 100, max: 135 },
           { upTo: 4, min: 115, max: 150 },
+          { upTo: 5, min: 130, max: 165 },
         ],
-        { upTo: 5, min: 125, max: 170 }
+        { upTo: 6, min: 145, max: 180 }
       );
       const difference = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 6, max: 18 },
-          { upTo: 4, min: 8, max: 24 },
+          { upTo: 4, min: 8, max: 28 },
+          { upTo: 5, min: 10, max: 40 },
         ],
-        { upTo: 5, min: 10, max: 30 }
+        { upTo: 6, min: 12, max: 55 }
       );
       const answer = height1 - difference;
 
@@ -1225,7 +1475,7 @@ export const MEASUREMENT_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 2,
-    maxGrade: 5,
+    maxGrade: 6,
     category: 'word-story',
   },
   {
@@ -1235,17 +1485,19 @@ export const MEASUREMENT_STORIES: WordStoryTemplate[] = [
         grade,
         [
           { upTo: 3, min: 6, max: 22 },
-          { upTo: 4, min: 10, max: 28 },
+          { upTo: 4, min: 18, max: 60 },
+          { upTo: 5, min: 30, max: 120 },
         ],
-        { upTo: 5, min: 12, max: 36 }
+        { upTo: 6, min: 50, max: 250 }
       );
       const numPieces = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 2, max: 5 },
-          { upTo: 4, min: 3, max: 6 },
+          { upTo: 4, min: 4, max: 10 },
+          { upTo: 5, min: 6, max: 15 },
         ],
-        { upTo: 5, min: 4, max: 8 }
+        { upTo: 6, min: 8, max: 25 }
       );
       const answer = lengthEach * numPieces;
 
@@ -1256,30 +1508,32 @@ export const MEASUREMENT_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 3,
-    maxGrade: 5,
+    maxGrade: 6,
     category: 'word-story',
   },
   {
     generateProblem: (grade) => {
       const item = ['water', 'juice', 'milk', 'paint'][randomInt(0, 3)];
-      const totalML = gradeRandomInt(
-        grade,
-        [
-          { upTo: 2, min: 180, max: 360 },
-          { upTo: 3, min: 240, max: 720 },
-        ],
-        { upTo: 5, min: 400, max: 2000 }
-      );
       const numContainers = gradeRandomInt(
         grade,
         [
           { upTo: 2, min: 3, max: 6 },
           { upTo: 3, min: 3, max: 8 },
+          { upTo: 4, min: 4, max: 12 },
+          { upTo: 5, min: 5, max: 15 },
         ],
-        { upTo: 5, min: 4, max: 10 }
+        { upTo: 6, min: 6, max: 20 }
       );
-      // Ensure division is exact
-      const mlEach = Math.floor(totalML / numContainers);
+      const mlEach = gradeRandomInt(
+        grade,
+        [
+          { upTo: 2, min: 30, max: 120 },
+          { upTo: 3, min: 40, max: 180 },
+          { upTo: 4, min: 60, max: 240 },
+          { upTo: 5, min: 100, max: 480 },
+        ],
+        { upTo: 6, min: 200, max: 900 }
+      );
       const actualTotal = mlEach * numContainers;
       const answer = mlEach;
 
@@ -1290,7 +1544,7 @@ export const MEASUREMENT_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 3,
-    maxGrade: 5,
+    maxGrade: 6,
     category: 'word-story',
   },
 ];
@@ -1307,26 +1561,29 @@ export const MIXED_OPERATION_STORIES: WordStoryTemplate[] = [
       const boxCount = gradeRandomInt(
         grade,
         [
-          { upTo: 4, min: 2, max: 5 },
-          { upTo: 5, min: 3, max: 7 },
+          { upTo: 3, min: 2, max: 5 },
+          { upTo: 4, min: 4, max: 10 },
+          { upTo: 5, min: 6, max: 14 },
         ],
-        { upTo: 6, min: 4, max: 8 }
+        { upTo: 6, min: 8, max: 20 }
       );
       const perBox = gradeRandomInt(
         grade,
         [
-          { upTo: 4, min: 3, max: 8 },
-          { upTo: 5, min: 4, max: 10 },
+          { upTo: 3, min: 3, max: 8 },
+          { upTo: 4, min: 6, max: 18 },
+          { upTo: 5, min: 10, max: 30 },
         ],
-        { upTo: 6, min: 5, max: 12 }
+        { upTo: 6, min: 15, max: 50 }
       );
       const extra = gradeRandomInt(
         grade,
         [
-          { upTo: 4, min: 2, max: 12 },
-          { upTo: 5, min: 4, max: 16 },
+          { upTo: 3, min: 2, max: 12 },
+          { upTo: 4, min: 8, max: 40 },
+          { upTo: 5, min: 20, max: 90 },
         ],
-        { upTo: 6, min: 6, max: 24 }
+        { upTo: 6, min: 40, max: 200 }
       );
       const answer = boxCount * perBox + extra;
 
@@ -1348,21 +1605,22 @@ export const MIXED_OPERATION_STORIES: WordStoryTemplate[] = [
       const groups = gradeRandomInt(
         grade,
         [
-          { upTo: 4, min: 2, max: 4 },
-          { upTo: 5, min: 3, max: 5 },
+          { upTo: 3, min: 2, max: 4 },
+          { upTo: 4, min: 3, max: 8 },
+          { upTo: 5, min: 4, max: 12 },
         ],
-        { upTo: 6, min: 3, max: 6 }
+        { upTo: 6, min: 6, max: 18 }
       );
       const perGroup = gradeRandomInt(
         grade,
         [
-          { upTo: 4, min: 3, max: 8 },
-          { upTo: 5, min: 4, max: 10 },
+          { upTo: 3, min: 3, max: 8 },
+          { upTo: 4, min: 6, max: 16 },
+          { upTo: 5, min: 10, max: 25 },
         ],
-        { upTo: 6, min: 5, max: 12 }
+        { upTo: 6, min: 14, max: 40 }
       );
       const total = groups * perGroup;
-      // Ensure given is less than total to avoid negative answers
       const maxGiven = Math.max(2, Math.floor(total * 0.6));
       const given = randomInt(2, maxGiven);
       const answer = total - given;
@@ -1384,18 +1642,18 @@ export const MIXED_OPERATION_STORIES: WordStoryTemplate[] = [
       const price = gradeRandomInt(
         grade,
         [
-          { upTo: 4, min: 3, max: 9 },
-          { upTo: 5, min: 4, max: 11 },
+          { upTo: 4, min: 5, max: 18 },
+          { upTo: 5, min: 8, max: 35 },
         ],
-        { upTo: 6, min: 5, max: 12 }
+        { upTo: 6, min: 12, max: 60 }
       );
       const quantity = gradeRandomInt(
         grade,
         [
-          { upTo: 4, min: 2, max: 6 },
-          { upTo: 5, min: 3, max: 7 },
+          { upTo: 4, min: 4, max: 10 },
+          { upTo: 5, min: 5, max: 14 },
         ],
-        { upTo: 6, min: 3, max: 8 }
+        { upTo: 6, min: 6, max: 20 }
       );
       const totalCost = price * quantity;
       const paidUpperBound =
@@ -1403,10 +1661,10 @@ export const MIXED_OPERATION_STORIES: WordStoryTemplate[] = [
         gradeRandomInt(
           grade,
           [
-            { upTo: 4, min: 5, max: 15 },
-            { upTo: 5, min: 8, max: 18 },
+            { upTo: 4, min: 10, max: 50 },
+            { upTo: 5, min: 20, max: 150 },
           ],
-          { upTo: 6, min: 10, max: 20 }
+          { upTo: 6, min: 50, max: 300 }
         );
       const paid = generateFriendlyPayment(
         totalCost,
@@ -1432,32 +1690,28 @@ export const MIXED_OPERATION_STORIES: WordStoryTemplate[] = [
       const groups = gradeRandomInt(
         grade,
         [
-          { upTo: 4, min: 2, max: 4 },
-          { upTo: 5, min: 3, max: 5 },
+          { upTo: 4, min: 3, max: 6 },
+          { upTo: 5, min: 4, max: 8 },
         ],
-        { upTo: 6, min: 4, max: 6 }
+        { upTo: 6, min: 5, max: 10 }
       );
-      // Generate answer first (amount each friend gets)
       const perFriend = gradeRandomInt(
         grade,
         [
-          { upTo: 4, min: 3, max: 10 },
-          { upTo: 5, min: 4, max: 12 },
+          { upTo: 4, min: 8, max: 25 },
+          { upTo: 5, min: 12, max: 50 },
         ],
-        { upTo: 6, min: 5, max: 15 }
+        { upTo: 6, min: 18, max: 90 }
       );
-      // Calculate total given (ensures exact division)
       const totalGiven = perFriend * groups;
-      // Generate remaining amount
       const left = gradeRandomInt(
         grade,
         [
-          { upTo: 4, min: 2, max: 10 },
-          { upTo: 5, min: 3, max: 12 },
+          { upTo: 4, min: 5, max: 30 },
+          { upTo: 5, min: 10, max: 60 },
         ],
-        { upTo: 6, min: 4, max: 15 }
+        { upTo: 6, min: 15, max: 120 }
       );
-      // Calculate initial amount
       const initial = totalGiven + left;
       const answer = perFriend;
 
@@ -1486,17 +1740,19 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
         grade,
         [
           { upTo: 3, min: 12, max: 36 },
-          { upTo: 4, min: 20, max: 50 },
+          { upTo: 4, min: 60, max: 200 },
+          { upTo: 5, min: 140, max: 480 },
         ],
-        { upTo: 6, min: 28, max: 90 }
+        { upTo: 6, min: 300, max: 1200 }
       );
       const more = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 5, max: 18 },
-          { upTo: 4, min: 8, max: 24 },
+          { upTo: 4, min: 20, max: 90 },
+          { upTo: 5, min: 40, max: 180 },
         ],
-        { upTo: 6, min: 10, max: 36 }
+        { upTo: 6, min: 80, max: 400 }
       );
       const answer = count1 + more;
 
@@ -1512,33 +1768,43 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
   },
   {
     generateProblem: (grade) => {
-      const name1 = getRandomName();
-      const name2 = getDifferentName(name1);
-      const item = getRandomItem(true);
+      const useAdvanced = grade >= 4;
+      const name1 = useAdvanced ? getAdvancedName() : getRandomName();
+      const name2 = useAdvanced
+        ? getDifferentAdvancedName(name1)
+        : getDifferentName(name1);
+      const item = useAdvanced ? getAdvancedItem(true) : getRandomItem(true);
+      const event = useAdvanced ? getAdvancedEvent() : null;
       const count1 = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 24, max: 60 },
-          { upTo: 4, min: 28, max: 80 },
+          { upTo: 4, min: 80, max: 280 },
+          { upTo: 5, min: 200, max: 720 },
         ],
-        { upTo: 6, min: 36, max: 120 }
+        { upTo: 6, min: 400, max: 1800 }
       );
       const maxFewer = Math.min(
         gradeRandomInt(
           grade,
           [
             { upTo: 3, min: 8, max: 18 },
-            { upTo: 4, min: 10, max: 24 },
+            { upTo: 4, min: 25, max: 120 },
+            { upTo: 5, min: 60, max: 280 },
           ],
-          { upTo: 6, min: 12, max: 36 }
+          { upTo: 6, min: 120, max: 600 }
         ),
         count1 - 1
       );
       const fewer = randomInt(5, Math.max(5, maxFewer));
       const answer = count1 - fewer;
 
+      const text = useAdvanced
+        ? `Although ${name1}'s class collected ${count1} ${item} for the ${event}, ${name2}'s class collected ${fewer} fewer. How many ${item} did ${name2}'s class collect?`
+        : `${name1} has ${count1} ${item}. ${name2} has ${fewer} fewer than ${name1}. How many ${item} does ${name2} have?`;
+
       return {
-        text: `${name1} has ${count1} ${item}. ${name2} has ${fewer} fewer than ${name1}. How many ${item} does ${name2} have?`,
+        text,
         answer,
         operation: 'subtraction' as Operation,
       };
@@ -1556,17 +1822,19 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
         grade,
         [
           { upTo: 3, min: 10, max: 32 },
-          { upTo: 4, min: 16, max: 45 },
+          { upTo: 4, min: 60, max: 200 },
+          { upTo: 5, min: 140, max: 480 },
         ],
-        { upTo: 6, min: 22, max: 70 }
+        { upTo: 6, min: 280, max: 1100 }
       );
       const more = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 5, max: 16 },
-          { upTo: 4, min: 8, max: 22 },
+          { upTo: 4, min: 18, max: 80 },
+          { upTo: 5, min: 35, max: 160 },
         ],
-        { upTo: 6, min: 10, max: 32 }
+        { upTo: 6, min: 70, max: 360 }
       );
       const answer = count2 + more;
 
@@ -1589,9 +1857,10 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
         grade,
         [
           { upTo: 3, min: 18, max: 48 },
-          { upTo: 4, min: 24, max: 70 },
+          { upTo: 4, min: 80, max: 280 },
+          { upTo: 5, min: 200, max: 700 },
         ],
-        { upTo: 6, min: 30, max: 110 }
+        { upTo: 6, min: 400, max: 1500 }
       );
       const count2 = randomInt(10, count1 - 5);
       const answer = count1 - count2;
@@ -1616,25 +1885,28 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
         grade,
         [
           { upTo: 3, min: 12, max: 30 },
-          { upTo: 4, min: 18, max: 42 },
+          { upTo: 4, min: 35, max: 140 },
+          { upTo: 5, min: 80, max: 360 },
         ],
-        { upTo: 6, min: 24, max: 60 }
+        { upTo: 6, min: 160, max: 900 }
       );
       const count2 = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 10, max: 26 },
-          { upTo: 4, min: 14, max: 36 },
+          { upTo: 4, min: 30, max: 120 },
+          { upTo: 5, min: 70, max: 320 },
         ],
-        { upTo: 6, min: 20, max: 52 }
+        { upTo: 6, min: 140, max: 800 }
       );
       const count3 = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 8, max: 22 },
-          { upTo: 4, min: 12, max: 30 },
+          { upTo: 4, min: 25, max: 100 },
+          { upTo: 5, min: 60, max: 280 },
         ],
-        { upTo: 6, min: 16, max: 44 }
+        { upTo: 6, min: 120, max: 700 }
       );
       const answer = count1 + count2 + count3;
 
@@ -1661,9 +1933,10 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
         grade,
         [
           { upTo: 3, min: 14, max: 36 },
-          { upTo: 4, min: 20, max: 60 },
+          { upTo: 4, min: 60, max: 220 },
+          { upTo: 5, min: 140, max: 560 },
         ],
-        { upTo: 6, min: 26, max: 90 }
+        { upTo: 6, min: 300, max: 1200 }
       );
       const count2 = randomInt(8, count1 - 4);
       const answer = count1 - count2;
@@ -1690,25 +1963,28 @@ export const PATTERN_STORIES: WordStoryTemplate[] = [
         grade,
         [
           { upTo: 3, min: 2, max: 12 },
-          { upTo: 4, min: 5, max: 24 },
+          { upTo: 4, min: 25, max: 120 },
+          { upTo: 5, min: 60, max: 300 },
         ],
-        { upTo: 6, min: 8, max: 40 }
+        { upTo: 6, min: 120, max: 800 }
       );
       const step = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 2, max: 6 },
-          { upTo: 4, min: 3, max: 9 },
+          { upTo: 4, min: 6, max: 18 },
+          { upTo: 5, min: 10, max: 30 },
         ],
-        { upTo: 6, min: 4, max: 12 }
+        { upTo: 6, min: 15, max: 50 }
       );
       const numSteps = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 2, max: 3 },
-          { upTo: 4, min: 3, max: 4 },
+          { upTo: 4, min: 4, max: 7 },
+          { upTo: 5, min: 5, max: 10 },
         ],
-        { upTo: 6, min: 4, max: 5 }
+        { upTo: 6, min: 6, max: 14 }
       );
       const answer = start + step * numSteps;
 
@@ -1728,18 +2004,19 @@ export const PATTERN_STORIES: WordStoryTemplate[] = [
         grade,
         [
           { upTo: 3, min: 2, max: 6 },
-          { upTo: 4, min: 3, max: 9 },
+          { upTo: 4, min: 6, max: 15 },
+          { upTo: 5, min: 10, max: 25 },
         ],
-        { upTo: 6, min: 4, max: 12 }
+        { upTo: 6, min: 15, max: 40 }
       );
-      // Ensure current is actually on the pattern (multiple of step)
       const numSteps = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 3, max: 8 },
-          { upTo: 4, min: 4, max: 12 },
+          { upTo: 4, min: 6, max: 18 },
+          { upTo: 5, min: 8, max: 30 },
         ],
-        { upTo: 6, min: 5, max: 15 }
+        { upTo: 6, min: 12, max: 50 }
       );
       const current = step * numSteps;
       const answer = current + step;
@@ -1766,9 +2043,10 @@ export const GEOMETRY_STORIES: WordStoryTemplate[] = [
         grade,
         [
           { upTo: 3, min: 2, max: 4 },
-          { upTo: 4, min: 3, max: 6 },
+          { upTo: 4, min: 5, max: 12 },
+          { upTo: 5, min: 8, max: 20 },
         ],
-        { upTo: 6, min: 4, max: 8 }
+        { upTo: 6, min: 12, max: 30 }
       );
       // Limit to shapes with known names (3-8 sides)
       const sidesPerShape = gradeRandomInt(
@@ -1804,12 +2082,35 @@ export const GEOMETRY_STORIES: WordStoryTemplate[] = [
   },
   {
     generateProblem: (grade) => {
-      const length = randomInt(grade <= 3 ? 5 : 10, grade <= 3 ? 15 : 25);
-      const width = randomInt(grade <= 3 ? 3 : 8, grade <= 3 ? 12 : 20);
+      const useAdvanced = grade >= 4;
+      const venue = useAdvanced ? getAdvancedVenue() : null;
+      const length = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 5, max: 15 },
+          { upTo: 4, min: 14, max: 45 },
+          { upTo: 5, min: 25, max: 90 },
+        ],
+        { upTo: 6, min: 40, max: 160 }
+      );
+      const widthMax = Math.max(3, Math.floor(length * 0.8));
+      const width = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 3, max: Math.min(12, widthMax) },
+          { upTo: 4, min: 8, max: Math.min(35, widthMax) },
+          { upTo: 5, min: 15, max: Math.min(70, widthMax) },
+        ],
+        { upTo: 6, min: 25, max: Math.min(140, widthMax) }
+      );
       const answer = (length + width) * 2;
 
+      const text = useAdvanced
+        ? `If the new ${venue} floor is shaped like a rectangle that is ${length} m long and ${width} m wide, what is the perimeter of the room in meters?`
+        : `A rectangle is ${length} cm long and ${width} cm wide. What is the perimeter?`;
+
       return {
-        text: `A rectangle is ${length} cm long and ${width} cm wide. What is the perimeter?`,
+        text,
         answer,
         operation: 'addition' as Operation,
       };
@@ -1820,7 +2121,15 @@ export const GEOMETRY_STORIES: WordStoryTemplate[] = [
   },
   {
     generateProblem: (grade) => {
-      const side = randomInt(grade <= 3 ? 5 : 8, grade <= 3 ? 12 : 18);
+      const side = gradeRandomInt(
+        grade,
+        [
+          { upTo: 3, min: 5, max: 12 },
+          { upTo: 4, min: 12, max: 35 },
+          { upTo: 5, min: 20, max: 75 },
+        ],
+        { upTo: 6, min: 30, max: 140 }
+      );
       const answer = side * 4;
 
       return {
@@ -1847,17 +2156,19 @@ export const COLLECTION_STORIES: WordStoryTemplate[] = [
         grade,
         [
           { upTo: 3, min: 2, max: 5 },
-          { upTo: 4, min: 3, max: 6 },
+          { upTo: 4, min: 5, max: 14 },
+          { upTo: 5, min: 8, max: 21 },
         ],
-        { upTo: 6, min: 4, max: 7 }
+        { upTo: 6, min: 10, max: 30 }
       );
       const perDay = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 2, max: 8 },
-          { upTo: 4, min: 3, max: 10 },
+          { upTo: 4, min: 6, max: 20 },
+          { upTo: 5, min: 10, max: 40 },
         ],
-        { upTo: 6, min: 4, max: 12 }
+        { upTo: 6, min: 15, max: 75 }
       );
       const answer = days * perDay;
 
@@ -1877,17 +2188,19 @@ export const COLLECTION_STORIES: WordStoryTemplate[] = [
         grade,
         [
           { upTo: 3, min: 2, max: 4 },
-          { upTo: 4, min: 3, max: 6 },
+          { upTo: 4, min: 4, max: 10 },
+          { upTo: 5, min: 6, max: 15 },
         ],
-        { upTo: 6, min: 4, max: 8 }
+        { upTo: 6, min: 8, max: 22 }
       );
       const perShelf = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 6, max: 14 },
-          { upTo: 4, min: 8, max: 18 },
+          { upTo: 4, min: 15, max: 45 },
+          { upTo: 5, min: 25, max: 80 },
         ],
-        { upTo: 6, min: 10, max: 24 }
+        { upTo: 6, min: 40, max: 150 }
       );
       const answer = shelves * perShelf;
 
@@ -1909,9 +2222,10 @@ export const COLLECTION_STORIES: WordStoryTemplate[] = [
         grade,
         [
           { upTo: 3, min: 24, max: 60 },
-          { upTo: 4, min: 36, max: 90 },
+          { upTo: 4, min: 100, max: 360 },
+          { upTo: 5, min: 200, max: 900 },
         ],
-        { upTo: 6, min: 48, max: 120 }
+        { upTo: 6, min: 400, max: 2400 }
       );
       const redPercent = randomInt(20, 50);
       const red = Math.floor((total * redPercent) / 100);
@@ -1935,17 +2249,19 @@ export const COLLECTION_STORIES: WordStoryTemplate[] = [
         grade,
         [
           { upTo: 3, min: 2, max: 5 },
-          { upTo: 4, min: 3, max: 7 },
+          { upTo: 4, min: 5, max: 14 },
+          { upTo: 5, min: 8, max: 20 },
         ],
-        { upTo: 6, min: 4, max: 9 }
+        { upTo: 6, min: 10, max: 30 }
       );
       const perPage = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 4, max: 9 },
-          { upTo: 4, min: 5, max: 11 },
+          { upTo: 4, min: 10, max: 25 },
+          { upTo: 5, min: 15, max: 40 },
         ],
-        { upTo: 6, min: 6, max: 14 }
+        { upTo: 6, min: 20, max: 60 }
       );
       const answer = pages * perPage;
 
@@ -1972,17 +2288,19 @@ export const TRAVEL_STORIES: WordStoryTemplate[] = [
         grade,
         [
           { upTo: 3, min: 2, max: 4 },
-          { upTo: 4, min: 3, max: 5 },
+          { upTo: 4, min: 5, max: 10 },
+          { upTo: 5, min: 6, max: 14 },
         ],
-        { upTo: 6, min: 4, max: 7 }
+        { upTo: 6, min: 8, max: 20 }
       );
       const peoplePerTrip = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 12, max: 36 },
-          { upTo: 4, min: 18, max: 48 },
+          { upTo: 4, min: 30, max: 90 },
+          { upTo: 5, min: 50, max: 180 },
         ],
-        { upTo: 6, min: 24, max: 72 }
+        { upTo: 6, min: 80, max: 320 }
       );
       const answer = trips * peoplePerTrip;
 
@@ -2004,17 +2322,19 @@ export const TRAVEL_STORIES: WordStoryTemplate[] = [
         grade,
         [
           { upTo: 3, min: 10, max: 30 },
-          { upTo: 4, min: 12, max: 40 },
+          { upTo: 4, min: 80, max: 300 },
+          { upTo: 5, min: 200, max: 900 },
         ],
-        { upTo: 6, min: 15, max: 60 }
+        { upTo: 6, min: 400, max: 1800 }
       );
       const back = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 8, max: 25 },
-          { upTo: 4, min: 10, max: 35 },
+          { upTo: 4, min: 70, max: 280 },
+          { upTo: 5, min: 180, max: 800 },
         ],
-        { upTo: 6, min: 12, max: 45 }
+        { upTo: 6, min: 350, max: 1600 }
       );
       const answer = to + back;
 
@@ -2030,35 +2350,442 @@ export const TRAVEL_STORIES: WordStoryTemplate[] = [
   },
   {
     generateProblem: (grade) => {
+      const useAdvanced = grade >= 4;
+      const venue = useAdvanced ? getAdvancedVenue() : null;
       const rows = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 2, max: 5 },
-          { upTo: 4, min: 3, max: 6 },
+          { upTo: 4, min: 5, max: 12 },
+          { upTo: 5, min: 8, max: 18 },
         ],
-        { upTo: 6, min: 4, max: 8 }
+        { upTo: 6, min: 12, max: 28 }
       );
       const seatsPerRow = gradeRandomInt(
         grade,
         [
           { upTo: 3, min: 4, max: 8 },
-          { upTo: 4, min: 5, max: 10 },
+          { upTo: 4, min: 8, max: 18 },
+          { upTo: 5, min: 12, max: 28 },
         ],
-        { upTo: 6, min: 6, max: 12 }
+        { upTo: 6, min: 18, max: 40 }
       );
       const total = rows * seatsPerRow;
-      // Ensure empty is less than total to avoid negative answers
       const maxEmpty = Math.max(2, Math.floor(total * 0.4));
       const empty = randomInt(2, maxEmpty);
       const answer = total - empty;
 
+      const text = useAdvanced
+        ? `If the school ${venue} has ${rows} rows with ${seatsPerRow} seats in each row and ${empty} seats are reserved for staff, how many seats remain for the audience?`
+        : `A bus has ${rows} rows with ${seatsPerRow} seats in each row. ${empty} seats are empty. How many people are on the bus?`;
+
       return {
-        text: `A bus has ${rows} rows with ${seatsPerRow} seats in each row. ${empty} seats are empty. How many people are on the bus?`,
+        text,
         answer,
         operation: 'subtraction' as Operation,
       };
     },
     minGrade: 3,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+];
+
+/**
+ * Grade 4+: Advanced word-story templates. These add area/perimeter,
+ * elapsed time, average, ratio, fraction-of, multi-step shopping, and
+ * narrative-style problems with subordinate clauses and richer vocabulary.
+ */
+export const ADVANCED_STORIES: WordStoryTemplate[] = [
+  // T4-AREA-1: Rectangle area in a school context (grade 4+)
+  {
+    generateProblem: (grade) => {
+      const venue = getAdvancedVenue();
+      const length = gradeRandomInt(
+        grade,
+        [
+          { upTo: 4, min: 12, max: 35 },
+          { upTo: 5, min: 20, max: 80 },
+        ],
+        { upTo: 6, min: 30, max: 150 }
+      );
+      const width = gradeRandomInt(
+        grade,
+        [
+          { upTo: 4, min: 8, max: Math.min(25, length) },
+          { upTo: 5, min: 12, max: Math.min(50, length) },
+        ],
+        { upTo: 6, min: 18, max: Math.min(90, length) }
+      );
+      const answer = length * width;
+
+      return {
+        text: `The ${venue} floor is being retiled. The room is ${length} meters long and ${width} meters wide. How many square meters of tile are needed to cover the entire floor?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 4,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  // T4-AREA-2: Composite (L-shaped) area (grade 5+)
+  {
+    generateProblem: (grade) => {
+      const aLen = gradeRandomInt(grade, [{ upTo: 5, min: 14, max: 40 }], {
+        upTo: 6,
+        min: 20,
+        max: 80,
+      });
+      const aWid = gradeRandomInt(
+        grade,
+        [{ upTo: 5, min: 8, max: Math.min(25, aLen) }],
+        { upTo: 6, min: 15, max: Math.min(60, aLen) }
+      );
+      const bLen = gradeRandomInt(
+        grade,
+        [{ upTo: 5, min: 6, max: Math.min(20, aLen - 2) }],
+        { upTo: 6, min: 10, max: Math.min(45, aLen - 2) }
+      );
+      const bWid = gradeRandomInt(
+        grade,
+        [{ upTo: 5, min: 5, max: Math.min(15, aWid) }],
+        { upTo: 6, min: 8, max: Math.min(35, aWid) }
+      );
+      const answer = aLen * aWid + bLen * bWid;
+
+      return {
+        text: `A community garden is shaped like the letter L. The longer rectangle is ${aLen} m by ${aWid} m, and the shorter rectangle attached to it is ${bLen} m by ${bWid} m. What is the total area of the garden in square meters?`,
+        answer,
+        operation: 'addition' as Operation,
+      };
+    },
+    minGrade: 5,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  // T4-ELAPSED-1: Elapsed time across the hour (grade 4+)
+  {
+    generateProblem: (grade) => {
+      const venue = getAdvancedVenue();
+      const duration = gradeRandomInt(
+        grade,
+        [
+          { upTo: 4, min: 60, max: 180 },
+          { upTo: 5, min: 90, max: 300 },
+        ],
+        { upTo: 6, min: 120, max: 480 }
+      );
+      // Pick a start time that fits in the day
+      const dayMinutesMax = 21 * 60; // 21:00 latest end
+      const earliestStart = 8 * 60;
+      const latestStart = Math.max(
+        earliestStart + 30,
+        dayMinutesMax - duration
+      );
+      const startMinutes =
+        earliestStart + randomInt(0, Math.max(0, latestStart - earliestStart));
+      const snappedStart = Math.floor(startMinutes / 5) * 5;
+      const endMinutes = snappedStart + duration;
+      const startH = Math.floor(snappedStart / 60);
+      const startM = snappedStart % 60;
+      const endH = Math.floor(endMinutes / 60);
+      const endM = endMinutes % 60;
+      const startStr = `${startH}:${String(startM).padStart(2, '0')}`;
+      const endStr = `${endH}:${String(endM).padStart(2, '0')}`;
+      const answer = duration;
+
+      return {
+        text: `An orchestra rehearsal at the ${venue} started at ${startStr} and ended at ${endStr}. How many minutes did the rehearsal last?`,
+        answer,
+        operation: 'subtraction' as Operation,
+      };
+    },
+    minGrade: 4,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  // T4-AVG-1: Average (grade 5+)
+  {
+    generateProblem: (grade) => {
+      const event = getAdvancedEvent();
+      const numClasses = 4;
+      const avg = gradeRandomInt(grade, [{ upTo: 5, min: 80, max: 260 }], {
+        upTo: 6,
+        min: 150,
+        max: 900,
+      });
+      // Generate 4 values around avg whose mean = avg exactly
+      const deltas = [
+        randomInt(-20, 20),
+        randomInt(-20, 20),
+        randomInt(-20, 20),
+      ];
+      const fourth = -(deltas[0] + deltas[1] + deltas[2]);
+      const values = [
+        avg + deltas[0],
+        avg + deltas[1],
+        avg + deltas[2],
+        avg + fourth,
+      ].map((v) => Math.max(10, v));
+      const sum = values.reduce((a, b) => a + b, 0);
+      // Adjust to make exactly divisible if rounding moved it
+      const answer = Math.floor(sum / numClasses);
+
+      return {
+        text: `During the ${event}, four classes raised $${values[0]}, $${values[1]}, $${values[2]}, and $${values[3]} for the school library. What was the average amount raised per class?`,
+        answer,
+        operation: 'division' as Operation,
+      };
+    },
+    minGrade: 5,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  // T4-RATIO-1: Ratio scaling (grade 5+)
+  {
+    generateProblem: (grade) => {
+      const event = getAdvancedEvent();
+      const ratios: Array<[number, number]> = [
+        [2, 3],
+        [3, 4],
+        [3, 5],
+        [4, 5],
+        [5, 6],
+        [2, 5],
+      ];
+      const [rA, rB] = ratios[randomInt(0, ratios.length - 1)];
+      const k = gradeRandomInt(grade, [{ upTo: 5, min: 12, max: 80 }], {
+        upTo: 6,
+        min: 25,
+        max: 200,
+      });
+      const aCount = rA * k;
+      const bCount = rB * k;
+      const answer = bCount;
+
+      return {
+        text: `At the ${event}, the ratio of students to parents in the auditorium was ${rA} to ${rB}. If there were ${aCount} students, how many parents attended?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 5,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  // T4-MULTI-1: Multi-step shopping (grade 4+)
+  {
+    generateProblem: (grade) => {
+      const name = getAdvancedName();
+      const pronouns = getPronouns(name);
+      const itemObj = ADVANCED_ITEMS[randomInt(0, ADVANCED_ITEMS.length - 1)];
+      // Pick a fixed-cost item that is NOT the same as the main item so the
+      // sentence never asks about two of the same thing.
+      const fixedItemPool = [
+        'calculator',
+        'science kit',
+        'sketchbook',
+        'pencil case',
+      ] as const;
+      const fixedItemCandidates = fixedItemPool.filter(
+        (c) => c !== itemObj.singular
+      );
+      const fixedItem =
+        fixedItemCandidates[randomInt(0, fixedItemCandidates.length - 1)];
+      const price = gradeRandomInt(
+        grade,
+        [
+          { upTo: 4, min: 2, max: 12 },
+          { upTo: 5, min: 4, max: 25 },
+        ],
+        { upTo: 6, min: 8, max: 50 }
+      );
+      const quantity = gradeRandomInt(
+        grade,
+        [
+          { upTo: 4, min: 2, max: 8 },
+          { upTo: 5, min: 3, max: 12 },
+        ],
+        { upTo: 6, min: 4, max: 18 }
+      );
+      const fixedCost = gradeRandomInt(
+        grade,
+        [
+          { upTo: 4, min: 5, max: 30 },
+          { upTo: 5, min: 10, max: 60 },
+        ],
+        { upTo: 6, min: 20, max: 120 }
+      );
+      const spent = price * quantity + fixedCost;
+      const budgetMin = spent + 5;
+      const budget = Math.ceil(budgetMin / 10) * 10 + randomInt(0, 3) * 10;
+      const answer = budget - spent;
+
+      return {
+        text: `${name} went to the school supply store with $${budget}. ${pronouns.subject} bought ${quantity} ${itemObj.plural} at $${price} each and one ${fixedItem} for $${fixedCost}. How much money did ${pronouns.lowerSubject} have left?`,
+        answer,
+        operation: 'subtraction' as Operation,
+      };
+    },
+    minGrade: 4,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  // T4-FRACTION-1: Fraction of a quantity (grade 4+)
+  {
+    generateProblem: (grade) => {
+      const event = getAdvancedEvent();
+      const fractions: Array<[number, number]> = [
+        [1, 2],
+        [1, 3],
+        [2, 3],
+        [1, 4],
+        [3, 4],
+        [1, 5],
+        [2, 5],
+        [3, 5],
+        [1, 8],
+        [3, 8],
+        [5, 8],
+        [1, 10],
+        [3, 10],
+        [7, 10],
+      ];
+      const [num, denom] = fractions[randomInt(0, fractions.length - 1)];
+      const k = gradeRandomInt(
+        grade,
+        [
+          { upTo: 4, min: 8, max: 40 },
+          { upTo: 5, min: 20, max: 150 },
+        ],
+        { upTo: 6, min: 40, max: 400 }
+      );
+      const total = denom * k;
+      const firstGroup = num * k;
+      const answer = total - firstGroup;
+
+      return {
+        text: `Of the ${total} students who signed up for the ${event}, ${num}/${denom} chose basketball and the rest chose soccer. How many students chose soccer?`,
+        answer,
+        operation: 'subtraction' as Operation,
+      };
+    },
+    minGrade: 4,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  // T4-DIV-1: Sequenced narrative division (grade 4+)
+  {
+    generateProblem: (grade) => {
+      const name = getAdvancedName();
+      const pronouns = getPronouns(name);
+      const divisor = gradeRandomInt(
+        grade,
+        [
+          { upTo: 4, min: 6, max: 18 },
+          { upTo: 5, min: 10, max: 35 },
+        ],
+        { upTo: 6, min: 15, max: 60 }
+      );
+      const quotient = gradeRandomInt(
+        grade,
+        [
+          { upTo: 4, min: 8, max: 45 },
+          { upTo: 5, min: 15, max: 90 },
+        ],
+        { upTo: 6, min: 25, max: 180 }
+      );
+      const total = divisor * quotient;
+      const answer = quotient;
+
+      return {
+        text: `On Saturday morning, ${name} helped at the community library. ${pronouns.subject} sorted ${total} returned books into ${divisor} equal stacks before placing them on the shelves. How many books were in each stack?`,
+        answer,
+        operation: 'division' as Operation,
+      };
+    },
+    minGrade: 4,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  // T4-EVENT-1: School festival multi-step (grade 4+)
+  {
+    generateProblem: (grade) => {
+      const event = getAdvancedEvent();
+      const morning = gradeRandomInt(
+        grade,
+        [
+          { upTo: 4, min: 15, max: 60 },
+          { upTo: 5, min: 40, max: 200 },
+        ],
+        { upTo: 6, min: 80, max: 500 }
+      );
+      const afternoon = gradeRandomInt(
+        grade,
+        [
+          { upTo: 4, min: 15, max: 60 },
+          { upTo: 5, min: 40, max: 200 },
+        ],
+        { upTo: 6, min: 80, max: 500 }
+      );
+      const perBox = gradeRandomInt(
+        grade,
+        [
+          { upTo: 4, min: 10, max: 30 },
+          { upTo: 5, min: 20, max: 60 },
+        ],
+        { upTo: 6, min: 30, max: 100 }
+      );
+      const answer = (morning + afternoon) * perBox;
+
+      return {
+        text: `At the ${event}, the cafeteria sold ${morning} boxes of cookies in the morning and ${afternoon} boxes in the afternoon. Each box contained ${perBox} cookies. How many cookies were sold in total during the event?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 4,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  // T4-DIST-1: Three-leg round trip (grade 4+)
+  {
+    generateProblem: (grade) => {
+      const venue = getAdvancedVenue();
+      const leg1 = gradeRandomInt(
+        grade,
+        [
+          { upTo: 4, min: 80, max: 600 },
+          { upTo: 5, min: 200, max: 2000 },
+        ],
+        { upTo: 6, min: 500, max: 5000 }
+      );
+      const leg2 = gradeRandomInt(
+        grade,
+        [
+          { upTo: 4, min: 80, max: 600 },
+          { upTo: 5, min: 200, max: 2000 },
+        ],
+        { upTo: 6, min: 500, max: 5000 }
+      );
+      const leg3 = gradeRandomInt(
+        grade,
+        [
+          { upTo: 4, min: 80, max: 600 },
+          { upTo: 5, min: 200, max: 2000 },
+        ],
+        { upTo: 6, min: 500, max: 5000 }
+      );
+      const answer = leg1 + leg2 + leg3;
+
+      return {
+        text: `After the field trip to the museum, the school bus traveled ${leg1} meters from the ${venue} to the main road, then ${leg2} meters along the highway, and finally ${leg3} meters to the parking lot. How many meters did the bus travel in total?`,
+        answer,
+        operation: 'addition' as Operation,
+      };
+    },
+    minGrade: 4,
     maxGrade: 6,
     category: 'word-story',
   },
@@ -2087,6 +2814,7 @@ export function getStoriesForGrade(grade: number): WordStoryTemplate[] {
     ...GEOMETRY_STORIES,
     ...COLLECTION_STORIES,
     ...TRAVEL_STORIES,
+    ...ADVANCED_STORIES,
   ];
 
   allStories.forEach((story) => {
