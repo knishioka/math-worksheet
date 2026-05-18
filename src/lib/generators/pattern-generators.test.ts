@@ -33,6 +33,7 @@ describe('pattern-generators', () => {
 
           // 答えの検証
           expect(problem.answer).toBe(problem.operand1 * problem.operand2!);
+          expect(problem.showPartialProducts).toBe(false);
         }
       });
     });
@@ -82,6 +83,7 @@ describe('pattern-generators', () => {
 
           // 答えの検証
           expect(problem.answer).toBe(problem.operand1 * problem.operand2!);
+          expect(problem.showPartialProducts).toBe(true);
         }
       });
     });

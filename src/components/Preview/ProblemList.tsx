@@ -371,37 +371,74 @@ const HissanAnswerRow: React.FC<{
   </div>
 );
 
-/** 多桁乗算の部分積記入欄 */
-const PartialProductBoxes: React.FC<{
-  digits1Length: number;
-  digits2Length: number;
+/** 多桁乗算の部分積行 */
+const PartialProductRows: React.FC<{
+  operand1: number;
+  operand2: number;
   lineBoxCount: number;
-}> = ({ digits1Length, digits2Length, lineBoxCount }) => {
+  showAnswer: boolean;
+}> = ({ operand1, operand2, lineBoxCount, showAnswer }) => {
+  const digits1Length = operand1.toString().length;
+  const multiplierDigits = operand2.toString().split('').reverse().map(Number);
   const partialWidth = digits1Length + 1;
-  const totalWidth = digits1Length + digits2Length;
+  const totalWidth = digits1Length + multiplierDigits.length;
+
   return (
     <>
-      {Array.from({ length: digits2Length }).map((_, idx) => {
+      {multiplierDigits.map((digit, idx) => {
+        const productDigits = (operand1 * digit).toString().split('');
+        const paddedProductDigits = Array(
+          Math.max(partialWidth - productDigits.length, 0)
+        )
+          .fill('')
+          .concat(productDigits);
         const rightPad = idx;
         const leftPad = totalWidth - partialWidth - rightPad;
         return (
-          <div key={`partial-${idx}`} style={hissanRowStyle}>
+          <div
+            key={`partial-${idx}`}
+            data-hissan-partial-row
+            data-place-index={idx}
+            style={hissanRowStyle}
+          >
             {Array(Math.max(leftPad, 0))
               .fill('')
               .map((_, i) => (
-                <span key={`lpad-${i}`} style={hissanCellStyle}>
+                <span
+                  key={`lpad-${i}`}
+                  data-hissan-cell="pad-left"
+                  style={hissanCellStyle}
+                >
                   {'\u00A0'}
                 </span>
               ))}
-            {Array(partialWidth)
-              .fill(0)
-              .map((_, i) => (
-                <span key={`pp-${i}`} style={hissanAnswerBoxStyle} />
-              ))}
+            {showAnswer
+              ? paddedProductDigits.map((digitText, i) => (
+                  <span
+                    key={`pp-answer-${i}`}
+                    data-hissan-cell="partial-answer"
+                    style={{ ...hissanCellStyle, ...answerDisplayStyle }}
+                  >
+                    {digitText === '' ? '\u00A0' : digitText}
+                  </span>
+                ))
+              : Array(partialWidth)
+                  .fill(0)
+                  .map((_, i) => (
+                    <span
+                      key={`pp-box-${i}`}
+                      data-hissan-cell="partial-box"
+                      style={hissanAnswerBoxStyle}
+                    />
+                  ))}
             {Array(Math.max(rightPad, 0))
               .fill('')
               .map((_, i) => (
-                <span key={`rpad-${i}`} style={hissanCellStyle}>
+                <span
+                  key={`rpad-${i}`}
+                  data-hissan-cell="pad-right"
+                  style={hissanCellStyle}
+                >
                   {'\u00A0'}
                 </span>
               ))}
@@ -706,6 +743,10 @@ function ProblemItem({
       hissanProblem.operation === 'multiplication'
         ? digits1.length + digits2.length
         : maxLength + 1;
+    const showPartialProducts =
+      hissanProblem.operation === 'multiplication' &&
+      hissanProblem.showPartialProducts === true &&
+      digits2.length >= 2;
 
     return (
       <div className="problem-text" style={problemItemStyle}>
@@ -741,16 +782,15 @@ function ProblemItem({
           {/* 横線（答え行と同じ幅に揃える） */}
           <div style={getHissanLineStyle(answerWidth - 1)} />
 
-          {/* 多桁乗算の部分積記入欄（digits2 が 2 桁以上のかけ算のみ） */}
-          {hissanProblem.operation === 'multiplication' &&
-            digits2.length >= 2 &&
-            !showAnswer && (
-              <PartialProductBoxes
-                digits1Length={digits1.length}
-                digits2Length={digits2.length}
-                lineBoxCount={answerWidth}
-              />
-            )}
+          {/* 多桁乗算の部分積行（showPartialProducts が有効な問題のみ） */}
+          {showPartialProducts && (
+            <PartialProductRows
+              operand1={hissanProblem.operand1}
+              operand2={hissanProblem.operand2}
+              lineBoxCount={answerWidth}
+              showAnswer={showAnswer}
+            />
+          )}
 
           {/* 答え */}
           <HissanAnswerRow

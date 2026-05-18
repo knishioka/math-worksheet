@@ -122,7 +122,7 @@ export function generateHissanMultAdvanced(
       generateHissanProblem({
         grade: settings.grade,
         operation: 'multiplication',
-        showPartialProducts: false,
+        showPartialProducts: true,
       })
     );
   }
