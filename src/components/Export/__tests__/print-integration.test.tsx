@@ -122,7 +122,14 @@ describe('Print Integration Tests', () => {
       // 2列レイアウトの場合、縦順になっているか確認
       // 期待される順序: (1), (4), (2), (5), (3), (6)
       const problemNumbers = html.match(/\(\d+\)/g);
-      expect(problemNumbers).toEqual(['(1)', '(4)', '(2)', '(5)', '(3)', '(6)']);
+      expect(problemNumbers).toEqual([
+        '(1)',
+        '(4)',
+        '(2)',
+        '(5)',
+        '(3)',
+        '(6)',
+      ]);
     });
 
     it('should show answers when showAnswers is true', () => {
@@ -415,6 +422,111 @@ describe('Print Integration Tests', () => {
       // 筆算の横線が表示されているか確認
       expect(html).toContain('border-top');
     });
+
+    it('should render partial product boxes for 3-digit by 2-digit hissan multiplication', () => {
+      const hissanProblem: HissanProblem = {
+        id: '1',
+        type: 'hissan',
+        operation: 'multiplication',
+        operand1: 123,
+        operand2: 65,
+        answer: 7995,
+        showPartialProducts: true,
+      };
+
+      const { container } = render(
+        <ProblemList
+          problems={[hissanProblem]}
+          layoutColumns={2}
+          showAnswers={false}
+          settings={{
+            ...createSettings('hissan'),
+            grade: 4,
+            operation: 'multiplication',
+            calculationPattern: 'hissan-mult-advanced',
+          }}
+        />
+      );
+
+      const partialRows = container.querySelectorAll(
+        '[data-hissan-partial-row]'
+      );
+      expect(partialRows).toHaveLength(2);
+      expect(
+        partialRows[0].querySelectorAll('[data-hissan-cell="partial-box"]')
+      ).toHaveLength(4);
+      expect(
+        partialRows[1].querySelectorAll('[data-hissan-cell="partial-box"]')
+      ).toHaveLength(4);
+      expect(
+        partialRows[1].querySelectorAll('[data-hissan-cell="pad-right"]')
+      ).toHaveLength(1);
+    });
+
+    it('should render shifted partial product values on answer sheets', () => {
+      const hissanProblem: HissanProblem = {
+        id: '1',
+        type: 'hissan',
+        operation: 'multiplication',
+        operand1: 123,
+        operand2: 65,
+        answer: 7995,
+        showPartialProducts: true,
+      };
+
+      const { container } = render(
+        <ProblemList
+          problems={[hissanProblem]}
+          layoutColumns={2}
+          showAnswers={true}
+          settings={{
+            ...createSettings('hissan'),
+            grade: 4,
+            operation: 'multiplication',
+            calculationPattern: 'hissan-mult-advanced',
+          }}
+        />
+      );
+
+      const partialRows = container.querySelectorAll(
+        '[data-hissan-partial-row]'
+      );
+      expect(partialRows[0].textContent).toContain('615');
+      expect(partialRows[1].textContent).toContain('738');
+      expect(
+        partialRows[1].querySelectorAll('[data-hissan-cell="pad-right"]')
+      ).toHaveLength(1);
+      expect(container.textContent).toContain('7995');
+    });
+
+    it('should not render partial product rows when the hissan problem does not request them', () => {
+      const hissanProblem: HissanProblem = {
+        id: '1',
+        type: 'hissan',
+        operation: 'multiplication',
+        operand1: 123,
+        operand2: 65,
+        answer: 7995,
+        showPartialProducts: false,
+      };
+
+      const { container } = render(
+        <ProblemList
+          problems={[hissanProblem]}
+          layoutColumns={2}
+          showAnswers={false}
+          settings={{
+            ...createSettings('hissan'),
+            grade: 4,
+            operation: 'multiplication',
+          }}
+        />
+      );
+
+      expect(
+        container.querySelectorAll('[data-hissan-partial-row]')
+      ).toHaveLength(0);
+    });
   });
 
   describe('English Word Problems Layout', () => {
@@ -574,14 +686,17 @@ describe('Print Integration Tests', () => {
 
   describe('Dynamic Padding and A4 Fit', () => {
     it('should show warning when problems exceed A4 size', () => {
-      const manyProblems: BasicProblem[] = Array.from({ length: 50 }, (_, i) => ({
-        id: `${i + 1}`,
-        type: 'basic',
-        operation: 'addition',
-        operand1: i + 1,
-        operand2: i + 1,
-        answer: (i + 1) * 2,
-      }));
+      const manyProblems: BasicProblem[] = Array.from(
+        { length: 50 },
+        (_, i) => ({
+          id: `${i + 1}`,
+          type: 'basic',
+          operation: 'addition',
+          operand1: i + 1,
+          operand2: i + 1,
+          answer: (i + 1) * 2,
+        })
+      );
 
       const { container } = render(
         <ProblemList
@@ -604,14 +719,17 @@ describe('Print Integration Tests', () => {
     });
 
     it('should not show warning when problems fit in A4', () => {
-      const fewProblems: BasicProblem[] = Array.from({ length: 10 }, (_, i) => ({
-        id: `${i + 1}`,
-        type: 'basic',
-        operation: 'addition',
-        operand1: i + 1,
-        operand2: i + 1,
-        answer: (i + 1) * 2,
-      }));
+      const fewProblems: BasicProblem[] = Array.from(
+        { length: 10 },
+        (_, i) => ({
+          id: `${i + 1}`,
+          type: 'basic',
+          operation: 'addition',
+          operand1: i + 1,
+          operand2: i + 1,
+          answer: (i + 1) * 2,
+        })
+      );
 
       const { container } = render(
         <ProblemList
@@ -653,20 +771,25 @@ describe('Print Integration Tests', () => {
 
       const html = container.innerHTML;
       // 空状態メッセージが表示されているか確認
-      expect(html).toContain('設定を確認して「問題を生成」ボタンをクリックしてください');
+      expect(html).toContain(
+        '設定を確認して「問題を生成」ボタンをクリックしてください'
+      );
     });
   });
 
   describe('Print Mode', () => {
     it('should not show A4 warning in print mode', () => {
-      const manyProblems: BasicProblem[] = Array.from({ length: 50 }, (_, i) => ({
-        id: `${i + 1}`,
-        type: 'basic',
-        operation: 'addition',
-        operand1: i + 1,
-        operand2: i + 1,
-        answer: (i + 1) * 2,
-      }));
+      const manyProblems: BasicProblem[] = Array.from(
+        { length: 50 },
+        (_, i) => ({
+          id: `${i + 1}`,
+          type: 'basic',
+          operation: 'addition',
+          operand1: i + 1,
+          operand2: i + 1,
+          answer: (i + 1) * 2,
+        })
+      );
 
       const { container } = render(
         <ProblemList

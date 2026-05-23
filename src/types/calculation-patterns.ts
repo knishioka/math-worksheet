@@ -751,7 +751,8 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'mult-dec-int': '25×2.3などの整数×小数',
   'div-dec-int': '7.2÷2.4などの整数÷小数',
   'frac-mixed-number': '1と2/3＋2と1/4などの帯分数',
-  'hissan-mult-advanced': '3桁×2桁の筆算形式（例：234×56）',
+  'hissan-mult-advanced':
+    '3桁×2桁の筆算形式（例：234×56）。部分積を2段に分けて練習',
   'hissan-div-basic': 'わり算の筆算形式（例：84÷7）',
 
   // 5年生
