@@ -374,14 +374,18 @@ const HissanAnswerRow: React.FC<{
 /** 多桁乗算の部分積行 */
 const PartialProductRows: React.FC<{
   operand1: number;
-  operand2: number;
+  digits1Length: number;
+  multiplierDigits: number[];
   lineBoxCount: number;
   showAnswer: boolean;
-}> = ({ operand1, operand2, lineBoxCount, showAnswer }) => {
-  const digits1Length = operand1.toString().length;
-  const multiplierDigits = operand2.toString().split('').reverse().map(Number);
+}> = ({
+  operand1,
+  digits1Length,
+  multiplierDigits,
+  lineBoxCount,
+  showAnswer,
+}) => {
   const partialWidth = digits1Length + 1;
-  const totalWidth = digits1Length + multiplierDigits.length;
 
   return (
     <>
@@ -393,7 +397,6 @@ const PartialProductRows: React.FC<{
           .fill('')
           .concat(productDigits);
         const rightPad = idx;
-        const leftPad = totalWidth - partialWidth - rightPad;
         return (
           <div
             key={`partial-${idx}`}
@@ -401,17 +404,6 @@ const PartialProductRows: React.FC<{
             data-place-index={idx}
             style={hissanRowStyle}
           >
-            {Array(Math.max(leftPad, 0))
-              .fill('')
-              .map((_, i) => (
-                <span
-                  key={`lpad-${i}`}
-                  data-hissan-cell="pad-left"
-                  style={hissanCellStyle}
-                >
-                  {'\u00A0'}
-                </span>
-              ))}
             {showAnswer
               ? paddedProductDigits.map((digitText, i) => (
                   <span
@@ -747,6 +739,9 @@ function ProblemItem({
       hissanProblem.operation === 'multiplication' &&
       hissanProblem.showPartialProducts === true &&
       digits2.length >= 2;
+    const multiplierDigits = showPartialProducts
+      ? digits2.slice().reverse().map(Number)
+      : [];
 
     return (
       <div className="problem-text" style={problemItemStyle}>
@@ -786,7 +781,8 @@ function ProblemItem({
           {showPartialProducts && (
             <PartialProductRows
               operand1={hissanProblem.operand1}
-              operand2={hissanProblem.operand2}
+              digits1Length={digits1.length}
+              multiplierDigits={multiplierDigits}
               lineBoxCount={answerWidth}
               showAnswer={showAnswer}
             />
