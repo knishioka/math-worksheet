@@ -109,9 +109,16 @@ describe('property-based tests: English Word Problems', () => {
     for (const p of problems) {
       expect(p.type).toBe('word-en');
       expect(p.problemText.trim().length).toBeGreaterThan(0);
-      expect(typeof p.answer).toBe('number');
-      expect(Number.isFinite(p.answer as number)).toBe(true);
-      expect(p.answer).toBeGreaterThan(0);
+      expect(['number', 'string']).toContain(typeof p.answer);
+      if (typeof p.answer === 'number') {
+        expect(Number.isFinite(p.answer)).toBe(true);
+        expect(p.answer).toBeGreaterThan(0);
+      } else {
+        // Curriculum-aligned templates (fractions, decimals, remainders) may
+        // return formatted strings — ensure they are non-empty and well-shaped.
+        expect(p.answer.length).toBeGreaterThan(0);
+        expect(p.answer).toMatch(/^[\d./ R-]+$/);
+      }
     }
   });
 });
