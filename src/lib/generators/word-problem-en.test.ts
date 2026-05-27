@@ -100,15 +100,14 @@ describe('English Word Problem Generator', () => {
       const grade5Problems = generateEnWordStory(5, 80);
       const grade6Problems = generateEnWordStory(6, 100);
 
-      const grade4Max = Math.max(
-        ...grade4Problems.map((problem) => problem.answer as number)
-      );
-      const grade5Max = Math.max(
-        ...grade5Problems.map((problem) => problem.answer as number)
-      );
-      const grade6Max = Math.max(
-        ...grade6Problems.map((problem) => problem.answer as number)
-      );
+      const numericAnswers = (problems: WordProblemEn[]): number[] =>
+        problems
+          .map((p) => p.answer)
+          .filter((a): a is number => typeof a === 'number');
+
+      const grade4Max = Math.max(...numericAnswers(grade4Problems));
+      const grade5Max = Math.max(...numericAnswers(grade5Problems));
+      const grade6Max = Math.max(...numericAnswers(grade6Problems));
 
       // Grade 4 should regularly reach 3-digit territory.
       expect(grade4Max).toBeGreaterThanOrEqual(250);
@@ -221,7 +220,10 @@ describe('English Word Problem Generator', () => {
   describe('Upper-elementary difficulty (grade 4+)', () => {
     it('grade 4 should produce some answers at or above 200', () => {
       const problems = generateEnWordStory(4, 80);
-      const max = Math.max(...problems.map((p) => p.answer as number));
+      const numerics = problems
+        .map((p) => p.answer)
+        .filter((a): a is number => typeof a === 'number');
+      const max = Math.max(...numerics);
       expect(max).toBeGreaterThanOrEqual(200);
     });
 
@@ -394,12 +396,19 @@ describe('English Word Problem Generator', () => {
       problems.forEach((problem) => {
         const answer = problem.answer;
         expect(answer).toBeDefined();
-        expect(typeof answer).toBe('number');
-        // Some comparison problems may have negative results (e.g., "fewer than")
-        // but the absolute value should be reasonable
-        expect(Number.isFinite(answer as number)).toBe(true);
-        expect(Math.abs(answer as number)).toBeGreaterThanOrEqual(0);
-        expect(Math.abs(answer as number)).toBeLessThan(200000);
+        expect(['number', 'string']).toContain(typeof answer);
+        if (typeof answer === 'number') {
+          // Some comparison problems may have negative results (e.g., "fewer than")
+          // but the absolute value should be reasonable
+          expect(Number.isFinite(answer)).toBe(true);
+          expect(Math.abs(answer)).toBeGreaterThanOrEqual(0);
+          expect(Math.abs(answer)).toBeLessThan(200000);
+        } else {
+          // String answers should be non-empty and match a fraction/decimal/
+          // remainder shape (no garbled output).
+          expect(answer.length).toBeGreaterThan(0);
+          expect(answer).toMatch(/^[\d./ R-]+$/);
+        }
       });
     });
 
@@ -485,6 +494,129 @@ describe('English Word Problem Generator', () => {
         // Grade 1 should only have addition and subtraction
         expect(['addition', 'subtraction']).toContain(problem.operation);
       });
+    });
+  });
+
+  describe('Curriculum coverage', () => {
+    // Sample sizes are large enough to make statistical coverage robust.
+    const SAMPLE = 250;
+
+    it('grade 3 should sometimes produce multiplication answers ≥ 100 (2-3桁×1桁)', () => {
+      const problems = generateGradeEnWordProblems(3, SAMPLE);
+      const hit = problems.some(
+        (p) =>
+          p.operation === 'multiplication' &&
+          typeof p.answer === 'number' &&
+          p.answer >= 100
+      );
+      expect(hit).toBe(true);
+    });
+
+    it('grade 3 should sometimes produce remainder-style "q R r" answers', () => {
+      const problems = generateGradeEnWordProblems(3, SAMPLE);
+      const hit = problems.some(
+        (p) => typeof p.answer === 'string' && / R \d+/.test(p.answer)
+      );
+      expect(hit).toBe(true);
+    });
+
+    it('grade 3 should sometimes produce unit-fraction (1/n) problems', () => {
+      const problems = generateGradeEnWordProblems(3, SAMPLE);
+      const hit = problems.some((p) =>
+        /\b1\/\d+\b|equal pieces/.test(p.problemText)
+      );
+      expect(hit).toBe(true);
+    });
+
+    it('grade 3 should sometimes produce tenths decimal problems', () => {
+      const problems = generateGradeEnWordProblems(3, SAMPLE);
+      const hit = problems.some(
+        (p) => typeof p.answer === 'string' && /^\d+\.\d+$/.test(p.answer)
+      );
+      expect(hit).toBe(true);
+    });
+
+    it('grade 4 should sometimes produce same-denominator fraction answers', () => {
+      const problems = generateGradeEnWordProblems(4, SAMPLE);
+      const hit = problems.some(
+        (p) => typeof p.answer === 'string' && /^\d+\/\d+$/.test(p.answer)
+      );
+      expect(hit).toBe(true);
+    });
+
+    it('grade 4 should sometimes produce decimal × integer / decimal ÷ integer', () => {
+      const problems = generateGradeEnWordProblems(4, SAMPLE);
+      const hit = problems.some(
+        (p) => typeof p.answer === 'string' && /^\d+\.\d+$/.test(p.answer)
+      );
+      expect(hit).toBe(true);
+    });
+
+    it('grade 5 should sometimes produce decimal × decimal / decimal ÷ decimal', () => {
+      const problems = generateGradeEnWordProblems(5, SAMPLE);
+      const hit = problems.some(
+        (p) =>
+          typeof p.answer === 'string' &&
+          /^\d+\.\d{1,2}$/.test(p.answer) &&
+          /square meters|m wide|garden has area/.test(p.problemText)
+      );
+      expect(hit).toBe(true);
+    });
+
+    it('grade 5 should sometimes produce different-denominator fraction answers', () => {
+      const problems = generateGradeEnWordProblems(5, SAMPLE);
+      const hit = problems.some((p) => {
+        if (typeof p.answer !== 'string' || !/^\d+\/\d+$/.test(p.answer)) {
+          return false;
+        }
+        // Look for two distinct denominators in the problem text.
+        const denoms = (p.problemText.match(/\d+\/(\d+)/g) ?? []).map((m) =>
+          Number(m.split('/')[1])
+        );
+        return new Set(denoms).size >= 2;
+      });
+      expect(hit).toBe(true);
+    });
+
+    it('grade 5 should include speed / distance / time problems', () => {
+      const problems = generateGradeEnWordProblems(5, SAMPLE);
+      const hit = problems.some((p) =>
+        /km\/h|km in|m per minute/.test(p.problemText)
+      );
+      expect(hit).toBe(true);
+    });
+
+    it('grade 5 should include percent problems', () => {
+      const problems = generateGradeEnWordProblems(5, SAMPLE);
+      const hit = problems.some((p) => /\b\d+%/.test(p.problemText));
+      expect(hit).toBe(true);
+    });
+
+    it('grade 6 should sometimes produce fraction × fraction or fraction ÷ fraction', () => {
+      const problems = generateGradeEnWordProblems(6, SAMPLE);
+      const hit = problems.some((p) => {
+        const fractions = p.problemText.match(/\d+\/\d+/g) ?? [];
+        return fractions.length >= 2;
+      });
+      expect(hit).toBe(true);
+    });
+
+    it('grade 6 should NOT include simple 1-digit × 1-digit multiplication templates', () => {
+      // MULTIPLICATION_STORIES[0-2] (basic "boxes/groups/rows") are now capped at G4.
+      const problems = generateGradeEnWordProblems(6, SAMPLE);
+      const simpleBoxesPattern =
+        /^There are \d+ boxes\. Each box has \d+ \w+\. How many \w+ are there in total\?$/;
+      const simpleGroupsPattern =
+        /^There are \d+ groups of \d+ \w+\. How many \w+ are there altogether\?$/;
+      const simpleRowsPattern =
+        /^\w+ are arranged in \d+ rows with \d+ in each row\. How many \w+ are there in total\?$/;
+      const hitsBasicMul = problems.some(
+        (p) =>
+          simpleBoxesPattern.test(p.problemText) ||
+          simpleGroupsPattern.test(p.problemText) ||
+          simpleRowsPattern.test(p.problemText)
+      );
+      expect(hitsBasicMul).toBe(false);
     });
   });
 });

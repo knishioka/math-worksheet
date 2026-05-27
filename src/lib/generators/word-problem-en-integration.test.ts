@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { generateGradeEnWordProblems } from './word-problem-en';
-import { getPrintTemplate, detectPrimaryProblemType } from '../../config/print-templates';
+import {
+  getPrintTemplate,
+  detectPrimaryProblemType,
+} from '../../config/print-templates';
 import type { WordProblemEn } from '../../types';
 
 /**
@@ -114,7 +117,10 @@ describe('Word Problem EN Integration', () => {
 
     it('should generate grade 6 problems with appropriate settings', () => {
       const template = getPrintTemplate('word-en');
-      const problems = generateGradeEnWordProblems(6, template.recommendedCounts[3]);
+      const problems = generateGradeEnWordProblems(
+        6,
+        template.recommendedCounts[3]
+      );
 
       expect(problems).toHaveLength(template.recommendedCounts[3]);
       expect(template.recommendedCounts[3]).toBe(18);
@@ -178,19 +184,23 @@ describe('Word Problem EN Integration', () => {
     it('should not generate number sequence problems for grade 3+', () => {
       // Test grade 3
       const grade3Problems = generateGradeEnWordProblems(3, 30);
-      const hasSequenceProblem = grade3Problems.some((p) =>
-        p.problemText.includes('comes just before') ||
-        p.problemText.includes('comes just after') ||
-        p.problemText.includes('is between') ||
-        p.problemText.includes('Count') && (p.problemText.includes('forward') || p.problemText.includes('backward'))
+      const hasSequenceProblem = grade3Problems.some(
+        (p) =>
+          p.problemText.includes('comes just before') ||
+          p.problemText.includes('comes just after') ||
+          p.problemText.includes('is between') ||
+          (p.problemText.includes('Count') &&
+            (p.problemText.includes('forward') ||
+              p.problemText.includes('backward')))
       );
       expect(hasSequenceProblem).toBe(false);
 
       // Test grade 5
       const grade5Problems = generateGradeEnWordProblems(5, 30);
-      const hasSequenceProblemGrade5 = grade5Problems.some((p) =>
-        p.problemText.includes('comes just before') ||
-        p.problemText.includes('comes just after')
+      const hasSequenceProblemGrade5 = grade5Problems.some(
+        (p) =>
+          p.problemText.includes('comes just before') ||
+          p.problemText.includes('comes just after')
       );
       expect(hasSequenceProblemGrade5).toBe(false);
     });
@@ -198,22 +208,28 @@ describe('Word Problem EN Integration', () => {
     it('should include number sequence problems for grades 1-2', () => {
       // Test grade 1
       const grade1Problems = generateGradeEnWordProblems(1, 20);
-      const hasSequenceProblemGrade1 = grade1Problems.some((p) =>
-        p.problemText.includes('comes just before') ||
-        p.problemText.includes('comes just after') ||
-        p.problemText.includes('is between') ||
-        (p.problemText.includes('Count') && (p.problemText.includes('forward') || p.problemText.includes('backward')))
+      const hasSequenceProblemGrade1 = grade1Problems.some(
+        (p) =>
+          p.problemText.includes('comes just before') ||
+          p.problemText.includes('comes just after') ||
+          p.problemText.includes('is between') ||
+          (p.problemText.includes('Count') &&
+            (p.problemText.includes('forward') ||
+              p.problemText.includes('backward')))
       );
       // Should be possible to generate sequence problems for grade 1
       expect(typeof hasSequenceProblemGrade1).toBe('boolean');
 
       // Test grade 2
       const grade2Problems = generateGradeEnWordProblems(2, 20);
-      const hasSequenceProblemGrade2 = grade2Problems.some((p) =>
-        p.problemText.includes('comes just before') ||
-        p.problemText.includes('comes just after') ||
-        p.problemText.includes('is between') ||
-        (p.problemText.includes('Count') && (p.problemText.includes('forward') || p.problemText.includes('backward')))
+      const hasSequenceProblemGrade2 = grade2Problems.some(
+        (p) =>
+          p.problemText.includes('comes just before') ||
+          p.problemText.includes('comes just after') ||
+          p.problemText.includes('is between') ||
+          (p.problemText.includes('Count') &&
+            (p.problemText.includes('forward') ||
+              p.problemText.includes('backward')))
       );
       // Should be possible to generate sequence problems for grade 2
       expect(typeof hasSequenceProblemGrade2).toBe('boolean');
@@ -253,8 +269,12 @@ describe('Word Problem EN Integration', () => {
 
       problems.forEach((problem) => {
         expect(problem.answer).toBeDefined();
-        expect(typeof problem.answer).toBe('number');
-        expect(problem.answer).toBeGreaterThanOrEqual(0);
+        expect(['number', 'string']).toContain(typeof problem.answer);
+        if (typeof problem.answer === 'number') {
+          expect(problem.answer).toBeGreaterThanOrEqual(0);
+        } else {
+          expect(problem.answer.length).toBeGreaterThan(0);
+        }
       });
     });
 

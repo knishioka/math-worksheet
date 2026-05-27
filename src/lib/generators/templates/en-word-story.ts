@@ -8,7 +8,7 @@ import type { Operation } from '../../../types';
 export interface WordStoryTemplate {
   generateProblem: (grade: number) => {
     text: string;
-    answer: number;
+    answer: number | string;
     operation: Operation;
   };
   minGrade: number;
@@ -255,18 +255,65 @@ function gradeRandomInt(
 /**
  * Per-grade scalar (e.g. for max factor in multiplication / division).
  * Lets us replace inline ternaries with a single readable call.
+ * Grade 3 is its own tier so curriculum-appropriate ranges can diverge from G1-2.
  */
 function gradeFactor(
   grade: number,
-  g3OrBelow: number,
+  g1to2: number,
+  g3: number,
   g4: number,
   g5: number,
   g6: number
 ): number {
-  if (grade <= 3) return g3OrBelow;
+  if (grade <= 2) return g1to2;
+  if (grade === 3) return g3;
   if (grade === 4) return g4;
   if (grade === 5) return g5;
   return g6;
+}
+
+/**
+ * Greatest common divisor for fraction reduction.
+ */
+function gcd(a: number, b: number): number {
+  const aAbs = Math.abs(a);
+  const bAbs = Math.abs(b);
+  if (bAbs === 0) return aAbs;
+  return gcd(bAbs, aAbs % bAbs);
+}
+
+/**
+ * Reduce a fraction to lowest terms.
+ */
+function reduceFraction(n: number, d: number): { n: number; d: number } {
+  if (d === 0) return { n, d };
+  const g = gcd(n, d);
+  return { n: n / g, d: d / g };
+}
+
+/**
+ * Format a fraction as a plain string. Returns "n" when denominator is 1.
+ */
+function formatFraction(n: number, d: number): string {
+  if (d === 1) return String(n);
+  return `${n}/${d}`;
+}
+
+/**
+ * Format a decimal value, trimming trailing zeros (but keeping at least one
+ * digit after the point when the value is non-integer).
+ */
+function formatDecimal(value: number, places: number): string {
+  const fixed = value.toFixed(places);
+  if (!fixed.includes('.')) return fixed;
+  return fixed.replace(/0+$/, '').replace(/\.$/, '');
+}
+
+/**
+ * Format "quotient remainder" answers. Returns just the quotient when r === 0.
+ */
+function formatRemainder(q: number, r: number): string {
+  return r === 0 ? String(q) : `${q} R ${r}`;
 }
 
 function generateFriendlyPayment(price: number, maxPaid: number): number {
@@ -375,7 +422,7 @@ export const SIMPLE_ADDITION_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 1,
-    maxGrade: 6,
+    maxGrade: 3,
     category: 'word-story',
   },
   {
@@ -412,7 +459,7 @@ export const SIMPLE_ADDITION_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 1,
-    maxGrade: 6,
+    maxGrade: 3,
     category: 'word-story',
   },
 ];
@@ -458,7 +505,7 @@ export const MULTI_STEP_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 2,
-    maxGrade: 6,
+    maxGrade: 4,
     category: 'word-story',
   },
   {
@@ -515,7 +562,7 @@ export const MULTIPLICATION_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const item = getRandomItem(true);
-      const factorMax = gradeFactor(grade, 9, 20, 40, 60);
+      const factorMax = gradeFactor(grade, 9, 9, 30, 60, 80);
       const groups = randomInt(2, factorMax);
       const perGroup = randomInt(2, factorMax);
       const answer = groups * perGroup;
@@ -527,13 +574,13 @@ export const MULTIPLICATION_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 2,
-    maxGrade: 6,
+    maxGrade: 4,
     category: 'word-story',
   },
   {
     generateProblem: (grade) => {
       const item = getRandomItem(true);
-      const factorMax = gradeFactor(grade, 9, 20, 40, 60);
+      const factorMax = gradeFactor(grade, 9, 9, 30, 60, 80);
       const groups = randomInt(2, factorMax);
       const perGroup = randomInt(2, factorMax);
       const answer = groups * perGroup;
@@ -545,13 +592,13 @@ export const MULTIPLICATION_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 2,
-    maxGrade: 6,
+    maxGrade: 4,
     category: 'word-story',
   },
   {
     generateProblem: (grade) => {
       const item = getRandomItem(true);
-      const factorMax = gradeFactor(grade, 9, 20, 40, 60);
+      const factorMax = gradeFactor(grade, 9, 9, 30, 60, 80);
       const rows = randomInt(2, factorMax);
       const cols = randomInt(2, factorMax);
       const answer = rows * cols;
@@ -563,7 +610,7 @@ export const MULTIPLICATION_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 2,
-    maxGrade: 6,
+    maxGrade: 4,
     category: 'word-story',
   },
   {
@@ -697,8 +744,8 @@ export const DIVISION_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const item = getRandomItem(true);
-      const divisorMax = gradeFactor(grade, 9, 12, 25, 40);
-      const quotientMax = gradeFactor(grade, 9, 25, 80, 200);
+      const divisorMax = gradeFactor(grade, 9, 9, 15, 30, 50);
+      const quotientMax = gradeFactor(grade, 9, 80, 120, 250, 400);
       const groups = randomInt(2, divisorMax);
       const perGroup = randomInt(2, quotientMax);
       const total = groups * perGroup;
@@ -711,14 +758,14 @@ export const DIVISION_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 3,
-    maxGrade: 6,
+    maxGrade: 5,
     category: 'word-story',
   },
   {
     generateProblem: (grade) => {
       const item = getRandomItem(true);
-      const divisorMax = gradeFactor(grade, 9, 12, 25, 40);
-      const quotientMax = gradeFactor(grade, 9, 25, 80, 200);
+      const divisorMax = gradeFactor(grade, 9, 9, 15, 30, 50);
+      const quotientMax = gradeFactor(grade, 9, 80, 120, 250, 400);
       const perBox = randomInt(2, divisorMax);
       const numBoxes = randomInt(2, quotientMax);
       const total = perBox * numBoxes;
@@ -731,14 +778,14 @@ export const DIVISION_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 3,
-    maxGrade: 6,
+    maxGrade: 5,
     category: 'word-story',
   },
   {
     generateProblem: (grade) => {
       const item = getRandomItem(true);
-      const divisorMax = gradeFactor(grade, 9, 12, 25, 40);
-      const quotientMax = gradeFactor(grade, 9, 25, 80, 200);
+      const divisorMax = gradeFactor(grade, 9, 9, 15, 30, 50);
+      const quotientMax = gradeFactor(grade, 9, 80, 120, 250, 400);
       const perRow = randomInt(2, quotientMax);
       const numRows = randomInt(2, divisorMax);
       const total = perRow * numRows;
@@ -751,7 +798,7 @@ export const DIVISION_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 3,
-    maxGrade: 6,
+    maxGrade: 5,
     category: 'word-story',
   },
   {
@@ -834,8 +881,8 @@ export const DIVISION_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const item = getRandomItem(true);
-      const divisorMax = gradeFactor(grade, 9, 12, 25, 40);
-      const quotientMax = gradeFactor(grade, 9, 25, 80, 200);
+      const divisorMax = gradeFactor(grade, 9, 9, 15, 30, 50);
+      const quotientMax = gradeFactor(grade, 9, 80, 120, 250, 400);
       const perBag = randomInt(2, quotientMax);
       const numBags = randomInt(2, divisorMax);
       const total = perBag * numBags;
@@ -1995,7 +2042,7 @@ export const PATTERN_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 2,
-    maxGrade: 6,
+    maxGrade: 4,
     category: 'word-story',
   },
   {
@@ -2028,7 +2075,7 @@ export const PATTERN_STORIES: WordStoryTemplate[] = [
       };
     },
     minGrade: 2,
-    maxGrade: 6,
+    maxGrade: 4,
     category: 'word-story',
   },
 ];
@@ -2792,6 +2839,646 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
 ];
 
 /**
+ * Grade 3-4: 2-3 digit × 1-digit multiplication (curriculum: G3 introduces
+ * "2桁×1桁" / "3桁×1桁" hissan-style multiplication, beyond the 9×9 table).
+ */
+export const GRADE3_DIGIT_MULTIPLICATION_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: (grade) => {
+      const itemObj = getRandomItemPair();
+      const twoDigit = gradeRandomInt(grade, [{ upTo: 3, min: 12, max: 99 }], {
+        upTo: 6,
+        min: 100,
+        max: 400,
+      });
+      const oneDigit = randomInt(2, 9);
+      const answer = twoDigit * oneDigit;
+
+      return {
+        text: `A pack has ${twoDigit} ${itemObj.plural}. There are ${oneDigit} packs. How many ${itemObj.plural} in total?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 3,
+    maxGrade: 4,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const pronouns = getPronouns(name);
+      const perDay = gradeRandomInt(grade, [{ upTo: 3, min: 15, max: 95 }], {
+        upTo: 6,
+        min: 80,
+        max: 350,
+      });
+      const days = randomInt(3, 9);
+      const answer = perDay * days;
+
+      return {
+        text: `${name} saves ${perDay} yen every day. How much money does ${pronouns.lowerSubject} save in ${days} days?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 3,
+    maxGrade: 4,
+    category: 'word-story',
+  },
+];
+
+/**
+ * Grade 3-4: Division with remainder (curriculum: G3 "あまりのある割り算").
+ * Answer is a string in the form "q R r" (or just "q" if r === 0).
+ */
+export const DIVISION_REMAINDER_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const itemObj = getRandomItemPair();
+      const pronouns = getPronouns(name);
+      const d = randomInt(3, 9);
+      const q = gradeRandomInt(grade, [{ upTo: 3, min: 4, max: 30 }], {
+        upTo: 6,
+        min: 8,
+        max: 80,
+      });
+      const r = randomInt(1, d - 1);
+      const dividend = d * q + r;
+      const answer = formatRemainder(q, r);
+
+      return {
+        text: `${name} has ${dividend} ${itemObj.plural}. ${pronouns.subject} packs them into bags of ${d}. How many bags are full, and how many ${itemObj.plural} are left over?`,
+        answer,
+        operation: 'division' as Operation,
+      };
+    },
+    minGrade: 3,
+    maxGrade: 4,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const d = randomInt(3, 9);
+      const q = gradeRandomInt(grade, [{ upTo: 3, min: 4, max: 20 }], {
+        upTo: 6,
+        min: 8,
+        max: 60,
+      });
+      const r = randomInt(1, d - 1);
+      const dividend = d * q + r;
+      const answer = formatRemainder(q, r);
+
+      return {
+        text: `${dividend} cookies are shared equally among ${d} children. How many cookies does each child get, and how many are left over?`,
+        answer,
+        operation: 'division' as Operation,
+      };
+    },
+    minGrade: 3,
+    maxGrade: 4,
+    category: 'word-story',
+  },
+];
+
+/**
+ * Grade 3-6: Unit-fraction problems (curriculum: G3 introduces 1/n as a way
+ * to split a whole into equal parts). Answer is a count (number).
+ */
+export const UNIT_FRACTION_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const denom = randomInt(2, 6);
+      const k = gradeRandomInt(grade, [{ upTo: 3, min: 3, max: 12 }], {
+        upTo: 6,
+        min: 10,
+        max: 40,
+      });
+      const total = denom * k;
+      const answer = k;
+
+      return {
+        text: `A ribbon is ${total} cm long. ${name} cuts it into ${denom} equal pieces. How long is one piece, in cm?`,
+        answer,
+        operation: 'division' as Operation,
+      };
+    },
+    minGrade: 3,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const itemObj = getRandomItemPair();
+      const pronouns = getPronouns(name);
+      const denom = randomInt(2, 5);
+      const k = gradeRandomInt(grade, [{ upTo: 3, min: 3, max: 12 }], {
+        upTo: 6,
+        min: 10,
+        max: 40,
+      });
+      const total = denom * k;
+      const answer = k;
+
+      return {
+        text: `${name} has ${total} ${itemObj.plural}. ${pronouns.subject} gives away 1/${denom} of them. How many ${itemObj.plural} did ${pronouns.lowerSubject} give away?`,
+        answer,
+        operation: 'division' as Operation,
+      };
+    },
+    minGrade: 3,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+];
+
+/**
+ * Grade 3-5: Tenths decimal addition / subtraction (curriculum: G3 introduces
+ * 小数 to the 0.1 place; G4-5 extend it). Answer is a formatted decimal string.
+ */
+export const DECIMAL_ADD_SUB_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const pronouns = getPronouns(name);
+      const a10 = gradeRandomInt(grade, [{ upTo: 3, min: 3, max: 90 }], {
+        upTo: 5,
+        min: 10,
+        max: 400,
+      });
+      const b10 = gradeRandomInt(grade, [{ upTo: 3, min: 3, max: 90 }], {
+        upTo: 5,
+        min: 10,
+        max: 400,
+      });
+      const a = formatDecimal(a10 / 10, 1);
+      const b = formatDecimal(b10 / 10, 1);
+      const answer = formatDecimal((a10 + b10) / 10, 1);
+
+      return {
+        text: `${name} drinks ${a} L of juice in the morning and ${b} L in the afternoon. How many liters does ${pronouns.lowerSubject} drink in total?`,
+        answer,
+        operation: 'addition' as Operation,
+      };
+    },
+    minGrade: 3,
+    maxGrade: 5,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const pronouns = getPronouns(name);
+      const total10 = gradeRandomInt(grade, [{ upTo: 3, min: 20, max: 95 }], {
+        upTo: 5,
+        min: 50,
+        max: 500,
+      });
+      const used10 = randomInt(5, total10 - 3);
+      const totalStr = formatDecimal(total10 / 10, 1);
+      const usedStr = formatDecimal(used10 / 10, 1);
+      const answer = formatDecimal((total10 - used10) / 10, 1);
+
+      return {
+        text: `${name} has ${totalStr} m of string. ${pronouns.subject} uses ${usedStr} m. How many meters of string are left?`,
+        answer,
+        operation: 'subtraction' as Operation,
+      };
+    },
+    minGrade: 3,
+    maxGrade: 5,
+    category: 'word-story',
+  },
+];
+
+/**
+ * Grade 4-6: Same-denominator fraction addition / subtraction (curriculum:
+ * G4 "同分母の分数の加減"). G4 keeps results unreduced; G5+ reduces.
+ */
+export const FRACTION_SAME_DENOM_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: (grade) => {
+      const name1 = getRandomName();
+      const name2 = getDifferentName(name1);
+      const denom = randomInt(3, 8);
+      const a = randomInt(1, denom - 2);
+      const b = randomInt(1, denom - a - 1);
+      const sum = a + b;
+      const { n, d } =
+        grade >= 5 ? reduceFraction(sum, denom) : { n: sum, d: denom };
+      const answer = formatFraction(n, d);
+
+      return {
+        text: `${name1} ate ${a}/${denom} of a pizza and ${name2} ate ${b}/${denom} of the same pizza. How much pizza did they eat altogether?`,
+        answer,
+        operation: 'addition' as Operation,
+      };
+    },
+    minGrade: 4,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const pronouns = getPronouns(name);
+      const denom = randomInt(3, 8);
+      const a = randomInt(2, denom - 1);
+      const b = randomInt(1, a - 1);
+      const diff = a - b;
+      const { n, d } =
+        grade >= 5 ? reduceFraction(diff, denom) : { n: diff, d: denom };
+      const answer = formatFraction(n, d);
+
+      return {
+        text: `${name} had ${a}/${denom} of a chocolate bar. ${pronouns.subject} ate ${b}/${denom} of the bar. How much chocolate is left?`,
+        answer,
+        operation: 'subtraction' as Operation,
+      };
+    },
+    minGrade: 4,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+];
+
+/**
+ * Grade 4-6: Decimal × integer and decimal ÷ integer
+ * (curriculum: G4 "小数 × ÷ 整数"). Answers are decimal strings.
+ */
+export const DECIMAL_INT_OP_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: (grade) => {
+      const dec10 = gradeRandomInt(grade, [{ upTo: 4, min: 2, max: 90 }], {
+        upTo: 6,
+        min: 10,
+        max: 250,
+      });
+      const k = gradeRandomInt(grade, [{ upTo: 4, min: 2, max: 9 }], {
+        upTo: 6,
+        min: 3,
+        max: 25,
+      });
+      const decStr = formatDecimal(dec10 / 10, 1);
+      const answer = formatDecimal((dec10 * k) / 10, 1);
+
+      return {
+        text: `One bottle holds ${decStr} L of water. There are ${k} bottles. How many liters of water are there in total?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 4,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const divisor = gradeRandomInt(grade, [{ upTo: 4, min: 2, max: 9 }], {
+        upTo: 6,
+        min: 3,
+        max: 25,
+      });
+      const quotient10 = gradeRandomInt(grade, [{ upTo: 4, min: 2, max: 90 }], {
+        upTo: 6,
+        min: 10,
+        max: 250,
+      });
+      const dividend10 = quotient10 * divisor;
+      const dividendStr = formatDecimal(dividend10 / 10, 1);
+      const answer = formatDecimal(quotient10 / 10, 1);
+
+      return {
+        text: `${dividendStr} L of juice is poured equally into ${divisor} cups. How many liters are in each cup?`,
+        answer,
+        operation: 'division' as Operation,
+      };
+    },
+    minGrade: 4,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+];
+
+/**
+ * Grade 5-6: Decimal × decimal and decimal ÷ decimal
+ * (curriculum: G5 "小数 × 小数 / 小数 ÷ 小数"). Answers are decimal strings.
+ */
+export const DECIMAL_DECIMAL_OP_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: (grade) => {
+      const a10 = gradeRandomInt(grade, [{ upTo: 5, min: 12, max: 50 }], {
+        upTo: 6,
+        min: 15,
+        max: 90,
+      });
+      const b10 = gradeRandomInt(grade, [{ upTo: 5, min: 8, max: 40 }], {
+        upTo: 6,
+        min: 10,
+        max: 70,
+      });
+      const aStr = formatDecimal(a10 / 10, 1);
+      const bStr = formatDecimal(b10 / 10, 1);
+      const answer = formatDecimal((a10 * b10) / 100, 2);
+
+      return {
+        text: `A rectangular tile is ${aStr} m long and ${bStr} m wide. What is its area in square meters?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 5,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const q10 = gradeRandomInt(grade, [{ upTo: 5, min: 12, max: 50 }], {
+        upTo: 6,
+        min: 15,
+        max: 90,
+      });
+      const b10 = gradeRandomInt(grade, [{ upTo: 5, min: 12, max: 40 }], {
+        upTo: 6,
+        min: 15,
+        max: 70,
+      });
+      const dividend100 = q10 * b10;
+      const dividendStr = formatDecimal(dividend100 / 100, 2);
+      const bStr = formatDecimal(b10 / 10, 1);
+      const answer = formatDecimal(q10 / 10, 1);
+
+      return {
+        text: `A garden has area ${dividendStr} square meters. It is ${bStr} m wide. How many meters long is it?`,
+        answer,
+        operation: 'division' as Operation,
+      };
+    },
+    minGrade: 5,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+];
+
+/**
+ * Grade 5-6: Different-denominator fraction addition / subtraction
+ * (curriculum: G5 "異分母の分数の加減"). Answers are reduced fractions.
+ */
+export const FRACTION_DIFF_DENOM_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: () => {
+      const denomPairs: Array<[number, number]> = [
+        [2, 3],
+        [2, 5],
+        [3, 4],
+        [3, 6],
+        [4, 6],
+        [3, 9],
+        [4, 8],
+      ];
+      const [d1, d2] = denomPairs[randomInt(0, denomPairs.length - 1)];
+      const a = randomInt(1, d1 - 1);
+      const b = randomInt(1, d2 - 1);
+      const lcm = (d1 * d2) / gcd(d1, d2);
+      const sumNum = a * (lcm / d1) + b * (lcm / d2);
+      const { n, d } = reduceFraction(sumNum, lcm);
+      const answer = formatFraction(n, d);
+      const name = getRandomName();
+
+      return {
+        text: `${name} painted ${a}/${d1} of a wall in the morning and ${b}/${d2} of the same wall in the afternoon. What fraction of the wall is painted now?`,
+        answer,
+        operation: 'addition' as Operation,
+      };
+    },
+    minGrade: 5,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: () => {
+      const denomPairs: Array<[number, number]> = [
+        [2, 3],
+        [3, 4],
+        [3, 6],
+        [4, 6],
+        [4, 8],
+        [3, 9],
+      ];
+      const [d1, d2] = denomPairs[randomInt(0, denomPairs.length - 1)];
+      const lcm = (d1 * d2) / gcd(d1, d2);
+      // Pick numerators so first fraction strictly exceeds the second.
+      let attempts = 0;
+      let a = 1;
+      let b = 1;
+      while (attempts < 20) {
+        a = randomInt(2, d1 - 1);
+        b = randomInt(1, d2 - 1);
+        if (a * (lcm / d1) > b * (lcm / d2)) break;
+        attempts++;
+      }
+      const diffNum = a * (lcm / d1) - b * (lcm / d2);
+      const { n, d } = reduceFraction(diffNum, lcm);
+      const answer = formatFraction(n, d);
+      const name = getRandomName();
+
+      return {
+        text: `${name} had ${a}/${d1} of a cake. ${getSubjectPronoun(name)} ate ${b}/${d2} of the same cake. How much cake is left?`,
+        answer,
+        operation: 'subtraction' as Operation,
+      };
+    },
+    minGrade: 5,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+];
+
+/**
+ * Grade 5-6: Speed / distance / time problems (curriculum: G5 "速さ").
+ * Three variants: find distance, find time, find speed.
+ * Answers are numbers (selected so divisions terminate exactly).
+ */
+export const SPEED_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: (grade) => {
+      const speed = gradeRandomInt(grade, [{ upTo: 5, min: 20, max: 70 }], {
+        upTo: 6,
+        min: 30,
+        max: 110,
+      });
+      const time = randomInt(2, 6);
+      const answer = speed * time;
+
+      return {
+        text: `A car travels at ${speed} km/h for ${time} hours. How far does it go, in km?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 5,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const pronouns = getPronouns(name);
+      const speed = gradeRandomInt(grade, [{ upTo: 5, min: 40, max: 90 }], {
+        upTo: 6,
+        min: 50,
+        max: 120,
+      });
+      const minutes = randomInt(3, 12);
+      const distance = speed * minutes;
+      const answer = minutes;
+
+      return {
+        text: `${name} walks ${distance} m to school at ${speed} m per minute. How many minutes does ${pronouns.lowerSubject} take?`,
+        answer,
+        operation: 'division' as Operation,
+      };
+    },
+    minGrade: 5,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const speed = gradeRandomInt(grade, [{ upTo: 5, min: 30, max: 80 }], {
+        upTo: 6,
+        min: 40,
+        max: 120,
+      });
+      const time = randomInt(2, 6);
+      const distance = speed * time;
+      const answer = speed;
+
+      return {
+        text: `A train covers ${distance} km in ${time} hours. What is its speed, in km/h?`,
+        answer,
+        operation: 'division' as Operation,
+      };
+    },
+    minGrade: 5,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+];
+
+/**
+ * Grade 5-6: Percent / ratio "of-a-quantity" problems
+ * (curriculum: G5 "百分率 / 割合").
+ */
+export const PERCENT_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: (grade) => {
+      const name = getRandomName();
+      const itemObj = getRandomItemPair();
+      const base = gradeRandomInt(grade, [{ upTo: 5, min: 50, max: 500 }], {
+        upTo: 6,
+        min: 100,
+        max: 1500,
+      });
+      const baseRounded = Math.round(base / 10) * 10;
+      const percents = [10, 20, 25, 50, 75, 80];
+      const p = percents[randomInt(0, percents.length - 1)];
+      // Ensure base * p is divisible by 100 for a clean integer answer.
+      const finalBase =
+        (baseRounded * p) % 100 === 0
+          ? baseRounded
+          : Math.round(baseRounded / 100) * 100 || 100;
+      const answer = (finalBase * p) / 100;
+
+      return {
+        text: `${name} has ${finalBase} ${itemObj.plural}. ${p}% of them are red. How many red ${itemObj.plural} are there?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 5,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: (grade) => {
+      const baseHundreds = gradeRandomInt(
+        grade,
+        [{ upTo: 5, min: 1, max: 5 }],
+        { upTo: 6, min: 2, max: 12 }
+      );
+      const base = baseHundreds * 100;
+      const percents = [10, 20, 25, 40, 60, 75];
+      const p = percents[randomInt(0, percents.length - 1)];
+      const present = (base * p) / 100;
+      const answer = base - present;
+
+      return {
+        text: `A class has ${base} students. ${p}% of them are present today. How many students are absent?`,
+        answer,
+        operation: 'subtraction' as Operation,
+      };
+    },
+    minGrade: 5,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+];
+
+/**
+ * Grade 6: Fraction × fraction and fraction ÷ fraction
+ * (curriculum: G6 "分数 × 分数 / 分数 ÷ 分数"). Answers are reduced fractions.
+ */
+export const FRACTION_MUL_DIV_STORIES: WordStoryTemplate[] = [
+  {
+    generateProblem: () => {
+      const name = getRandomName();
+      const pronouns = getPronouns(name);
+      const b = randomInt(2, 6);
+      const a = randomInt(1, b - 1);
+      const d = randomInt(2, 6);
+      const c = randomInt(1, d - 1);
+      const { n: rn, d: rd } = reduceFraction(a * c, b * d);
+      const answer = formatFraction(rn, rd);
+
+      return {
+        text: `A recipe uses ${a}/${b} cup of flour. ${name} wants to make ${c}/${d} of the recipe. How much flour does ${pronouns.lowerSubject} need, in cups?`,
+        answer,
+        operation: 'multiplication' as Operation,
+      };
+    },
+    minGrade: 6,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+  {
+    generateProblem: () => {
+      const name = getRandomName();
+      const pronouns = getPronouns(name);
+      const b = randomInt(2, 6);
+      const a = randomInt(1, b - 1);
+      const d = randomInt(2, 6);
+      const c = randomInt(1, d - 1);
+      // Dividing a/b by c/d = (a*d) / (b*c).
+      const { n: rn, d: rd } = reduceFraction(a * d, b * c);
+      const answer = formatFraction(rn, rd);
+
+      return {
+        text: `${name} has ${a}/${b} of a meter of ribbon. ${pronouns.subject} cuts it into pieces that are ${c}/${d} of a meter each. How many pieces does ${pronouns.lowerSubject} get?`,
+        answer,
+        operation: 'division' as Operation,
+      };
+    },
+    minGrade: 6,
+    maxGrade: 6,
+    category: 'word-story',
+  },
+];
+
+/**
  * Get appropriate story templates for a grade level
  */
 export function getStoriesForGrade(grade: number): WordStoryTemplate[] {
@@ -2804,7 +3491,18 @@ export function getStoriesForGrade(grade: number): WordStoryTemplate[] {
     ...SECOND_GRADE_CONTEXT_STORIES,
     ...MULTI_STEP_STORIES,
     ...MULTIPLICATION_STORIES,
+    ...GRADE3_DIGIT_MULTIPLICATION_STORIES,
     ...DIVISION_STORIES,
+    ...DIVISION_REMAINDER_STORIES,
+    ...UNIT_FRACTION_STORIES,
+    ...DECIMAL_ADD_SUB_STORIES,
+    ...FRACTION_SAME_DENOM_STORIES,
+    ...DECIMAL_INT_OP_STORIES,
+    ...DECIMAL_DECIMAL_OP_STORIES,
+    ...FRACTION_DIFF_DENOM_STORIES,
+    ...SPEED_STORIES,
+    ...PERCENT_STORIES,
+    ...FRACTION_MUL_DIV_STORIES,
     ...COMPARISON_STORIES,
     ...TIME_STORIES,
     ...MONEY_STORIES,
