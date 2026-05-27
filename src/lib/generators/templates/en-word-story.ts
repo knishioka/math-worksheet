@@ -3240,9 +3240,23 @@ export const FRACTION_DIFF_DENOM_STORIES: WordStoryTemplate[] = [
         [4, 8],
       ];
       const [d1, d2] = denomPairs[randomInt(0, denomPairs.length - 1)];
-      const a = randomInt(1, d1 - 1);
-      const b = randomInt(1, d2 - 1);
       const lcm = (d1 * d2) / gcd(d1, d2);
+      // Pick numerators so the sum stays within one whole wall
+      // (a/d1 + b/d2 <= 1). 1/d1 + 1/d2 is always <= 1 for d1, d2 >= 2 with
+      // (d1, d2) != (2, 2), so the (1, 1) default is always safe here.
+      let a = 1;
+      let b = 1;
+      let attempts = 0;
+      while (attempts < 20) {
+        const testA = randomInt(1, d1 - 1);
+        const testB = randomInt(1, d2 - 1);
+        if (testA * (lcm / d1) + testB * (lcm / d2) <= lcm) {
+          a = testA;
+          b = testB;
+          break;
+        }
+        attempts++;
+      }
       const sumNum = a * (lcm / d1) + b * (lcm / d2);
       const { n, d } = reduceFraction(sumNum, lcm);
       const answer = formatFraction(n, d);
@@ -3271,13 +3285,19 @@ export const FRACTION_DIFF_DENOM_STORIES: WordStoryTemplate[] = [
       const [d1, d2] = denomPairs[randomInt(0, denomPairs.length - 1)];
       const lcm = (d1 * d2) / gcd(d1, d2);
       // Pick numerators so first fraction strictly exceeds the second.
-      let attempts = 0;
-      let a = 1;
+      // Safe default: a = d1 - 1, b = 1 guarantees a/d1 >= 1/2 and
+      // b/d2 <= 1/3 for the denomPairs above, so a/d1 > b/d2 always holds.
+      let a = d1 - 1;
       let b = 1;
+      let attempts = 0;
       while (attempts < 20) {
-        a = randomInt(2, d1 - 1);
-        b = randomInt(1, d2 - 1);
-        if (a * (lcm / d1) > b * (lcm / d2)) break;
+        const testA = randomInt(d1 === 2 ? 1 : 2, d1 - 1);
+        const testB = randomInt(1, d2 - 1);
+        if (testA * (lcm / d1) > testB * (lcm / d2)) {
+          a = testA;
+          b = testB;
+          break;
+        }
         attempts++;
       }
       const diffNum = a * (lcm / d1) - b * (lcm / d2);

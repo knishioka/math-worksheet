@@ -8,6 +8,7 @@ import {
   MONEY_STORIES,
   MIXED_OPERATION_STORIES,
   TIME_STORIES,
+  FRACTION_DIFF_DENOM_STORIES,
 } from './templates/en-word-story';
 import type { WordProblemEn } from '../../types';
 
@@ -617,6 +618,38 @@ describe('English Word Problem Generator', () => {
           simpleRowsPattern.test(p.problemText)
       );
       expect(hitsBasicMul).toBe(false);
+    });
+  });
+
+  describe('Different-denominator fraction story templates', () => {
+    // Regression guards for PR #72 review feedback:
+    // - Addition variant must keep painted-wall fractions ≤ 1 whole
+    // - Subtraction variant must never produce a negative cake fraction
+    const ADDITION_TEMPLATE = FRACTION_DIFF_DENOM_STORIES[0];
+    const SUBTRACTION_TEMPLATE = FRACTION_DIFF_DENOM_STORIES[1];
+
+    const parseFractionAnswer = (answer: number | string): number => {
+      if (typeof answer === 'number') return answer;
+      const [n, d] = answer.split('/').map(Number);
+      return d ? n / d : n;
+    };
+
+    it('addition story (painted wall) keeps the painted fraction ≤ 1', () => {
+      for (let i = 0; i < 500; i++) {
+        const { answer } = ADDITION_TEMPLATE.generateProblem(5);
+        const value = parseFractionAnswer(answer);
+        expect(value).toBeGreaterThan(0);
+        expect(value).toBeLessThanOrEqual(1);
+      }
+    });
+
+    it('subtraction story (eaten cake) never produces a negative fraction', () => {
+      for (let i = 0; i < 500; i++) {
+        const { answer } = SUBTRACTION_TEMPLATE.generateProblem(5);
+        const value = parseFractionAnswer(answer);
+        expect(value).toBeGreaterThan(0);
+        expect(value).toBeLessThan(1);
+      }
     });
   });
 });
