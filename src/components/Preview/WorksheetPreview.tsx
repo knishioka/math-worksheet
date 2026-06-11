@@ -6,7 +6,10 @@ import { ProblemList } from './ProblemList';
 import { MultiPagePrintDialog } from './MultiPagePrintDialog';
 import { useProblemStore } from '../../stores/problemStore';
 import { buildPreviewTitle } from '../../lib/utils/previewTitle';
-import { findOverflowingSheets } from '../../lib/utils/a4-overflow';
+import {
+  findOverflowingSheets,
+  withPrintMediaStyles,
+} from '../../lib/utils/a4-overflow';
 
 /** 印刷前ガードでユーザーが印刷を中止したことを示すエラーメッセージ */
 const PRINT_CANCELLED_BY_OVERFLOW_GUARD = 'print-cancelled-a4-overflow';
@@ -40,9 +43,13 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
 
       // 印刷直前ガード: 描画済みの全ページを実測し、A4を超えるページが
       // あればユーザーに確認する。気づかずに印刷して紙を無駄にする事故を防ぐ。
+      // この時点では印刷メディアが未適用のため、@media print のスタイルを
+      // 一時適用した状態で計測する（画面用CSSでの誤検知を防ぐ）。
       const printArea = printRef.current;
       if (printArea) {
-        const overflowing = findOverflowingSheets(printArea);
+        const overflowing = withPrintMediaStyles(() =>
+          findOverflowingSheets(printArea)
+        );
         if (overflowing.length > 0) {
           const worstHeightMm = Math.max(
             ...overflowing.map((result) => result.heightMm)

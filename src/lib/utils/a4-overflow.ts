@@ -67,3 +67,51 @@ export function findOverflowingSheets(root: HTMLElement): A4OverflowResult[] {
     .map((sheet) => evaluateA4Overflow(measureSheetHeightPx(sheet)))
     .filter((result) => result.isOverflow);
 }
+
+/**
+ * コールバック実行中だけ @media print のスタイルを強制適用する
+ *
+ * onBeforePrint 時点ではブラウザの印刷メディアがまだ有効でないため、
+ * 画面用CSS（印刷時より大きいフォント等）で実測すると印刷時には
+ * 収まるページを誤ってはみ出し判定してしまう。同一オリジンの
+ * 全スタイルシートから @media print 内のルールを抽出し、一時的な
+ * <style> 要素として適用した状態で計測する。
+ */
+export function withPrintMediaStyles<T>(callback: () => T): T {
+  const printRules: string[] = [];
+
+  for (const sheet of Array.from(document.styleSheets)) {
+    let rules: CSSRuleList;
+    try {
+      rules = sheet.cssRules;
+    } catch {
+      // クロスオリジンのスタイルシートは読めないためスキップ
+      continue;
+    }
+    for (const rule of Array.from(rules)) {
+      if (rule instanceof CSSMediaRule) {
+        // conditionText 非対応環境（jsdom等）では media.mediaText を使う
+        const condition = rule.conditionText || rule.media.mediaText;
+        if (/(^|,)\s*print\s*($|,)/.test(condition)) {
+          for (const inner of Array.from(rule.cssRules)) {
+            printRules.push(inner.cssText);
+          }
+        }
+      }
+    }
+  }
+
+  if (printRules.length === 0) {
+    return callback();
+  }
+
+  const styleElement = document.createElement('style');
+  styleElement.setAttribute('data-print-measure', '');
+  styleElement.textContent = printRules.join('\n');
+  document.head.appendChild(styleElement);
+  try {
+    return callback();
+  } finally {
+    styleElement.remove();
+  }
+}

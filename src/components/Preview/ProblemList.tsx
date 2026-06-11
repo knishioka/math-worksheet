@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useState } from 'react';
 import type {
   Problem,
   LayoutColumns,
@@ -101,10 +101,14 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
     ref
   ) => {
     // 実測ベースのA4超過検出（プレビュー表示時のみ）
-    const sheetRef = useRef<HTMLDivElement | null>(null);
+    // useState ベースの callback ref を使うことで、要素のマウント時に
+    // 再レンダーが走り、フック内の effect が確実に再実行される
+    const [sheetElement, setSheetElement] = useState<HTMLDivElement | null>(
+      null
+    );
     const setSheetRef = useCallback(
       (node: HTMLDivElement | null): void => {
-        sheetRef.current = node;
+        setSheetElement(node);
         if (typeof ref === 'function') {
           ref(node);
         } else if (ref) {
@@ -114,7 +118,7 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
       [ref]
     );
     const measuredOverflow = useA4SheetOverflow(
-      sheetRef,
+      sheetElement,
       !printMode && problems.length > 0,
       problems
     );

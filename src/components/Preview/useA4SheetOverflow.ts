@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import type { RefObject } from 'react';
 import {
   evaluateA4Overflow,
   measureSheetHeightPx,
@@ -13,30 +12,30 @@ import type { A4OverflowResult } from '../../lib/utils/a4-overflow';
  * 文章問題の折り返し行数次第で実際にははみ出すことがあるため、
  * ResizeObserver で実際のDOMの高さを監視する。
  *
- * @param sheetRef - [data-a4-sheet] 要素への ref
+ * RefObject ではなく要素そのものを受け取る。RefObject は同一性が
+ * 変わらないため依存配列に入れてもマウント時に effect が再実行されず、
+ * ResizeObserver の監視開始を取りこぼすことがある。呼び出し側は
+ * useState ベースの callback ref で要素を渡すこと。
+ *
+ * @param sheetElement - [data-a4-sheet] 要素（未マウント時は null）
  * @param enabled - false の場合は監視しない（印刷モードなど）
  * @param remeasureKey - 変更時に再計測するキー（問題配列など）
  */
 export function useA4SheetOverflow(
-  sheetRef: RefObject<HTMLElement | null>,
+  sheetElement: HTMLElement | null,
   enabled: boolean,
   remeasureKey?: unknown
 ): A4OverflowResult | null {
   const [result, setResult] = useState<A4OverflowResult | null>(null);
 
   useEffect(() => {
-    if (!enabled) {
-      setResult(null);
-      return;
-    }
-    const sheet = sheetRef.current;
-    if (!sheet) {
+    if (!enabled || !sheetElement) {
       setResult(null);
       return;
     }
 
     const measure = (): void => {
-      setResult(evaluateA4Overflow(measureSheetHeightPx(sheet)));
+      setResult(evaluateA4Overflow(measureSheetHeightPx(sheetElement)));
     };
 
     measure();
@@ -47,9 +46,9 @@ export function useA4SheetOverflow(
     }
 
     const observer = new ResizeObserver(measure);
-    observer.observe(sheet);
+    observer.observe(sheetElement);
     return (): void => observer.disconnect();
-  }, [sheetRef, enabled, remeasureKey]);
+  }, [sheetElement, enabled, remeasureKey]);
 
   return result;
 }
