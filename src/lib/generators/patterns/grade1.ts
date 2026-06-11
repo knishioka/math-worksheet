@@ -38,7 +38,9 @@ function generateAddPlusN(
       operand1,
       operand2: n,
       answer: operand1 + n,
-      carryOver: false,
+      // grade1パターンの規約: ちょうど10は「10をつくる計算」であり
+      // 繰り上がり扱いしない（generateAddSingleDigitCarry と同じ基準）
+      carryOver: operand1 + n > 10,
     });
   }
   return problems;
@@ -52,12 +54,62 @@ export function generateAddPlusOne(
   return generateAddPlusN(count, 1, 9);
 }
 
-// 1年生（入門）: +2のたし算
+// 1年生（入門）: +2のたし算（答えが10を超えてよい）
 export function generateAddPlusTwo(
   _settings: WorksheetSettings,
   count: number
 ): BasicProblem[] {
-  return generateAddPlusN(count, 2, 8);
+  return generateAddPlusN(count, 2, 9);
+}
+
+// 1年生（入門）: +3〜+9のたし算（答えが10を超えてよい）
+export function generateAddPlusThree(
+  _settings: WorksheetSettings,
+  count: number
+): BasicProblem[] {
+  return generateAddPlusN(count, 3, 9);
+}
+
+export function generateAddPlusFour(
+  _settings: WorksheetSettings,
+  count: number
+): BasicProblem[] {
+  return generateAddPlusN(count, 4, 9);
+}
+
+export function generateAddPlusFive(
+  _settings: WorksheetSettings,
+  count: number
+): BasicProblem[] {
+  return generateAddPlusN(count, 5, 9);
+}
+
+export function generateAddPlusSix(
+  _settings: WorksheetSettings,
+  count: number
+): BasicProblem[] {
+  return generateAddPlusN(count, 6, 9);
+}
+
+export function generateAddPlusSeven(
+  _settings: WorksheetSettings,
+  count: number
+): BasicProblem[] {
+  return generateAddPlusN(count, 7, 9);
+}
+
+export function generateAddPlusEight(
+  _settings: WorksheetSettings,
+  count: number
+): BasicProblem[] {
+  return generateAddPlusN(count, 8, 9);
+}
+
+export function generateAddPlusNine(
+  _settings: WorksheetSettings,
+  count: number
+): BasicProblem[] {
+  return generateAddPlusN(count, 9, 9);
 }
 
 // 1年生（入門）: かずをかぞえよう（○を数える）

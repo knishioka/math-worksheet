@@ -3,6 +3,13 @@ export type CalculationPattern =
   // 1年生のパターン（入門）
   | 'add-plus-one' // □＋1（+1のたし算）
   | 'add-plus-two' // □＋2（+2のたし算）
+  | 'add-plus-three' // □＋3（+3のたし算、答えが10を超えてよい）
+  | 'add-plus-four' // □＋4（+4のたし算、答えが10を超えてよい）
+  | 'add-plus-five' // □＋5（+5のたし算、答えが10を超えてよい）
+  | 'add-plus-six' // □＋6（+6のたし算、答えが10を超えてよい）
+  | 'add-plus-seven' // □＋7（+7のたし算、答えが10を超えてよい）
+  | 'add-plus-eight' // □＋8（+8のたし算、答えが10を超えてよい）
+  | 'add-plus-nine' // □＋9（+9のたし算、答えが10を超えてよい）
   | 'add-counting' // かずをかぞえよう（順番に+1）
   | 'counting-add' // ○を使ったたし算
   | 'counting-sub' // ○を使ったひき算
@@ -180,6 +187,13 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
   1: [
     'add-plus-one',
     'add-plus-two',
+    'add-plus-three',
+    'add-plus-four',
+    'add-plus-five',
+    'add-plus-six',
+    'add-plus-seven',
+    'add-plus-eight',
+    'add-plus-nine',
     'add-counting',
     'counting-add',
     'counting-sub',
@@ -524,6 +538,13 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   // 1年生（入門）
   'add-plus-one': '+1のたし算',
   'add-plus-two': '+2のたし算',
+  'add-plus-three': '+3のたし算',
+  'add-plus-four': '+4のたし算',
+  'add-plus-five': '+5のたし算',
+  'add-plus-six': '+6のたし算',
+  'add-plus-seven': '+7のたし算',
+  'add-plus-eight': '+8のたし算',
+  'add-plus-nine': '+9のたし算',
   'add-counting': 'かずをかぞえよう（+1ずつ）',
   'counting-add': '○をつかった たし算',
   'counting-sub': '○をつかった ひき算',
@@ -702,6 +723,13 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   // 1年生（入門）
   'add-plus-one': '□＋1の計算で数の感覚を身につける',
   'add-plus-two': '□＋2の計算で数の感覚を身につける',
+  'add-plus-three': '□＋3の計算で数の感覚を身につける（くり上がりあり）',
+  'add-plus-four': '□＋4の計算で数の感覚を身につける（くり上がりあり）',
+  'add-plus-five': '□＋5の計算で数の感覚を身につける（くり上がりあり）',
+  'add-plus-six': '□＋6の計算で数の感覚を身につける（くり上がりあり）',
+  'add-plus-seven': '□＋7の計算で数の感覚を身につける（くり上がりあり）',
+  'add-plus-eight': '□＋8の計算で数の感覚を身につける（くり上がりあり）',
+  'add-plus-nine': '□＋9の計算で数の感覚を身につける（くり上がりあり）',
   'add-counting': '○や★の数を数えて答える',
   'counting-add': '○○○ と ○○ で あわせていくつ？',
   'counting-sub': '○○○○○ から ○○ とると のこりはいくつ？',
