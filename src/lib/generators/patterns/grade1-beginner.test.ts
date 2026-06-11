@@ -35,7 +35,7 @@ describe('generateAddPlusOne (+1のたし算)', () => {
       expect(problem.operand1).toBeGreaterThanOrEqual(0);
       expect(problem.operand1).toBeLessThanOrEqual(9);
       expect(problem.answer).toBe(problem.operand1! + 1);
-      expect(problem.carryOver).toBe(problem.operand1! + 1 > 9);
+      expect(problem.carryOver).toBe(problem.operand1! + 1 > 10);
     });
   });
 
@@ -73,7 +73,7 @@ describe('generateAddPlusTwo (+2のたし算)', () => {
       expect(problem.operand1).toBeGreaterThanOrEqual(0);
       expect(problem.operand1).toBeLessThanOrEqual(9);
       expect(problem.answer).toBe(problem.operand1! + 2);
-      expect(problem.carryOver).toBe(problem.operand1! + 2 > 9);
+      expect(problem.carryOver).toBe(problem.operand1! + 2 > 10);
     });
   });
 
@@ -121,7 +121,7 @@ describe('generateAddPlusThree〜Nine (+3〜+9のたし算)', () => {
         expect(problem.operand1).toBeGreaterThanOrEqual(0);
         expect(problem.operand1).toBeLessThanOrEqual(9);
         expect(problem.answer).toBe(problem.operand1! + n);
-        expect(problem.carryOver).toBe(problem.operand1! + n > 9);
+        expect(problem.carryOver).toBe(problem.operand1! + n > 10);
       });
     }
   );

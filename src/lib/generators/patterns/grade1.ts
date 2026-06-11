@@ -38,7 +38,9 @@ function generateAddPlusN(
       operand1,
       operand2: n,
       answer: operand1 + n,
-      carryOver: operand1 + n > 9,
+      // grade1パターンの規約: ちょうど10は「10をつくる計算」であり
+      // 繰り上がり扱いしない（generateAddSingleDigitCarry と同じ基準）
+      carryOver: operand1 + n > 10,
     });
   }
   return problems;
