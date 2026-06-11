@@ -6,6 +6,13 @@ import { ProblemList } from './ProblemList';
 import { MultiPagePrintDialog } from './MultiPagePrintDialog';
 import { useProblemStore } from '../../stores/problemStore';
 import { buildPreviewTitle } from '../../lib/utils/previewTitle';
+import {
+  findOverflowingSheets,
+  withPrintMediaStyles,
+} from '../../lib/utils/a4-overflow';
+
+/** 印刷前ガードでユーザーが印刷を中止したことを示すエラーメッセージ */
+const PRINT_CANCELLED_BY_OVERFLOW_GUARD = 'print-cancelled-a4-overflow';
 
 interface WorksheetPreviewProps {
   worksheetData?: WorksheetData;
@@ -33,6 +40,40 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
       : '計算プリント',
     onBeforePrint: async () => {
       flushSync(() => setIsPrinting(true));
+
+      // 印刷直前ガード: 描画済みの全ページを実測し、A4を超えるページが
+      // あればユーザーに確認する。気づかずに印刷して紙を無駄にする事故を防ぐ。
+      // この時点では印刷メディアが未適用のため、@media print のスタイルを
+      // 一時適用した状態で計測する（画面用CSSでの誤検知を防ぐ）。
+      const printArea = printRef.current;
+      if (printArea) {
+        const overflowing = withPrintMediaStyles(() =>
+          findOverflowingSheets(printArea)
+        );
+        if (overflowing.length > 0) {
+          const worstHeightMm = Math.max(
+            ...overflowing.map((result) => result.heightMm)
+          );
+          const proceed = window.confirm(
+            `${overflowing.length}ページがA4サイズ（297mm）を超えています（最大 ${Math.round(worstHeightMm)}mm）。\n` +
+              'このまま印刷すると問題がはみ出します。\n\n' +
+              '印刷を続けますか？（キャンセルして問題を再生成するか、問題数を減らすことをおすすめします）'
+          );
+          if (!proceed) {
+            setMultiPageWorksheets([]);
+            setIsPrinting(false);
+            // rejectすることで react-to-print が印刷処理を中断する
+            throw new Error(PRINT_CANCELLED_BY_OVERFLOW_GUARD);
+          }
+        }
+      }
+    },
+    onPrintError: (_errorLocation, error) => {
+      if (error.message !== PRINT_CANCELLED_BY_OVERFLOW_GUARD) {
+        console.error('[WorksheetPreview] 印刷エラー:', error);
+      }
+      setMultiPageWorksheets([]);
+      setIsPrinting(false);
     },
     onAfterPrint: () => {
       // 印刷後に複数ページの状態をクリア

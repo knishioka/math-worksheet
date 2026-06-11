@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import type {
   Problem,
   LayoutColumns,
@@ -35,6 +35,7 @@ import {
   supportsEquationLine,
 } from '../../lib/utils/problem-type-detector';
 import { estimateA4Fit } from '../../lib/utils/print-validator';
+import { useA4SheetOverflow } from './useA4SheetOverflow';
 import { buildPreviewTitle } from '../../lib/utils/previewTitle';
 import {
   emptyA4ContainerStyle,
@@ -99,6 +100,29 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
     },
     ref
   ) => {
+    // 実測ベースのA4超過検出（プレビュー表示時のみ）
+    // useState ベースの callback ref を使うことで、要素のマウント時に
+    // 再レンダーが走り、フック内の effect が確実に再実行される
+    const [sheetElement, setSheetElement] = useState<HTMLDivElement | null>(
+      null
+    );
+    const setSheetRef = useCallback(
+      (node: HTMLDivElement | null): void => {
+        setSheetElement(node);
+        if (typeof ref === 'function') {
+          ref(node);
+        } else if (ref) {
+          ref.current = node;
+        }
+      },
+      [ref]
+    );
+    const measuredOverflow = useA4SheetOverflow(
+      sheetElement,
+      !printMode && problems.length > 0,
+      problems
+    );
+
     if (problems.length === 0) {
       return (
         <div className="flex justify-center py-8 bg-gray-100">
@@ -169,21 +193,28 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
       ...(a4FitResult.fits ? { alignContent: 'space-between', flex: 1 } : {}),
     };
 
+    // 推定（estimateA4Fit）と実測（useA4SheetOverflow）のどちらかが
+    // 超過を検出したら警告を表示する。実測は問題文の折り返しなど
+    // 推定で捉えられない変動を拾うため、実測結果を優先して表示する。
+    const isMeasuredOverflow = measuredOverflow?.isOverflow ?? false;
+    const showOverflowWarning = !a4FitResult.fits || isMeasuredOverflow;
+
     // 印刷モードの場合は外側のラッパーを省略
     const content = (
       <>
         {/* A4オーバーフロー警告 */}
-        {!printMode && !a4FitResult.fits && (
+        {!printMode && showOverflowWarning && (
           <div style={a4WarningContainerStyle}>
             <div style={a4WarningIconRowStyle}>
               <span style={{ fontSize: '20px' }}>⚠️</span>
               <div>
                 <div style={a4WarningTitleStyle}>A4サイズを超えています</div>
                 <div style={a4WarningMessageStyle}>
-                  推定高さ: {a4FitResult.estimatedHeight.toFixed(0)}mm（A4:{' '}
-                  {a4FitResult.a4Height}mm）
+                  {isMeasuredOverflow && measuredOverflow
+                    ? `実測高さ: ${measuredOverflow.heightMm.toFixed(0)}mm（A4: 297mm）— このまま印刷すると2ページ目にはみ出します。`
+                    : `推定高さ: ${a4FitResult.estimatedHeight.toFixed(0)}mm（A4: ${a4FitResult.a4Height}mm）`}
                   <br />
-                  問題数を減らすか、列数を増やしてください。
+                  問題数を減らすか、列数を増やすか、問題を再生成してください。
                 </div>
               </div>
             </div>
@@ -192,13 +223,13 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
 
         {/* A4用紙風のコンテナ */}
         <div
-          ref={ref}
+          ref={setSheetRef}
           data-a4-sheet
           className="bg-white"
           style={getA4ContainerStyle(
             '15mm 15mm 7.5mm',
             printMode,
-            !a4FitResult.fits
+            showOverflowWarning && !printMode
           )}
         >
           {/* ヘッダー */}
