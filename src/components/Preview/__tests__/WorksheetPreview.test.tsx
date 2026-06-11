@@ -20,8 +20,7 @@ vi.mock(
       options: UseReactToPrintOptions
     ): ((...args: []) => Promise<void> | void) => {
       storedPrintOptions = options;
-      return (...args: []): Promise<void> | void =>
-        mockHandlePrint(...args);
+      return (...args: []): Promise<void> | void => mockHandlePrint(...args);
     },
   })
 );
@@ -38,6 +37,20 @@ vi.mock(
   })
 );
 
+import type { A4OverflowResult } from '../../../lib/utils/a4-overflow';
+
+let findOverflowingSheetsMock: Mock<(root: HTMLElement) => A4OverflowResult[]>;
+
+vi.mock('../../../lib/utils/a4-overflow', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('../../../lib/utils/a4-overflow')>();
+  return {
+    ...actual,
+    findOverflowingSheets: (root: HTMLElement): A4OverflowResult[] =>
+      findOverflowingSheetsMock(root),
+  };
+});
+
 import { WorksheetPreview } from '../WorksheetPreview';
 import { useProblemStore } from '../../../stores/problemStore';
 
@@ -49,14 +62,17 @@ const baseSettings: WorksheetSettings = {
   layoutColumns: 2,
 };
 
-const baseProblems: Problem[] = Array.from({ length: baseSettings.problemCount }, (_, index) => ({
-  id: `base-${index}`,
-  type: 'basic',
-  operation: 'addition',
-  operand1: index + 1,
-  operand2: index + 2,
-  answer: index + index + 3,
-}));
+const baseProblems: Problem[] = Array.from(
+  { length: baseSettings.problemCount },
+  (_, index) => ({
+    id: `base-${index}`,
+    type: 'basic',
+    operation: 'addition',
+    operand1: index + 1,
+    operand2: index + 2,
+    answer: index + index + 3,
+  })
+);
 
 const baseWorksheet: WorksheetData = {
   settings: baseSettings,
@@ -64,14 +80,28 @@ const baseWorksheet: WorksheetData = {
   generatedAt: new Date('2024-01-01T00:00:00Z'),
 };
 
+// 実際の react-to-print と同様に、onBeforePrint の reject で印刷を中断し
+// onPrintError に処理を移す挙動を再現する
+let printProceeded: boolean;
+
 describe('WorksheetPreview multi-page printing', () => {
   beforeEach(() => {
+    printProceeded = false;
     mockHandlePrint = vi.fn<() => Promise<void> | void>(async () => {
-      if (storedPrintOptions?.onBeforePrint) {
-        await storedPrintOptions.onBeforePrint();
+      try {
+        if (storedPrintOptions?.onBeforePrint) {
+          await storedPrintOptions.onBeforePrint();
+        }
+      } catch (error) {
+        storedPrintOptions?.onPrintError?.('onBeforePrint', error as Error);
+        return;
       }
+      printProceeded = true;
       storedPrintOptions?.onAfterPrint?.();
     });
+    findOverflowingSheetsMock = vi.fn<
+      (root: HTMLElement) => A4OverflowResult[]
+    >(() => []);
     generateProblemsMock = vi.fn<(settings: WorksheetSettings) => Problem[]>(
       (settings: WorksheetSettings): Problem[] =>
         Array.from({ length: settings.problemCount }, (_, index) => ({
@@ -124,6 +154,59 @@ describe('WorksheetPreview multi-page printing', () => {
 
     await waitFor(() => {
       expect(screen.getAllByText('名前：')).toHaveLength(1);
+    });
+  });
+
+  describe('A4オーバーフロー印刷前ガード', () => {
+    const overflowResult: A4OverflowResult = {
+      isOverflow: true,
+      heightPx: 1196,
+      heightMm: 316.4,
+      overflowMm: 19.4,
+    };
+
+    async function triggerPrint(): Promise<void> {
+      render(<WorksheetPreview worksheetData={baseWorksheet} />);
+      fireEvent.click(
+        screen.getByRole('button', { name: '印刷（複数ページにも対応）' })
+      );
+      fireEvent.click(screen.getByRole('button', { name: '印刷する' }));
+      await waitFor(() => {
+        expect(mockHandlePrint).toHaveBeenCalledTimes(1);
+      });
+    }
+
+    it('はみ出しがない場合は確認なしで印刷する', async () => {
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+      await triggerPrint();
+
+      expect(confirmSpy).not.toHaveBeenCalled();
+      expect(printProceeded).toBe(true);
+      confirmSpy.mockRestore();
+    });
+
+    it('はみ出し検出時に確認ダイアログでキャンセルすると印刷を中止する', async () => {
+      findOverflowingSheetsMock.mockReturnValue([overflowResult]);
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+      await triggerPrint();
+
+      expect(confirmSpy).toHaveBeenCalledTimes(1);
+      expect(confirmSpy.mock.calls[0][0]).toContain('A4サイズ');
+      expect(printProceeded).toBe(false);
+      confirmSpy.mockRestore();
+    });
+
+    it('はみ出し検出時でもユーザーが続行を選べば印刷する', async () => {
+      findOverflowingSheetsMock.mockReturnValue([overflowResult]);
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+      await triggerPrint();
+
+      expect(confirmSpy).toHaveBeenCalledTimes(1);
+      expect(printProceeded).toBe(true);
+      confirmSpy.mockRestore();
     });
   });
 });
