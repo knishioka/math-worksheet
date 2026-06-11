@@ -38,6 +38,13 @@ import {
 import {
   generateAddPlusOne,
   generateAddPlusTwo,
+  generateAddPlusThree,
+  generateAddPlusFour,
+  generateAddPlusFive,
+  generateAddPlusSix,
+  generateAddPlusSeven,
+  generateAddPlusEight,
+  generateAddPlusNine,
   generateAddCounting,
   generateCountingAdd,
   generateCountingSub,
@@ -142,6 +149,20 @@ export function generatePatternProblems(
       return generateAddPlusOne(settings, count);
     case 'add-plus-two':
       return generateAddPlusTwo(settings, count);
+    case 'add-plus-three':
+      return generateAddPlusThree(settings, count);
+    case 'add-plus-four':
+      return generateAddPlusFour(settings, count);
+    case 'add-plus-five':
+      return generateAddPlusFive(settings, count);
+    case 'add-plus-six':
+      return generateAddPlusSix(settings, count);
+    case 'add-plus-seven':
+      return generateAddPlusSeven(settings, count);
+    case 'add-plus-eight':
+      return generateAddPlusEight(settings, count);
+    case 'add-plus-nine':
+      return generateAddPlusNine(settings, count);
     case 'add-counting':
       return generateAddCounting(settings, count);
     case 'counting-add':

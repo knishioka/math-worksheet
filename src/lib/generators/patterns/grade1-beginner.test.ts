@@ -2,6 +2,13 @@ import { describe, it, expect } from 'vitest';
 import {
   generateAddPlusOne,
   generateAddPlusTwo,
+  generateAddPlusThree,
+  generateAddPlusFour,
+  generateAddPlusFive,
+  generateAddPlusSix,
+  generateAddPlusSeven,
+  generateAddPlusEight,
+  generateAddPlusNine,
   generateAddCounting,
   generateCountingAdd,
   generateCountingSub,
@@ -28,7 +35,7 @@ describe('generateAddPlusOne (+1のたし算)', () => {
       expect(problem.operand1).toBeGreaterThanOrEqual(0);
       expect(problem.operand1).toBeLessThanOrEqual(9);
       expect(problem.answer).toBe(problem.operand1! + 1);
-      expect(problem.carryOver).toBe(false);
+      expect(problem.carryOver).toBe(problem.operand1! + 1 > 9);
     });
   });
 
@@ -55,26 +62,26 @@ describe('generateAddPlusOne (+1のたし算)', () => {
 });
 
 describe('generateAddPlusTwo (+2のたし算)', () => {
-  it('should generate problems with operand2 always 2', () => {
-    const problems = generateAddPlusTwo(baseSettings, 9);
+  it('should generate problems with operand2 always 2 (答えが10を超えてよい)', () => {
+    const problems = generateAddPlusTwo(baseSettings, 10);
 
-    expect(problems).toHaveLength(9);
+    expect(problems).toHaveLength(10);
     problems.forEach((problem) => {
       expect(problem.type).toBe('basic');
       expect(problem.operation).toBe('addition');
       expect(problem.operand2).toBe(2);
       expect(problem.operand1).toBeGreaterThanOrEqual(0);
-      expect(problem.operand1).toBeLessThanOrEqual(8);
+      expect(problem.operand1).toBeLessThanOrEqual(9);
       expect(problem.answer).toBe(problem.operand1! + 2);
-      expect(problem.carryOver).toBe(false);
+      expect(problem.carryOver).toBe(problem.operand1! + 2 > 9);
     });
   });
 
   it('should avoid duplicate operands when possible', () => {
-    const problems = generateAddPlusTwo(baseSettings, 9);
+    const problems = generateAddPlusTwo(baseSettings, 10);
     const operands = problems.map((p) => p.operand1);
     const unique = new Set(operands);
-    expect(unique.size).toBe(9); // 0-8 は9通りなので全てユニーク
+    expect(unique.size).toBe(10); // 0-9 は10通りなので全てユニーク
   });
 
   it('should not have structurally identical halves when count exceeds pool size (2列20問)', () => {
@@ -82,11 +89,54 @@ describe('generateAddPlusTwo (+2のたし算)', () => {
       const problems = generateAddPlusTwo(baseSettings, 20);
       expect(problems).toHaveLength(20);
 
-      const firstHalf = problems.slice(0, 9).map((p) => p.operand1);
-      const secondHalf = problems.slice(9, 18).map((p) => p.operand1);
+      const firstHalf = problems.slice(0, 10).map((p) => p.operand1);
+      const secondHalf = problems.slice(10, 20).map((p) => p.operand1);
 
       expect(firstHalf).not.toEqual(secondHalf);
     }
+  });
+});
+
+describe('generateAddPlusThree〜Nine (+3〜+9のたし算)', () => {
+  const generators = [
+    { n: 3, generate: generateAddPlusThree },
+    { n: 4, generate: generateAddPlusFour },
+    { n: 5, generate: generateAddPlusFive },
+    { n: 6, generate: generateAddPlusSix },
+    { n: 7, generate: generateAddPlusSeven },
+    { n: 8, generate: generateAddPlusEight },
+    { n: 9, generate: generateAddPlusNine },
+  ];
+
+  it.each(generators)(
+    '+$n: operand2が常に$nで、答えが10を超えてよい',
+    ({ n, generate }) => {
+      const problems = generate(baseSettings, 10);
+
+      expect(problems).toHaveLength(10);
+      problems.forEach((problem) => {
+        expect(problem.type).toBe('basic');
+        expect(problem.operation).toBe('addition');
+        expect(problem.operand2).toBe(n);
+        expect(problem.operand1).toBeGreaterThanOrEqual(0);
+        expect(problem.operand1).toBeLessThanOrEqual(9);
+        expect(problem.answer).toBe(problem.operand1! + n);
+        expect(problem.carryOver).toBe(problem.operand1! + n > 9);
+      });
+    }
+  );
+
+  it.each(generators)('+$n: 10問なら全operandがユニーク', ({ generate }) => {
+    const problems = generate(baseSettings, 10);
+    const unique = new Set(problems.map((p) => p.operand1));
+    expect(unique.size).toBe(10); // 0-9 は10通りなので全てユニーク
+  });
+
+  it('+9では答えが10を超える問題が含まれる（最大9+9=18）', () => {
+    const problems = generateAddPlusNine(baseSettings, 10);
+    const answers = problems.map((p) => p.answer);
+    expect(Math.max(...(answers as number[]))).toBe(18); // 9+9
+    expect(answers.some((a) => (a as number) > 10)).toBe(true);
   });
 });
 
