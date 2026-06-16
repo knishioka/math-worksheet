@@ -3,10 +3,11 @@ import type {
   LayoutColumns,
   ProblemType,
   CalculationPattern,
+  Grade,
 } from '../../types';
 import {
   getPrintTemplate,
-  PATTERN_COUNT_OVERRIDES,
+  getEffectiveCounts,
 } from '../../config/print-templates';
 import {
   isWordEnProblem,
@@ -18,6 +19,7 @@ import {
 interface SettingsPanelProps {
   problemCount: number;
   layoutColumns: LayoutColumns;
+  grade?: Grade;
   problemType?: ProblemType;
   calculationPattern?: CalculationPattern;
   showEquationLine?: boolean;
@@ -29,6 +31,7 @@ interface SettingsPanelProps {
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   problemCount,
   layoutColumns,
+  grade,
   problemType,
   calculationPattern,
   showEquationLine = false,
@@ -50,16 +53,15 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const isNumberTracing = effectiveProblemType === 'number-tracing';
   const showEquationLineToggle = supportsEquationLine(effectiveProblemType);
 
-  // 列数に応じた最大問題数と推奨問題数を取得（パターン固有オーバーライド対応）
-  const patternOverride = calculationPattern
-    ? PATTERN_COUNT_OVERRIDES[calculationPattern]
-    : undefined;
-  const maxProblems =
-    patternOverride?.maxCounts[layoutColumns] ??
-    template.maxCounts[layoutColumns];
-  const recommendedCount =
-    patternOverride?.recommendedCounts[layoutColumns] ??
-    template.recommendedCounts[layoutColumns];
+  // 列数に応じた最大問題数と推奨問題数を取得
+  // （パターン固有オーバーライド＋英語文章問題の高学年向け調整に対応）
+  const effectiveCounts = getEffectiveCounts(
+    effectiveProblemType,
+    calculationPattern,
+    grade
+  );
+  const maxProblems = effectiveCounts.maxCounts[layoutColumns];
+  const recommendedCount = effectiveCounts.recommendedCounts[layoutColumns];
 
   // 文章問題・暗算の場合は2列レイアウトを推奨デフォルトにする
   React.useEffect(() => {
@@ -185,10 +187,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             </p>
             <div className="grid grid-cols-3 gap-1">
               {([1, 2, 3] as const).map((cols) => {
-                const colTemplate = getPrintTemplate(effectiveProblemType);
-                const colRecommended =
-                  patternOverride?.recommendedCounts[cols] ??
-                  colTemplate.recommendedCounts[cols];
+                const colRecommended = effectiveCounts.recommendedCounts[cols];
                 const isCurrentLayout = layoutColumns === cols;
                 const isSelected = problemCount === colRecommended;
                 return (
@@ -299,7 +298,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           </select>
         </div>
 
-        {problemCount > template.fitsInA4.threshold[layoutColumns] && (
+        {problemCount > effectiveCounts.thresholds[layoutColumns] && (
           <p className="text-xs text-amber-600 mt-2 flex items-start gap-1">
             <span>⚠️</span>
             <span>{problemCount}問だと2ページに分かれる可能性があります</span>

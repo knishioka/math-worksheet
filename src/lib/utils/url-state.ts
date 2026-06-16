@@ -6,7 +6,7 @@ import type {
   LayoutColumns,
 } from '../../types';
 import { PATTERN_LABELS } from '../../types';
-import { getPrintTemplate } from '../../config/print-templates';
+import { getEffectiveCounts } from '../../config/print-templates';
 import {
   getEffectiveProblemType,
   supportsEquationLine as supportsEquationLineForType,
@@ -93,9 +93,12 @@ export function parseUrlSettings(
         result.problemType ?? defaults.problemType,
         result.calculationPattern
       );
-      const template = getPrintTemplate(effectiveType);
       const cols = result.layoutColumns ?? defaults.layoutColumns;
-      const maxCount = template.maxCounts[cols];
+      const maxCount = getEffectiveCounts(
+        effectiveType,
+        result.calculationPattern,
+        result.grade ?? defaults.grade
+      ).maxCounts[cols];
       result.problemCount = Math.min(count, maxCount);
     }
   }
