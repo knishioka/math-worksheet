@@ -37,18 +37,20 @@ src/
 
 `src/config/print-templates.ts` で問題タイプごとのレイアウトを管理：
 
-| 問題タイプ   | rowGap | 推奨問題数 (1/2/3列) |
-| ------------ | ------ | -------------------- |
-| `basic`      | 24px   | 10/20/30             |
-| `fraction`   | 24px   | 10/18/27             |
-| `decimal`    | 24px   | 10/20/30             |
-| `mixed`      | 24px   | 8/16/24              |
-| `hissan`     | 32px   | 6/12/18              |
-| `hissan-div` | 75px   | 4/8/12               |
-| `missing`    | 18px   | 10/20/30             |
-| `word`       | 12px   | 8/16/24              |
-| `word-en`    | 2px    | 8/16/18              |
-| `anzan`      | 24px   | 6/12/18              |
+| 問題タイプ   | rowGap | 推奨問題数 (1/2/3列)     |
+| ------------ | ------ | ------------------------ |
+| `basic`      | 24px   | 10/20/30                 |
+| `fraction`   | 24px   | 10/18/27                 |
+| `decimal`    | 24px   | 10/20/30                 |
+| `mixed`      | 24px   | 8/16/24                  |
+| `hissan`     | 32px   | 6/12/18                  |
+| `hissan-div` | 75px   | 4/8/12                   |
+| `missing`    | 18px   | 10/20/30                 |
+| `word`       | 12px   | 8/16/24                  |
+| `word-en`    | 2px    | 8/16/18 ※高学年は8/12/12 |
+| `anzan`      | 24px   | 6/12/18                  |
+
+> ※ `word-en`（英語文章問題）は4年生以上で長文の「advanced」ストーリーを使うため、2列/3列の狭いセルで3〜4行に折り返してA4を超過する。`getEffectiveCounts(effectiveType, pattern, grade)` が grade>=4 のとき推奨/最大/A4閾値を 8/12/12 に抑える（実測ベース。`scripts/repro-word-en-overflow.mjs` で検証）。問題数は学年に依存するため、`template.maxCounts` を直接参照せず必ず `getEffectiveCounts` を使うこと。
 
 **テンプレート取得**:
 

@@ -173,6 +173,7 @@ function App(): React.ReactElement {
                     <SettingsPanel
                       problemCount={settings.problemCount}
                       layoutColumns={settings.layoutColumns}
+                      grade={settings.grade}
                       problemType={settings.problemType}
                       calculationPattern={settings.calculationPattern}
                       showEquationLine={settings.showEquationLine}

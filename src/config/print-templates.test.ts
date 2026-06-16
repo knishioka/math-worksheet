@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   getPrintTemplate,
+  getEffectiveCounts,
   detectPrimaryProblemType,
   fitsInA4,
   PRINT_TEMPLATES,
@@ -31,7 +32,7 @@ describe('Print Templates', () => {
           fitsInA4: {
             threshold: { 1: 12, 2: 20, 3: 30 },
           },
-        }),
+        })
       ).toThrowError(/最大問題数/);
     });
 
@@ -45,7 +46,7 @@ describe('Print Templates', () => {
           fitsInA4: {
             threshold: { 1: 10, 2: 20, 3: 30 },
           },
-        }),
+        })
       ).toThrowError(/A4閾値/);
     });
 
@@ -64,7 +65,7 @@ describe('Print Templates', () => {
           fitsInA4: {
             threshold: { 1: 10, 2: 1, 3: 1 },
           },
-        }),
+        })
       ).toThrowError(/A4の高さ/);
     });
   });
@@ -163,7 +164,8 @@ describe('Print Templates', () => {
           id: '1',
           type: 'word-en',
           operation: 'addition',
-          problemText: 'Sam has 5 apples. He gets 3 more. How many does he have?',
+          problemText:
+            'Sam has 5 apples. He gets 3 more. How many does he have?',
           answer: 8,
           category: 'word-story',
           language: 'en',
@@ -336,6 +338,47 @@ describe('Print Templates', () => {
       expect(template.recommendedCounts[3]).toBeGreaterThan(
         template.recommendedCounts[1]
       );
+    });
+  });
+
+  describe('getEffectiveCounts - 学年連動カウント', () => {
+    it('英語文章問題の低学年（〜3年）は既定テンプレートのカウントを使う', () => {
+      const template = getPrintTemplate('word-en');
+      for (const grade of [undefined, 1, 2, 3] as const) {
+        const counts = getEffectiveCounts('word-en', 'word-en', grade);
+        expect(counts.recommendedCounts[2]).toBe(template.recommendedCounts[2]);
+        expect(counts.recommendedCounts[3]).toBe(template.recommendedCounts[3]);
+      }
+    });
+
+    it('英語文章問題の高学年（4年以上）は長文に合わせて問題数を抑える', () => {
+      for (const grade of [4, 5, 6] as const) {
+        const counts = getEffectiveCounts('word-en', 'word-en', grade);
+        // 2列/3列は既定（16/18）より少ない12問に抑える
+        expect(counts.recommendedCounts[2]).toBe(12);
+        expect(counts.maxCounts[2]).toBe(12);
+        expect(counts.recommendedCounts[3]).toBe(12);
+        expect(counts.maxCounts[3]).toBe(12);
+        // 1列は据え置き
+        expect(counts.recommendedCounts[1]).toBe(8);
+        // A4閾値も連動して下がる
+        expect(counts.thresholds[2]).toBe(12);
+        expect(counts.thresholds[3]).toBe(12);
+      }
+    });
+
+    it('高学年でも word-en 以外の問題タイプには影響しない', () => {
+      const basic = getEffectiveCounts('basic', undefined, 6);
+      const template = getPrintTemplate('basic');
+      expect(basic.recommendedCounts[3]).toBe(template.recommendedCounts[3]);
+      expect(basic.maxCounts[3]).toBe(template.maxCounts[3]);
+    });
+
+    it('パターン固有オーバーライドは引き続き反映される', () => {
+      // singapore-bar-model は PATTERN_COUNT_OVERRIDES を持つ
+      const counts = getEffectiveCounts('singapore', 'singapore-bar-model', 4);
+      expect(counts.recommendedCounts[3]).toBe(12);
+      expect(counts.maxCounts[1]).toBe(6);
     });
   });
 });

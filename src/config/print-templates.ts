@@ -7,7 +7,7 @@ import {
   NUMBER_TRACING_MIN_PROBLEM_HEIGHT_PX,
   NUMBER_TRACING_ROW_GAP_PX,
 } from './number-tracing-layout';
-import type { ProblemType, LayoutColumns } from '../types';
+import type { ProblemType, LayoutColumns, Grade } from '../types';
 import type { CalculationPattern } from '../types/calculation-patterns';
 
 const LAYOUT_COLUMNS: LayoutColumns[] = [1, 2, 3];
@@ -513,6 +513,56 @@ export const PATTERN_COUNT_OVERRIDES: Partial<
  */
 export function getPrintTemplate(problemType: ProblemType): PrintTemplate {
   return PRINT_TEMPLATES[problemType];
+}
+
+/**
+ * レイアウト列ごとの推奨/最大/A4閾値をまとめた実効カウント。
+ */
+export interface EffectiveCounts {
+  recommendedCounts: Record<LayoutColumns, number>;
+  maxCounts: Record<LayoutColumns, number>;
+  thresholds: Record<LayoutColumns, number>;
+}
+
+/**
+ * 英語文章問題の高学年（4年生以上）向けカウント。
+ *
+ * grade>=4 では en-word-story が「advanced」な長文（長い名前・会場名・
+ * 複数ステップの文）を使うため、2列/3列の狭いセルで3〜4行に折り返し、
+ * 既定の16問/18問ではA4を高頻度で超過する（実測で2列53〜71%、3列60%）。
+ * 行数を1〜2行ぶん減らして確実にA4へ収める。1列は8問で問題ないため据え置き。
+ */
+const WORD_EN_ADVANCED_COUNTS: EffectiveCounts = {
+  recommendedCounts: { 1: 8, 2: 12, 3: 12 },
+  maxCounts: { 1: 10, 2: 12, 3: 12 },
+  thresholds: { 1: 8, 2: 12, 3: 12 },
+};
+
+/**
+ * 問題タイプ・パターン・学年に応じた実効カウントを取得する。
+ *
+ * パターン固有オーバーライド（PATTERN_COUNT_OVERRIDES）を基本としつつ、
+ * 英語文章問題の高学年では長文に合わせて問題数を抑える。
+ */
+export function getEffectiveCounts(
+  effectiveType: ProblemType,
+  calculationPattern: CalculationPattern | undefined,
+  grade: Grade | undefined
+): EffectiveCounts {
+  if (effectiveType === 'word-en' && grade !== undefined && grade >= 4) {
+    return WORD_EN_ADVANCED_COUNTS;
+  }
+
+  const override = calculationPattern
+    ? PATTERN_COUNT_OVERRIDES[calculationPattern]
+    : undefined;
+  const template = PRINT_TEMPLATES[effectiveType];
+  return {
+    recommendedCounts:
+      override?.recommendedCounts ?? template.recommendedCounts,
+    maxCounts: override?.maxCounts ?? template.maxCounts,
+    thresholds: template.fitsInA4.threshold,
+  };
 }
 
 /**
