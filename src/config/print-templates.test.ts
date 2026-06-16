@@ -345,7 +345,7 @@ describe('Print Templates', () => {
     it('英語文章問題の低学年（〜3年）は既定テンプレートのカウントを使う', () => {
       const template = getPrintTemplate('word-en');
       for (const grade of [undefined, 1, 2, 3] as const) {
-        const counts = getEffectiveCounts('word-en', 'word-en', grade);
+        const counts = getEffectiveCounts('word-en', undefined, grade);
         expect(counts.recommendedCounts[2]).toBe(template.recommendedCounts[2]);
         expect(counts.recommendedCounts[3]).toBe(template.recommendedCounts[3]);
       }
@@ -353,7 +353,7 @@ describe('Print Templates', () => {
 
     it('英語文章問題の高学年（4年以上）は長文に合わせて問題数を抑える', () => {
       for (const grade of [4, 5, 6] as const) {
-        const counts = getEffectiveCounts('word-en', 'word-en', grade);
+        const counts = getEffectiveCounts('word-en', undefined, grade);
         // 2列/3列は既定（16/18）より少ない12問に抑える
         expect(counts.recommendedCounts[2]).toBe(12);
         expect(counts.maxCounts[2]).toBe(12);

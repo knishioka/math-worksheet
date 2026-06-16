@@ -19,15 +19,15 @@ const A4_PX = 297 * (96 / 25.4); // 1122.5px
 const TOLERANCE_PX = 5;
 
 async function selectWordEn(page, grade, cols) {
-  await page.$('select').then((s) => s.selectOption(String(grade)));
+  await page.selectOption('select', String(grade));
   await page.waitForTimeout(80);
-  const radio = await page.$('input[value="word-en"]');
-  await radio.evaluate((el) =>
-    (el.closest('label') || el.parentElement).click()
-  );
+  // locator は要素が見つからない場合に自動待機＋明示エラーになり null 参照を避けられる
+  await page
+    .locator('input[value="word-en"]')
+    .evaluate((el) => (el.closest('label') || el.parentElement).click());
   await page.waitForTimeout(120);
-  const btn = await page.$(`button:has-text("${cols}列")`);
-  if (btn) await btn.click();
+  const btn = page.locator(`button:has-text("${cols}列")`);
+  if (await btn.count()) await btn.first().click();
   await page.waitForTimeout(120);
 }
 
@@ -68,7 +68,7 @@ async function main() {
   let overflowCount = 0;
   let usedCount = 0;
   for (let i = 0; i < SAMPLES; i++) {
-    await page.$('select').then((s) => s.selectOption(String(OTHER_GRADE)));
+    await page.selectOption('select', String(OTHER_GRADE));
     await page.waitForTimeout(50);
     await selectWordEn(page, GRADE, COLS);
     const m = await measure(page);
