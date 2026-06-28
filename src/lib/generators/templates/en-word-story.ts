@@ -237,12 +237,16 @@ function getDifferentAdvancedName(exclude: string | string[]): string {
 
 function getAdvancedVenue(filter?: (v: AdvancedVenue) => boolean): string {
   const pool = filter ? ADVANCED_VENUES.filter(filter) : ADVANCED_VENUES;
-  return pool[randomInt(0, pool.length - 1)].name;
+  // Fall back to the full pool if a filter excludes everything, so indexing
+  // can never hit an empty array.
+  const activePool = pool.length > 0 ? pool : ADVANCED_VENUES;
+  return activePool[randomInt(0, activePool.length - 1)].name;
 }
 
 function getAdvancedEvent(filter?: (e: AdvancedEvent) => boolean): string {
   const pool = filter ? ADVANCED_EVENTS.filter(filter) : ADVANCED_EVENTS;
-  return pool[randomInt(0, pool.length - 1)].name;
+  const activePool = pool.length > 0 ? pool : ADVANCED_EVENTS;
+  return activePool[randomInt(0, activePool.length - 1)].name;
 }
 
 function getAdvancedItem(plural = false): string {
@@ -252,7 +256,8 @@ function getAdvancedItem(plural = false): string {
 
 function getPurchasableAdvancedItem(): { singular: string; plural: string } {
   const pool = ADVANCED_ITEMS.filter((i) => i.purchasable);
-  const item = pool[randomInt(0, pool.length - 1)];
+  const activePool = pool.length > 0 ? pool : ADVANCED_ITEMS;
+  const item = activePool[randomInt(0, activePool.length - 1)];
   return { singular: item.singular, plural: item.plural };
 }
 
