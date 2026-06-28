@@ -57,16 +57,22 @@ describe('Accordion', () => {
     it('should toggle item on click', () => {
       render(<Accordion items={mockItems} defaultOpen={[]} />);
 
-      const firstItemButton = screen.getByRole('button', { name: /First Item/i });
+      const firstItemButton = screen.getByRole('button', {
+        name: /First Item/i,
+      });
       fireEvent.click(firstItemButton);
 
       expect(screen.getByText('Content 1')).toBeInTheDocument();
     });
 
     it('should allow multiple items expanded when allowMultiple is true', () => {
-      render(<Accordion items={mockItems} defaultOpen={['item1']} allowMultiple />);
+      render(
+        <Accordion items={mockItems} defaultOpen={['item1']} allowMultiple />
+      );
 
-      const secondItemButton = screen.getByRole('button', { name: /Second Item/i });
+      const secondItemButton = screen.getByRole('button', {
+        name: /Second Item/i,
+      });
       fireEvent.click(secondItemButton);
 
       expect(screen.getByText('Content 1')).toBeInTheDocument();
@@ -75,10 +81,16 @@ describe('Accordion', () => {
 
     it('should collapse other items when allowMultiple is false', () => {
       render(
-        <Accordion items={mockItems} defaultOpen={['item1']} allowMultiple={false} />
+        <Accordion
+          items={mockItems}
+          defaultOpen={['item1']}
+          allowMultiple={false}
+        />
       );
 
-      const secondItemButton = screen.getByRole('button', { name: /Second Item/i });
+      const secondItemButton = screen.getByRole('button', {
+        name: /Second Item/i,
+      });
       fireEvent.click(secondItemButton);
 
       // Only item2 should be visible now
@@ -103,7 +115,9 @@ describe('Accordion', () => {
         />
       );
 
-      const firstItemButton = screen.getByRole('button', { name: /First Item/i });
+      const firstItemButton = screen.getByRole('button', {
+        name: /First Item/i,
+      });
       fireEvent.click(firstItemButton);
 
       expect(onExpandChange).toHaveBeenCalledWith(['item1']);
@@ -119,10 +133,32 @@ describe('Accordion', () => {
         />
       );
 
-      const firstItemButton = screen.getByRole('button', { name: /First Item/i });
+      const firstItemButton = screen.getByRole('button', {
+        name: /First Item/i,
+      });
       fireEvent.click(firstItemButton);
 
       expect(onExpandChange).toHaveBeenCalledWith([]);
+    });
+  });
+
+  describe('layout regression', () => {
+    // 回帰: 展開コンテンツを固定px高さ（max-h-[1000px] 等）でクランプすると、
+    // パターン数が増えたカテゴリで下部が overflow-hidden により欠落する。
+    // grade1 で +3〜+9 追加後に「+9 の下が表示されない」不具合が発生したため、
+    // 固定px高さクランプの再導入をこのテストで禁止する。
+    it('should not clamp expanded content with a fixed pixel max-height', () => {
+      const { container } = render(
+        <Accordion items={mockItems} defaultOpen={['item1']} />
+      );
+
+      const clamped = container.querySelectorAll('[class*="max-h-["]');
+      const offenders = [...clamped]
+        // Element.className can be SVGAnimatedString; getAttribute is always string
+        .map((el) => el.getAttribute('class') || '')
+        .filter((cls) => /max-h-\[\d+px\]/.test(cls));
+
+      expect(offenders).toEqual([]);
     });
   });
 

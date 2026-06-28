@@ -38,7 +38,9 @@ export function Accordion({
 
   // 制御モードか非制御モードかを判定
   const isControlled = controlledExpandedIds !== undefined;
-  const expandedIds = isControlled ? controlledExpandedIds : internalExpandedIds;
+  const expandedIds = isControlled
+    ? controlledExpandedIds
+    : internalExpandedIds;
 
   const toggleItem = useCallback(
     (itemId: string) => {
@@ -121,14 +123,20 @@ function AccordionItemComponent({
         </svg>
       </button>
 
-      {/* コンテンツ（展開時のみ表示） */}
+      {/* コンテンツ（展開時のみ表示）
+          高さに依存しない grid-rows トランジションで、パターン数が増えても
+          下部が切れないようにする（旧 max-h-[1000px] はクランプで欠落していた） */}
       <div
-        className={`overflow-hidden transition-all duration-200 ${
-          isExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+        className={`grid transition-all duration-200 ${
+          isExpanded
+            ? 'grid-rows-[1fr] opacity-100'
+            : 'grid-rows-[0fr] opacity-0'
         }`}
       >
-        <div className="px-4 pb-4 pt-2 border-t border-slate-100">
-          {item.children}
+        <div className="overflow-hidden min-h-0">
+          <div className="px-4 pb-4 pt-2 border-t border-slate-100">
+            {item.children}
+          </div>
         </div>
       </div>
     </div>
