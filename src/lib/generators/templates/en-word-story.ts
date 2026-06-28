@@ -112,43 +112,111 @@ const ADVANCED_NAMES = [
   'Ava',
 ] as const;
 
-const ADVANCED_VENUES = [
-  'school library',
-  'auditorium',
-  'cafeteria',
-  'gymnasium',
-  'playground',
-  'science lab',
-  'art studio',
-  'computer lab',
-  'community center',
-] as const;
+/**
+ * Venues are tagged with the narrative contexts they can appear in, so a
+ * template never asks about (e.g.) tiling the floor of an outdoor playground
+ * or holding an orchestra rehearsal in the computer lab.
+ */
+interface AdvancedVenue {
+  name: string;
+  /** Enclosed room with a measurable / tileable floor (not outdoors). */
+  room?: boolean;
+  /** Has rows of audience seating. */
+  seated?: boolean;
+  /** Suitable for a concert / rehearsal / performance. */
+  performance?: boolean;
+}
 
-const ADVANCED_EVENTS = [
-  'school festival',
-  'spring concert',
-  'science fair',
-  'sports tournament',
-  'art exhibition',
-  'reading marathon',
-  'recycling drive',
-  'fundraiser',
-  'charity walk',
-  'talent show',
-] as const;
+const ADVANCED_VENUES: AdvancedVenue[] = [
+  { name: 'school library', room: true },
+  { name: 'auditorium', room: true, seated: true, performance: true },
+  { name: 'cafeteria', room: true },
+  { name: 'gymnasium', room: true, seated: true, performance: true },
+  { name: 'music room', room: true, performance: true },
+  { name: 'playground' },
+  { name: 'science lab', room: true },
+  { name: 'art studio', room: true },
+  { name: 'computer lab', room: true },
+  { name: 'community center', room: true, seated: true },
+];
 
-const ADVANCED_ITEMS = [
-  { singular: 'notebook', plural: 'notebooks' },
-  { singular: 'calculator', plural: 'calculators' },
-  { singular: 'science kit', plural: 'science kits' },
-  { singular: 'bottle cap', plural: 'bottle caps' },
-  { singular: 'donation can', plural: 'donation cans' },
-  { singular: 'concert ticket', plural: 'concert tickets' },
+/**
+ * Events are tagged with the activities that fit them, so a template never
+ * pairs (e.g.) an "art exhibition" with choosing a sport, or a "charity walk"
+ * with an indoor seated audience.
+ */
+interface AdvancedEvent {
+  name: string;
+  /** Attendees choose / play a sport (basketball, soccer, …). */
+  sports?: boolean;
+  /** Centered on raising money. */
+  fundraising?: boolean;
+  /** Held indoors with a seated audience of students and parents. */
+  seated?: boolean;
+  /** Has a cafeteria / stall selling food. */
+  foodSale?: boolean;
+}
+
+const ADVANCED_EVENTS: AdvancedEvent[] = [
+  { name: 'school festival', seated: true, fundraising: true, foodSale: true },
+  { name: 'spring concert', seated: true, foodSale: true },
+  { name: 'science fair', seated: true, foodSale: true },
+  { name: 'sports day', sports: true, foodSale: true },
+  { name: 'sports tournament', sports: true, foodSale: true },
+  { name: 'field day', sports: true, foodSale: true },
+  { name: 'art exhibition', foodSale: true },
+  { name: 'reading marathon' },
+  { name: 'recycling drive', fundraising: true },
+  { name: 'fundraiser', seated: true, fundraising: true, foodSale: true },
+  { name: 'charity walk', fundraising: true },
+  { name: 'talent show', seated: true, foodSale: true },
+  { name: 'book fair', foodSale: true },
+];
+
+/**
+ * General-purpose advanced items. `purchasable` marks items that can sensibly
+ * be bought at a store (so we never write "one trophy costs $3"). Items that
+ * are collected / donated for a drive live in COLLECTION_DRIVES instead, paired
+ * with a matching event so the context always lines up.
+ */
+interface AdvancedItem {
+  singular: string;
+  plural: string;
+  /** Can be bought at a school store / supply shop. */
+  purchasable?: boolean;
+}
+
+const ADVANCED_ITEMS: AdvancedItem[] = [
+  { singular: 'notebook', plural: 'notebooks', purchasable: true },
+  { singular: 'calculator', plural: 'calculators', purchasable: true },
+  { singular: 'science kit', plural: 'science kits', purchasable: true },
+  { singular: 'concert ticket', plural: 'concert tickets', purchasable: true },
+  { singular: 'science book', plural: 'science books', purchasable: true },
+  { singular: 'sketchbook', plural: 'sketchbooks', purchasable: true },
+  { singular: 'pencil case', plural: 'pencil cases', purchasable: true },
   { singular: 'medal', plural: 'medals' },
   { singular: 'trophy', plural: 'trophies' },
-  { singular: 'auditorium chair', plural: 'auditorium chairs' },
-  { singular: 'science book', plural: 'science books' },
-] as const;
+];
+
+/**
+ * Coherent (event, item) pairs for "collected / contributed / sorted for a
+ * drive" templates. Items are all small, donatable, and naturally come in
+ * several colors so they also work with the red/green/blue sorting template.
+ */
+interface CollectionDrive {
+  event: string;
+  singular: string;
+  plural: string;
+}
+
+const COLLECTION_DRIVES: CollectionDrive[] = [
+  { event: 'recycling drive', singular: 'bottle cap', plural: 'bottle caps' },
+  { event: 'toy drive', singular: 'toy', plural: 'toys' },
+  { event: 'coat drive', singular: 'winter coat', plural: 'winter coats' },
+  { event: 'school supply drive', singular: 'crayon', plural: 'crayons' },
+  { event: 'mitten drive', singular: 'mitten', plural: 'mittens' },
+  { event: 'art supply drive', singular: 'marker', plural: 'markers' },
+];
 
 function getAdvancedName(): string {
   return ADVANCED_NAMES[randomInt(0, ADVANCED_NAMES.length - 1)];
@@ -167,17 +235,34 @@ function getDifferentAdvancedName(exclude: string | string[]): string {
   return name;
 }
 
-function getAdvancedVenue(): string {
-  return ADVANCED_VENUES[randomInt(0, ADVANCED_VENUES.length - 1)];
+function getAdvancedVenue(filter?: (v: AdvancedVenue) => boolean): string {
+  const pool = filter ? ADVANCED_VENUES.filter(filter) : ADVANCED_VENUES;
+  // Fall back to the full pool if a filter excludes everything, so indexing
+  // can never hit an empty array.
+  const activePool = pool.length > 0 ? pool : ADVANCED_VENUES;
+  return activePool[randomInt(0, activePool.length - 1)].name;
 }
 
-function getAdvancedEvent(): string {
-  return ADVANCED_EVENTS[randomInt(0, ADVANCED_EVENTS.length - 1)];
+function getAdvancedEvent(filter?: (e: AdvancedEvent) => boolean): string {
+  const pool = filter ? ADVANCED_EVENTS.filter(filter) : ADVANCED_EVENTS;
+  const activePool = pool.length > 0 ? pool : ADVANCED_EVENTS;
+  return activePool[randomInt(0, activePool.length - 1)].name;
 }
 
 function getAdvancedItem(plural = false): string {
   const item = ADVANCED_ITEMS[randomInt(0, ADVANCED_ITEMS.length - 1)];
   return plural ? item.plural : item.singular;
+}
+
+function getPurchasableAdvancedItem(): { singular: string; plural: string } {
+  const pool = ADVANCED_ITEMS.filter((i) => i.purchasable);
+  const activePool = pool.length > 0 ? pool : ADVANCED_ITEMS;
+  const item = activePool[randomInt(0, activePool.length - 1)];
+  return { singular: item.singular, plural: item.plural };
+}
+
+function getCollectionDrive(): CollectionDrive {
+  return COLLECTION_DRIVES[randomInt(0, COLLECTION_DRIVES.length - 1)];
 }
 
 const FEMALE_NAMES = new Set([
@@ -472,8 +557,9 @@ export const MULTI_STEP_STORIES: WordStoryTemplate[] = [
     generateProblem: (grade) => {
       const name = grade >= 4 ? getAdvancedName() : getRandomName();
       const useAdvanced = grade >= 4;
-      const item = useAdvanced ? getAdvancedItem(true) : getRandomItem(true);
-      const event = useAdvanced ? getAdvancedEvent() : null;
+      const drive = useAdvanced ? getCollectionDrive() : null;
+      const item = drive ? drive.plural : getRandomItem(true);
+      const event = drive ? drive.event : null;
       const total = gradeRandomInt(
         grade,
         [
@@ -515,8 +601,9 @@ export const MULTI_STEP_STORIES: WordStoryTemplate[] = [
       const name2 = useAdvanced
         ? getDifferentAdvancedName(name1)
         : getDifferentName(name1);
-      const item = useAdvanced ? getAdvancedItem(true) : getRandomItem(true);
-      const event = useAdvanced ? getAdvancedEvent() : null;
+      const drive = useAdvanced ? getCollectionDrive() : null;
+      const item = drive ? drive.plural : getRandomItem(true);
+      const event = drive ? drive.event : null;
       const count1 = gradeRandomInt(
         grade,
         [
@@ -722,7 +809,7 @@ export const MULTIPLICATION_STORIES: WordStoryTemplate[] = [
       );
       const answer = price * quantity;
       const item = useAdvanced
-        ? ADVANCED_ITEMS[randomInt(0, ADVANCED_ITEMS.length - 1)]
+        ? getPurchasableAdvancedItem()
         : getRandomItemPair();
 
       return {
@@ -826,7 +913,7 @@ export const DIVISION_STORIES: WordStoryTemplate[] = [
       const actualTotal = unitPrice * numItems;
       const answer = unitPrice;
       const item = useAdvanced
-        ? ADVANCED_ITEMS[randomInt(0, ADVANCED_ITEMS.length - 1)]
+        ? getPurchasableAdvancedItem()
         : getRandomItemPair();
 
       const text = useAdvanced
@@ -1820,8 +1907,9 @@ export const COMPARISON_STORIES: WordStoryTemplate[] = [
       const name2 = useAdvanced
         ? getDifferentAdvancedName(name1)
         : getDifferentName(name1);
-      const item = useAdvanced ? getAdvancedItem(true) : getRandomItem(true);
-      const event = useAdvanced ? getAdvancedEvent() : null;
+      const drive = useAdvanced ? getCollectionDrive() : null;
+      const item = drive ? drive.plural : getRandomItem(true);
+      const event = drive ? drive.event : null;
       const count1 = gradeRandomInt(
         grade,
         [
@@ -2130,7 +2218,9 @@ export const GEOMETRY_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const useAdvanced = grade >= 4;
-      const venue = useAdvanced ? getAdvancedVenue() : null;
+      const venue = useAdvanced
+        ? getAdvancedVenue((v) => v.room === true)
+        : null;
       const length = gradeRandomInt(
         grade,
         [
@@ -2398,7 +2488,9 @@ export const TRAVEL_STORIES: WordStoryTemplate[] = [
   {
     generateProblem: (grade) => {
       const useAdvanced = grade >= 4;
-      const venue = useAdvanced ? getAdvancedVenue() : null;
+      const venue = useAdvanced
+        ? getAdvancedVenue((v) => v.seated === true)
+        : null;
       const rows = gradeRandomInt(
         grade,
         [
@@ -2447,7 +2539,7 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
   // T4-AREA-1: Rectangle area in a school context (grade 4+)
   {
     generateProblem: (grade) => {
-      const venue = getAdvancedVenue();
+      const venue = getAdvancedVenue((v) => v.room === true);
       const length = gradeRandomInt(
         grade,
         [
@@ -2514,7 +2606,7 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
   // T4-ELAPSED-1: Elapsed time across the hour (grade 4+)
   {
     generateProblem: (grade) => {
-      const venue = getAdvancedVenue();
+      const venue = getAdvancedVenue((v) => v.performance === true);
       const duration = gradeRandomInt(
         grade,
         [
@@ -2555,7 +2647,7 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
   // T4-AVG-1: Average (grade 5+)
   {
     generateProblem: (grade) => {
-      const event = getAdvancedEvent();
+      const event = getAdvancedEvent((e) => e.fundraising === true);
       const numClasses = 4;
       const avg = gradeRandomInt(grade, [{ upTo: 5, min: 80, max: 260 }], {
         upTo: 6,
@@ -2592,7 +2684,7 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
   // T4-RATIO-1: Ratio scaling (grade 5+)
   {
     generateProblem: (grade) => {
-      const event = getAdvancedEvent();
+      const event = getAdvancedEvent((e) => e.seated === true);
       const ratios: Array<[number, number]> = [
         [2, 3],
         [3, 4],
@@ -2626,7 +2718,7 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
     generateProblem: (grade) => {
       const name = getAdvancedName();
       const pronouns = getPronouns(name);
-      const itemObj = ADVANCED_ITEMS[randomInt(0, ADVANCED_ITEMS.length - 1)];
+      const itemObj = getPurchasableAdvancedItem();
       // Pick a fixed-cost item that is NOT the same as the main item so the
       // sentence never asks about two of the same thing.
       const fixedItemPool = [
@@ -2682,7 +2774,7 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
   // T4-FRACTION-1: Fraction of a quantity (grade 4+)
   {
     generateProblem: (grade) => {
-      const event = getAdvancedEvent();
+      const event = getAdvancedEvent((e) => e.sports === true);
       const fractions: Array<[number, number]> = [
         [1, 2],
         [1, 3],
@@ -2759,7 +2851,7 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
   // T4-EVENT-1: School festival multi-step (grade 4+)
   {
     generateProblem: (grade) => {
-      const event = getAdvancedEvent();
+      const event = getAdvancedEvent((e) => e.foodSale === true);
       const morning = gradeRandomInt(
         grade,
         [

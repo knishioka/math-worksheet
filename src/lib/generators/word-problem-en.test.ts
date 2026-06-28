@@ -287,6 +287,82 @@ describe('English Word Problem Generator', () => {
       expect(ops.has('multiplication')).toBe(true);
       expect(ops.has('division')).toBe(true);
     });
+
+    // Regression: event/venue themes must match the activity in the sentence
+    // so we never produce nonsense like "at the art exhibition, students chose
+    // basketball or soccer". See en-word-story tagged pools.
+    describe('context coherence (grade 4+)', () => {
+      const SAMPLE = ([4, 5, 6] as const).flatMap((g) =>
+        generateEnWordStory(g, 400)
+      );
+
+      it('sport-choice problems only use sports-themed events', () => {
+        const sportProblems = SAMPLE.filter((p) =>
+          /chose basketball|chose soccer/i.test(p.problemText)
+        );
+        // The fraction-of template should appear in a large sample.
+        expect(sportProblems.length).toBeGreaterThan(0);
+        sportProblems.forEach((p) => {
+          expect(p.problemText).toMatch(
+            /\b(sports day|sports tournament|field day)\b/i
+          );
+          // Non-sports themes must never host a sport choice.
+          expect(p.problemText).not.toMatch(
+            /\b(art exhibition|concert|library|reading marathon|recycling drive)\b/i
+          );
+        });
+      });
+
+      it('orchestra rehearsals only happen in performance venues', () => {
+        const rehearsals = SAMPLE.filter((p) =>
+          /orchestra rehearsal/i.test(p.problemText)
+        );
+        expect(rehearsals.length).toBeGreaterThan(0);
+        rehearsals.forEach((p) => {
+          expect(p.problemText).toMatch(
+            /\b(auditorium|gymnasium|music room)\b/i
+          );
+        });
+      });
+
+      it('floor area/perimeter problems only use indoor rooms', () => {
+        const floors = SAMPLE.filter((p) =>
+          /floor (is being retiled|is shaped like)/i.test(p.problemText)
+        );
+        expect(floors.length).toBeGreaterThan(0);
+        // An outdoor playground has no tileable/measurable "floor".
+        floors.forEach((p) => {
+          expect(p.problemText).not.toMatch(/\bplayground\b/i);
+        });
+      });
+
+      it('seat-row problems only use venues with audience seating', () => {
+        const seating = SAMPLE.filter((p) =>
+          /rows with .* seats in each row/i.test(p.problemText)
+        );
+        expect(seating.length).toBeGreaterThan(0);
+        seating.forEach((p) => {
+          expect(p.problemText).toMatch(
+            /\b(auditorium|gymnasium|community center)\b/i
+          );
+        });
+      });
+
+      it('donation/collection problems pair drives with donatable items', () => {
+        const drives = SAMPLE.filter((p) =>
+          /from the donation box|contributed|class collected/i.test(
+            p.problemText
+          )
+        );
+        drives.forEach((p) => {
+          if (!/\bdrive\b/i.test(p.problemText)) return; // grade<4 paths
+          // Drives never ask about non-donatable goods like trophies/medals.
+          expect(p.problemText).not.toMatch(
+            /\b(trophy|trophies|medal|medals|calculator|calculators)\b/i
+          );
+        });
+      });
+    });
   });
 
   describe('generateGradeEnWordProblems', () => {
