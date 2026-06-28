@@ -133,7 +133,7 @@ function AccordionItemComponent({
             : 'grid-rows-[0fr] opacity-0'
         }`}
       >
-        <div className="overflow-hidden">
+        <div className="overflow-hidden min-h-0">
           <div className="px-4 pb-4 pt-2 border-t border-slate-100">
             {item.children}
           </div>

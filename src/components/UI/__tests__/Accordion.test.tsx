@@ -154,7 +154,8 @@ describe('Accordion', () => {
 
       const clamped = container.querySelectorAll('[class*="max-h-["]');
       const offenders = [...clamped]
-        .map((el) => el.className)
+        // Element.className can be SVGAnimatedString; getAttribute is always string
+        .map((el) => el.getAttribute('class') || '')
         .filter((cls) => /max-h-\[\d+px\]/.test(cls));
 
       expect(offenders).toEqual([]);
