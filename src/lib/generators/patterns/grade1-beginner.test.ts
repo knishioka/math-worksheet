@@ -12,6 +12,7 @@ import {
   generateAddCounting,
   generateCountingAdd,
   generateCountingSub,
+  generateAddSingleDigitMixed,
 } from './grade1';
 import type { WorksheetSettings } from '../../../types';
 
@@ -206,5 +207,69 @@ describe('generateCountingSub (○を使ったひき算)', () => {
       expect(problem.problemText).toContain('のこりは いくつ？');
       expect(problem.answer).toBeGreaterThanOrEqual(1);
     });
+  });
+});
+
+describe('generateAddSingleDigitMixed (繰り上がり混在のたし算)', () => {
+  it('should generate single-digit additions within 20', () => {
+    const problems = generateAddSingleDigitMixed(baseSettings, 20);
+
+    expect(problems).toHaveLength(20);
+    problems.forEach((problem) => {
+      expect(problem.type).toBe('basic');
+      expect(problem.operation).toBe('addition');
+      expect(problem.operand1).toBeGreaterThanOrEqual(1);
+      expect(problem.operand1).toBeLessThanOrEqual(9);
+      expect(problem.operand2!).toBeGreaterThanOrEqual(1);
+      expect(problem.operand2!).toBeLessThanOrEqual(9);
+      expect(problem.answer).toBe(problem.operand1! + problem.operand2!);
+      expect(problem.answer).toBeLessThanOrEqual(18);
+      // ちょうど10は繰り上がり扱いしない（grade1パターンの規約）
+      expect(problem.carryOver).toBe(problem.answer! > 10);
+    });
+  });
+
+  it('should always mix carry and non-carry problems, even at small counts', () => {
+    // シャッフル任せだと5問プリントは約5.6%の確率で片方のクラスだけになるため、
+    // 各クラス1問ずつを構造的に保証している。UIの最小問題数5問を含めて検証
+    for (const count of [2, 5, 10, 20]) {
+      for (let trial = 0; trial < 30; trial++) {
+        const problems = generateAddSingleDigitMixed(baseSettings, count);
+        expect(problems).toHaveLength(count);
+        expect(problems.some((p) => p.carryOver)).toBe(true);
+        expect(problems.some((p) => !p.carryOver)).toBe(true);
+      }
+    }
+  });
+
+  it('should not always place the guaranteed pair at the first two positions', () => {
+    // 確保した2問を先頭固定にすると出題順が予測可能になるため、
+    // 選択後に並びをシャッフルしている
+    const firstTwoAlwaysDifferentClass = Array.from({ length: 30 }, () =>
+      generateAddSingleDigitMixed(baseSettings, 20)
+    ).every((problems) => problems[0].carryOver !== problems[1].carryOver);
+    expect(firstTwoAlwaysDifferentClass).toBe(false);
+  });
+
+  it('should handle counts below the guarantee threshold', () => {
+    expect(generateAddSingleDigitMixed(baseSettings, 0)).toHaveLength(0);
+    expect(generateAddSingleDigitMixed(baseSettings, 1)).toHaveLength(1);
+  });
+
+  it('should not repeat the same combination within one worksheet (30問)', () => {
+    const problems = generateAddSingleDigitMixed(baseSettings, 30);
+    const keys = problems.map((p) => {
+      const [a, b] = [p.operand1!, p.operand2!].sort((x, y) => x - y);
+      return `${a}+${b}`;
+    });
+    expect(new Set(keys).size).toBe(30);
+  });
+
+  it('should place the larger operand on either side across problems', () => {
+    // 45通り全てを出し切れば、順序ランダム化により
+    // operand1 > operand2 の問題と operand1 < operand2 の問題が両方現れる
+    const problems = generateAddSingleDigitMixed(baseSettings, 45);
+    expect(problems.some((p) => p.operand1! > p.operand2!)).toBe(true);
+    expect(problems.some((p) => p.operand1! < p.operand2!)).toBe(true);
   });
 });

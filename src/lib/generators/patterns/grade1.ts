@@ -355,6 +355,70 @@ export function generateAddSingleDigitCarry(
   return problems;
 }
 
+// 1年生: 1桁のたし算（繰り上がりあり・なし混在、20まで）
+export function generateAddSingleDigitMixed(
+  _settings: WorksheetSettings,
+  count: number
+): BasicProblem[] {
+  // 1〜9同士の組み合わせ（順序違いは同一とみなす）を全45通り列挙し、
+  // 繰り上がりあり20通り / なし25通りに分ける
+  const carryPairs: [number, number][] = [];
+  const noCarryPairs: [number, number][] = [];
+  for (let a = 1; a <= 9; a++) {
+    for (let b = a; b <= 9; b++) {
+      (a + b > 10 ? carryPairs : noCarryPairs).push([a, b]);
+    }
+  }
+  shuffleArray(carryPairs);
+  shuffleArray(noCarryPairs);
+
+  // 2問以上なら各クラスから1問ずつを先に確保する。
+  // シャッフル任せだと少問数（1列は最小5問）のとき数%の確率で
+  // 全問が同じクラスになり、「混在」と銘打ったプリントとして成立しない
+  const selected: [number, number][] = [];
+  if (count >= 2) {
+    selected.push(carryPairs.pop()!, noCarryPairs.pop()!);
+  }
+
+  // 残りは両クラス混合のプールから。確保済みの2問はプールから除かれているので
+  // 重複は起きない
+  const guaranteedCount = selected.length;
+  const pool = [...carryPairs, ...noCarryPairs];
+  shuffleArray(pool);
+  for (let poolIndex = 0; poolIndex < count - guaranteedCount; poolIndex++) {
+    // プールを使い切ったら再シャッフルして構造的重複を防ぐ
+    if (poolIndex > 0 && poolIndex % pool.length === 0) {
+      shuffleArray(pool);
+    }
+    selected.push(pool[poolIndex % pool.length]);
+  }
+
+  // 確保した2問が常に第1問・第2問に来ないよう出題順をシャッフル
+  shuffleArray(selected);
+
+  const problems: BasicProblem[] = [];
+  for (const [a, b] of selected) {
+    // 「3＋8」「8＋3」のどちらも出るように出題順をランダム化
+    const swap = randomInt(0, 1) === 1;
+    const operand1 = swap ? b : a;
+    const operand2 = swap ? a : b;
+
+    problems.push({
+      id: generateId(),
+      type: 'basic',
+      operation: 'addition',
+      operand1,
+      operand2,
+      answer: operand1 + operand2,
+      // grade1パターンの規約: ちょうど10は「10をつくる計算」であり
+      // 繰り上がり扱いしない（generateAddSingleDigitCarry と同じ基準）
+      carryOver: operand1 + operand2 > 10,
+    });
+  }
+
+  return problems;
+}
+
 // 1年生: 10を作る計算
 export function generateAddTo10(
   _settings: WorksheetSettings,

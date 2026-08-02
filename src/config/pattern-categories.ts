@@ -166,6 +166,7 @@ const BASE_DIFFICULTY: Partial<Record<CalculationPattern, DifficultyLevel>> = {
   'sub-single-digit': 1,
   'sub-from-10': 1,
   'add-single-digit-carry': 2,
+  'add-single-digit-mixed': 3,
   'sub-single-digit-borrow': 2,
   'add-sub-mixed-basic': 3,
   'add-single-missing': 3,
