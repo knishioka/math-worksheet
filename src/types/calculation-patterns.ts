@@ -16,6 +16,7 @@ export type CalculationPattern =
   // 1年生のパターン
   | 'add-single-digit' // 1桁＋1桁（答えが10まで）
   | 'add-single-digit-carry' // 1桁＋1桁（繰り上がりあり、答えが20まで）
+  | 'add-single-digit-mixed' // 1桁＋1桁（繰り上がりあり・なし混在、答えが20まで）
   | 'add-to-10' // 10を作る計算（□＋△＝10）
   | 'add-10-plus' // 10＋□の計算
   | 'sub-single-digit' // 1桁－1桁（繰り下がりなし）
@@ -199,6 +200,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'counting-sub',
     'add-single-digit',
     'add-single-digit-carry',
+    'add-single-digit-mixed',
     'add-to-10',
     'add-10-plus',
     'sub-single-digit',
@@ -551,6 +553,7 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   // 1年生
   'add-single-digit': '1桁のたし算（10まで）',
   'add-single-digit-carry': '1桁のたし算（繰り上がりあり）',
+  'add-single-digit-mixed': '1桁のたし算（繰り上がり混在）',
   'add-to-10': '10を作る計算',
   'add-10-plus': '10＋□の計算',
   'sub-single-digit': '1桁のひき算（繰り下がりなし）',
@@ -736,6 +739,7 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   // 1年生
   'add-single-digit': '5＋3などの基本的なたし算',
   'add-single-digit-carry': '8＋7などの繰り上がりのあるたし算',
+  'add-single-digit-mixed': '3＋4と8＋7が混ざったたし算',
   'add-to-10': '□＋△＝10になる組み合わせ',
   'add-10-plus': '10＋5などの計算',
   'sub-single-digit': '8－3などの基本的なひき算',

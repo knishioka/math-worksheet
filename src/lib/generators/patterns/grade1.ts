@@ -355,6 +355,49 @@ export function generateAddSingleDigitCarry(
   return problems;
 }
 
+// 1年生: 1桁のたし算（繰り上がりあり・なし混在、20まで）
+export function generateAddSingleDigitMixed(
+  _settings: WorksheetSettings,
+  count: number
+): BasicProblem[] {
+  // 1〜9同士の組み合わせ（順序違いは同一とみなす）を全列挙してシャッフル
+  // 45通りのうち20通り（約44%）が繰り上がりになる
+  const pool: [number, number][] = [];
+  for (let a = 1; a <= 9; a++) {
+    for (let b = a; b <= 9; b++) {
+      pool.push([a, b]);
+    }
+  }
+  shuffleArray(pool);
+
+  const problems: BasicProblem[] = [];
+  for (let i = 0; i < count; i++) {
+    // プールを使い切ったら再シャッフルして構造的重複を防ぐ
+    if (i > 0 && i % pool.length === 0) {
+      shuffleArray(pool);
+    }
+    const [a, b] = pool[i % pool.length];
+    // 「3＋8」「8＋3」のどちらも出るように出題順をランダム化
+    const swap = randomInt(0, 1) === 1;
+    const operand1 = swap ? b : a;
+    const operand2 = swap ? a : b;
+
+    problems.push({
+      id: generateId(),
+      type: 'basic',
+      operation: 'addition',
+      operand1,
+      operand2,
+      answer: operand1 + operand2,
+      // grade1パターンの規約: ちょうど10は「10をつくる計算」であり
+      // 繰り上がり扱いしない（generateAddSingleDigitCarry と同じ基準）
+      carryOver: operand1 + operand2 > 10,
+    });
+  }
+
+  return problems;
+}
+
 // 1年生: 10を作る計算
 export function generateAddTo10(
   _settings: WorksheetSettings,

@@ -50,6 +50,7 @@ import {
   generateCountingSub,
   generateAddSingleDigit,
   generateAddSingleDigitCarry,
+  generateAddSingleDigitMixed,
   generateAddTo10,
   generateAdd10Plus,
   generateSubSingleDigit,
@@ -175,6 +176,8 @@ export function generatePatternProblems(
       return generateAddSingleDigit(settings, count);
     case 'add-single-digit-carry':
       return generateAddSingleDigitCarry(settings, count);
+    case 'add-single-digit-mixed':
+      return generateAddSingleDigitMixed(settings, count);
     case 'add-to-10':
       return generateAddTo10(settings, count);
     case 'add-10-plus':
