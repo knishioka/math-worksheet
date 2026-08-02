@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { Problem, WorksheetSettings, WorksheetData } from '../types';
 import { APP_CONFIG } from '../config/constants';
 import { generateProblems } from '../lib/generators';
+import { parseUrlSettings } from '../lib/utils/url-state';
 
 export type UpdateSettingsPayload = Partial<WorksheetSettings>;
 export type WorksheetBatch = WorksheetData[];
@@ -33,8 +34,26 @@ export const defaultSettings: WorksheetSettings = {
   layoutColumns: APP_CONFIG.defaultLayoutColumns,
 };
 
+/**
+ * 共有URLの設定を「最初の描画」から反映させるため、ストア生成時に取り込む。
+ *
+ * マウント後の useEffect で反映すると、復元前のデフォルト設定で描画される
+ * 一瞬が生まれる。その間に走る各コンポーネントの初期化 effect
+ * （パターンの自動選択・推奨問題数の自動適用・URLの書き戻し）が
+ * 復元値を打ち消してしまうため、描画前に確定させる。
+ */
+export function getInitialSettings(): WorksheetSettings {
+  if (typeof window === 'undefined') {
+    return defaultSettings;
+  }
+  return {
+    ...defaultSettings,
+    ...parseUrlSettings(window.location.search, defaultSettings),
+  };
+}
+
 export const useProblemStore = create<ProblemStore>()((set, get) => ({
-  settings: defaultSettings,
+  settings: getInitialSettings(),
   problems: [],
 
   updateSettings: (newSettings): void => {

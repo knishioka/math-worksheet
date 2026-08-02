@@ -5,10 +5,9 @@ import { ProblemTypeSelector } from './components/ProblemGenerator/ProblemTypeSe
 import { CalculationPatternSelector } from './components/ProblemGenerator/CalculationPatternSelector';
 import { SettingsPanel } from './components/ProblemGenerator/SettingsPanel';
 import { WorksheetPreview } from './components/Preview/WorksheetPreview';
-import { useProblemStore, defaultSettings } from './stores/problemStore';
+import { useProblemStore } from './stores/problemStore';
 import { generateProblems } from './lib/generators';
 import {
-  parseUrlSettings,
   syncUrlFromSettings,
   getOperationFromPattern,
 } from './lib/utils/url-state';
@@ -42,7 +41,8 @@ function App(): React.ReactElement {
     }
   }, [settings, setProblems, getWorksheetData]);
 
-  // URL からの初期設定読み込み（マウント時のみ）
+  // マウント時のみ。URL の設定はストア初期化時に取り込み済みなので、
+  // ここでは古い保存データの掃除だけを行う
   useEffect(() => {
     // TODO: 将来のバージョンで削除。PR #38以前のlocalStorage設定データを清掃する一時的な処理。
     try {
@@ -50,17 +50,6 @@ function App(): React.ReactElement {
     } catch {
       // localStorage が無効な環境（プライバシーモード等）では無視
     }
-    const urlOverrides = parseUrlSettings(
-      window.location.search,
-      defaultSettings
-    );
-    if (Object.keys(urlOverrides).length > 0) {
-      updateSettings(urlOverrides);
-    } else {
-      // URL パラメータがない場合もデフォルト設定で URL を同期
-      syncUrlFromSettings(defaultSettings);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 設定変更時に自動で問題を生成 + URL を同期

@@ -71,8 +71,20 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isWord, isWordEn, isAnzan]);
 
-  // 問題タイプまたは列数が変更されたときに推奨問題数を自動選択
+  // 問題タイプまたは列数が変更されたときに推奨問題数を自動選択。
+  // 初回マウントでは適用しない（URL から復元した問題数を上書きしてしまうため）。
+  // 「初回かどうか」ではなく直前の組み合わせを覚えることで、StrictMode の
+  // 再マウントでも値が変わっていなければ適用されない
+  const lastRecommendationRef = React.useRef<string | null>(null);
   React.useEffect(() => {
+    const key = `${effectiveProblemType}:${layoutColumns}:${recommendedCount}`;
+    const isSameAsLast = lastRecommendationRef.current === key;
+    const isInitialMount = lastRecommendationRef.current === null;
+    lastRecommendationRef.current = key;
+
+    if (isInitialMount || isSameAsLast) {
+      return;
+    }
     onProblemCountChange(recommendedCount);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveProblemType, layoutColumns, recommendedCount]);
