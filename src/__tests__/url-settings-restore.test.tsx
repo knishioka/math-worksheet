@@ -75,6 +75,26 @@ describe('共有URLからの設定復元', () => {
     });
   });
 
+  it('count 未指定の URL では復元後のテンプレートの推奨問題数になる', async () => {
+    // 筆算3列の推奨・最大は12問。全体デフォルトの30問のままだと
+    // 選択肢に存在しない値になり、A4からはみ出す
+    await renderAppWithUrl('?grade=3&type=hissan&cols=3');
+
+    await waitFor(() => {
+      expect(currentParams().get('count')).toBe('12');
+    });
+  });
+
+  it('count 未指定でパターンが実効タイプを変える場合も推奨問題数になる', async () => {
+    await renderAppWithUrl(
+      '?grade=3&type=basic&pattern=hissan-mult-basic&cols=2'
+    );
+
+    await waitFor(() => {
+      expect(currentParams().get('count')).toBe('8');
+    });
+  });
+
   it('URL パラメータがない場合はデフォルト設定が URL に同期される', async () => {
     await renderAppWithUrl('');
 

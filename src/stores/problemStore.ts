@@ -3,6 +3,8 @@ import type { Problem, WorksheetSettings, WorksheetData } from '../types';
 import { APP_CONFIG } from '../config/constants';
 import { generateProblems } from '../lib/generators';
 import { parseUrlSettings } from '../lib/utils/url-state';
+import { getEffectiveCounts } from '../config/print-templates';
+import { getEffectiveProblemType } from '../lib/utils/problem-type-detector';
 
 export type UpdateSettingsPayload = Partial<WorksheetSettings>;
 export type WorksheetBatch = WorksheetData[];
@@ -46,10 +48,28 @@ export function getInitialSettings(): WorksheetSettings {
   if (typeof window === 'undefined') {
     return defaultSettings;
   }
-  return {
-    ...defaultSettings,
-    ...parseUrlSettings(window.location.search, defaultSettings),
-  };
+  const urlOverrides = parseUrlSettings(
+    window.location.search,
+    defaultSettings
+  );
+  const settings = { ...defaultSettings, ...urlOverrides };
+
+  // count 未指定の URL では全体デフォルト（30問）が残ってしまう。
+  // 復元したテンプレートの推奨問題数に合わせる。
+  // 例: ?grade=3&type=hissan&cols=3 は筆算3列の12問が上限で、
+  // 30問のままだと問題数の選択肢に無い値になりA4からはみ出す
+  if (urlOverrides.problemCount === undefined) {
+    settings.problemCount = getEffectiveCounts(
+      getEffectiveProblemType(
+        settings.problemType,
+        settings.calculationPattern
+      ),
+      settings.calculationPattern,
+      settings.grade
+    ).recommendedCounts[settings.layoutColumns];
+  }
+
+  return settings;
 }
 
 export const useProblemStore = create<ProblemStore>()((set, get) => ({
