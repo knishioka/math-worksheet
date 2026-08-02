@@ -360,23 +360,44 @@ export function generateAddSingleDigitMixed(
   _settings: WorksheetSettings,
   count: number
 ): BasicProblem[] {
-  // 1〜9同士の組み合わせ（順序違いは同一とみなす）を全列挙してシャッフル
-  // 45通りのうち20通り（約44%）が繰り上がりになる
-  const pool: [number, number][] = [];
+  // 1〜9同士の組み合わせ（順序違いは同一とみなす）を全45通り列挙し、
+  // 繰り上がりあり20通り / なし25通りに分ける
+  const carryPairs: [number, number][] = [];
+  const noCarryPairs: [number, number][] = [];
   for (let a = 1; a <= 9; a++) {
     for (let b = a; b <= 9; b++) {
-      pool.push([a, b]);
+      (a + b > 10 ? carryPairs : noCarryPairs).push([a, b]);
     }
   }
-  shuffleArray(pool);
+  shuffleArray(carryPairs);
+  shuffleArray(noCarryPairs);
 
-  const problems: BasicProblem[] = [];
-  for (let i = 0; i < count; i++) {
+  // 2問以上なら各クラスから1問ずつを先に確保する。
+  // シャッフル任せだと少問数（1列は最小5問）のとき数%の確率で
+  // 全問が同じクラスになり、「混在」と銘打ったプリントとして成立しない
+  const selected: [number, number][] = [];
+  if (count >= 2) {
+    selected.push(carryPairs.pop()!, noCarryPairs.pop()!);
+  }
+
+  // 残りは両クラス混合のプールから。確保済みの2問はプールから除かれているので
+  // 重複は起きない
+  const guaranteedCount = selected.length;
+  const pool = [...carryPairs, ...noCarryPairs];
+  shuffleArray(pool);
+  for (let poolIndex = 0; poolIndex < count - guaranteedCount; poolIndex++) {
     // プールを使い切ったら再シャッフルして構造的重複を防ぐ
-    if (i > 0 && i % pool.length === 0) {
+    if (poolIndex > 0 && poolIndex % pool.length === 0) {
       shuffleArray(pool);
     }
-    const [a, b] = pool[i % pool.length];
+    selected.push(pool[poolIndex % pool.length]);
+  }
+
+  // 確保した2問が常に第1問・第2問に来ないよう出題順をシャッフル
+  shuffleArray(selected);
+
+  const problems: BasicProblem[] = [];
+  for (const [a, b] of selected) {
     // 「3＋8」「8＋3」のどちらも出るように出題順をランダム化
     const swap = randomInt(0, 1) === 1;
     const operand1 = swap ? b : a;

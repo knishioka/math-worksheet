@@ -229,13 +229,31 @@ describe('generateAddSingleDigitMixed (繰り上がり混在のたし算)', () =
     });
   });
 
-  it('should mix carry and non-carry problems in the same worksheet', () => {
-    // 45通り中20通り（約44%）が繰り上がり。20問なら両方が出る確率は非常に高い
-    for (let trial = 0; trial < 5; trial++) {
-      const problems = generateAddSingleDigitMixed(baseSettings, 20);
-      expect(problems.some((p) => p.carryOver)).toBe(true);
-      expect(problems.some((p) => !p.carryOver)).toBe(true);
+  it('should always mix carry and non-carry problems, even at small counts', () => {
+    // シャッフル任せだと5問プリントは約5.6%の確率で片方のクラスだけになるため、
+    // 各クラス1問ずつを構造的に保証している。UIの最小問題数5問を含めて検証
+    for (const count of [2, 5, 10, 20]) {
+      for (let trial = 0; trial < 30; trial++) {
+        const problems = generateAddSingleDigitMixed(baseSettings, count);
+        expect(problems).toHaveLength(count);
+        expect(problems.some((p) => p.carryOver)).toBe(true);
+        expect(problems.some((p) => !p.carryOver)).toBe(true);
+      }
     }
+  });
+
+  it('should not always place the guaranteed pair at the first two positions', () => {
+    // 確保した2問を先頭固定にすると出題順が予測可能になるため、
+    // 選択後に並びをシャッフルしている
+    const firstTwoAlwaysDifferentClass = Array.from({ length: 30 }, () =>
+      generateAddSingleDigitMixed(baseSettings, 20)
+    ).every((problems) => problems[0].carryOver !== problems[1].carryOver);
+    expect(firstTwoAlwaysDifferentClass).toBe(false);
+  });
+
+  it('should handle counts below the guarantee threshold', () => {
+    expect(generateAddSingleDigitMixed(baseSettings, 0)).toHaveLength(0);
+    expect(generateAddSingleDigitMixed(baseSettings, 1)).toHaveLength(1);
   });
 
   it('should not repeat the same combination within one worksheet (30問)', () => {
