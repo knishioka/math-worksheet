@@ -128,6 +128,17 @@ describe('WorksheetPreview multi-page printing', () => {
     vi.unstubAllGlobals();
   });
 
+  it('preserves the Japanese font context on the cloned print root', () => {
+    const { container } = render(
+      <WorksheetPreview worksheetData={baseWorksheet} />
+    );
+
+    expect(container.querySelector('[data-print-area]')).toHaveAttribute(
+      'lang',
+      'ja'
+    );
+  });
+
   it('closes the dialog, generates worksheets, triggers print, and cleans up for multi-page requests', async () => {
     render(<WorksheetPreview worksheetData={baseWorksheet} />);
 
