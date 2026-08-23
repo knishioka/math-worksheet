@@ -144,7 +144,12 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
         </div>
 
         {/* Printable worksheet content */}
-        <div ref={printRef} data-print-area style={{ background: 'white' }}>
+        <div
+          ref={printRef}
+          data-print-area
+          lang="ja"
+          style={{ background: 'white' }}
+        >
           {/* プレビュー表示: 最初のページのみ */}
           {!isPrinting && (
             <ProblemList
