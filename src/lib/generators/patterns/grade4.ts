@@ -84,6 +84,26 @@ export function generateSubLargeNumbers(
   return problems;
 }
 
+// 4年生: 大きな数のたし算・ひき算混合
+export function generateAddSubLargeMixed(
+  settings: WorksheetSettings,
+  count: number
+): BasicProblem[] {
+  const additionCount = Math.ceil(count / 2);
+  const subtractionCount = count - additionCount;
+  const problems = [
+    ...generateAddLargeNumbers(settings, additionCount),
+    ...generateSubLargeNumbers(settings, subtractionCount),
+  ];
+
+  for (let i = problems.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [problems[i], problems[j]] = [problems[j], problems[i]];
+  }
+
+  return problems;
+}
+
 // 4年生: 3桁×1桁のかけ算
 export function generateMultTripleDigit(
   _settings: WorksheetSettings,

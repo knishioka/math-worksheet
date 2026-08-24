@@ -82,6 +82,7 @@ import {
 import {
   generateAddLargeNumbers,
   generateSubLargeNumbers,
+  generateAddSubLargeMixed,
   generateMultTripleDigit,
   generateDivWithRemainder,
   generateMultDecInt,
@@ -248,6 +249,8 @@ export function generatePatternProblems(
       return generateAddLargeNumbers(settings, count);
     case 'sub-large-numbers':
       return generateSubLargeNumbers(settings, count);
+    case 'add-sub-large-mixed':
+      return generateAddSubLargeMixed(settings, count);
     case 'mult-triple-digit':
       return generateMultTripleDigit(settings, count);
     case 'div-with-remainder':
