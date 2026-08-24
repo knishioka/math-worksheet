@@ -3,6 +3,51 @@ import { generateProblems } from './index';
 import type { WorksheetSettings } from '../../types';
 
 describe('pattern-generators', () => {
+  describe('add-sub-large-mixed (大きな数のたし算・ひき算)', () => {
+    const settings: WorksheetSettings = {
+      grade: 4,
+      problemType: 'basic',
+      operation: 'addition',
+      problemCount: 11,
+      layoutColumns: 2,
+      calculationPattern: 'add-sub-large-mixed',
+    };
+
+    it('should generate a balanced mix of valid 4-digit problems', () => {
+      const problems = generateProblems(settings);
+
+      expect(problems).toHaveLength(11);
+
+      const additions = problems.filter(
+        (problem) => problem.operation === 'addition'
+      );
+      const subtractions = problems.filter(
+        (problem) => problem.operation === 'subtraction'
+      );
+
+      expect(additions).toHaveLength(6);
+      expect(subtractions).toHaveLength(5);
+
+      problems.forEach((problem) => {
+        expect(problem.type).toBe('basic');
+        if (problem.type !== 'basic') return;
+
+        expect(problem.operand1).toBeGreaterThanOrEqual(1000);
+        expect(problem.operand1).toBeLessThanOrEqual(9999);
+        expect(problem.operand2).toBeGreaterThanOrEqual(1000);
+        expect(problem.operand2).toBeLessThanOrEqual(9999);
+
+        if (problem.operation === 'addition') {
+          expect(problem.answer).toBe(problem.operand1! + problem.operand2!);
+        } else {
+          expect(problem.operand1).toBeGreaterThan(problem.operand2!);
+          expect(problem.answer).toBe(problem.operand1! - problem.operand2!);
+          expect(problem.answer).toBeGreaterThanOrEqual(1000);
+        }
+      });
+    });
+  });
+
   describe('hissan-mult-basic (2桁×1桁のかけ算)', () => {
     const settings: WorksheetSettings = {
       grade: 3,

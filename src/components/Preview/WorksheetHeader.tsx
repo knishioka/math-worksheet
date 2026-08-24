@@ -20,7 +20,8 @@ export const WorksheetHeader: React.FC<WorksheetHeaderProps> = ({
     // 混合パターンの場合は特別な表示
     if (
       pattern === 'add-sub-mixed-basic' ||
-      pattern === 'add-sub-double-mixed'
+      pattern === 'add-sub-double-mixed' ||
+      pattern === 'add-sub-large-mixed'
     ) {
       return 'たし算・ひき算';
     }

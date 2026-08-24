@@ -193,6 +193,7 @@ const BASE_DIFFICULTY: Partial<Record<CalculationPattern, DifficultyLevel>> = {
   // === 4年生 basic ===
   'add-large-numbers': 1,
   'sub-large-numbers': 1,
+  'add-sub-large-mixed': 3,
   'mult-triple-digit': 2,
   'div-with-remainder': 2,
 

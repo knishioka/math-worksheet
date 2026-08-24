@@ -55,6 +55,7 @@ export type CalculationPattern =
   // 4年生のパターン
   | 'add-large-numbers' // 大きな数の足し算
   | 'sub-large-numbers' // 大きな数の引き算
+  | 'add-sub-large-mixed' // 大きな数の足し算・引き算混合
   | 'mult-triple-digit' // 3桁×1桁
   | 'div-with-remainder' // あまりのあるわり算
   | 'mult-dec-int' // 整数×小数
@@ -340,6 +341,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
   4: [
     'add-large-numbers',
     'sub-large-numbers',
+    'add-sub-large-mixed',
     'mult-triple-digit',
     'div-with-remainder',
     'mult-dec-int',
@@ -592,6 +594,7 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   // 4年生
   'add-large-numbers': '大きな数のたし算',
   'sub-large-numbers': '大きな数のひき算',
+  'add-sub-large-mixed': '大きな数のたし算・ひき算ミックス',
   'mult-triple-digit': '3桁×1桁のかけ算',
   'div-with-remainder': 'あまりのあるわり算',
   'mult-dec-int': '整数×小数',
@@ -778,6 +781,7 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   // 4年生
   'add-large-numbers': '1234＋5678などの大きな数のたし算',
   'sub-large-numbers': '8765－4321などの大きな数のひき算',
+  'add-sub-large-mixed': '1234＋5678や8765－4321などの大きな数のたし算・ひき算',
   'mult-triple-digit': '234×5などの3桁×1桁のかけ算',
   'div-with-remainder': '50÷7などのあまりのあるわり算',
   'mult-dec-int': '25×2.3などの整数×小数',
