@@ -11,6 +11,13 @@ const baseProps = {
 };
 
 describe('SettingsPanel equation line option', () => {
+  it('uses the supplied step number when problem selection is skipped', () => {
+    render(<SettingsPanel {...baseProps} stepNumber={2} />);
+
+    expect(screen.getByText('STEP 2')).toBeInTheDocument();
+    expect(screen.queryByText('STEP 3')).not.toBeInTheDocument();
+  });
+
   it('shows equation line toggle for Japanese word problems', () => {
     render(
       <SettingsPanel
