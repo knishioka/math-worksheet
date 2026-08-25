@@ -7,9 +7,15 @@ describe('LanguageFilter', () => {
     it('should render all three language options', () => {
       render(<LanguageFilter value="all" onChange={() => {}} />);
 
-      expect(screen.getByRole('button', { name: 'すべて' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: '日本語' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'English' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'すべて' })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: '日本語' })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'English' })
+      ).toBeInTheDocument();
     });
 
     it('should render language label', () => {
@@ -20,7 +26,11 @@ describe('LanguageFilter', () => {
 
     it('should apply custom className', () => {
       const { container } = render(
-        <LanguageFilter value="all" onChange={() => {}} className="custom-class" />
+        <LanguageFilter
+          value="all"
+          onChange={() => {}}
+          className="custom-class"
+        />
       );
 
       expect(container.firstChild).toHaveClass('custom-class');
@@ -33,6 +43,14 @@ describe('LanguageFilter', () => {
 
       const jaButton = screen.getByRole('button', { name: '日本語' });
       expect(jaButton).toHaveClass('bg-white');
+      expect(jaButton).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByRole('button', { name: 'すべて' })).toHaveAttribute(
+        'aria-pressed',
+        'false'
+      );
+      expect(
+        screen.getByRole('group', { name: '言語で絞り込む' })
+      ).toBeInTheDocument();
     });
 
     it('should call onChange when option is clicked', () => {

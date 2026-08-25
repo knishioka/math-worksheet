@@ -23,6 +23,7 @@ interface SettingsPanelProps {
   problemType?: ProblemType;
   calculationPattern?: CalculationPattern;
   showEquationLine?: boolean;
+  stepNumber?: 2 | 3;
   onProblemCountChange: (count: number) => void;
   onLayoutColumnsChange: (columns: LayoutColumns) => void;
   onShowEquationLineChange: (show: boolean) => void;
@@ -35,6 +36,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   problemType,
   calculationPattern,
   showEquationLine = false,
+  stepNumber = 3,
   onProblemCountChange,
   onLayoutColumnsChange,
   onShowEquationLineChange,
@@ -131,7 +133,18 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   // なぞり書きはレイアウト・問題数固定（10問・2分割）なので設定UIを省略
   if (isNumberTracing) {
     return (
-      <div className="space-y-6">
+      <section aria-labelledby="print-settings-heading" className="space-y-4">
+        <div>
+          <p className="text-xs font-semibold tracking-wide text-sky-600">
+            STEP {stepNumber}
+          </p>
+          <h3
+            id="print-settings-heading"
+            className="text-sm font-semibold text-slate-800"
+          >
+            プリントを整える
+          </h3>
+        </div>
         <div className="rounded-2xl border border-sky-100 bg-sky-50/80 p-4">
           <h4 className="mb-2 text-sm font-semibold text-sky-900">
             レイアウトと問題数
@@ -140,12 +153,23 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             数字なぞり書きはA4一枚に0〜4を左、5〜9を右に配置した固定レイアウトです（10問）。
           </p>
         </div>
-      </div>
+      </section>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <section aria-labelledby="print-settings-heading" className="space-y-5">
+      <div>
+        <p className="text-xs font-semibold tracking-wide text-sky-600">
+          STEP {stepNumber}
+        </p>
+        <h3
+          id="print-settings-heading"
+          className="text-sm font-semibold text-slate-800"
+        >
+          プリントを整える
+        </h3>
+      </div>
       {/* レイアウトを先に選択 */}
       <div>
         <label className="mb-2 block text-sm font-semibold text-slate-700">
@@ -340,6 +364,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           </p>
         </div>
       )}
-    </div>
+    </section>
   );
 };
