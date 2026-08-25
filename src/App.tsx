@@ -22,6 +22,7 @@ function App(): React.ReactElement {
     WorksheetData | undefined
   >();
   const [showAnswers, setShowAnswers] = useState(false);
+  const hasPatternSelectionStep = settings.problemType === 'basic';
 
   const handleGenerate = useCallback(async (): Promise<void> => {
     try {
@@ -111,21 +112,21 @@ function App(): React.ReactElement {
               </div>
             </section>
 
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(320px,380px)_minmax(0,1fr)]">
               {/* Settings Panel */}
-              <div className="lg:col-span-1">
-                <div className="sticky top-8 space-y-6 rounded-3xl bg-white/80 p-6 shadow-lg ring-1 ring-blue-100 backdrop-blur">
+              <div>
+                <div className="space-y-5 rounded-3xl bg-white/90 p-5 shadow-lg ring-1 ring-blue-100 backdrop-blur">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold text-slate-900">
-                      設定
+                      プリント設定
                     </h2>
-                    <span className="text-xs font-medium text-sky-600">
-                      STEP 1
+                    <span className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-700">
+                      {hasPatternSelectionStep ? '3ステップ' : '2ステップ'}
                     </span>
                   </div>
 
                   {/* Problem Type Selection */}
-                  <div className="mb-6">
+                  <div>
                     <ProblemTypeSelector
                       grade={settings.grade}
                       operation={settings.operation}
@@ -143,8 +144,8 @@ function App(): React.ReactElement {
                   </div>
 
                   {/* Calculation Pattern Selection */}
-                  {settings.problemType === 'basic' && (
-                    <div className="mb-6">
+                  {hasPatternSelectionStep && (
+                    <div className="border-t border-slate-100 pt-5">
                       <CalculationPatternSelector
                         grade={settings.grade}
                         selectedPattern={settings.calculationPattern}
@@ -158,7 +159,7 @@ function App(): React.ReactElement {
                   )}
 
                   {/* Layout and Count Settings */}
-                  <div className="mb-6">
+                  <div className="border-t border-slate-100 pt-5">
                     <SettingsPanel
                       problemCount={settings.problemCount}
                       layoutColumns={settings.layoutColumns}
@@ -166,6 +167,7 @@ function App(): React.ReactElement {
                       problemType={settings.problemType}
                       calculationPattern={settings.calculationPattern}
                       showEquationLine={settings.showEquationLine}
+                      stepNumber={hasPatternSelectionStep ? 3 : 2}
                       onProblemCountChange={(problemCount) =>
                         updateSettings({ problemCount })
                       }
@@ -229,7 +231,7 @@ function App(): React.ReactElement {
               </div>
 
               {/* Preview Panel */}
-              <div className="lg:col-span-2">
+              <div className="min-w-0">
                 <WorksheetPreview
                   worksheetData={worksheetData}
                   showAnswers={showAnswers}

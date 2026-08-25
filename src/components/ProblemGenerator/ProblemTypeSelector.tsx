@@ -70,12 +70,20 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
   }, [grade, problemType, isProblemTypeAvailable]);
 
   return (
-    <div className="space-y-6">
+    <section aria-labelledby="grade-selector-heading">
       <div>
-        <label className="mb-2 block text-sm font-semibold text-slate-700">
-          学年
+        <p className="text-xs font-semibold tracking-wide text-sky-600">
+          STEP 1
+        </p>
+        <label
+          id="grade-selector-heading"
+          htmlFor="grade-select"
+          className="mb-2 block text-sm font-semibold text-slate-800"
+        >
+          学年を選ぶ
         </label>
         <select
+          id="grade-select"
           value={grade}
           onChange={(e) => onGradeChange(Number(e.target.value) as Grade)}
           className="w-full rounded-xl border border-sky-200 bg-white/80 px-4 py-2 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-300"
@@ -89,128 +97,6 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
           <option value={6}>6年生</option>
         </select>
       </div>
-
-      <div className="rounded-2xl border border-sky-100 bg-sky-50/80 p-4">
-        <h4 className="mb-2 text-sm font-semibold text-sky-900">
-          {grade === 0 ? '幼児（年長）' : `${grade}年生`}{' '}
-          {getProblemTypeDescription(problemType)}
-        </h4>
-        <p className="text-sm text-slate-600 leading-relaxed">
-          {getGradeProblemTypeDescription(grade, problemType, operation)}
-        </p>
-      </div>
-    </div>
+    </section>
   );
 };
-
-function getProblemTypeDescription(problemType: ProblemType): string {
-  switch (problemType) {
-    case 'basic':
-      return '基本計算';
-    case 'fraction':
-      return '分数';
-    case 'decimal':
-      return '小数';
-    case 'mixed':
-      return '帯分数';
-    case 'hissan':
-      return '筆算';
-    case 'missing':
-      return '虫食い算';
-    case 'word':
-      return '文章題';
-    case 'number-tracing':
-      return '数字なぞり書き';
-    default:
-      return '計算';
-  }
-}
-
-function getGradeProblemTypeDescription(
-  grade: Grade,
-  problemType: ProblemType,
-  operation: Operation
-): string {
-  if (problemType === 'number-tracing') {
-    return '0〜9の数字の書き順・なぞり書き・自由練習ができるプリントです。';
-  }
-
-  if (grade === 0) {
-    return '幼児向けの学習メニューです。現在は数字なぞり書きが利用できます。';
-  }
-
-  if (problemType === 'fraction') {
-    const fractionDescriptions: Record<Grade, string> = {
-      0: '（この学年では分数を学習しません）',
-      1: '（この学年では分数を学習しません）',
-      2: '簡単な分数の概念（1/2、1/3、1/4など）を学習します。',
-      3: '同分母分数の加減算を学習します。',
-      4: '同分母分数の加減、真分数・仮分数・帯分数を学習します。',
-      5: '異分母分数の加減、約分・通分を学習します。',
-      6: '分数の乗除、複雑な分数計算を学習します。',
-    };
-    return fractionDescriptions[grade];
-  }
-
-  if (problemType === 'decimal') {
-    const decimalDescriptions: Record<Grade, string> = {
-      0: '（この学年では小数を学習しません）',
-      1: '（この学年では小数を学習しません）',
-      2: '（この学年では小数を学習しません）',
-      3: '0.1の位までの小数、小数のたし算・ひき算を学習します。',
-      4: '整数×小数、整数÷小数の計算を学習します。',
-      5: '小数×小数、小数÷小数の計算を学習します。',
-      6: 'より複雑な小数計算を学習します。',
-    };
-    return decimalDescriptions[grade];
-  }
-
-  // 従来の基本計算の説明
-  return getGradeOperationDescription(grade, operation);
-}
-
-function getGradeOperationDescription(
-  grade: Grade,
-  operation: Operation
-): string {
-  const descriptions: Record<Grade, Partial<Record<Operation, string>>> = {
-    0: {},
-    1: {
-      addition:
-        '1〜100の範囲でのたし算。繰り上がりのある計算は2学期後半から学習します。',
-      subtraction:
-        '1〜100の範囲でのひき算。繰り下がりのある計算は2学期後半から学習します。',
-    },
-    2: {
-      addition: '2桁の数の筆算。繰り上がりのある計算を含みます。',
-      subtraction: '2桁の数の筆算。繰り下がりのある計算を含みます。',
-      multiplication: '九九（1×1〜9×9）を覚えて、かけ算の基礎を固めます。',
-    },
-    3: {
-      addition: '3桁・4桁の数の筆算。より大きな数での計算を学習します。',
-      subtraction: '3桁・4桁の数の筆算。より大きな数での計算を学習します。',
-      multiplication: '2桁×1桁、3桁×1桁の筆算を学習します。',
-      division: '九九を使った基本的な割り算を学習します。',
-    },
-    4: {
-      addition: '大きな数のたし算。※小数・分数は現在未実装です。',
-      subtraction: '大きな数のひき算。※小数・分数は現在未実装です。',
-      multiplication: '2桁×1桁の筆算を学習します。※小数は現在未実装です。',
-      division: 'あまりのある割り算を学習します。※小数は現在未実装です。',
-    },
-    5: {
-      addition: '大きな数のたし算。※小数・分数は現在未実装です。',
-      subtraction: '大きな数のひき算。※小数・分数は現在未実装です。',
-      multiplication: '多桁数のかけ算を学習します。※小数は現在未実装です。',
-      division: '多桁数の割り算を学習します。※小数は現在未実装です。',
-    },
-    6: {
-      addition: '大きな数のたし算。※小数・分数は現在未実装です。',
-      subtraction: '大きな数のひき算。※小数・分数は現在未実装です。',
-      multiplication: '多桁数のかけ算を学習します。※分数は現在未実装です。',
-      division: '多桁数の割り算を学習します。※分数は現在未実装です。',
-    },
-  };
-
-  return descriptions[grade][operation] || '（この学年では学習しません）';
-}

@@ -86,10 +86,10 @@ export const CATEGORY_ORDER: PatternCategory[] = [
   'basic',
   'hissan',
   'fraction',
-  'life',
   'word',
-  'singapore',
+  'life',
   'anzan',
+  'singapore',
 ];
 
 /**

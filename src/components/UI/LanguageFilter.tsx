@@ -29,6 +29,8 @@ export function LanguageFilter({
     <div className={`flex items-center gap-2 ${className}`}>
       <span className="text-xs font-medium text-slate-500">言語:</span>
       <div
+        role="group"
+        aria-label="言語で絞り込む"
         className={`inline-flex rounded-lg p-0.5 ${
           disabled ? 'bg-slate-100' : 'bg-slate-200'
         }`}
@@ -39,6 +41,7 @@ export function LanguageFilter({
             type="button"
             onClick={() => !disabled && onChange(option.value)}
             disabled={disabled}
+            aria-pressed={value === option.value}
             className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
               value === option.value
                 ? disabled

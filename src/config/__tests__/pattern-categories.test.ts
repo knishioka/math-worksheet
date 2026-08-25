@@ -260,10 +260,10 @@ describe('pattern-categories', () => {
         'basic',
         'hissan',
         'fraction',
-        'life',
         'word',
-        'singapore',
+        'life',
         'anzan',
+        'singapore',
       ]);
     });
 
