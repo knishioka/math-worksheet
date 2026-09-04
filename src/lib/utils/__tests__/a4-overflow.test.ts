@@ -12,11 +12,14 @@ import {
 function createSheet(heightPx: number): HTMLElement {
   const el = document.createElement('div');
   el.setAttribute('data-a4-sheet', '');
+  Object.defineProperty(el, 'clientHeight', {
+    value: heightPx,
+    configurable: true,
+  });
   Object.defineProperty(el, 'scrollHeight', {
     value: heightPx,
     configurable: true,
   });
-  el.getBoundingClientRect = (): DOMRect => ({ height: heightPx }) as DOMRect;
   return el;
 }
 
@@ -49,11 +52,34 @@ describe('evaluateA4Overflow', () => {
 });
 
 describe('measureSheetHeightPx', () => {
-  it('boundingClientRect と scrollHeight の大きい方を返す', () => {
+  it('clientHeight と scrollHeight の大きい方を返す', () => {
     const el = document.createElement('div');
+    Object.defineProperty(el, 'clientHeight', { value: 1123 });
     Object.defineProperty(el, 'scrollHeight', { value: 1200 });
-    el.getBoundingClientRect = (): DOMRect => ({ height: 1123 }) as DOMRect;
     expect(measureSheetHeightPx(el)).toBe(1200);
+  });
+
+  it('警告用の枠線をシート内容のはみ出しとして数えない', () => {
+    const el = document.createElement('div');
+    Object.defineProperty(el, 'clientHeight', { value: 1122 });
+    Object.defineProperty(el, 'scrollHeight', { value: 1122 });
+    el.getBoundingClientRect = (): DOMRect => ({ height: 1128 }) as DOMRect;
+
+    const result = evaluateA4Overflow(measureSheetHeightPx(el));
+
+    expect(result.isOverflow).toBe(false);
+    expect(result.heightPx).toBe(1122);
+  });
+
+  it('初回表示でも実際の内容がclientHeightを超えていれば検出する', () => {
+    const el = document.createElement('div');
+    Object.defineProperty(el, 'clientHeight', { value: 1122 });
+    Object.defineProperty(el, 'scrollHeight', { value: 1196 });
+
+    const result = evaluateA4Overflow(measureSheetHeightPx(el));
+
+    expect(result.isOverflow).toBe(true);
+    expect(result.heightPx).toBe(1196);
   });
 });
 

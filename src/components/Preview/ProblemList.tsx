@@ -188,6 +188,9 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
     // A4に収まる場合は align-content: space-between で行間を自動拡張し余白を均等配分
     const gridGapStyle: React.CSSProperties = {
       display: 'grid',
+      // 印刷用 iframe で Tailwind の grid-cols-* 読み込みが遅れても、
+      // プレビューと同じ列数を維持する。
+      gridTemplateColumns: `repeat(${layoutColumns}, minmax(0, 1fr))`,
       rowGap: template.layout.rowGap,
       columnGap: template.layout.colGap,
       ...(a4FitResult.fits ? { alignContent: 'space-between', flex: 1 } : {}),
@@ -496,6 +499,9 @@ function ProblemItem({
   // 分数問題の場合
   if (problem.type === 'fraction') {
     const fractionProblem = problem as FractionProblem;
+    const hasSecondFraction =
+      fractionProblem.numerator2 !== undefined &&
+      fractionProblem.denominator2 !== undefined;
     return (
       <div className="problem-text" style={problemItemStyle}>
         <div style={problemNumberStyle}>({number})</div>
@@ -509,10 +515,10 @@ function ProblemItem({
               {fractionProblem.denominator1}
             </span>
           </span>
-          {' ' + operationSymbol + ' '}
-          {/* 分子2 */}
-          {fractionProblem.numerator2 !== undefined &&
-            fractionProblem.denominator2 !== undefined && (
+          {/* 二項演算の場合のみ演算子と2つ目の分数を表示する。約分は単項問題。 */}
+          {hasSecondFraction && (
+            <>
+              {' ' + operationSymbol + ' '}
               <span style={fractionContainerStyle}>
                 <span style={fractionNumeratorStyle}>
                   {fractionProblem.numerator2}
@@ -521,7 +527,8 @@ function ProblemItem({
                   {fractionProblem.denominator2}
                 </span>
               </span>
-            )}
+            </>
+          )}
           {' = '}
           {/* 答え */}
           {showAnswer ? (

@@ -6,6 +6,10 @@ import type {
 } from '../../../types';
 import { generateId, randomInt } from '../../utils/math';
 
+function gcd(a: number, b: number): number {
+  return b === 0 ? a : gcd(b, a % b);
+}
+
 // 5年生: 小数×小数
 export function generateMultDecDec(
   _settings: WorksheetSettings,
@@ -105,11 +109,6 @@ export function generateFracDifferentDenom(
 ): FractionProblem[] {
   const problems: FractionProblem[] = [];
 
-  // 最大公約数を求める
-  function gcd(a: number, b: number): number {
-    return b === 0 ? a : gcd(b, a % b);
-  }
-
   // 最小公倍数を求める
   function lcm(a: number, b: number): number {
     return (a * b) / gcd(a, b);
@@ -195,8 +194,12 @@ export function generateFracSimplify(
   for (let i = 0; i < count; i++) {
     // 約分できる分数を生成
     const factor = randomInt(2, 6);
-    const simplifiedNum = randomInt(1, 9);
-    const simplifiedDenom = randomInt(simplifiedNum + 1, 12);
+    let simplifiedNum: number;
+    let simplifiedDenom: number;
+    do {
+      simplifiedNum = randomInt(1, 9);
+      simplifiedDenom = randomInt(simplifiedNum + 1, 12);
+    } while (gcd(simplifiedNum, simplifiedDenom) !== 1);
 
     const numerator = simplifiedNum * factor;
     const denominator = simplifiedDenom * factor;

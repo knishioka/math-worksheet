@@ -795,7 +795,7 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'mult-dec-dec': '1.2×3.4などの小数同士のかけ算',
   'div-dec-dec': '5.6÷1.4などの小数同士のわり算',
   'frac-different-denom': '1/2＋1/3などの異なる分母の分数',
-  'frac-simplify': '6/9を24/3に約分する計算',
+  'frac-simplify': '6/9を2/3に約分する計算',
   'percent-basic': '50％は0.5など百分率の計算',
   'area-volume': '長方形の面積や直方体の体積',
 

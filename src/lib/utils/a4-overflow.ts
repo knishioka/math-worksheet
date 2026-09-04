@@ -47,10 +47,14 @@ export function evaluateA4Overflow(heightPx: number): A4OverflowResult {
  * シート要素の実測高さ（px）を取得する
  *
  * minHeight 固定のコンテナでも内容のはみ出しを拾えるよう、
- * boundingClientRect と scrollHeight の大きい方を採用する。
+ * clientHeight と scrollHeight の大きい方を採用する。
+ *
+ * getBoundingClientRect は警告表示時に付与される枠線も含むため、
+ * その枠線自身を「はみ出し」と誤判定して警告が解除されなくなる。
+ * clientHeight は枠線を含まないので、シート内容だけを安定して測定できる。
  */
 export function measureSheetHeightPx(sheet: HTMLElement): number {
-  return Math.max(sheet.getBoundingClientRect().height, sheet.scrollHeight);
+  return Math.max(sheet.clientHeight, sheet.scrollHeight);
 }
 
 /**

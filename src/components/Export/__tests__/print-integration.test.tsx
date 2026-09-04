@@ -177,6 +177,25 @@ describe('Print Integration Tests', () => {
       // 3列グリッドが使用されているか確認
       expect(html).toContain('grid-cols-3');
     });
+
+    it.each([false, true])(
+      'should preserve the selected columns with inline styles when printMode is %s',
+      (printMode) => {
+        const { container } = render(
+          <ProblemList
+            problems={basicProblems}
+            layoutColumns={2}
+            showAnswers={false}
+            settings={basicSettings}
+            printMode={printMode}
+          />
+        );
+
+        expect(container.querySelector('[data-problem-grid]')).toHaveStyle({
+          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+        });
+      }
+    );
   });
 
   describe('Problem Type Rendering', () => {
@@ -216,6 +235,43 @@ describe('Print Integration Tests', () => {
       expect(html).toContain('1');
       expect(html).toContain('2');
       expect(html).toContain('3');
+    });
+
+    it('should render fraction simplification without a division operator', () => {
+      const simplificationProblem: FractionProblem = {
+        id: 'simplify-1',
+        type: 'fraction',
+        operation: 'division',
+        numerator1: 10,
+        denominator1: 20,
+        answerNumerator: 1,
+        answerDenominator: 2,
+        simplified: true,
+      };
+
+      const { container, rerender } = render(
+        <ProblemList
+          problems={[simplificationProblem]}
+          layoutColumns={2}
+          showAnswers={false}
+          settings={createSettings('fraction')}
+        />
+      );
+
+      expect(container.textContent).toContain('=');
+      expect(container.textContent).not.toContain('÷');
+
+      rerender(
+        <ProblemList
+          problems={[simplificationProblem]}
+          layoutColumns={2}
+          showAnswers
+          settings={createSettings('fraction')}
+        />
+      );
+      expect(container.textContent).toContain('1');
+      expect(container.textContent).toContain('2');
+      expect(container.textContent).not.toContain('÷');
     });
 
     it('should render decimal problems correctly', () => {
