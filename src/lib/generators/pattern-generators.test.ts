@@ -1,8 +1,57 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { generateProblems } from './index';
 import type { WorksheetSettings } from '../../types';
 
 describe('pattern-generators', () => {
+  describe('frac-simplify (分数の約分)', () => {
+    const settings: WorksheetSettings = {
+      grade: 5,
+      problemType: 'basic',
+      operation: 'division',
+      problemCount: 30,
+      layoutColumns: 3,
+      calculationPattern: 'frac-simplify',
+    };
+
+    const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
+
+    it('should generate fully simplified answers equivalent to each source fraction', () => {
+      const problems = generateProblems(settings);
+
+      expect(problems).toHaveLength(30);
+      problems.forEach((problem) => {
+        expect(problem.type).toBe('fraction');
+        if (problem.type !== 'fraction') return;
+
+        expect(problem.numerator2).toBeUndefined();
+        expect(problem.denominator2).toBeUndefined();
+        expect(gcd(problem.answerNumerator, problem.answerDenominator)).toBe(1);
+        expect(problem.numerator1 * problem.answerDenominator).toBe(
+          problem.denominator1 * problem.answerNumerator
+        );
+      });
+    });
+
+    it('should reject a reducible answer candidate before creating the problem', () => {
+      const randomSpy = vi
+        .spyOn(Math, 'random')
+        .mockReturnValueOnce(0) // factor = 2
+        .mockReturnValueOnce(0.56) // first numerator = 6
+        .mockReturnValueOnce(0.34) // first denominator = 9 (not coprime)
+        .mockReturnValue(0); // retry with 1/2 and generate the id
+
+      const [problem] = generateProblems({ ...settings, problemCount: 1 });
+      randomSpy.mockRestore();
+
+      expect(problem.type).toBe('fraction');
+      if (problem.type !== 'fraction') return;
+      expect(problem.numerator1).toBe(2);
+      expect(problem.denominator1).toBe(4);
+      expect(problem.answerNumerator).toBe(1);
+      expect(problem.answerDenominator).toBe(2);
+    });
+  });
+
   describe('add-sub-large-mixed (大きな数のたし算・ひき算)', () => {
     const settings: WorksheetSettings = {
       grade: 4,
