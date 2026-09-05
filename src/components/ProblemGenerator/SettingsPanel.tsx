@@ -66,12 +66,15 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const recommendedCount = effectiveCounts.recommendedCounts[layoutColumns];
 
   // 文章問題・暗算の場合は2列レイアウトを推奨デフォルトにする
+  const lastTypeRef = React.useRef(effectiveProblemType);
   React.useEffect(() => {
-    if ((isWord || isWordEn || isAnzan) && layoutColumns !== 2) {
+    const changed = lastTypeRef.current !== effectiveProblemType;
+    lastTypeRef.current = effectiveProblemType;
+    if (changed && (isWord || isWordEn || isAnzan) && layoutColumns !== 2) {
       onLayoutColumnsChange(2);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isWord, isWordEn, isAnzan]);
+  }, [effectiveProblemType, isWord, isWordEn, isAnzan]);
 
   // 問題タイプまたは列数が変更されたときに推奨問題数を自動選択。
   // 初回マウントでは適用しない（URL から復元した問題数を上書きしてしまうため）。
@@ -135,7 +138,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     return (
       <section aria-labelledby="print-settings-heading" className="space-y-4">
         <div>
-          <p className="text-xs font-semibold tracking-wide text-sky-600">
+          <p className="text-xs font-semibold tracking-wide text-teal-600">
             STEP {stepNumber}
           </p>
           <h3
@@ -145,8 +148,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             プリントを整える
           </h3>
         </div>
-        <div className="rounded-2xl border border-sky-100 bg-sky-50/80 p-4">
-          <h4 className="mb-2 text-sm font-semibold text-sky-900">
+        <div className="rounded-2xl border border-teal-100 bg-teal-50/80 p-4">
+          <h4 className="mb-2 text-sm font-semibold text-teal-900">
             レイアウトと問題数
           </h4>
           <p className="text-sm text-slate-600 leading-relaxed">
@@ -160,7 +163,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   return (
     <section aria-labelledby="print-settings-heading" className="space-y-5">
       <div>
-        <p className="text-xs font-semibold tracking-wide text-sky-600">
+        <p className="text-xs font-semibold tracking-wide text-teal-600">
           STEP {stepNumber}
         </p>
         <h3
@@ -181,8 +184,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             onClick={() => onLayoutColumnsChange(1)}
             className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
               layoutColumns === 1
-                ? 'border-sky-500 bg-sky-500/90 text-white shadow'
-                : 'border-sky-200 bg-white/80 text-slate-600 hover:bg-sky-50'
+                ? 'border-teal-500 bg-teal-700/90 text-white shadow'
+                : 'border-teal-200 bg-white/80 text-slate-600 hover:bg-teal-50'
             }`}
           >
             1列
@@ -192,8 +195,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             onClick={() => onLayoutColumnsChange(2)}
             className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
               layoutColumns === 2
-                ? 'border-sky-500 bg-sky-500/90 text-white shadow'
-                : 'border-sky-200 bg-white/80 text-slate-600 hover:bg-sky-50'
+                ? 'border-teal-500 bg-teal-700/90 text-white shadow'
+                : 'border-teal-200 bg-white/80 text-slate-600 hover:bg-teal-50'
             }`}
           >
             2列
@@ -203,8 +206,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             onClick={() => onLayoutColumnsChange(3)}
             className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
               layoutColumns === 3
-                ? 'border-sky-500 bg-sky-500/90 text-white shadow'
-                : 'border-sky-200 bg-white/80 text-slate-600 hover:bg-sky-50'
+                ? 'border-teal-500 bg-teal-700/90 text-white shadow'
+                : 'border-teal-200 bg-white/80 text-slate-600 hover:bg-teal-50'
             }`}
           >
             3列
@@ -217,26 +220,31 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           ※ {layoutColumns}列の場合、最大{maxProblems}問まで入ります
         </p>
         {isWord && (
-          <div className="mt-2 rounded-2xl border border-sky-100 bg-sky-50/70 p-3">
-            <p className="mb-2 text-xs font-semibold text-sky-800">
+          <div className="mt-2 rounded-2xl border border-teal-100 bg-teal-50/70 p-3">
+            <p className="mb-2 text-xs font-semibold text-teal-800">
               💡 {template.displayName}の推奨問題数 (A4用紙1枚に最適)
             </p>
             <div className="grid grid-cols-3 gap-1">
               {([1, 2, 3] as const).map((cols) => {
                 const colRecommended = effectiveCounts.recommendedCounts[cols];
                 const isCurrentLayout = layoutColumns === cols;
-                const isSelected = problemCount === colRecommended;
+                const isSelected =
+                  isCurrentLayout && problemCount === colRecommended;
                 return (
                   <button
                     key={cols}
                     type="button"
-                    onClick={() => onProblemCountChange(colRecommended)}
+                    onClick={() => {
+                      onLayoutColumnsChange(cols);
+                      onProblemCountChange(colRecommended);
+                    }}
+                    aria-pressed={isSelected}
                     className={`relative rounded-2xl border px-2 py-1 text-xs transition ${
                       isSelected
-                        ? 'border-sky-500 bg-sky-500/90 text-white shadow'
+                        ? 'border-teal-500 bg-teal-700/90 text-white shadow'
                         : isCurrentLayout
-                          ? 'border-sky-300 bg-sky-100/90 text-sky-700 ring-2 ring-sky-200 hover:bg-sky-200/80'
-                          : 'border-sky-200 bg-white/80 text-sky-600 hover:bg-sky-50'
+                          ? 'border-teal-300 bg-teal-100/90 text-teal-700 ring-2 ring-teal-200 hover:bg-teal-200/80'
+                          : 'border-teal-200 bg-white/80 text-teal-600 hover:bg-teal-50'
                     }`}
                   >
                     {cols}列: {colRecommended}問
@@ -247,7 +255,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 );
               })}
             </div>
-            <p className="mt-1 text-xs text-sky-700">
+            <p className="mt-1 text-xs text-teal-700">
               🎯 現在のレイアウト({layoutColumns}列)の推奨: {recommendedCount}問
             </p>
           </div>
@@ -260,7 +268,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         </label>
 
         {/* クイック選択ボタン */}
-        <div className="mb-3 rounded-2xl border border-sky-100 bg-slate-50/80 p-3">
+        <div className="mb-3 rounded-2xl border border-teal-100 bg-slate-50/80 p-3">
           <p className="mb-2 text-xs font-semibold text-slate-600">
             クイック選択
           </p>
@@ -272,8 +280,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 onClick={() => onProblemCountChange(lessCount)}
                 className={`rounded-2xl border px-3 py-2 text-sm font-medium transition ${
                   problemCount === lessCount
-                    ? 'border-sky-500 bg-sky-500/90 text-white shadow'
-                    : 'border-sky-200 bg-white/80 text-slate-600 hover:bg-sky-50'
+                    ? 'border-teal-500 bg-teal-700/90 text-white shadow'
+                    : 'border-teal-200 bg-white/80 text-slate-600 hover:bg-teal-50'
                 }`}
               >
                 少なめ
@@ -288,8 +296,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               onClick={() => onProblemCountChange(recommendedCount)}
               className={`rounded-2xl border px-3 py-2 text-sm font-medium transition ${
                 problemCount === recommendedCount
-                  ? 'border-sky-500 bg-sky-500/90 text-white shadow'
-                  : 'border-sky-200 bg-sky-50/80 text-sky-700 hover:bg-sky-100'
+                  ? 'border-teal-500 bg-teal-700/90 text-white shadow'
+                  : 'border-teal-200 bg-teal-50/80 text-teal-700 hover:bg-teal-100'
               }`}
             >
               推奨 🎯
@@ -304,8 +312,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 onClick={() => onProblemCountChange(moreCount)}
                 className={`rounded-2xl border px-3 py-2 text-sm font-medium transition ${
                   problemCount === moreCount
-                    ? 'border-sky-500 bg-sky-500/90 text-white shadow'
-                    : 'border-sky-200 bg-white/80 text-slate-600 hover:bg-sky-50'
+                    ? 'border-teal-500 bg-teal-700/90 text-white shadow'
+                    : 'border-teal-200 bg-white/80 text-slate-600 hover:bg-teal-50'
                 }`}
               >
                 多め
@@ -324,7 +332,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           <select
             value={problemCount}
             onChange={(e) => onProblemCountChange(Number(e.target.value))}
-            className="w-full rounded-2xl border border-sky-200 bg-white/80 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-300"
+            className="w-full rounded-2xl border border-teal-200 bg-white/80 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-300"
           >
             {problemCountOptions.map((count) => (
               <option key={count} value={count}>
@@ -349,14 +357,14 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       </div>
 
       {showEquationLineToggle && (
-        <div className="rounded-2xl border border-sky-100 bg-slate-50/80 p-3">
+        <div className="rounded-2xl border border-teal-100 bg-slate-50/80 p-3">
           <label className="flex items-center justify-between gap-4 text-sm text-slate-700">
             <span className="font-semibold">式を書く欄</span>
             <input
               type="checkbox"
               checked={showEquationLine}
               onChange={(e) => onShowEquationLineChange(e.target.checked)}
-              className="h-4 w-4 rounded border-sky-300 text-sky-500 focus:ring-sky-400"
+              className="h-4 w-4 rounded border-teal-300 text-teal-500 focus:ring-teal-400"
             />
           </label>
           <p className="mt-1 text-xs text-slate-500">

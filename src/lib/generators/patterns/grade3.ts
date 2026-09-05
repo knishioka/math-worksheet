@@ -20,8 +20,8 @@ export function generateAddTripleDigit(
     const maxAttempts = 50;
 
     do {
-      operand1 = randomInt(100, 999);
-      operand2 = randomInt(100, 999);
+      operand1 = randomInt(100, 899);
+      operand2 = randomInt(100, 999 - operand1);
 
       // 答えが1000を超えないようにする
       if (operand1 + operand2 > 999) {
@@ -282,8 +282,8 @@ export function generateFracSameDenom(
   const problems: FractionProblem[] = [];
 
   for (let i = 0; i < count; i++) {
-    const isAddition = Math.random() < 0.5;
-    const denominator = randomInt(2, 10);
+    const isAddition = i % 2 === 0;
+    const denominator = randomInt(3, 10);
 
     if (isAddition) {
       const numerator1 = randomInt(1, denominator - 1);

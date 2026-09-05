@@ -24,6 +24,7 @@ import {
 } from '../../config/pattern-categories';
 import { LanguageFilter } from '../UI/LanguageFilter';
 import { DifficultyStars } from '../UI/DifficultyStars';
+import { getLearningStages } from '../../config/learning-paths';
 
 interface CalculationPatternSelectorProps {
   grade: Grade;
@@ -114,9 +115,11 @@ export const CalculationPatternSelector: React.FC<
   // フィルター操作では既存の選択を変更しない。
   useEffect(() => {
     if (!selectedPattern && orderedPatterns.length > 0) {
-      onPatternChangeRef.current(orderedPatterns[0]);
+      onPatternChangeRef.current(
+        getLearningStages(grade)[0]?.patterns[0] ?? orderedPatterns[0]
+      );
     }
-  }, [orderedPatterns, selectedPattern]);
+  }, [grade, orderedPatterns, selectedPattern]);
 
   const resetFilters = useCallback(() => {
     setQuery('');
@@ -144,7 +147,7 @@ export const CalculationPatternSelector: React.FC<
     <section aria-labelledby="pattern-selector-heading" className="space-y-3">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold tracking-wide text-sky-600">
+          <p className="text-xs font-semibold tracking-wide text-teal-600">
             STEP 2
           </p>
           <h3
@@ -159,7 +162,7 @@ export const CalculationPatternSelector: React.FC<
             ref={changeButtonRef}
             type="button"
             onClick={() => setIsPickerOpen((open) => !open)}
-            className="rounded-lg border border-sky-200 bg-white px-3 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-50 focus:outline-none focus:ring-2 focus:ring-sky-400"
+            className="rounded-lg border border-teal-200 bg-white px-3 py-1.5 text-xs font-semibold text-teal-700 transition hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-teal-400"
             aria-expanded={isPickerOpen}
             aria-controls="pattern-picker"
           >
@@ -169,7 +172,7 @@ export const CalculationPatternSelector: React.FC<
       </div>
 
       {selectedPattern && selectedCategory && (
-        <div className="rounded-2xl border border-sky-200 bg-sky-50/70 p-3">
+        <div className="rounded-2xl border border-teal-200 bg-teal-50/70 p-3">
           <div className="flex items-start gap-3">
             <span
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-lg shadow-sm"
@@ -179,7 +182,7 @@ export const CalculationPatternSelector: React.FC<
             </span>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span className="text-[11px] font-semibold text-sky-700">
+                <span className="text-[11px] font-semibold text-teal-700">
                   {CATEGORY_CONFIG[selectedCategory].label}
                 </span>
                 <span className="text-[11px] text-slate-500">
@@ -227,7 +230,7 @@ export const CalculationPatternSelector: React.FC<
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="例：ひき算、時間、分数"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:bg-white focus:ring-2 focus:ring-sky-100"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-teal-400 focus:bg-white focus:ring-2 focus:ring-teal-100"
               />
             </div>
           </div>
@@ -268,7 +271,7 @@ export const CalculationPatternSelector: React.FC<
                       : (Number(event.target.value) as DifficultyLevel)
                   )
                 }
-                className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 font-medium text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+                className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 font-medium text-slate-700 outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
               >
                 <option value="all">すべて</option>
                 <option value="1">やさしい</option>
@@ -296,7 +299,7 @@ export const CalculationPatternSelector: React.FC<
                 <button
                   type="button"
                   onClick={resetFilters}
-                  className="text-xs font-medium text-sky-700 hover:text-sky-900 hover:underline"
+                  className="text-xs font-medium text-teal-700 hover:text-teal-900 hover:underline"
                 >
                   絞り込みを解除
                 </button>
@@ -326,7 +329,7 @@ export const CalculationPatternSelector: React.FC<
                 <button
                   type="button"
                   onClick={resetFilters}
-                  className="mt-3 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-sky-700 shadow-sm ring-1 ring-slate-200"
+                  className="mt-3 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-teal-700 shadow-sm ring-1 ring-slate-200"
                 >
                   すべての候補を表示
                 </button>
@@ -357,14 +360,14 @@ function FilterChip({
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`rounded-full border px-2.5 py-1.5 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-sky-300 ${
+      className={`rounded-full border px-2.5 py-1.5 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-teal-300 ${
         selected
-          ? 'border-sky-500 bg-sky-500 text-white shadow-sm'
-          : 'border-slate-200 bg-white text-slate-600 hover:border-sky-200 hover:bg-sky-50'
+          ? 'border-teal-500 bg-teal-700 text-white shadow-sm'
+          : 'border-slate-200 bg-white text-slate-600 hover:border-teal-200 hover:bg-teal-50'
       }`}
     >
       {label}
-      <span className={`ml-1 ${selected ? 'text-sky-100' : 'text-slate-400'}`}>
+      <span className={`ml-1 ${selected ? 'text-teal-100' : 'text-slate-400'}`}>
         {count}
       </span>
     </button>
@@ -388,8 +391,8 @@ function PatternOption({
     <label
       className={`block cursor-pointer rounded-xl border p-2.5 transition ${
         selected
-          ? 'border-sky-400 bg-sky-50 ring-1 ring-sky-300 focus-within:ring-2 focus-within:ring-sky-500'
-          : 'border-slate-200 bg-white hover:border-sky-200 hover:bg-slate-50 focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-300'
+          ? 'border-teal-400 bg-teal-50 ring-1 ring-teal-300 focus-within:ring-2 focus-within:ring-teal-500'
+          : 'border-slate-200 bg-white hover:border-teal-200 hover:bg-slate-50 focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-300'
       }`}
     >
       <input

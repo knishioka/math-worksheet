@@ -182,13 +182,14 @@ export function generateDivWithRemainder(
       operand1,
       operand2,
       answer: Math.floor(operand1 / operand2),
+      remainder: operand1 % operand2,
     });
   }
 
   return problems;
 }
 
-// 4年生: 整数×小数
+// 4年生: 小数×整数
 export function generateMultDecInt(
   _settings: WorksheetSettings,
   count: number
@@ -203,8 +204,8 @@ export function generateMultDecInt(
     const maxAttempts = 50;
 
     do {
-      operand1 = randomInt(2, 99);
-      operand2 = Math.floor(randomInt(1, 99)) / 10;
+      operand1 = randomInt(1, 99) / 10;
+      operand2 = randomInt(2, 9);
 
       key = `${operand1}×${operand2}`;
 
@@ -229,7 +230,7 @@ export function generateMultDecInt(
   return problems;
 }
 
-// 4年生: 整数÷小数
+// 4年生: 小数÷整数
 export function generateDivDecInt(
   _settings: WorksheetSettings,
   count: number
@@ -244,8 +245,8 @@ export function generateDivDecInt(
     const maxAttempts = 50;
 
     do {
-      operand2 = Math.floor(randomInt(2, 20)) / 10;
-      const quotient = randomInt(2, 50);
+      operand2 = randomInt(2, 9);
+      const quotient = randomInt(1, 50) / 10;
       operand1 = Math.round(operand2 * quotient * 10) / 10;
 
       key = `${operand1}÷${operand2}`;
@@ -264,7 +265,7 @@ export function generateDivDecInt(
       operation: 'division',
       operand1,
       operand2,
-      answer: Math.round(operand1 / operand2),
+      answer: Math.round((operand1 / operand2) * 10) / 10,
     });
   }
 
@@ -279,7 +280,7 @@ export function generateFracMixedNumber(
   const problems: Problem[] = [];
 
   for (let i = 0; i < count; i++) {
-    const isAddition = Math.random() < 0.5;
+    const isAddition = i % 2 === 0;
     const denominator = randomInt(2, 8);
 
     if (isAddition) {

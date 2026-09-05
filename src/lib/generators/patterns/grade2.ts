@@ -265,11 +265,11 @@ export function generateAddSubDoubleMixed(
     do {
       attempts++;
       // ランダムにたし算かひき算を選択
-      operation = Math.random() < 0.5 ? 'addition' : 'subtraction';
+      operation = i % 2 === 0 ? 'addition' : 'subtraction';
 
       if (operation === 'addition') {
         // ランダムに繰り上がりあり/なしを選択
-        const hasCarry = Math.random() < 0.5;
+        const hasCarry = i % 4 >= 2;
 
         if (hasCarry) {
           // 繰り上がりありのたし算
@@ -307,7 +307,7 @@ export function generateAddSubDoubleMixed(
         }
       } else {
         // ランダムに繰り下がりあり/なしを選択
-        const hasBorrow = Math.random() < 0.5;
+        const hasBorrow = i % 4 >= 2;
 
         if (hasBorrow) {
           // 繰り下がりありのひき算
@@ -360,44 +360,22 @@ export function generateAddSubDoubleMixed(
   return problems;
 }
 
-// 2年生: 100単位の計算
+// 2年生: 100単位のたし算
 export function generateAddHundredsSimple(
   _settings: WorksheetSettings,
   count: number
 ): BasicProblem[] {
-  const problems: BasicProblem[] = [];
-
-  for (let i = 0; i < count; i++) {
-    const isAddition = Math.random() < 0.7; // 70%でたし算
-
-    if (isAddition) {
-      const hundreds1 = randomInt(1, 8);
-      const hundreds2 = randomInt(1, 9 - hundreds1);
-
-      problems.push({
-        id: generateId(),
-        type: 'basic',
-        operation: 'addition',
-        operand1: hundreds1 * 100,
-        operand2: hundreds2 * 100,
-        answer: (hundreds1 + hundreds2) * 100,
-        carryOver: false,
-      });
-    } else {
-      const hundreds1 = randomInt(2, 9);
-      const hundreds2 = randomInt(1, hundreds1 - 1);
-
-      problems.push({
-        id: generateId(),
-        type: 'basic',
-        operation: 'subtraction',
-        operand1: hundreds1 * 100,
-        operand2: hundreds2 * 100,
-        answer: (hundreds1 - hundreds2) * 100,
-        carryOver: false,
-      });
-    }
-  }
-
-  return problems;
+  return Array.from({ length: count }, (): BasicProblem => {
+    const a = randomInt(1, 8);
+    const b = randomInt(1, 9 - a);
+    return {
+      id: generateId(),
+      type: 'basic',
+      operation: 'addition',
+      operand1: a * 100,
+      operand2: b * 100,
+      answer: (a + b) * 100,
+      carryOver: false,
+    };
+  });
 }

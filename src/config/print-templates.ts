@@ -9,6 +9,7 @@ import {
 } from './number-tracing-layout';
 import type { ProblemType, LayoutColumns, Grade } from '../types';
 import type { CalculationPattern } from '../types/calculation-patterns';
+import { SUPPLEMENTAL_PATTERNS } from './supplemental-patterns';
 
 const LAYOUT_COLUMNS: LayoutColumns[] = [1, 2, 3];
 
@@ -480,17 +481,36 @@ export const PATTERN_COUNT_OVERRIDES: Partial<
     }
   >
 > = {
+  ...Object.fromEntries(
+    Object.entries(SUPPLEMENTAL_PATTERNS)
+      .filter(([, definition]) => definition.type === 'word')
+      .map(([pattern]) => [
+        pattern,
+        {
+          recommendedCounts: { 1: 6, 2: 12, 3: 12 },
+          maxCounts: { 1: 6, 2: 12, 3: 12 },
+        },
+      ])
+  ),
+  'data-bar-chart-jap': {
+    recommendedCounts: { 1: 3, 2: 6, 3: 6 },
+    maxCounts: { 1: 3, 2: 6, 3: 6 },
+  },
+  'data-change-jap': {
+    recommendedCounts: { 1: 4, 2: 8, 3: 9 },
+    maxCounts: { 1: 4, 2: 8, 3: 9 },
+  },
   'add-counting': {
-    recommendedCounts: { 1: 6, 2: 12, 3: 18 },
-    maxCounts: { 1: 8, 2: 14, 3: 18 },
+    recommendedCounts: { 1: 4, 2: 8, 3: 12 },
+    maxCounts: { 1: 4, 2: 8, 3: 12 },
   },
   'counting-add': {
-    recommendedCounts: { 1: 6, 2: 12, 3: 18 },
-    maxCounts: { 1: 8, 2: 14, 3: 18 },
+    recommendedCounts: { 1: 4, 2: 8, 3: 12 },
+    maxCounts: { 1: 4, 2: 8, 3: 12 },
   },
   'counting-sub': {
-    recommendedCounts: { 1: 5, 2: 10, 3: 15 },
-    maxCounts: { 1: 6, 2: 12, 3: 15 },
+    recommendedCounts: { 1: 4, 2: 8, 3: 12 },
+    maxCounts: { 1: 4, 2: 8, 3: 12 },
   },
   // Singapore Math with diagrams — larger minProblemHeight
   ...Object.fromEntries(

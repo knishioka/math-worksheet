@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { SettingsPanel } from '../SettingsPanel';
+import { getEffectiveCounts } from '../../../config/print-templates';
 
 const baseProps = {
   problemCount: 16,
@@ -11,6 +12,32 @@ const baseProps = {
 };
 
 describe('SettingsPanel equation line option', () => {
+  it('applies both columns and count when a print recommendation is selected', () => {
+    const onLayoutColumnsChange = vi.fn();
+    const onProblemCountChange = vi.fn();
+    const counts = getEffectiveCounts('word', 'data-bar-chart-jap', 3);
+    render(
+      <SettingsPanel
+        {...baseProps}
+        grade={3}
+        problemType="word"
+        calculationPattern="data-bar-chart-jap"
+        problemCount={counts.recommendedCounts[2]}
+        onLayoutColumnsChange={onLayoutColumnsChange}
+        onProblemCountChange={onProblemCountChange}
+      />
+    );
+
+    const recommendation = screen.getByRole('button', {
+      name: `3列: ${counts.recommendedCounts[3]}問`,
+    });
+    expect(recommendation).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(recommendation);
+
+    expect(onLayoutColumnsChange).toHaveBeenCalledWith(3);
+    expect(onProblemCountChange).toHaveBeenCalledWith(counts.recommendedCounts[3]);
+  });
+
   it('uses the supplied step number when problem selection is skipped', () => {
     render(<SettingsPanel {...baseProps} stepNumber={2} />);
 

@@ -72,7 +72,7 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
   return (
     <section aria-labelledby="grade-selector-heading">
       <div>
-        <p className="text-xs font-semibold tracking-wide text-sky-600">
+        <p className="text-xs font-semibold tracking-wide text-teal-600">
           STEP 1
         </p>
         <label
@@ -86,7 +86,7 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
           id="grade-select"
           value={grade}
           onChange={(e) => onGradeChange(Number(e.target.value) as Grade)}
-          className="w-full rounded-xl border border-sky-200 bg-white/80 px-4 py-2 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-300"
+          className="w-full rounded-xl border border-teal-200 bg-white/80 px-4 py-2 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-300"
         >
           <option value={0}>幼児（年長）</option>
           <option value={1}>1年生</option>

@@ -1,4 +1,6 @@
 import type { Problem, WorksheetSettings } from '../../../types';
+import { isSupplementalPattern } from '../../../config/supplemental-patterns';
+import { generateSupplementalProblems } from './supplemental';
 import { generateGradeEnWordProblems } from '../word-problem-en';
 import { generateGradeMoneyProblems } from '../money-problems';
 import { generateGradeMoneyProblemsEn } from '../money-problems-en';
@@ -144,6 +146,9 @@ export function generatePatternProblems(
   if (!pattern) {
     throw new Error('Calculation pattern is not specified');
   }
+
+  if (isSupplementalPattern(pattern))
+    return generateSupplementalProblems(pattern, count);
 
   switch (pattern) {
     // 1年生（入門）のパターン

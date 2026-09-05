@@ -100,8 +100,9 @@ describe('共有URLからの設定復元', () => {
 
     await waitFor(() => {
       expect(currentParams().get('grade')).toBe('1');
-      expect(currentParams().get('cols')).toBe('3');
-      expect(currentParams().get('count')).toBe('30');
+      expect(currentParams().get('pattern')).toBe('add-counting');
+      expect(currentParams().get('cols')).toBe('2');
+      expect(currentParams().get('count')).toBe('8');
     });
   });
 

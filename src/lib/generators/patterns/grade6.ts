@@ -119,7 +119,7 @@ export function generateRatioProportion(
       // 比例式を解く
       const a = randomInt(2, 10);
       const b = randomInt(2, 10);
-      const c = randomInt(2, 10);
+      const c = a * randomInt(2, 5);
       const x = (b * c) / a;
 
       problems.push({
@@ -144,12 +144,12 @@ export function generateSpeedTimeDistance(
   const problems: WordProblem[] = [];
 
   for (let i = 0; i < count; i++) {
-    const problemType = randomInt(0, 3);
+    const problemType = i % 3;
 
     if (problemType === 0) {
       // 速さを求める（距離÷時間）
-      const distance = randomInt(10, 50) * 10; // 100km, 200km...
       const time = randomInt(2, 10); // 2時間, 3時間...
+      const distance = randomInt(4, 8) * 10 * time;
       problems.push({
         id: generateId(),
         type: 'word',
@@ -161,8 +161,8 @@ export function generateSpeedTimeDistance(
       });
     } else if (problemType === 1) {
       // 時間を求める（距離÷速さ）
-      const distance = randomInt(10, 50) * 10;
       const speed = randomInt(40, 80);
+      const distance = speed * randomInt(2, 8);
       problems.push({
         id: generateId(),
         type: 'word',
@@ -230,8 +230,8 @@ export function generateComplexCalc(
       });
     } else {
       // 単位の変換を含む問題
-      const meters = randomInt(2, 20) * 100;
       const minutes = randomInt(2, 10);
+      const meters = randomInt(3, 8) * 10 * minutes;
       const speedMPerMin = meters / minutes;
       const speedKmPerHour = (speedMPerMin * 60) / 1000;
       problems.push({

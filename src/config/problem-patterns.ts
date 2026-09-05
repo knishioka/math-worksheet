@@ -1,4 +1,8 @@
 import type { CalculationPattern } from '../types/calculation-patterns';
+import {
+  isSupplementalPattern,
+  SUPPLEMENTAL_PATTERNS,
+} from './supplemental-patterns';
 
 /**
  * 問題パターン定義
@@ -173,6 +177,8 @@ export const ANZAN_PATTERNS: readonly CalculationPattern[] = [
  * パターンが文章問題かどうかを判定
  */
 export function isWordProblemPattern(pattern?: CalculationPattern): boolean {
+  if (pattern && isSupplementalPattern(pattern))
+    return SUPPLEMENTAL_PATTERNS[pattern].type === 'word';
   return pattern !== undefined && WORD_PROBLEM_PATTERNS.includes(pattern);
 }
 
@@ -220,6 +226,8 @@ export function isAnzanPattern(pattern?: CalculationPattern): boolean {
  * パターンが分数問題かどうかを判定
  */
 export function isFractionPattern(pattern?: CalculationPattern): boolean {
+  if (pattern && isSupplementalPattern(pattern))
+    return SUPPLEMENTAL_PATTERNS[pattern].type === 'fraction';
   return pattern !== undefined && FRACTION_PATTERNS.includes(pattern);
 }
 

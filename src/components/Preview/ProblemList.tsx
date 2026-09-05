@@ -22,6 +22,7 @@ import {
 import { WordProblemEnComponent } from '../Math/WordProblemEn';
 import { SingaporeProblemComponent } from '../Math/SingaporeProblemComponent';
 import { EquationLine } from '../Math/EquationLine';
+import { DataDisplay } from '../Math/DataDisplay';
 import { NumberTracingRow } from '../Math/NumberTracingRow';
 import type { NumberTracingProblem } from '../../types';
 import { getPrintTemplate } from '../../config/print-templates';
@@ -286,7 +287,7 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
     }
 
     return (
-      <div className="flex flex-col items-center py-8 bg-gray-100">
+      <div className="flex flex-col items-center py-5 bg-stone-100">
         {content}
       </div>
     );
@@ -519,14 +520,18 @@ function ProblemItem({
           {hasSecondFraction && (
             <>
               {' ' + operationSymbol + ' '}
-              <span style={fractionContainerStyle}>
-                <span style={fractionNumeratorStyle}>
-                  {fractionProblem.numerator2}
+              {fractionProblem.denominator2 === 1 ? (
+                <span>{fractionProblem.numerator2}</span>
+              ) : (
+                <span style={fractionContainerStyle}>
+                  <span style={fractionNumeratorStyle}>
+                    {fractionProblem.numerator2}
+                  </span>
+                  <span style={fractionDenominatorStyle}>
+                    {fractionProblem.denominator2}
+                  </span>
                 </span>
-                <span style={fractionDenominatorStyle}>
-                  {fractionProblem.denominator2}
-                </span>
-              </span>
+              )}
             </>
           )}
           {' = '}
@@ -647,6 +652,9 @@ function ProblemItem({
           <div style={{ ...wordProblemTextStyle, whiteSpace: 'pre-line' }}>
             {wordProblem.problemText}
           </div>
+        )}
+        {wordProblem.dataDisplay && (
+          <DataDisplay data={wordProblem.dataDisplay} />
         )}
         {showEquationLine && <EquationLine label="式:" />}
         <div
@@ -908,6 +916,16 @@ function ProblemItem({
           <span style={answerDisplayStyle}>{basicProblem.answer}</span>
         ) : (
           <span style={answerUnderlineStyle} />
+        )}
+        {basicProblem.remainder !== undefined && (
+          <div className="text-sm mt-2">
+            あまり{' '}
+            {showAnswer ? (
+              <span style={answerDisplayStyle}>{basicProblem.remainder}</span>
+            ) : (
+              <span style={answerUnderlineStyle} />
+            )}
+          </div>
         )}
       </div>
     </div>

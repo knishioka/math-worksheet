@@ -607,7 +607,7 @@ export function generateAddSubMixedBasic(
   const problems: BasicProblem[] = [];
 
   for (let i = 0; i < count; i++) {
-    const isAddition = Math.random() < 0.5;
+    const isAddition = i % 2 === 0;
 
     if (isAddition) {
       // たし算（答えが10まで）

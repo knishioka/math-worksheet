@@ -5,6 +5,10 @@
 
 import type { CalculationPattern } from '../types/calculation-patterns';
 import type { Grade } from '../types';
+import {
+  isSupplementalPattern,
+  SUPPLEMENTAL_PATTERNS,
+} from './supplemental-patterns';
 
 /**
  * 難易度レベル（3段階）
@@ -18,6 +22,8 @@ export type DifficultyLevel = 1 | 2 | 3;
  * パターンカテゴリの定義
  */
 export type PatternCategory =
+  | 'geometry'
+  | 'data'
   | 'basic' // 基本計算
   | 'hissan' // 筆算
   | 'fraction' // 分数・小数
@@ -42,6 +48,16 @@ export const CATEGORY_CONFIG: Record<
     description: string;
   }
 > = {
+  geometry: {
+    label: '図形・測定',
+    icon: '△',
+    description: 'かたち・角・面積を考える',
+  },
+  data: {
+    label: 'データの活用',
+    icon: '▥',
+    description: '数を整理し、比べて読み取る',
+  },
   basic: {
     label: '基本計算',
     icon: '🔢',
@@ -86,6 +102,8 @@ export const CATEGORY_ORDER: PatternCategory[] = [
   'basic',
   'hissan',
   'fraction',
+  'geometry',
+  'data',
   'word',
   'life',
   'anzan',
@@ -321,6 +339,10 @@ const BASE_DIFFICULTY: Partial<Record<CalculationPattern, DifficultyLevel>> = {
 export function getPatternCategory(
   pattern: CalculationPattern
 ): PatternCategory {
+  if (isSupplementalPattern(pattern))
+    return SUPPLEMENTAL_PATTERNS[pattern].category;
+  if (pattern.includes('-dec-')) return 'fraction';
+  if (pattern === 'area-volume') return 'geometry';
   // 完全一致を最初にチェック
   if (pattern === 'word-en') {
     return 'word';
@@ -348,6 +370,11 @@ export function getPatternCategory(
 export function getPatternLanguage(
   pattern: CalculationPattern
 ): PatternLanguage {
+  if (
+    isSupplementalPattern(pattern) &&
+    SUPPLEMENTAL_PATTERNS[pattern].type === 'word'
+  )
+    return 'ja';
   for (const [suffix, lang] of Object.entries(LANGUAGE_SUFFIX_MAP)) {
     if (pattern.endsWith(suffix)) {
       return lang;
@@ -398,6 +425,8 @@ export function groupPatternsByCategory(
   patterns: CalculationPattern[]
 ): Record<PatternCategory, CalculationPattern[]> {
   const grouped: Record<PatternCategory, CalculationPattern[]> = {
+    geometry: [],
+    data: [],
     basic: [],
     hissan: [],
     fraction: [],
@@ -440,6 +469,8 @@ export function getCategoryCounts(
   const grouped = groupPatternsByCategory(patterns);
 
   return {
+    geometry: grouped.geometry.length,
+    data: grouped.data.length,
     basic: grouped.basic.length,
     hissan: grouped.hissan.length,
     fraction: grouped.fraction.length,
@@ -469,6 +500,14 @@ export function getCategoryForPattern(
 export function getPatternDifficulty(
   pattern: CalculationPattern
 ): DifficultyLevel {
+  if (isSupplementalPattern(pattern))
+    return SUPPLEMENTAL_PATTERNS[pattern].difficulty;
+  if (
+    ['add-plus-one', 'add-counting', 'counting-add', 'counting-sub'].includes(
+      pattern
+    )
+  )
+    return 1;
   return BASE_DIFFICULTY[pattern] ?? 2;
 }
 
@@ -508,6 +547,8 @@ export function groupPatternsByCategorySorted(
 
   // 各カテゴリ内を難易度順にソート
   return {
+    geometry: sortPatternsByDifficulty(grouped.geometry),
+    data: sortPatternsByDifficulty(grouped.data),
     basic: sortPatternsByDifficulty(grouped.basic),
     hissan: sortPatternsByDifficulty(grouped.hissan),
     fraction: sortPatternsByDifficulty(grouped.fraction),
