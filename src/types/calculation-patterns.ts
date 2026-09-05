@@ -1,5 +1,13 @@
+import {
+  SUPPLEMENTAL_LABELS,
+  SUPPLEMENTAL_DESCRIPTIONS,
+  supplementalPatternsForGrade,
+  type SupplementalPattern,
+} from '../config/supplemental-patterns';
+
 // 計算パターンの定義
 export type CalculationPattern =
+  | SupplementalPattern
   // 1年生のパターン（入門）
   | 'add-plus-one' // □＋1（+1のたし算）
   | 'add-plus-two' // □＋2（+2のたし算）
@@ -58,8 +66,8 @@ export type CalculationPattern =
   | 'add-sub-large-mixed' // 大きな数の足し算・引き算混合
   | 'mult-triple-digit' // 3桁×1桁
   | 'div-with-remainder' // あまりのあるわり算
-  | 'mult-dec-int' // 整数×小数
-  | 'div-dec-int' // 整数÷小数
+  | 'mult-dec-int' // 小数×整数
+  | 'div-dec-int' // 小数÷整数
   | 'frac-mixed-number' // 帯分数の計算
   | 'hissan-mult-advanced' // 3桁×2桁のかけ算の筆算
   | 'hissan-div-basic' // わり算の筆算
@@ -187,6 +195,7 @@ export type CalculationPattern =
 // 学年別の利用可能なパターン
 export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
   1: [
+    ...supplementalPatternsForGrade(1),
     'add-plus-one',
     'add-plus-two',
     'add-plus-three',
@@ -220,6 +229,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'anzan-complement-10',
   ],
   2: [
+    ...supplementalPatternsForGrade(2),
     'add-double-digit-no-carry',
     'add-double-digit-carry',
     'sub-double-digit-no-borrow',
@@ -265,6 +275,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'anzan-pair-sum',
   ],
   3: [
+    ...supplementalPatternsForGrade(3),
     'add-triple-digit',
     'sub-triple-digit',
     'mult-double-digit',
@@ -339,6 +350,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'anzan-mul-9',
   ],
   4: [
+    ...supplementalPatternsForGrade(4),
     'add-large-numbers',
     'sub-large-numbers',
     'add-sub-large-mixed',
@@ -421,6 +433,8 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'anzan-mul-25',
   ],
   5: [
+    ...supplementalPatternsForGrade(5),
+    'speed-time-distance',
     'mult-dec-dec',
     'div-dec-dec',
     'frac-different-denom',
@@ -478,6 +492,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'anzan-reorder',
   ],
   6: [
+    ...supplementalPatternsForGrade(6),
     'frac-mult',
     'frac-div',
     'ratio-proportion',
@@ -539,6 +554,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
 
 // パターンの表示名
 export const PATTERN_LABELS: Record<CalculationPattern, string> = {
+  ...SUPPLEMENTAL_LABELS,
   // 1年生（入門）
   'add-plus-one': '+1のたし算',
   'add-plus-two': '+2のたし算',
@@ -549,7 +565,7 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'add-plus-seven': '+7のたし算',
   'add-plus-eight': '+8のたし算',
   'add-plus-nine': '+9のたし算',
-  'add-counting': 'かずをかぞえよう（+1ずつ）',
+  'add-counting': 'かずをかぞえよう（○の数）',
   'counting-add': '○をつかった たし算',
   'counting-sub': '○をつかった ひき算',
   // 1年生
@@ -572,7 +588,7 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'sub-double-digit-borrow': '2桁のひき算（繰り下がりあり）',
   'add-sub-double-mixed': '2桁のたし算・ひき算混合',
   'mult-single-digit': '九九（かけ算）',
-  'add-hundreds-simple': '100単位の計算',
+  'add-hundreds-simple': '100単位のたし算',
   'add-double-missing': '2桁たし算の虫食い算',
   'sub-double-missing': '2桁ひき算の虫食い算',
   'mult-single-missing': '九九の虫食い算',
@@ -597,8 +613,8 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'add-sub-large-mixed': '大きな数のたし算・ひき算ミックス',
   'mult-triple-digit': '3桁×1桁のかけ算',
   'div-with-remainder': 'あまりのあるわり算',
-  'mult-dec-int': '整数×小数',
-  'div-dec-int': '整数÷小数',
+  'mult-dec-int': '小数×整数',
+  'div-dec-int': '小数÷整数',
   'frac-mixed-number': '帯分数の計算',
   'hissan-mult-advanced': '3桁×2桁のかけ算の筆算',
   'hissan-div-basic': 'わり算の筆算',
@@ -726,9 +742,10 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
 
 // パターンの説明
 export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
+  ...SUPPLEMENTAL_DESCRIPTIONS,
   // 1年生（入門）
   'add-plus-one': '□＋1の計算で数の感覚を身につける',
-  'add-plus-two': '□＋2の計算で数の感覚を身につける',
+  'add-plus-two': '□＋2の計算で数の感覚を身につける（くり上がりあり）',
   'add-plus-three': '□＋3の計算で数の感覚を身につける（くり上がりあり）',
   'add-plus-four': '□＋4の計算で数の感覚を身につける（くり上がりあり）',
   'add-plus-five': '□＋5の計算で数の感覚を身につける（くり上がりあり）',
@@ -784,9 +801,9 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'add-sub-large-mixed': '1234＋5678や8765－4321などの大きな数のたし算・ひき算',
   'mult-triple-digit': '234×5などの3桁×1桁のかけ算',
   'div-with-remainder': '50÷7などのあまりのあるわり算',
-  'mult-dec-int': '25×2.3などの整数×小数',
-  'div-dec-int': '7.2÷2.4などの整数÷小数',
-  'frac-mixed-number': '1と2/3＋2と1/4などの帯分数',
+  'mult-dec-int': '2.3×4などの小数×整数',
+  'div-dec-int': '7.2÷3などの小数÷整数（割り切れる問題）',
+  'frac-mixed-number': '1と2/5＋2と1/5など、同じ分母の帯分数',
   'hissan-mult-advanced':
     '3桁×2桁の筆算形式（例：234×56）。部分積を2段に分けて練習',
   'hissan-div-basic': 'わり算の筆算形式（例：84÷7）',

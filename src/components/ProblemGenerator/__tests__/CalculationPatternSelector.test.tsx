@@ -163,6 +163,6 @@ describe('CalculationPatternSelector', () => {
       />
     );
 
-    expect(onPatternChange).toHaveBeenCalledWith('add-single-digit');
+    expect(onPatternChange).toHaveBeenCalledWith('add-counting');
   });
 });

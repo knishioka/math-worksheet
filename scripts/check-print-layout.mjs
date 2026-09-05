@@ -97,49 +97,17 @@ const SCENARIOS = [
  */
 async function selectPattern(page, pattern) {
   if (!pattern) return;
-
-  // まずラジオボタンが見えるか確認
-  let radio = await page.$(`input[value="${pattern}"]`);
-
-  if (!radio) {
-    // アコーディオンを全て展開
-    const collapsed = await page.$$('button[aria-expanded="false"]');
-    for (const btn of collapsed) {
-      await btn.click();
-      await page.waitForTimeout(100);
-    }
-    // 再度ラジオボタンを探す
-    radio = await page.$(`input[value="${pattern}"]`);
-  }
-
-  if (!radio) {
-    console.warn(
-      `    [warn] パターン "${pattern}" のラジオボタンが見つかりません`
-    );
-    return;
-  }
-
-  // ラジオボタンの親要素（label）をクリック
-  await radio.evaluate((el) => {
-    const label = el.closest('label') || el.parentElement;
-    if (label) label.click();
-  });
-
-  // ラジオボタンがチェックされるのを待つ
-  await page
-    .waitForFunction(
-      (v) => document.querySelector(`input[value="${v}"]:checked`),
-      pattern,
-      { timeout: 3000 }
-    )
-    .catch(() => {
-      console.warn(
-        `    [warn] パターン "${pattern}" の選択を確認できませんでした`
-      );
-    });
-
-  // React の状態更新を待つ（useEffect による recommendedCount 反映）
-  await page.waitForTimeout(1000);
+  const url = new URL(page.url());
+  url.searchParams.set('pattern', pattern);
+  url.searchParams.set('type', 'basic');
+  url.searchParams.delete('count');
+  await page.goto(url.href, { waitUntil: 'networkidle' });
+  await page.waitForSelector('[data-a4-sheet]');
+  await page.waitForFunction(
+    (expected) =>
+      new URLSearchParams(location.search).get('pattern') === expected,
+    pattern
+  );
 }
 
 /**

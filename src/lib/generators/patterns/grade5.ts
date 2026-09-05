@@ -115,7 +115,7 @@ export function generateFracDifferentDenom(
   }
 
   while (problems.length < count) {
-    const isAddition = Math.random() < 0.5;
+    const isAddition = problems.length % 2 === 0;
     const denominator1 = randomInt(2, 12);
     let denominator2 = randomInt(2, 12);
 
@@ -254,8 +254,8 @@ export function generatePercentBasic(
       });
     } else {
       // ○は△の何%かを求める
-      const part = randomInt(1, 9) * 5;
-      const whole = randomInt(part + 10, 100);
+      const whole = randomInt(2, 10) * 20;
+      const part = (whole * randomInt(1, 19)) / 20;
       problems.push({
         id: generateId(),
         type: 'word',

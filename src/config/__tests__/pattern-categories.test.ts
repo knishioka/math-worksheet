@@ -244,8 +244,10 @@ describe('pattern-categories', () => {
   });
 
   describe('constants', () => {
-    it('should have all 7 categories configured', () => {
-      expect(Object.keys(CATEGORY_CONFIG)).toHaveLength(7);
+    it('should include geometry and data alongside calculation categories', () => {
+      expect(Object.keys(CATEGORY_CONFIG)).toHaveLength(9);
+      expect(CATEGORY_CONFIG.geometry).toBeDefined();
+      expect(CATEGORY_CONFIG.data).toBeDefined();
       expect(CATEGORY_CONFIG.basic).toBeDefined();
       expect(CATEGORY_CONFIG.hissan).toBeDefined();
       expect(CATEGORY_CONFIG.fraction).toBeDefined();
@@ -260,6 +262,8 @@ describe('pattern-categories', () => {
         'basic',
         'hissan',
         'fraction',
+        'geometry',
+        'data',
         'word',
         'life',
         'anzan',

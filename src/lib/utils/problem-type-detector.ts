@@ -1,5 +1,9 @@
 import type { ProblemType, CalculationPattern } from '../../types';
 import {
+  isSupplementalPattern,
+  SUPPLEMENTAL_PATTERNS,
+} from '../../config/supplemental-patterns';
+import {
   isWordProblemPattern,
   isHissanPattern,
   isAnzanPattern,
@@ -83,6 +87,13 @@ export function getEffectiveProblemType(
   problemType?: ProblemType,
   calculationPattern?: CalculationPattern
 ): ProblemType {
+  if (
+    problemType === 'basic' &&
+    calculationPattern &&
+    isSupplementalPattern(calculationPattern)
+  ) {
+    return SUPPLEMENTAL_PATTERNS[calculationPattern].type;
+  }
   if (isSingaporeDiagramPattern(calculationPattern)) {
     return 'singapore';
   }

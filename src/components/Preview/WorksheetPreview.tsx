@@ -4,6 +4,7 @@ import { useReactToPrint } from 'react-to-print';
 import type { WorksheetData } from '../../types';
 import { ProblemList } from './ProblemList';
 import { MultiPagePrintDialog } from './MultiPagePrintDialog';
+import { ResponsiveSheet } from './ResponsiveSheet';
 import { useProblemStore } from '../../stores/problemStore';
 import { buildPreviewTitle } from '../../lib/utils/previewTitle';
 import {
@@ -47,9 +48,24 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
       // 一時適用した状態で計測する（画面用CSSでの誤検知を防ぐ）。
       const printArea = printRef.current;
       if (printArea) {
-        const overflowing = withPrintMediaStyles(() =>
-          findOverflowingSheets(printArea)
-        );
+        // 印刷時に非表示になる画面の祖先から切り離し、実寸で計測する。
+        const measurementCopy = printArea.cloneNode(true) as HTMLElement;
+        Object.assign(measurementCopy.style, {
+          position: 'absolute',
+          left: '-10000px',
+          top: '0',
+          width: '210mm',
+          visibility: 'hidden',
+        });
+        document.body.appendChild(measurementCopy);
+        let overflowing;
+        try {
+          overflowing = withPrintMediaStyles(() =>
+            findOverflowingSheets(measurementCopy)
+          );
+        } finally {
+          measurementCopy.remove();
+        }
         if (overflowing.length > 0) {
           const worstHeightMm = Math.max(
             ...overflowing.map((result) => result.heightMm)
@@ -102,7 +118,7 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
           <div>
             <h3 className="text-lg font-semibold">問題プレビューエリア</h3>
             <p className="mt-2 text-sm text-slate-600">
-              左側の設定で「生成」すると、ここに出来上がったプリントが表示されます。
+              教材を選ぶと、ここにプリントが自動で表示されます。
             </p>
           </div>
           <p className="text-xs text-slate-500">
@@ -120,9 +136,9 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
 
   return (
     <>
-      <div className="overflow-hidden rounded-3xl border border-sky-100 bg-white/85 shadow-xl backdrop-blur">
+      <div className="preview-card">
         {/* Worksheet Header */}
-        <div className="no-print border-b border-sky-100 bg-gradient-to-r from-sky-50 via-white to-emerald-50 p-6">
+        <div className="no-print preview-toolbar">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-lg font-semibold text-slate-900">
               問題プレビュー - {buildPreviewTitle({ settings })}
@@ -134,6 +150,13 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+            <button
+              type="button"
+              className="print-button"
+              onClick={() => setIsMultiPageDialogOpen(true)}
+            >
+              印刷（複数ページにも対応）
+            </button>
             <span>生成日時: {formatDate(generatedAt)}</span>
             {showAnswers && (
               <span className="rounded-full bg-rose-100 px-3 py-1 text-rose-700 shadow-sm">
@@ -144,66 +167,47 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
         </div>
 
         {/* Printable worksheet content */}
-        <div
-          ref={printRef}
-          data-print-area
-          lang="ja"
-          style={{ background: 'white' }}
-        >
-          {/* プレビュー表示: 最初のページのみ */}
-          {!isPrinting && (
-            <ProblemList
-              problems={worksheetData.problems}
-              layoutColumns={worksheetData.settings.layoutColumns}
-              showAnswers={showAnswers}
-              settings={worksheetData.settings}
-              printMode={false}
-            />
-          )}
-
-          {/* 印刷用: 全ページ（画面には表示されない） */}
-          {isPrinting &&
-            worksheetsToDisplay.map((worksheet, index) => (
-              <div
-                key={index}
-                style={{
-                  pageBreakAfter:
-                    index < worksheetsToDisplay.length - 1 ? 'always' : 'auto',
-                }}
-              >
-                <ProblemList
-                  problems={worksheet.problems}
-                  layoutColumns={worksheet.settings.layoutColumns}
-                  showAnswers={showAnswers}
-                  settings={worksheet.settings}
-                  printMode={true}
-                />
-              </div>
-            ))}
-        </div>
-
-        {/* Print Button - Below problems */}
-        <div className="no-print p-6 pt-0">
-          <button
-            onClick={() => setIsMultiPageDialogOpen(true)}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 py-3 text-white shadow-lg transition-colors hover:bg-emerald-600"
+        <ResponsiveSheet>
+          <div
+            ref={printRef}
+            data-print-area
+            lang="ja"
+            style={{ background: 'white' }}
           >
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            {/* プレビュー表示: 最初のページのみ */}
+            {!isPrinting && (
+              <ProblemList
+                problems={worksheetData.problems}
+                layoutColumns={worksheetData.settings.layoutColumns}
+                showAnswers={showAnswers}
+                settings={worksheetData.settings}
+                printMode={false}
               />
-            </svg>
-            印刷（複数ページにも対応）
-          </button>
-        </div>
+            )}
+
+            {/* 印刷用: 全ページ（画面には表示されない） */}
+            {isPrinting &&
+              worksheetsToDisplay.map((worksheet, index) => (
+                <div
+                  key={index}
+                  style={{
+                    pageBreakAfter:
+                      index < worksheetsToDisplay.length - 1
+                        ? 'always'
+                        : 'auto',
+                  }}
+                >
+                  <ProblemList
+                    problems={worksheet.problems}
+                    layoutColumns={worksheet.settings.layoutColumns}
+                    showAnswers={showAnswers}
+                    settings={worksheet.settings}
+                    printMode={true}
+                  />
+                </div>
+              ))}
+          </div>
+        </ResponsiveSheet>
       </div>
 
       {/* Multi-page print dialog */}
@@ -212,6 +216,7 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
         onClose={() => setIsMultiPageDialogOpen(false)}
         onPrint={handleMultiPagePrint}
         settings={settings}
+        showAnswers={showAnswers}
       />
     </>
   );

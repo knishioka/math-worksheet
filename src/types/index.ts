@@ -41,6 +41,7 @@ export interface BasicProblem {
   operand2: number | null;
   answer: number | null;
   carryOver?: boolean;
+  remainder?: number;
   missingPosition?: 'operand1' | 'operand2' | 'answer';
   operands?: number[];
   operators?: Operation[];
@@ -116,6 +117,12 @@ export interface WordProblem {
   unit?: string;
   showCalculation?: boolean;
   isSymbolProblem?: boolean;
+  dataDisplay?: {
+    kind: 'table' | 'bar';
+    label: string;
+    unit: string;
+    entries: { label: string; value: number }[];
+  };
 }
 
 export interface WordProblemEn {
