@@ -632,17 +632,22 @@ export function generateAnzanMixed(
   ];
 
   const problems: BasicProblem[] = [];
-  let lastGeneratorIndex = -1;
+  let generatorOrder = shuffleArray(generators);
 
   for (let i = 0; i < count; i++) {
-    // Pick a different generator than the last one
-    let genIndex: number;
-    do {
-      genIndex = randomInt(0, generators.length - 1);
-    } while (genIndex === lastGeneratorIndex && generators.length > 1);
-    lastGeneratorIndex = genIndex;
+    const orderIndex = i % generators.length;
+    if (orderIndex === 0 && i > 0) {
+      const previousGenerator = generatorOrder[generatorOrder.length - 1];
+      generatorOrder = shuffleArray(generators);
+      if (generatorOrder[0] === previousGenerator) {
+        [generatorOrder[0], generatorOrder[1]] = [
+          generatorOrder[1],
+          generatorOrder[0],
+        ];
+      }
+    }
 
-    const generated = generators[genIndex].generate(grade, 1);
+    const generated = generatorOrder[orderIndex].generate(grade, 1);
     if (generated.length > 0) {
       problems.push(generated[0]);
     }

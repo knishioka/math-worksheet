@@ -786,34 +786,22 @@ describe('anzan-mixed (暗算テクニック混合)', () => {
     }
   });
 
-  it('produces variety of problem types (not all same operation)', () => {
-    const problems = generateAnzanMixed(6, 30);
-    const operations = new Set(problems.map((p) => p.operation));
-    expect(operations.size).toBeGreaterThan(1);
-  });
+  it('balances operation families in each generator cycle', () => {
+    const problems = generateAnzanMixed(6, 22);
 
-  it('does not produce consecutive problems from the same generator', () => {
-    // With 30 problems, the operations should vary
-    const problems = generateAnzanMixed(6, 30);
-    // Check that we don't have long runs of identical operation+operand patterns
-    let maxConsecutiveSame = 1;
-    let currentRun = 1;
-    for (let i = 1; i < problems.length; i++) {
-      const prev = problems[i - 1];
-      const curr = problems[i];
-      // If operation AND operand ranges are the same, it's likely the same generator
-      if (
-        prev.operation === curr.operation &&
-        (prev.operands !== undefined) === (curr.operands !== undefined)
-      ) {
-        currentRun++;
-        maxConsecutiveSame = Math.max(maxConsecutiveSame, currentRun);
-      } else {
-        currentRun = 1;
-      }
+    for (let offset = 0; offset < problems.length; offset += 11) {
+      const operations = problems
+        .slice(offset, offset + 11)
+        .map((problem) => problem.operation);
+      const subtractionCount = operations.filter(
+        (operation) => operation === 'subtraction'
+      ).length;
+
+      expect(new Set(operations)).toEqual(
+        new Set(['addition', 'subtraction', 'multiplication'])
+      );
+      expect(subtractionCount).toBe(2);
     }
-    // Should not have too many consecutive from same generator type
-    expect(maxConsecutiveSame).toBeLessThanOrEqual(5);
   });
 
   it('integrates via generateProblems', () => {
