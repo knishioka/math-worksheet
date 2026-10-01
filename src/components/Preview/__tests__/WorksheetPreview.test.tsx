@@ -122,6 +122,11 @@ describe('WorksheetPreview multi-page printing', () => {
       cb(0);
       return 0;
     });
+    // Vitest 5 の happy-dom では confirm が未定義なので、ブラウザ API を明示する。
+    vi.stubGlobal(
+      'confirm',
+      vi.fn(() => true)
+    );
   });
 
   afterEach(() => {
