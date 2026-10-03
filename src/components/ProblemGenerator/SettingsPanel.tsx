@@ -69,17 +69,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   );
   const maxProblems = effectiveCounts.maxCounts[layoutColumns];
   const recommendedCount = effectiveCounts.recommendedCounts[layoutColumns];
-
-  // 文章問題・暗算の場合は2列レイアウトを推奨デフォルトにする
-  const lastTypeRef = React.useRef(effectiveProblemType);
-  React.useEffect(() => {
-    const changed = lastTypeRef.current !== effectiveProblemType;
-    lastTypeRef.current = effectiveProblemType;
-    if (changed && (isWord || isWordEn || isAnzan) && layoutColumns !== 2) {
-      onLayoutColumnsChange(2);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveProblemType, isWord, isWordEn, isAnzan]);
+  const twoColumnRecommendedCount = effectiveCounts.recommendedCounts[2];
 
   // 教材変更時は推奨問題数を適用し、列数変更時は選んだ問題数を上限内で保つ。
   // 初回マウントでは適用しない（URL から復元した問題数を上書きしてしまうため）。
@@ -88,14 +78,28 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const lastRecommendationRef = React.useRef<{
     material: string;
     columns: LayoutColumns;
+    problemType: ProblemType;
   } | null>(null);
   React.useEffect(() => {
     const material = `${effectiveProblemType}:${calculationPattern}:${grade}`;
     const previous = lastRecommendationRef.current;
-    lastRecommendationRef.current = { material, columns: layoutColumns };
+    lastRecommendationRef.current = {
+      material,
+      columns: layoutColumns,
+      problemType: effectiveProblemType,
+    };
     if (!previous) return;
     if (previous.material !== material) {
-      onProblemCountChange(recommendedCount);
+      const columns =
+        previous.problemType !== effectiveProblemType &&
+        (isWord || isWordEn || isAnzan)
+          ? 2
+          : layoutColumns;
+      lastRecommendationRef.current.columns = columns;
+      if (columns !== layoutColumns) onLayoutColumnsChange(columns);
+      onProblemCountChange(
+        columns === 2 ? twoColumnRecommendedCount : recommendedCount
+      );
     } else if (
       previous.columns !== layoutColumns &&
       problemCount > maxProblems
@@ -108,9 +112,14 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     grade,
     layoutColumns,
     recommendedCount,
+    twoColumnRecommendedCount,
     problemCount,
     maxProblems,
     onProblemCountChange,
+    onLayoutColumnsChange,
+    isWord,
+    isWordEn,
+    isAnzan,
   ]);
 
   // 列数に応じた問題数の選択肢を生成
