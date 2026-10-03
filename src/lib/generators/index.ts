@@ -20,11 +20,14 @@ import { generateGradeDecimalProblems } from './decimal';
 import { generatePatternProblems } from './patterns';
 import { generateGradeEnWordProblems } from './word-problem-en';
 import { generateNumberTracingProblems } from './number-tracing';
+import { generateHissanProblem } from './hissan';
 
 /**
  * Main problem generator that routes to appropriate operation generator
  */
 export function generateProblems(settings: WorksheetSettings): Problem[] {
+  const validation = validateSettings(settings);
+  if (!validation.valid) throw new Error(validation.errors.join('\n'));
   const { operation, problemType, problemCount, grade, calculationPattern } =
     settings;
 
@@ -50,6 +53,15 @@ export function generateProblems(settings: WorksheetSettings): Problem[] {
   if (problemType === 'word-en') {
     // 英語文章問題
     return generateGradeEnWordProblems(grade, problemCount);
+  }
+
+  if (problemType === 'hissan' || problemType === 'hissan-div') {
+    return Array.from({ length: problemCount }, () =>
+      generateHissanProblem({
+        grade,
+        operation: problemType === 'hissan-div' ? 'division' : operation,
+      })
+    );
   }
 
   // 従来の基本計算
@@ -78,6 +90,11 @@ export function generateMixedProblems(
   settings: WorksheetSettings,
   operations: Operation[]
 ): Problem[] {
+  const validation = validateSettings(settings);
+  if (!validation.valid) throw new Error(validation.errors.join('\n'));
+  if (operations.length === 0) {
+    throw new Error('At least one operation is required');
+  }
   const problemsPerOperation = Math.floor(
     settings.problemCount / operations.length
   );
@@ -87,10 +104,17 @@ export function generateMixedProblems(
 
   operations.forEach((operation, index) => {
     const count = problemsPerOperation + (index < remainingProblems ? 1 : 0);
-    const operationSettings = { ...settings, operation };
+    if (count === 0) return;
+    const operationSettings: WorksheetSettings = {
+      ...settings,
+      problemType: 'basic',
+      calculationPattern: undefined,
+      operation,
+      problemCount: count,
+    };
 
     const problems = generateProblems(operationSettings);
-    allProblems.push(...problems.slice(0, count));
+    allProblems.push(...problems);
   });
 
   // Shuffle the problems to mix operations randomly
@@ -188,6 +212,10 @@ export function validateSettings(settings: WorksheetSettings): {
 } {
   const errors: string[] = [];
 
+  if (!Number.isInteger(settings.problemCount)) {
+    errors.push('Problem count must be a finite integer');
+  }
+
   if (settings.problemCount <= 0) {
     errors.push('Problem count must be greater than 0');
   }
@@ -196,11 +224,19 @@ export function validateSettings(settings: WorksheetSettings): {
     errors.push('Problem count should not exceed 100');
   }
 
-  if (settings.grade < 0 || settings.grade > 6) {
+  if (
+    !Number.isInteger(settings.grade) ||
+    settings.grade < 0 ||
+    settings.grade > 6
+  ) {
     errors.push('Grade must be between 0 and 6');
   }
 
-  if (settings.layoutColumns < 1 || settings.layoutColumns > 3) {
+  if (
+    !Number.isInteger(settings.layoutColumns) ||
+    settings.layoutColumns < 1 ||
+    settings.layoutColumns > 3
+  ) {
     errors.push('Layout columns must be between 1 and 3');
   }
 

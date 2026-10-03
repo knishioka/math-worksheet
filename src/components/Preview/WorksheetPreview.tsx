@@ -12,7 +12,6 @@ import {
   withPrintMediaStyles,
 } from '../../lib/utils/a4-overflow';
 
-/** 印刷前ガードでユーザーが印刷を中止したことを示すエラーメッセージ */
 const PRINT_CANCELLED_BY_OVERFLOW_GUARD = 'print-cancelled-a4-overflow';
 
 interface WorksheetPreviewProps {
@@ -29,23 +28,43 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
     WorksheetData[]
   >([]);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [printError, setPrintError] = useState('');
+  const printInProgress = useRef(false);
   const printRef = useRef<HTMLDivElement>(null);
   const buildWorksheetBatch = useProblemStore(
     (state) => state.buildWorksheetBatch
   );
+
+  const checkPrintLayout = (root: HTMLElement): void => {
+    if (!root.querySelector('[data-a4-sheet]')) {
+      throw new Error('印刷対象のページが見つかりません。');
+    }
+    const overflowing = findOverflowingSheets(root);
+    if (overflowing.length === 0) return;
+    const horizontal = overflowing.some(
+      (result) => result.horizontalOverflowMm > 0 || result.hasClippedProblems
+    );
+    setPrintError(
+      `${overflowing.length}ページでA4サイズ、または問題の列の範囲を超えています。印刷・PDF保存を中止しました。` +
+        (horizontal
+          ? '列数を減らして問題の幅を広げてください。'
+          : '問題数を減らしてください。')
+    );
+    throw new Error(PRINT_CANCELLED_BY_OVERFLOW_GUARD);
+  };
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: worksheetData
       ? `計算プリント_${worksheetData.settings.grade}年生`
       : '計算プリント',
+    pageStyle:
+      '@page { size: A4 portrait; margin: 0; } body { margin: 0; print-color-adjust: exact; -webkit-print-color-adjust: exact; }',
     onBeforePrint: async () => {
       flushSync(() => setIsPrinting(true));
+      await document.fonts?.ready;
 
-      // 印刷直前ガード: 描画済みの全ページを実測し、A4を超えるページが
-      // あればユーザーに確認する。気づかずに印刷して紙を無駄にする事故を防ぐ。
-      // この時点では印刷メディアが未適用のため、@media print のスタイルを
-      // 一時適用した状態で計測する（画面用CSSでの誤検知を防ぐ）。
+      // 印刷スタイルを適用した実寸のコピーで全ページを検査する。
       const printArea = printRef.current;
       if (printArea) {
         // 印刷時に非表示になる画面の祖先から切り離し、実寸で計測する。
@@ -58,55 +77,71 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
           visibility: 'hidden',
         });
         document.body.appendChild(measurementCopy);
-        let overflowing;
         try {
-          overflowing = withPrintMediaStyles(() =>
-            findOverflowingSheets(measurementCopy)
-          );
+          withPrintMediaStyles(() => checkPrintLayout(measurementCopy));
         } finally {
           measurementCopy.remove();
         }
-        if (overflowing.length > 0) {
-          const worstHeightMm = Math.max(
-            ...overflowing.map((result) => result.heightMm)
-          );
-          const proceed = window.confirm(
-            `${overflowing.length}ページがA4サイズ（297mm）を超えています（最大 ${Math.round(worstHeightMm)}mm）。\n` +
-              'このまま印刷すると問題がはみ出します。\n\n' +
-              '印刷を続けますか？（キャンセルして問題を再生成するか、問題数を減らすことをおすすめします）'
-          );
-          if (!proceed) {
-            setMultiPageWorksheets([]);
-            setIsPrinting(false);
-            // rejectすることで react-to-print が印刷処理を中断する
-            throw new Error(PRINT_CANCELLED_BY_OVERFLOW_GUARD);
-          }
-        }
+      } else {
+        throw new Error('印刷対象のプリントが見つかりません。');
       }
     },
+    print: async (iframe) => {
+      const printDocument = iframe.contentDocument;
+      const printWindow = iframe.contentWindow;
+      if (!printDocument || !printWindow)
+        throw new Error('印刷画面を開けませんでした。');
+      await printDocument.fonts?.ready;
+      printDocument.title = worksheetData
+        ? `計算プリント_${worksheetData.settings.grade}年生`
+        : '計算プリント';
+      // コピー先のフォント・スタイルでも組版が収まることを確認する。
+      withPrintMediaStyles(
+        () => checkPrintLayout(printDocument.body),
+        printDocument
+      );
+      printWindow.focus();
+      printWindow.print();
+    },
     onPrintError: (_errorLocation, error) => {
+      document.getElementById('printWindow')?.remove();
       if (error.message !== PRINT_CANCELLED_BY_OVERFLOW_GUARD) {
         console.error('[WorksheetPreview] 印刷エラー:', error);
+        setPrintError('印刷の準備に失敗しました。もう一度お試しください。');
       }
       setMultiPageWorksheets([]);
       setIsPrinting(false);
+      printInProgress.current = false;
     },
     onAfterPrint: () => {
       // 印刷後に複数ページの状態をクリア
       setMultiPageWorksheets([]);
       setIsPrinting(false);
+      printInProgress.current = false;
     },
   });
 
   const handleMultiPagePrint = useCallback(
     async (pageCount: number) => {
-      if (!worksheetData) return;
+      if (!worksheetData || printInProgress.current) return;
+      printInProgress.current = true;
+      setPrintError('');
 
-      // 複数ページ分のワークシートを生成
-      const worksheets = buildWorksheetBatch(pageCount, worksheetData);
-      setMultiPageWorksheets(worksheets);
-      setIsMultiPageDialogOpen(false);
-      await Promise.resolve(handlePrint());
+      try {
+        const worksheets = buildWorksheetBatch(pageCount, worksheetData);
+        flushSync(() => {
+          setMultiPageWorksheets(worksheets);
+          setIsMultiPageDialogOpen(false);
+        });
+        await Promise.resolve(handlePrint());
+      } catch {
+        setPrintError(
+          '印刷用の問題を作成できませんでした。もう一度お試しください。'
+        );
+        setMultiPageWorksheets([]);
+        setIsPrinting(false);
+        printInProgress.current = false;
+      }
     },
     [worksheetData, buildWorksheetBatch, handlePrint]
   );
@@ -153,6 +188,7 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
             <button
               type="button"
               className="print-button"
+              disabled={isPrinting}
               onClick={() => setIsMultiPageDialogOpen(true)}
             >
               印刷（複数ページにも対応）
@@ -164,6 +200,14 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
               </span>
             )}
           </div>
+          {printError && (
+            <p
+              role="alert"
+              className="mt-3 rounded-xl bg-rose-50 p-3 text-sm text-rose-800"
+            >
+              {printError}
+            </p>
+          )}
         </div>
 
         {/* Printable worksheet content */}

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
 import { createServer } from 'vite';
 
@@ -89,7 +89,7 @@ try {
           `${pattern}/${cols}: A4 width ${result.width}`
         );
         assert.ok(
-          result.height <= 1128 && !result.clipped,
+          result.height <= 1123 && !result.clipped,
           `${pattern}/${cols}/${answers}: ${JSON.stringify(result)}`
         );
         checked++;
@@ -110,12 +110,16 @@ try {
     await page.waitForFunction(
       ({ cols, count }) => {
         const params = new URLSearchParams(location.search);
-        return params.get('cols') === String(cols) && params.get('count') === String(count);
+        return (
+          params.get('cols') === String(cols) &&
+          params.get('count') === String(count)
+        );
       },
       { cols, count }
     );
   }
   await page.getByRole('checkbox', { name: '解答表示' }).check();
+  await page.getByRole('radio', { name: /よこ順/ }).check();
   await page.evaluate(() => {
     new MutationObserver(() => {
       const frame = document.getElementById('printWindow');
@@ -141,6 +145,17 @@ try {
   await printPage.setContent(html, { waitUntil: 'load' });
   await printPage.emulateMedia({ media: 'print' });
   assert.equal(await printPage.locator('[data-a4-sheet]').count(), 3);
+  assert.deepEqual(
+    await printPage
+      .locator('[data-a4-sheet]')
+      .first()
+      .locator('[data-problem-number]')
+      .evaluateAll((cells) =>
+        cells.map((cell) => Number(cell.getAttribute('data-problem-number')))
+      ),
+    [1, 2, 3, 4, 5, 6],
+    'The final PDF uses the selected row order'
+  );
   assert.equal(
     await printPage.locator('.path-stages, .app-header, .sheet-scaled').count(),
     0
@@ -151,6 +166,12 @@ try {
     preferCSSPageSize: true,
     printBackground: true,
   });
+  const pdf = await readFile(`${output}/three-pages-with-answers.pdf`);
+  assert.equal(
+    (pdf.toString('latin1').match(/\/Type\s*\/Page\b/g) ?? []).length,
+    3,
+    'PDF must contain exactly three A4 pages'
+  );
   await printPage
     .locator('[data-a4-sheet]')
     .first()
@@ -165,16 +186,95 @@ try {
   await page
     .getByRole('button', { name: '印刷（複数ページにも対応）' })
     .click();
-  const warningPromise = page.waitForEvent('dialog').then(async (warning) => {
-    assert.match(warning.message(), /A4サイズ/);
-    await warning.dismiss();
-  });
-  await Promise.all([
-    warningPromise,
-    page.getByRole('button', { name: '印刷する', exact: true }).click(),
-  ]);
+  await page.getByRole('button', { name: '印刷する', exact: true }).click();
+  await page
+    .getByRole('alert')
+    .filter({ hasText: '印刷・PDF保存を中止しました' })
+    .waitFor();
   await page.waitForFunction(() => !document.getElementById('printWindow'));
   assert.equal(await page.evaluate(() => window.__printedHTML), undefined);
+  // 用紙内でも問題が隣の列に重なる場合は出力を止める。
+  await page.reload();
+  await page.addStyleTag({
+    content:
+      '[data-problem-grid] > div::after { content: ""; display: block; width: 1000px; height: 1px; }',
+  });
+  await page
+    .getByRole('button', { name: '印刷（複数ページにも対応）' })
+    .click();
+  await page.getByRole('button', { name: '印刷する', exact: true }).click();
+  await page.getByRole('alert').filter({ hasText: '列数を減らして' }).waitFor();
+  await page.waitForFunction(() => !document.getElementById('printWindow'));
+
+  // 列数や式欄を変えても、確認中の問題文を維持する。
+  await page.goto(
+    `${base}?grade=3&type=basic&pattern=data-bar-chart-jap&cols=2&count=3`
+  );
+  const originalProblems = await page
+    .locator('[data-problem-grid] .worksheet-bar-chart')
+    .evaluateAll((charts) =>
+      charts.map((chart) => chart.getAttribute('aria-label')).sort()
+    );
+  assert.equal(originalProblems.length, 3);
+  await page.getByRole('button', { name: '3列', exact: true }).click();
+  await page.getByRole('checkbox', { name: '式を書く欄' }).check();
+  assert.deepEqual(
+    await page
+      .locator('[data-problem-grid] .worksheet-bar-chart')
+      .evaluateAll((charts) =>
+        charts.map((chart) => chart.getAttribute('aria-label')).sort()
+      ),
+    originalProblems
+  );
+  await page.goto(
+    `${base}?grade=2&type=basic&pattern=mult-table-five&cols=3&count=4`
+  );
+  const numberOrder = () =>
+    page
+      .locator('[data-problem-number]')
+      .evaluateAll((cells) =>
+        cells.map((cell) => Number(cell.getAttribute('data-problem-number')))
+      );
+  const problemContents = () =>
+    page
+      .locator('[data-problem-number]')
+      .evaluateAll((cells) =>
+        cells
+          .map(
+            (cell) =>
+              `${cell.getAttribute('data-problem-number')}:${cell.textContent}`
+          )
+          .sort()
+      );
+  assert.deepEqual(await numberOrder(), [1, 3, 4, 2]);
+  const beforeOrderChange = await problemContents();
+  await page.getByRole('radio', { name: /よこ順/ }).check();
+  assert.deepEqual(await numberOrder(), [1, 2, 3, 4]);
+  assert.deepEqual(await problemContents(), beforeOrderChange);
+  await page.reload();
+  assert.deepEqual(await numberOrder(), [1, 2, 3, 4]);
+  // 学習順の候補をカテゴリごとに探せ、並べ替えでは教材を変更しない。
+  await page.getByRole('button', { name: '問題を変更' }).click();
+  await page.getByRole('heading', { name: /基本計算 ·/ }).waitFor();
+  await page.getByLabel('キーワードで探す').fill('九九');
+  const tablePatterns = await page
+    .locator('#pattern-picker input[name="calculationPattern"]')
+    .evaluateAll((inputs) =>
+      inputs
+        .map((input) => input.value)
+        .filter((pattern) => pattern.startsWith('mult-table-'))
+    );
+  assert.deepEqual(tablePatterns.slice(0, 2), [
+    'mult-table-two',
+    'mult-table-five',
+  ]);
+  await page.getByLabel('教材の並び順').selectOption('difficulty');
+  assert.equal(
+    new URL(page.url()).searchParams.get('pattern'),
+    'mult-table-five'
+  );
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#pattern-picker').count(), 0);
   await page.goto(
     `${base}?grade=1&type=basic&pattern=sub-minus-three&cols=2&count=20`
   );
@@ -201,6 +301,28 @@ try {
     .click();
   await page.keyboard.press('Escape');
   assert.equal(await page.getByRole('dialog').count(), 0);
+  const pageExtent = await page.evaluate(() => ({
+    height: document.documentElement.scrollHeight,
+    footerBottom:
+      document.querySelector('.app-footer').getBoundingClientRect().bottom +
+      scrollY,
+    viewportHeight: innerHeight,
+    frames: document.querySelectorAll('iframe').length,
+    sheetViewportHeight: document.querySelector('.sheet-viewport').clientHeight,
+    furthestElements: [...document.body.querySelectorAll('*')]
+      .map((element) => ({
+        tag: element.tagName,
+        className: element.getAttribute('class'),
+        bottom: element.getBoundingClientRect().bottom + scrollY,
+      }))
+      .sort((a, b) => b.bottom - a.bottom)
+      .slice(0, 5),
+  }));
+  assert.ok(
+    pageExtent.height <=
+      Math.max(pageExtent.viewportHeight, pageExtent.footerBottom + 100),
+    `No blank scroll area below the footer: ${JSON.stringify(pageExtent)}`
+  );
   await page.screenshot({ path: `${output}/desktop.png`, fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole('button', { name: '道すじを閉じる' }).click();

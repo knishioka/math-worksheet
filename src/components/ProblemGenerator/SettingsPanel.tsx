@@ -4,6 +4,7 @@ import type {
   ProblemType,
   CalculationPattern,
   Grade,
+  ProblemOrder,
 } from '../../types';
 import {
   getPrintTemplate,
@@ -23,6 +24,8 @@ interface SettingsPanelProps {
   problemType?: ProblemType;
   calculationPattern?: CalculationPattern;
   showEquationLine?: boolean;
+  problemOrder?: ProblemOrder;
+  onProblemOrderChange?: (order: ProblemOrder) => void;
   stepNumber?: 2 | 3;
   onProblemCountChange: (count: number) => void;
   onLayoutColumnsChange: (columns: LayoutColumns) => void;
@@ -36,6 +39,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   problemType,
   calculationPattern,
   showEquationLine = false,
+  problemOrder = 'column',
+  onProblemOrderChange,
   stepNumber = 3,
   onProblemCountChange,
   onLayoutColumnsChange,
@@ -76,23 +81,37 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveProblemType, isWord, isWordEn, isAnzan]);
 
-  // 問題タイプまたは列数が変更されたときに推奨問題数を自動選択。
+  // 教材変更時は推奨問題数を適用し、列数変更時は選んだ問題数を上限内で保つ。
   // 初回マウントでは適用しない（URL から復元した問題数を上書きしてしまうため）。
   // 「初回かどうか」ではなく直前の組み合わせを覚えることで、StrictMode の
   // 再マウントでも値が変わっていなければ適用されない
-  const lastRecommendationRef = React.useRef<string | null>(null);
+  const lastRecommendationRef = React.useRef<{
+    material: string;
+    columns: LayoutColumns;
+  } | null>(null);
   React.useEffect(() => {
-    const key = `${effectiveProblemType}:${layoutColumns}:${recommendedCount}`;
-    const isSameAsLast = lastRecommendationRef.current === key;
-    const isInitialMount = lastRecommendationRef.current === null;
-    lastRecommendationRef.current = key;
-
-    if (isInitialMount || isSameAsLast) {
-      return;
+    const material = `${effectiveProblemType}:${calculationPattern}:${grade}`;
+    const previous = lastRecommendationRef.current;
+    lastRecommendationRef.current = { material, columns: layoutColumns };
+    if (!previous) return;
+    if (previous.material !== material) {
+      onProblemCountChange(recommendedCount);
+    } else if (
+      previous.columns !== layoutColumns &&
+      problemCount > maxProblems
+    ) {
+      onProblemCountChange(maxProblems);
     }
-    onProblemCountChange(recommendedCount);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveProblemType, layoutColumns, recommendedCount]);
+  }, [
+    effectiveProblemType,
+    calculationPattern,
+    grade,
+    layoutColumns,
+    recommendedCount,
+    problemCount,
+    maxProblems,
+    onProblemCountChange,
+  ]);
 
   // 列数に応じた問題数の選択肢を生成
   // 小さなステップ（2問または4問）で細かく選択可能にする
@@ -107,13 +126,15 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   };
 
   const step = getStepSize();
-  const minProblems = Math.max(step, Math.floor(recommendedCount / 2)); // 最小値は推奨の半分程度
+  const minProblems = 1;
 
   const lessCount = Math.floor((recommendedCount * 0.75) / step) * step;
   const moreCount = Math.ceil((recommendedCount * 1.25) / step) * step;
 
   // 最小値から最大値まで、ステップごとに選択肢を生成
-  for (let i = minProblems; i <= maxProblems; i += step) {
+  problemCountOptions.push(1);
+  for (let i = step; i <= maxProblems; i += step) {
+    if (problemCountOptions.includes(i)) continue;
     problemCountOptions.push(i);
   }
 
@@ -127,6 +148,14 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   if (!problemCountOptions.includes(maxProblems)) {
     problemCountOptions.push(maxProblems);
   }
+  if (
+    problemCount > 0 &&
+    problemCount <= maxProblems &&
+    !problemCountOptions.includes(problemCount)
+  ) {
+    problemCountOptions.push(problemCount);
+  }
+  problemCountOptions.sort((a, b) => a - b);
 
   const showLessOption =
     lessCount >= minProblems && problemCountOptions.includes(lessCount);
@@ -181,6 +210,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <div className="grid grid-cols-3 gap-2">
           <button
             type="button"
+            aria-pressed={layoutColumns === 1}
             onClick={() => onLayoutColumnsChange(1)}
             className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
               layoutColumns === 1
@@ -192,6 +222,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           </button>
           <button
             type="button"
+            aria-pressed={layoutColumns === 2}
             onClick={() => onLayoutColumnsChange(2)}
             className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
               layoutColumns === 2
@@ -203,6 +234,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           </button>
           <button
             type="button"
+            aria-pressed={layoutColumns === 3}
             onClick={() => onLayoutColumnsChange(3)}
             className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
               layoutColumns === 3
@@ -262,6 +294,36 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         )}
       </div>
 
+      {onProblemOrderChange && (
+        <fieldset>
+          <legend className="mb-2 text-sm font-semibold text-slate-700">
+            問題の並び
+          </legend>
+          <div className="grid grid-cols-2 gap-2">
+            {(['column', 'row'] as const).map((order) => (
+              <label
+                key={order}
+                className={`cursor-pointer rounded-xl border p-3 text-sm ${problemOrder === order ? 'border-teal-500 bg-teal-50 text-teal-900' : 'border-slate-200 text-slate-600'}`}
+              >
+                <input
+                  type="radio"
+                  name="problem-order"
+                  value={order}
+                  checked={problemOrder === order}
+                  onChange={() => onProblemOrderChange(order)}
+                  className="mr-2 accent-teal-700"
+                />
+                {order === 'column' ? 'たて順 ↓' : 'よこ順 →'}
+                <span className="mt-1 block text-xs">
+                  {order === 'column'
+                    ? '列ごとに上から下へ'
+                    : '行ごとに左から右へ'}
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
       <div>
         <label className="mb-2 block text-sm font-semibold text-slate-700">
           問題数

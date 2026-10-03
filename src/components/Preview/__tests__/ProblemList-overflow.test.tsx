@@ -40,6 +40,9 @@ describe('ProblemList 実測ベースのA4オーバーフロー警告', () => {
       heightPx: 1123,
       heightMm: 297,
       overflowMm: 0,
+      widthPx: 794,
+      widthMm: 210,
+      horizontalOverflowMm: 0,
     });
 
     render(
@@ -62,6 +65,9 @@ describe('ProblemList 実測ベースのA4オーバーフロー警告', () => {
       heightPx: 1196,
       heightMm: 316.4,
       overflowMm: 19.4,
+      widthPx: 794,
+      widthMm: 210,
+      horizontalOverflowMm: 0,
     });
 
     render(
@@ -82,6 +88,9 @@ describe('ProblemList 実測ベースのA4オーバーフロー警告', () => {
       heightPx: 1196,
       heightMm: 316.4,
       overflowMm: 19.4,
+      widthPx: 794,
+      widthMm: 210,
+      horizontalOverflowMm: 0,
     });
 
     render(

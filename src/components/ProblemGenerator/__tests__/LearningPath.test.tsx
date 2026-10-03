@@ -4,6 +4,31 @@ import { LearningPath } from '../LearningPath';
 
 beforeEach(() => localStorage.clear());
 describe('学習の道すじ', () => {
+  it('前の教材に戻れる', () => {
+    const onSelect = vi.fn();
+    render(
+      <LearningPath grade={1} pattern="sub-minus-three" onSelect={onSelect} />
+    );
+    fireEvent.click(screen.getByRole('button', { name: /前の教材/ }));
+    expect(onSelect).toHaveBeenCalledWith('add-plus-three');
+  });
+
+  it('サイドバーから別の教材を選ぶと対応する段階へ戻る', () => {
+    const { rerender } = render(
+      <LearningPath grade={1} pattern="add-plus-three" onSelect={vi.fn()} />
+    );
+    fireEvent.click(screen.getByRole('button', { name: /数と計算の入り口/ }));
+    rerender(
+      <LearningPath
+        grade={1}
+        pattern="sub-single-digit-borrow"
+        onSelect={vi.fn()}
+      />
+    );
+    expect(
+      screen.getByRole('button', { name: /使い分けて考える/ })
+    ).toHaveAttribute('aria-pressed', 'true');
+  });
   it('加減を対に選べて、選択しただけでは練習済みにならない', () => {
     const onSelect = vi.fn();
     render(

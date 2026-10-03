@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { Mock } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import {
+  act,
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+} from '@testing-library/react';
 import type { WorksheetData, WorksheetSettings, Problem } from '../../../types';
 import type { UseReactToPrintOptions } from 'react-to-print';
 
@@ -174,6 +180,9 @@ describe('WorksheetPreview multi-page printing', () => {
       heightPx: 1196,
       heightMm: 316.4,
       overflowMm: 19.4,
+      widthPx: 794,
+      widthMm: 210,
+      horizontalOverflowMm: 0,
     };
 
     async function triggerPrint(): Promise<void> {
@@ -197,27 +206,103 @@ describe('WorksheetPreview multi-page printing', () => {
       confirmSpy.mockRestore();
     });
 
-    it('はみ出し検出時に確認ダイアログでキャンセルすると印刷を中止する', async () => {
+    it('はみ出し検出時は印刷を中止し、調整方法を表示する', async () => {
       findOverflowingSheetsMock.mockReturnValue([overflowResult]);
       const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
 
       await triggerPrint();
 
-      expect(confirmSpy).toHaveBeenCalledTimes(1);
-      expect(confirmSpy.mock.calls[0][0]).toContain('A4サイズ');
+      expect(confirmSpy).not.toHaveBeenCalled();
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        '問題数を減らしてください'
+      );
       expect(printProceeded).toBe(false);
       confirmSpy.mockRestore();
     });
 
-    it('はみ出し検出時でもユーザーが続行を選べば印刷する', async () => {
-      findOverflowingSheetsMock.mockReturnValue([overflowResult]);
+    it('横にはみ出した問題も印刷を中止する', async () => {
+      findOverflowingSheetsMock.mockReturnValue([
+        { ...overflowResult, overflowMm: 0, horizontalOverflowMm: 10 },
+      ]);
       const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
 
       await triggerPrint();
 
-      expect(confirmSpy).toHaveBeenCalledTimes(1);
-      expect(printProceeded).toBe(true);
+      expect(confirmSpy).not.toHaveBeenCalled();
+      expect(printProceeded).toBe(false);
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        '列数を減らして'
+      );
       confirmSpy.mockRestore();
     });
+  });
+
+  it('measures all generated pages before starting print', async () => {
+    render(<WorksheetPreview worksheetData={baseWorksheet} />);
+    fireEvent.click(
+      screen.getByRole('button', { name: '印刷（複数ページにも対応）' })
+    );
+    fireEvent.change(screen.getByRole('slider'), { target: { value: '3' } });
+    fireEvent.click(screen.getByRole('button', { name: '印刷する' }));
+    await waitFor(() => expect(findOverflowingSheetsMock).toHaveBeenCalled());
+    const measuredRoot = findOverflowingSheetsMock.mock.calls[0][0];
+    expect(measuredRoot.querySelectorAll('[data-a4-sheet]')).toHaveLength(3);
+    expect(measuredRoot.isConnected).toBe(false);
+  });
+
+  it('reports generation failures without opening print', async () => {
+    generateProblemsMock.mockImplementation(() => {
+      throw new Error('generation failed');
+    });
+    render(<WorksheetPreview worksheetData={baseWorksheet} />);
+    fireEvent.click(
+      screen.getByRole('button', { name: '印刷（複数ページにも対応）' })
+    );
+    fireEvent.change(screen.getByRole('slider'), { target: { value: '2' } });
+    fireEvent.click(screen.getByRole('button', { name: '印刷する' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      '印刷用の問題を作成できませんでした'
+    );
+    expect(mockHandlePrint).not.toHaveBeenCalled();
+  });
+
+  it('rejects overflow in the final print iframe even if the preview fitted', async () => {
+    render(<WorksheetPreview worksheetData={baseWorksheet} />);
+    await act(async () => {
+      await storedPrintOptions?.onBeforePrint?.();
+    });
+    const iframe = document.createElement('iframe');
+    iframe.id = 'printWindow';
+    document.body.append(iframe);
+    iframe.contentDocument!.body.innerHTML = '<div data-a4-sheet></div>';
+    const nativePrint = vi.fn();
+    Object.defineProperty(iframe.contentWindow!, 'print', {
+      value: nativePrint,
+      configurable: true,
+    });
+    findOverflowingSheetsMock.mockReturnValue([
+      {
+        isOverflow: true,
+        heightPx: 1196,
+        heightMm: 316.4,
+        overflowMm: 19.4,
+        widthPx: 794,
+        widthMm: 210,
+        horizontalOverflowMm: 0,
+      },
+    ]);
+    await act(async () => {
+      await expect(storedPrintOptions!.print!(iframe)).rejects.toThrow(
+        'print-cancelled-a4-overflow'
+      );
+    });
+    expect(nativePrint).not.toHaveBeenCalled();
+    act(() => {
+      storedPrintOptions?.onPrintError?.(
+        'print',
+        new Error('print-cancelled-a4-overflow')
+      );
+    });
+    expect(document.getElementById('printWindow')).toBeNull();
   });
 });
