@@ -88,7 +88,7 @@ export function parseUrlSettings(
   const countParam = params.get('count');
   if (countParam !== null) {
     const count = Number(countParam);
-    if (Number.isFinite(count) && count > 0) {
+    if (Number.isInteger(count) && count > 0) {
       const effectiveType = getEffectiveProblemType(
         result.problemType ?? defaults.problemType,
         result.calculationPattern
@@ -104,6 +104,9 @@ export function parseUrlSettings(
   }
 
   const equationParam = params.get('eq');
+  const orderParam = params.get('order');
+  if (orderParam === 'column' || orderParam === 'row')
+    result.problemOrder = orderParam;
   if (equationParam !== null && supportsEquationLine(result)) {
     result.showEquationLine =
       equationParam === '1' || equationParam.toLowerCase() === 'true';
@@ -121,6 +124,7 @@ export function settingsToUrlParams(settings: WorksheetSettings): string {
   }
   params.set('cols', String(settings.layoutColumns));
   params.set('count', String(settings.problemCount));
+  if (settings.problemOrder === 'row') params.set('order', 'row');
   if (settings.showEquationLine && supportsEquationLine(settings)) {
     params.set('eq', '1');
   }

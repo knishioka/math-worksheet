@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Header } from './components/Layout/Header';
 import { Container } from './components/Layout/Container';
 import { ProblemTypeSelector } from './components/ProblemGenerator/ProblemTypeSelector';
@@ -7,7 +7,7 @@ import { LearningPath } from './components/ProblemGenerator/LearningPath';
 import { SettingsPanel } from './components/ProblemGenerator/SettingsPanel';
 import { WorksheetPreview } from './components/Preview/WorksheetPreview';
 import { useProblemStore } from './stores/problemStore';
-import { generateProblems } from './lib/generators';
+import { buildWorksheet } from './lib/generators/worksheet';
 import {
   syncUrlFromSettings,
   getOperationFromPattern,
@@ -16,9 +16,9 @@ import { getLearningStages } from './config/learning-paths';
 import type { CalculationPattern, WorksheetData } from './types';
 
 function App(): React.ReactElement {
-  const { settings, updateSettings, setProblems, getWorksheetData } =
-    useProblemStore();
+  const { settings, updateSettings, setProblems } = useProblemStore();
   const [worksheetData, setWorksheetData] = useState<WorksheetData>();
+  const previousWorksheet = useRef<WorksheetData | undefined>(undefined);
   const [showAnswers, setShowAnswers] = useState(false);
   const [error, setError] = useState('');
   const [showPath, setShowPath] = useState(true);
@@ -31,18 +31,26 @@ function App(): React.ReactElement {
       operation: getOperationFromPattern(calculationPattern),
     });
   };
-  const handleGenerate = useCallback(() => {
-    try {
-      setProblems(generateProblems(settings));
-      setWorksheetData(getWorksheetData());
-      setError('');
-    } catch {
-      setWorksheetData(undefined);
-      setError(
-        '問題を作成できませんでした。別の教材を選ぶか、もう一度作成してください。'
-      );
-    }
-  }, [settings, setProblems, getWorksheetData]);
+  const handleGenerate = useCallback(
+    (regenerate = false) => {
+      try {
+        const worksheet = buildWorksheet(
+          settings,
+          regenerate ? undefined : previousWorksheet.current
+        );
+        previousWorksheet.current = worksheet;
+        setProblems(worksheet.problems);
+        setWorksheetData(worksheet);
+        setError('');
+      } catch {
+        setWorksheetData(undefined);
+        setError(
+          '問題を作成できませんでした。別の教材を選ぶか、もう一度作成してください。'
+        );
+      }
+    },
+    [settings, setProblems]
+  );
 
   useEffect(() => {
     handleGenerate();
@@ -152,6 +160,10 @@ function App(): React.ReactElement {
                   problemType={settings.problemType}
                   calculationPattern={settings.calculationPattern}
                   showEquationLine={settings.showEquationLine}
+                  problemOrder={settings.problemOrder}
+                  onProblemOrderChange={(problemOrder) =>
+                    updateSettings({ problemOrder })
+                  }
                   stepNumber={hasPatternSelectionStep ? 3 : 2}
                   onProblemCountChange={(problemCount) =>
                     updateSettings({ problemCount })
@@ -177,10 +189,13 @@ function App(): React.ReactElement {
                 <button
                   type="button"
                   className="secondary-button w-full"
-                  onClick={handleGenerate}
+                  onClick={() => handleGenerate(true)}
                 >
                   同じ教材で問題を作り直す ↻
                 </button>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  レイアウトや解答欄を変えても問題はそのままです。新しい問題にするには「作り直す」を押してください。
+                </p>
                 <p className="text-xs text-slate-500 leading-relaxed">
                   まずは答えを見ずに解いてみましょう。丸つけの後は、まちがえた問題をもう一度。
                 </p>

@@ -7,6 +7,37 @@ import {
 import type { WorksheetSettings, Operation } from '../../types';
 
 describe('generateProblems', () => {
+  it.each([NaN, Infinity, 2.5, -1, 0, 101])(
+    'rejects invalid counts before generation: %s',
+    (problemCount) => {
+      expect(() =>
+        generateProblems({
+          grade: 2,
+          problemType: 'basic',
+          operation: 'addition',
+          layoutColumns: 2,
+          problemCount,
+        })
+      ).toThrow();
+    }
+  );
+
+  it('routes direct hissan settings to written calculation problems', () => {
+    const problems = generateProblems({
+      grade: 3,
+      problemType: 'hissan',
+      operation: 'multiplication',
+      layoutColumns: 2,
+      problemCount: 4,
+    });
+    expect(problems).toHaveLength(4);
+    expect(
+      problems.every(
+        (problem) =>
+          problem.type === 'hissan' && problem.operation === 'multiplication'
+      )
+    ).toBe(true);
+  });
   it('should generate addition problems', () => {
     const settings: WorksheetSettings = {
       grade: 2,
@@ -95,6 +126,36 @@ describe('generateProblems', () => {
 });
 
 describe('generateMixedProblems', () => {
+  it('honors requested operations even when a pattern or specialized type is selected', () => {
+    const settings: WorksheetSettings = {
+      grade: 3,
+      problemType: 'fraction',
+      calculationPattern: 'add-triple-digit',
+      operation: 'addition',
+      problemCount: 3,
+      layoutColumns: 1,
+    };
+    const problems = generateMixedProblems(settings, [
+      'addition',
+      'subtraction',
+      'division',
+    ]);
+    expect(problems.map((problem) => problem.operation).sort()).toEqual([
+      'addition',
+      'division',
+      'subtraction',
+    ]);
+    expect(problems.every((problem) => problem.type === 'basic')).toBe(true);
+    expect(() => generateMixedProblems(settings, [])).toThrow(
+      'At least one operation'
+    );
+    expect(
+      generateMixedProblems({ ...settings, problemCount: 1 }, [
+        'addition',
+        'subtraction',
+      ])
+    ).toHaveLength(1);
+  });
   it('should generate mixed operation problems', () => {
     const settings: WorksheetSettings = {
       grade: 3,

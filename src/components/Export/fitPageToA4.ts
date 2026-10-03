@@ -3,6 +3,7 @@ import type { PrintTemplate } from '../../config/print-templates';
 export const MM_PER_PX = 25.4 / 96;
 export const PX_PER_MM = 96 / 25.4;
 export const A4_HEIGHT_MM = 297;
+export const A4_WIDTH_MM = 210;
 export const MIN_MARGIN_MM = 5;
 const MAX_MARGIN_ITERATIONS = 6;
 const SCALE_SAFETY_MM = 0.5;

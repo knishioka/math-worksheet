@@ -267,10 +267,10 @@
     @apply font-mono text-2xl opacity-75;
   }
   .path-lessons {
-    @apply flex flex-wrap gap-2;
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2;
   }
   .path-lesson {
-    @apply flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs font-medium text-slate-700 hover:border-teal-600;
+    @apply flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-3 text-left text-sm font-medium text-slate-700 hover:border-teal-600;
   }
   .path-lesson[aria-pressed='true'] {
     @apply border-teal-700 bg-teal-50 text-teal-900 ring-1 ring-teal-700;

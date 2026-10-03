@@ -17,7 +17,6 @@ import {
   type PatternCategory,
   type PatternLanguage,
   filterPatternsByLanguage,
-  getAvailableCategoriesSorted,
   getCategoryForPattern,
   getDifficultyLabel,
   getPatternDifficulty,
@@ -25,6 +24,10 @@ import {
 import { LanguageFilter } from '../UI/LanguageFilter';
 import { DifficultyStars } from '../UI/DifficultyStars';
 import { getLearningStages } from '../../config/learning-paths';
+import {
+  getDiscoveryGroups,
+  type PatternSortOrder,
+} from '../../config/pattern-discovery';
 
 interface CalculationPatternSelectorProps {
   grade: Grade;
@@ -35,6 +38,14 @@ interface CalculationPatternSelectorProps {
 type CategoryFilter = 'all' | PatternCategory;
 type DifficultyFilter = 'all' | DifficultyLevel;
 
+const normalizeSearch = (text: string): string =>
+  text
+    .normalize('NFKC')
+    .toLocaleLowerCase('ja')
+    .replace(/[ァ-ヶ]/g, (character) =>
+      String.fromCharCode(character.charCodeAt(0) - 0x60)
+    );
+
 export const CalculationPatternSelector: React.FC<
   CalculationPatternSelectorProps
 > = ({ grade, selectedPattern, onPatternChange }) => {
@@ -43,6 +54,7 @@ export const CalculationPatternSelector: React.FC<
   const [category, setCategory] = useState<CategoryFilter>('all');
   const [difficulty, setDifficulty] = useState<DifficultyFilter>('all');
   const [language, setLanguage] = useState<PatternLanguage>('all');
+  const [sortOrder, setSortOrder] = useState<PatternSortOrder>('learning');
   const previousGradeRef = useRef(grade);
   const changeButtonRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -56,10 +68,9 @@ export const CalculationPatternSelector: React.FC<
     [allPatterns, language]
   );
 
-  // カテゴリ順→難易度順に並べることで、候補の順序を毎回一定にする。
   const categorizedPatterns = useMemo(
-    () => getAvailableCategoriesSorted(languageFilteredPatterns),
-    [languageFilteredPatterns]
+    () => getDiscoveryGroups(languageFilteredPatterns, grade, sortOrder),
+    [languageFilteredPatterns, grade, sortOrder]
   );
 
   const orderedPatterns = useMemo(
@@ -68,7 +79,7 @@ export const CalculationPatternSelector: React.FC<
   );
 
   const visiblePatterns = useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase('ja');
+    const keywords = normalizeSearch(query).trim().split(/\s+/).filter(Boolean);
 
     return orderedPatterns.filter((pattern) => {
       if (category !== 'all' && getCategoryForPattern(pattern) !== category) {
@@ -80,17 +91,26 @@ export const CalculationPatternSelector: React.FC<
       ) {
         return false;
       }
-      if (!normalizedQuery) {
+      if (keywords.length === 0) {
         return true;
       }
 
-      const searchableText =
-        `${PATTERN_LABELS[pattern]} ${PATTERN_DESCRIPTIONS[pattern]}`.toLocaleLowerCase(
-          'ja'
-        );
-      return searchableText.includes(normalizedQuery);
+      const searchableText = normalizeSearch(
+        `${PATTERN_LABELS[pattern]} ${PATTERN_DESCRIPTIONS[pattern]}`
+      );
+      return keywords.every((keyword) => searchableText.includes(keyword));
     });
   }, [category, difficulty, orderedPatterns, query]);
+
+  const visibleGroups = useMemo(() => {
+    const visible = new Set(visiblePatterns);
+    return categorizedPatterns
+      .map((group) => ({
+        ...group,
+        patterns: group.patterns.filter((pattern) => visible.has(pattern)),
+      }))
+      .filter((group) => group.patterns.length > 0);
+  }, [categorizedPatterns, visiblePatterns]);
 
   const selectedCategory = getCategoryForPattern(selectedPattern);
   const hasActiveFilters =
@@ -109,7 +129,13 @@ export const CalculationPatternSelector: React.FC<
     setQuery('');
     setCategory('all');
     setDifficulty('all');
+    setLanguage('all');
+    setSortOrder('learning');
   }, [grade]);
+
+  useEffect(() => {
+    if (isPickerOpen) searchInputRef.current?.focus();
+  }, [isPickerOpen]);
 
   // 未選択時だけ、現在の表示順で最初の問題を初期値にする。
   // フィルター操作では既存の選択を変更しない。
@@ -203,6 +229,13 @@ export const CalculationPatternSelector: React.FC<
       {isPickerOpen && (
         <div
           id="pattern-picker"
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              event.preventDefault();
+              setIsPickerOpen(false);
+              changeButtonRef.current?.focus();
+            }
+          }}
           className="space-y-4 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"
         >
           <div>
@@ -260,6 +293,20 @@ export const CalculationPatternSelector: React.FC<
 
           <div className="flex flex-col gap-3 border-y border-slate-100 py-3">
             <label className="flex items-center justify-between gap-3 text-xs font-semibold text-slate-600">
+              教材の並び順
+              <select
+                aria-label="教材の並び順"
+                value={sortOrder}
+                onChange={(event) =>
+                  setSortOrder(event.target.value as PatternSortOrder)
+                }
+                className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 font-medium text-slate-700"
+              >
+                <option value="learning">学習の道すじ順</option>
+                <option value="difficulty">やさしい順</option>
+              </select>
+            </label>
+            <label className="flex items-center justify-between gap-3 text-xs font-semibold text-slate-600">
               難易度
               <select
                 aria-label="難易度で絞り込む"
@@ -281,7 +328,10 @@ export const CalculationPatternSelector: React.FC<
             </label>
             <LanguageFilter
               value={language}
-              onChange={setLanguage}
+              onChange={(nextLanguage) => {
+                setLanguage(nextLanguage);
+                setCategory('all');
+              }}
               className="justify-between"
             />
           </div>
@@ -307,15 +357,32 @@ export const CalculationPatternSelector: React.FC<
             </div>
 
             {visiblePatterns.length > 0 ? (
-              <fieldset className="max-h-96 space-y-1.5 overflow-y-auto pr-1">
+              <fieldset className="relative min-w-0 max-h-96 space-y-1.5 overflow-y-auto pr-1">
                 <legend className="sr-only">計算パターン</legend>
-                {visiblePatterns.map((pattern) => (
-                  <PatternOption
-                    key={pattern}
-                    pattern={pattern}
-                    selected={selectedPattern === pattern}
-                    onSelect={handlePatternSelect}
-                  />
+                {visibleGroups.map((group) => (
+                  <div
+                    key={group.category}
+                    role="group"
+                    aria-labelledby={`pattern-group-${group.category}`}
+                    className="space-y-1.5 pb-3"
+                  >
+                    <h4
+                      id={`pattern-group-${group.category}`}
+                      className="sticky top-0 z-10 border-b border-slate-100 bg-white py-2 text-xs font-semibold text-slate-700"
+                    >
+                      {CATEGORY_CONFIG[group.category].icon}{' '}
+                      {CATEGORY_CONFIG[group.category].label} ·{' '}
+                      {group.patterns.length}件
+                    </h4>
+                    {group.patterns.map((pattern) => (
+                      <PatternOption
+                        key={pattern}
+                        pattern={pattern}
+                        selected={selectedPattern === pattern}
+                        onSelect={handlePatternSelect}
+                      />
+                    ))}
+                  </div>
                 ))}
               </fieldset>
             ) : (
@@ -389,7 +456,7 @@ function PatternOption({
 
   return (
     <label
-      className={`block cursor-pointer rounded-xl border p-2.5 transition ${
+      className={`relative block cursor-pointer rounded-xl border p-2.5 transition ${
         selected
           ? 'border-teal-400 bg-teal-50 ring-1 ring-teal-300 focus-within:ring-2 focus-within:ring-teal-500'
           : 'border-slate-200 bg-white hover:border-teal-200 hover:bg-slate-50 focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-300'
@@ -406,6 +473,11 @@ function PatternOption({
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold leading-snug text-slate-900">
+            {selected && (
+              <span aria-hidden="true" className="mr-1 text-teal-700">
+                ✓
+              </span>
+            )}
             {PATTERN_LABELS[pattern]}
           </p>
           <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-slate-500">

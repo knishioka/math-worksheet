@@ -15,6 +15,17 @@ const defaults: WorksheetSettings = {
 };
 
 describe('parseUrlSettings', () => {
+  it('restores the problem order and ignores unknown orders', () => {
+    expect(parseUrlSettings('?order=row', defaults).problemOrder).toBe('row');
+    expect(parseUrlSettings('?order=column', defaults).problemOrder).toBe(
+      'column'
+    );
+    expect(
+      parseUrlSettings('?order=random', defaults).problemOrder
+    ).toBeUndefined();
+    const query = settingsToUrlParams({ ...defaults, problemOrder: 'row' });
+    expect(parseUrlSettings(`?${query}`, defaults).problemOrder).toBe('row');
+  });
   it('returns empty object when no URL params', () => {
     expect(parseUrlSettings('', defaults)).toEqual({});
   });

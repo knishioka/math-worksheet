@@ -41,6 +41,14 @@ const baseWorksheet: WorksheetData = {
 };
 
 describe('useProblemStore.buildWorksheetBatch', () => {
+  it.each([0, -1, 1.5, NaN, Infinity, 21])(
+    'rejects invalid print page counts: %s',
+    (pageCount) => {
+      expect(() =>
+        useProblemStore.getState().buildWorksheetBatch(pageCount)
+      ).toThrow('Print page count');
+    }
+  );
   beforeEach(() => {
     generateProblemsMock = vi.fn<(settings: WorksheetSettings) => Problem[]>(
       (settings: WorksheetSettings): Problem[] =>

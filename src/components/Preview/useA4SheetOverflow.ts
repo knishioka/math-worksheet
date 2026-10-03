@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  evaluateA4Overflow,
-  measureSheetHeightPx,
-} from '../../lib/utils/a4-overflow';
+import { measureSheetOverflow } from '../../lib/utils/a4-overflow';
 import type { A4OverflowResult } from '../../lib/utils/a4-overflow';
 
 /**
@@ -35,7 +32,7 @@ export function useA4SheetOverflow(
     }
 
     const measure = (): void => {
-      setResult(evaluateA4Overflow(measureSheetHeightPx(sheetElement)));
+      setResult(measureSheetOverflow(sheetElement));
     };
 
     measure();
@@ -47,6 +44,9 @@ export function useA4SheetOverflow(
 
     const observer = new ResizeObserver(measure);
     observer.observe(sheetElement);
+    sheetElement
+      .querySelectorAll('[data-problem-grid] > div')
+      .forEach((cell) => observer.observe(cell));
     return (): void => observer.disconnect();
   }, [sheetElement, enabled, remeasureKey]);
 

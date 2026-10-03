@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { CalculationPattern, Grade } from '../../types';
 import { PATTERN_LABELS, PATTERN_DESCRIPTIONS } from '../../types';
 import { getLearningStages } from '../../config/learning-paths';
@@ -30,6 +30,7 @@ export function LearningPath({ grade, pattern, onSelect }: Props): ReactNode {
   const [browsingStage, setBrowsingStage] = useState<number | null>(null);
   const [practiced, setPracticed] = useState(readPractice);
   const [storageNotice, setStorageNotice] = useState('');
+  useEffect(() => setBrowsingStage(null), [grade, pattern]);
   const stageIndex = browsingStage ?? Math.max(0, currentStage);
   const stage = stages[stageIndex];
   if (!stage) return null;
@@ -39,6 +40,7 @@ export function LearningPath({ grade, pattern, onSelect }: Props): ReactNode {
   ).length;
   const currentIndex = pattern ? allPatterns.indexOf(pattern) : -1;
   const next = currentIndex >= 0 ? allPatterns[currentIndex + 1] : undefined;
+  const previous = currentIndex > 0 ? allPatterns[currentIndex - 1] : undefined;
   const togglePractice = (): void => {
     if (!pattern) return;
     const key = `${grade}:${pattern}`;
@@ -144,6 +146,18 @@ export function LearningPath({ grade, pattern, onSelect }: Props): ReactNode {
                 ? '✓ 練習済み（取り消す）'
                 : 'この教材を「練習した」にする'}
             </button>
+            {previous && (
+              <button
+                type="button"
+                className="text-teal-800 font-semibold text-xs hover:underline"
+                onClick={() => {
+                  setBrowsingStage(null);
+                  onSelect(previous);
+                }}
+              >
+                ← 前の教材：{PATTERN_LABELS[previous]}
+              </button>
+            )}
             {next && (
               <button
                 type="button"
