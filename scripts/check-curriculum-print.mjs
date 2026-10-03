@@ -20,17 +20,112 @@ const { PATTERNS_BY_GRADE } = await vite.ssrLoadModule(
 await vite.close();
 const base = process.argv[2] ?? 'http://127.0.0.1:5174/';
 const printOnly = process.argv.includes('--print-only');
+const maxValues = process.argv.includes('--max-values');
+const patternPrefix = process.argv
+  .find((argument) => argument.startsWith('--pattern-prefix='))
+  ?.slice('--pattern-prefix='.length);
+const selectedPatterns = Object.entries(SUPPLEMENTAL_PATTERNS).filter(
+  ([pattern]) => !patternPrefix || pattern.startsWith(patternPrefix)
+);
+assert.ok(selectedPatterns.length > 0, 'Pattern filter must match a material');
 const output = '.playwright-cli/curriculum-check';
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
+const pdfPage = await browser.newPage();
+if (maxValues) {
+  await page.addInitScript(() => {
+    if (
+      new URLSearchParams(location.search)
+        .get('pattern')
+        ?.startsWith('entrance-')
+    ) {
+      Math.random = () => 0.999999;
+    }
+  });
+}
 const errors = [];
 page.on('pageerror', (error) => errors.push(error.message));
 let checked = 0;
+let checkedPdfs = 0;
+await mkdir(`${output}/entrance-pdfs`, { recursive: true });
+
+async function checkSinglePagePdf(path, count, answers) {
+  await page.evaluate(() => {
+    delete window.__printedHTML;
+    if (window.__printCaptureInstalled) return;
+    window.__printCaptureInstalled = true;
+    new MutationObserver(() => {
+      const frame = document.getElementById('printWindow');
+      if (!frame) return;
+      const capture = () => {
+        frame.contentWindow.print = () => {
+          window.__printedHTML =
+            frame.contentDocument.documentElement.outerHTML;
+        };
+      };
+      capture();
+      frame.addEventListener('load', capture, { once: true });
+    }).observe(document.body, { childList: true });
+  });
+  await page
+    .getByRole('button', { name: '印刷（複数ページにも対応）' })
+    .click();
+  await page.getByLabel('印刷枚数').fill('1');
+  await page.getByRole('button', { name: '印刷する', exact: true }).click();
+  await page.waitForFunction(() => typeof window.__printedHTML === 'string');
+  const html = await page.evaluate(() => window.__printedHTML);
+  await pdfPage.setContent(html, { waitUntil: 'load' });
+  await pdfPage.emulateMedia({ media: 'print' });
+  await pdfPage.evaluate(async () => {
+    await document.fonts.ready;
+  });
+  assert.equal(await pdfPage.locator('[data-a4-sheet]').count(), 1);
+  assert.equal(await pdfPage.locator('[data-problem-number]').count(), count);
+  assert.equal(
+    await pdfPage.getByRole('list', { name: '解き方' }).count(),
+    answers ? count : 0,
+    `${path}: Solution visibility in the actual print output`
+  );
+  const sheet = pdfPage.locator('[data-a4-sheet]');
+  assert.equal(
+    await sheet.isVisible(),
+    true,
+    `${path}: Printable sheet visible`
+  );
+  const bounds = await sheet.evaluate((element) => ({
+    width: element.offsetWidth,
+    height: Math.max(element.clientHeight, element.scrollHeight),
+    clipped: [...element.querySelectorAll('[data-problem-grid] > div')].some(
+      (cell) => cell.scrollWidth > cell.clientWidth + 2
+    ),
+  }));
+  assert.ok(
+    Math.abs(bounds.width - 794) <= 1 &&
+      bounds.height <= 1123 &&
+      !bounds.clipped,
+    `${path}: Actual print layout ${JSON.stringify(bounds)}`
+  );
+  const pdf = await pdfPage.pdf({
+    path,
+    format: 'A4',
+    preferCSSPageSize: true,
+    printBackground: true,
+  });
+  assert.equal(
+    (pdf.toString('latin1').match(/\/Type\s*\/Page\b/g) ?? []).length,
+    1,
+    `${path}: Exactly one A4 page`
+  );
+  assert.ok(
+    pdf.length > 5000 && /\/Font\b/.test(pdf.toString('latin1')),
+    `${path}: PDF must contain rendered text, not a blank page`
+  );
+  checkedPdfs++;
+}
+
 try {
-  for (const [pattern, definition] of printOnly
-    ? []
-    : Object.entries(SUPPLEMENTAL_PATTERNS)) {
+  for (const [pattern, definition] of printOnly ? [] : selectedPatterns) {
     for (const cols of [1, 2, 3]) {
       const count = getEffectiveCounts(
         definition.type,
@@ -59,15 +154,10 @@ try {
         },
         { pattern, cols, count }
       );
-      await page.addStyleTag({
-        content: '.no-print { display: block !important; }',
-      });
-      await page.emulateMedia({ media: 'print' });
       for (const answers of [false, true]) {
-        // 印刷メディア中の非表示コントロールはDOMイベントで切り替える。
         await page
           .getByRole('checkbox', { name: '解答表示' })
-          .setChecked(answers, { force: true });
+          .setChecked(answers);
         await page.evaluate(async () => {
           await document.fonts.ready;
           await new Promise((resolve) =>
@@ -92,10 +182,104 @@ try {
           result.height <= 1123 && !result.clipped,
           `${pattern}/${cols}/${answers}: ${JSON.stringify(result)}`
         );
+        if (pattern.startsWith('entrance-')) {
+          await checkSinglePagePdf(
+            `${output}/entrance-pdfs/${pattern}-${cols}cols-${answers ? 'answers' : 'questions'}.pdf`,
+            count,
+            answers
+          );
+        }
         checked++;
       }
-      await page.emulateMedia({ media: 'screen' });
     }
+  }
+  if (selectedPatterns.some(([pattern]) => pattern.startsWith('entrance-'))) {
+    await page.goto(
+      `${base}?grade=4&type=basic&pattern=entrance-crane-turtle-jap&cols=2&count=4&eq=1`
+    );
+    await page
+      .getByRole('heading', { name: '4年生の中学受験の道すじ' })
+      .waitFor();
+    assert.equal(await page.getByRole('list', { name: '解き方' }).count(), 0);
+    const questionText = await page.locator('[data-problem-grid]').innerText();
+    await page.getByRole('button', { name: '学校算数', exact: true }).click();
+    await page.getByRole('heading', { name: '4年生の学習の道すじ' }).waitFor();
+    assert.equal(
+      await page.locator('[data-problem-grid]').innerText(),
+      questionText
+    );
+    await page.getByRole('button', { name: '中学受験', exact: true }).click();
+    await page.getByRole('checkbox', { name: '解答表示' }).check();
+    assert.equal(await page.getByRole('list', { name: '解き方' }).count(), 4);
+    await page.locator('[data-a4-sheet]').screenshot({
+      path: `${output}/entrance-with-answers.png`,
+    });
+    await checkSinglePagePdf(`${output}/entrance-with-answers.pdf`, 4, true);
+    await page.getByRole('button', { name: /次の教材/ }).click();
+    assert.equal(
+      new URL(page.url()).searchParams.get('pattern'),
+      'entrance-difference-gathering-jap'
+    );
+    await page.getByRole('button', { name: '問題を変更' }).click();
+    await page.getByLabel('キーワードで探す').fill('消去算');
+    await page
+      .locator('#pattern-picker')
+      .getByText('消去算', { exact: true })
+      .click();
+    await page
+      .getByRole('heading', { name: '4年生の中学受験の道すじ' })
+      .waitFor();
+    assert.equal(
+      new URL(page.url()).searchParams.get('pattern'),
+      'entrance-elimination-jap'
+    );
+    await page.reload();
+    await page
+      .getByRole('heading', { name: '4年生の中学受験の道すじ' })
+      .waitFor();
+  }
+  for (const [grade, pattern, next] of [
+    [5, 'entrance-profit-loss-jap', 'entrance-salt-water-jap'],
+    [6, 'entrance-newton-jap', 'entrance-advanced-crane-turtle-jap'],
+  ]) {
+    if (
+      !selectedPatterns.some(
+        ([key, definition]) =>
+          key.startsWith('entrance-') && definition.grade === grade
+      )
+    )
+      continue;
+    await page.goto(
+      `${base}?grade=${grade}&type=basic&pattern=${pattern}&cols=2&count=4&eq=1`
+    );
+    await page
+      .getByRole('heading', { name: `${grade}年生の中学受験の道すじ` })
+      .waitFor();
+    assert.equal(await page.getByRole('list', { name: '解き方' }).count(), 0);
+    await page.getByRole('checkbox', { name: '解答表示' }).check();
+    assert.equal(await page.getByRole('list', { name: '解き方' }).count(), 4);
+    await page
+      .locator('[data-a4-sheet]')
+      .screenshot({ path: `${output}/entrance-grade${grade}-answers.png` });
+    const pdfPath = `${output}/entrance-grade${grade}-answers.pdf`;
+    await checkSinglePagePdf(pdfPath, 4, true);
+    await page.getByRole('button', { name: /次の教材/ }).click();
+    assert.equal(new URL(page.url()).searchParams.get('pattern'), next);
+    await page.reload();
+    await page
+      .getByRole('heading', { name: `${grade}年生の中学受験の道すじ` })
+      .waitFor();
+    const gradeSelect = page.getByRole('combobox', { name: '学年を選ぶ' });
+    await gradeSelect.selectOption('3');
+    assert.equal(
+      await page.getByRole('group', { name: '学習コース' }).count(),
+      0
+    );
+    await gradeSelect.selectOption(String(grade));
+    await page.getByRole('button', { name: '中学受験', exact: true }).click();
+    await page
+      .getByRole('heading', { name: `${grade}年生の中学受験の道すじ` })
+      .waitFor();
   }
   // 実際の印刷ボタンで作られるiframeを捕捉し、複数枚のページ分割も検証する。
   await page.goto(
@@ -341,7 +525,10 @@ try {
   assert.deepEqual(errors, []);
   const summary = {
     checked,
+    checkedPdfs,
     patterns: Object.keys(SUPPLEMENTAL_PATTERNS).length,
+    checkedPatterns: selectedPatterns.length,
+    maxValues,
     gradeCounts: Object.fromEntries(
       Object.entries(PATTERNS_BY_GRADE).map(([grade, patterns]) => [
         grade,
@@ -351,7 +538,7 @@ try {
     actualPrintPages: 3,
   };
   await writeFile(
-    `${output}/${printOnly ? 'print-only-summary' : 'summary'}.json`,
+    `${output}/${printOnly ? 'print-only-summary' : maxValues ? 'summary-max-values' : 'summary'}.json`,
     JSON.stringify(summary, null, 2)
   );
   console.log(JSON.stringify(summary));

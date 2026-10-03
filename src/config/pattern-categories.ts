@@ -22,6 +22,7 @@ export type DifficultyLevel = 1 | 2 | 3;
  * パターンカテゴリの定義
  */
 export type PatternCategory =
+  | 'entrance'
   | 'geometry'
   | 'data'
   | 'basic' // 基本計算
@@ -48,6 +49,11 @@ export const CATEGORY_CONFIG: Record<
     description: string;
   }
 > = {
+  entrance: {
+    label: '中学受験',
+    icon: '◇',
+    description: '数量の関係を整理して解く受験算数の文章題',
+  },
   geometry: {
     label: '図形・測定',
     icon: '△',
@@ -105,6 +111,7 @@ export const CATEGORY_ORDER: PatternCategory[] = [
   'geometry',
   'data',
   'word',
+  'entrance',
   'life',
   'anzan',
   'singapore',
@@ -115,6 +122,7 @@ export const CATEGORY_ORDER: PatternCategory[] = [
  * これらのカテゴリは言語フィルターが適用される
  */
 export const LANGUAGE_DEPENDENT_CATEGORIES: PatternCategory[] = [
+  'entrance',
   'life',
   'word',
   'singapore',
@@ -425,6 +433,7 @@ export function groupPatternsByCategory(
   patterns: CalculationPattern[]
 ): Record<PatternCategory, CalculationPattern[]> {
   const grouped: Record<PatternCategory, CalculationPattern[]> = {
+    entrance: [],
     geometry: [],
     data: [],
     basic: [],
@@ -470,6 +479,7 @@ export function getCategoryCounts(
 
   return {
     geometry: grouped.geometry.length,
+    entrance: grouped.entrance.length,
     data: grouped.data.length,
     basic: grouped.basic.length,
     hissan: grouped.hissan.length,
@@ -548,6 +558,7 @@ export function groupPatternsByCategorySorted(
   // 各カテゴリ内を難易度順にソート
   return {
     geometry: sortPatternsByDifficulty(grouped.geometry),
+    entrance: sortPatternsByDifficulty(grouped.entrance),
     data: sortPatternsByDifficulty(grouped.data),
     basic: sortPatternsByDifficulty(grouped.basic),
     hissan: sortPatternsByDifficulty(grouped.hissan),

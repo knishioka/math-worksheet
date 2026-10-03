@@ -651,6 +651,22 @@ function ProblemItem({
         {wordProblem.dataDisplay && (
           <DataDisplay data={wordProblem.dataDisplay} />
         )}
+        {showAnswer && wordProblem.solutionSteps && (
+          <ol
+            aria-label="解き方"
+            style={{
+              ...wordProblemTextStyle,
+              margin: '6px 0',
+              paddingLeft: '1.5em',
+              listStyleType: 'decimal',
+              overflowWrap: 'anywhere',
+            }}
+          >
+            {wordProblem.solutionSteps.map((step, index) => (
+              <li key={index}>{step}</li>
+            ))}
+          </ol>
+        )}
         {showEquationLine && <EquationLine label="式:" />}
         <div
           style={

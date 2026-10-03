@@ -10,6 +10,7 @@ import {
 import type { ProblemType, LayoutColumns, Grade } from '../types';
 import type { CalculationPattern } from '../types/calculation-patterns';
 import { SUPPLEMENTAL_PATTERNS } from './supplemental-patterns';
+import { ENTRANCE_EXAM_PATTERNS } from './entrance-exam-patterns';
 
 const LAYOUT_COLUMNS: LayoutColumns[] = [1, 2, 3];
 
@@ -491,6 +492,16 @@ export const PATTERN_COUNT_OVERRIDES: Partial<
           maxCounts: { 1: 6, 2: 12, 3: 12 },
         },
       ])
+  ),
+  ...Object.fromEntries(
+    Object.entries(ENTRANCE_EXAM_PATTERNS).map(([pattern, definition]) => [
+      pattern,
+      {
+        recommendedCounts: { 1: 3, 2: 4, 3: 3 },
+        maxCounts:
+          definition.grade === 4 ? { 1: 4, 2: 6, 3: 3 } : { 1: 3, 2: 4, 3: 3 },
+      },
+    ])
   ),
   'data-bar-chart-jap': {
     recommendedCounts: { 1: 3, 2: 6, 3: 6 },
