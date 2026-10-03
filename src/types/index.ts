@@ -118,6 +118,7 @@ export interface WordProblem {
   unit?: string;
   showCalculation?: boolean;
   isSymbolProblem?: boolean;
+  solutionSteps?: string[];
   dataDisplay?: {
     kind: 'table' | 'bar';
     label: string;

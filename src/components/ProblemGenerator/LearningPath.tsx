@@ -1,7 +1,11 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import type { CalculationPattern, Grade } from '../../types';
 import { PATTERN_LABELS, PATTERN_DESCRIPTIONS } from '../../types';
-import { getLearningStages } from '../../config/learning-paths';
+import {
+  getLearningStages,
+  type LearningCourse,
+} from '../../config/learning-paths';
+import { isEntranceExamPattern } from '../../config/entrance-exam-patterns';
 
 const STORAGE_KEY = 'math-worksheet-practice-v1';
 function readPractice(): string[] {
@@ -23,14 +27,25 @@ interface Props {
   onSelect: (pattern: CalculationPattern) => void;
 }
 export function LearningPath({ grade, pattern, onSelect }: Props): ReactNode {
-  const stages = getLearningStages(grade);
+  const hasEntranceCourse = getLearningStages(grade, 'entrance').length > 0;
+  const [browsingCourse, setBrowsingCourse] = useState<LearningCourse | null>(
+    null
+  );
+  const course = hasEntranceCourse
+    ? (browsingCourse ??
+      (isEntranceExamPattern(pattern) ? 'entrance' : 'school'))
+    : 'school';
+  const stages = getLearningStages(grade, course);
   const currentStage = stages.findIndex(
     (stage) => pattern && stage.patterns.includes(pattern)
   );
   const [browsingStage, setBrowsingStage] = useState<number | null>(null);
   const [practiced, setPracticed] = useState(readPractice);
   const [storageNotice, setStorageNotice] = useState('');
-  useEffect(() => setBrowsingStage(null), [grade, pattern]);
+  useEffect(() => {
+    setBrowsingStage(null);
+    setBrowsingCourse(null);
+  }, [grade, pattern]);
   const stageIndex = browsingStage ?? Math.max(0, currentStage);
   const stage = stages[stageIndex];
   if (!stage) return null;
@@ -66,7 +81,7 @@ export function LearningPath({ grade, pattern, onSelect }: Props): ReactNode {
             id="learning-heading"
             className="mt-1 text-xl font-bold text-slate-900"
           >
-            {grade}年生の学習の道すじ
+            {grade}年生の{course === 'entrance' ? '中学受験' : '学習'}の道すじ
           </h2>
         </div>
         <div className="text-right text-xs text-slate-600">
@@ -79,6 +94,28 @@ export function LearningPath({ grade, pattern, onSelect }: Props): ReactNode {
           <p className="mt-1">記録はこのブラウザに保存</p>
         </div>
       </div>
+      {hasEntranceCourse && (
+        <div
+          className="flex flex-wrap gap-2 my-3"
+          role="group"
+          aria-label="学習コース"
+        >
+          {(['school', 'entrance'] as const).map((item) => (
+            <button
+              type="button"
+              key={item}
+              className="secondary-button"
+              aria-pressed={course === item}
+              onClick={() => {
+                setBrowsingCourse(item);
+                setBrowsingStage(null);
+              }}
+            >
+              {item === 'school' ? '学校算数' : '中学受験'}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="path-stages" role="group" aria-label="学習段階">
         {stages.map((item, index) => (
           <button

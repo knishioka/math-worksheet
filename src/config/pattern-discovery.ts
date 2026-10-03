@@ -14,7 +14,7 @@ export function getDiscoveryGroups(
   order: PatternSortOrder = 'learning'
 ): ReturnType<typeof getAvailableCategories> {
   const learningOrder = new Map(
-    getLearningStages(grade)
+    [...getLearningStages(grade), ...getLearningStages(grade, 'entrance')]
       .flatMap((stage) => stage.patterns)
       .map((pattern, index) => [pattern, index])
   );

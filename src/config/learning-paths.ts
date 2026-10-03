@@ -6,6 +6,92 @@ export interface LearningStage {
   check: string;
   patterns: CalculationPattern[];
 }
+export type LearningCourse = 'school' | 'entrance';
+
+export const ENTRANCE_LEARNING_PATHS: Partial<
+  Record<Exclude<Grade, 0>, LearningStage[]>
+> = {
+  4: [
+    {
+      title: '数の関係を整理する',
+      goal: '合計と差、木の本数と間の数を整理しよう。',
+      check: '問題の条件を線分図や点と線に表して説明しよう。',
+      patterns: ['entrance-sum-difference-jap', 'entrance-tree-planting-jap'],
+    },
+    {
+      title: '1つあたりの差を使う',
+      goal: '全部同じだったらと考え、1つあたりの差を見つけよう。',
+      check: '全体の差を何で割るのか、単位を付けて説明しよう。',
+      patterns: [
+        'entrance-crane-turtle-jap',
+        'entrance-difference-gathering-jap',
+      ],
+    },
+    {
+      title: '条件をそろえて比べる',
+      goal: '配り方や買い物の条件をそろえ、差から求めよう。',
+      check: '求めた人数や値段を、両方の条件に戻して確かめよう。',
+      patterns: ['entrance-excess-shortage-jap', 'entrance-elimination-jap'],
+    },
+  ],
+  5: [
+    {
+      title: '比と変わらない量',
+      goal: '比をそろえ、合計や差が変わらない関係を見つけよう。',
+      check: '比の1つ分と、もとの個数・年齢の関係を説明しよう。',
+      patterns: [
+        'entrance-ratio-sharing-jap',
+        'entrance-multiples-jap',
+        'entrance-age-jap',
+      ],
+    },
+    {
+      title: '割合と逆向きの計算',
+      goal: 'もとにする量を確かめ、残りや利益から逆に求めよう。',
+      check: '全体・残り・原価のどれを基準にした割合か確認しよう。',
+      patterns: [
+        'entrance-reverse-jap',
+        'entrance-equivalent-jap',
+        'entrance-profit-loss-jap',
+        'entrance-salt-water-jap',
+      ],
+    },
+    {
+      title: '速さと進む距離',
+      goal: '速さの和・差と、必要な道のりを整理しよう。',
+      check: '距離・時間・速さの単位をそろえて検算しよう。',
+      patterns: [
+        'entrance-traveler-jap',
+        'entrance-train-passing-jap',
+        'entrance-river-jap',
+      ],
+    },
+  ],
+  6: [
+    {
+      title: '仕事と増減する量',
+      goal: '1日・1分あたりの量をそろえて考えよう。',
+      check: '仕事全体や最初の量を、求めた速さで確かめよう。',
+      patterns: ['entrance-work-jap', 'entrance-newton-jap'],
+    },
+    {
+      title: '複数の条件をつなぐ',
+      goal: '3種類の数量や、現在と将来の比を整理しよう。',
+      check: '求めた答えがすべての条件を満たすか確かめよう。',
+      patterns: [
+        'entrance-advanced-crane-turtle-jap',
+        'entrance-advanced-ratio-age-jap',
+      ],
+    },
+    {
+      title: '場面を分けて考える',
+      goal: '出発時刻や速さが変わる前後で、距離を分けよう。',
+      check: 'それぞれの場面で進んだ距離と時間を説明しよう。',
+      patterns: ['entrance-advanced-speed-jap'],
+    },
+  ],
+};
+
 export const LEARNING_PATHS: Record<Exclude<Grade, 0>, LearningStage[]> = {
   1: [
     {
@@ -260,6 +346,12 @@ export const LEARNING_PATHS: Record<Exclude<Grade, 0>, LearningStage[]> = {
   ],
 };
 
-export function getLearningStages(grade: Grade): LearningStage[] {
-  return grade === 0 ? [] : LEARNING_PATHS[grade];
+export function getLearningStages(
+  grade: Grade,
+  course: LearningCourse = 'school'
+): LearningStage[] {
+  if (grade === 0) return [];
+  return course === 'entrance'
+    ? (ENTRANCE_LEARNING_PATHS[grade] ?? [])
+    : LEARNING_PATHS[grade];
 }

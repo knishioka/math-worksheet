@@ -7,6 +7,8 @@ import type {
 } from '../../../types';
 import type { SupplementalPattern } from '../../../config/supplemental-patterns';
 import { generateId, randomInt } from '../../utils/math';
+import { isEntranceExamPattern } from '../../../config/entrance-exam-patterns';
+import { generateEntranceExamProblems } from '../entrance-exam';
 
 function gcd(a: number, b: number): number {
   return b === 0 ? a : gcd(b, a % b);
@@ -75,6 +77,9 @@ export function generateSupplementalProblems(
   pattern: SupplementalPattern,
   count: number
 ): Problem[] {
+  if (isEntranceExamPattern(pattern))
+    return generateEntranceExamProblems(pattern, count);
+
   const pool = shuffle(
     Array.from(
       { length: pattern.startsWith('mult-table-') ? 9 : 10 },
