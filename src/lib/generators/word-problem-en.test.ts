@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   generateEnMissingNumber,
   generateEnWordStory,
@@ -97,25 +97,34 @@ describe('English Word Problem Generator', () => {
     });
 
     it('should scale numeric ranges for upper elementary grades', () => {
-      const grade4Problems = generateEnWordStory(4, 60);
-      const grade5Problems = generateEnWordStory(5, 80);
-      const grade6Problems = generateEnWordStory(6, 100);
+      let seed = 42;
+      const randomSpy = vi.spyOn(Math, 'random').mockImplementation(() => {
+        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+        return seed / 2 ** 32;
+      });
+      try {
+        const grade4Problems = generateEnWordStory(4, 60);
+        const grade5Problems = generateEnWordStory(5, 80);
+        const grade6Problems = generateEnWordStory(6, 100);
 
-      const numericAnswers = (problems: WordProblemEn[]): number[] =>
-        problems
-          .map((p) => p.answer)
-          .filter((a): a is number => typeof a === 'number');
+        const numericAnswers = (problems: WordProblemEn[]): number[] =>
+          problems
+            .map((p) => p.answer)
+            .filter((a): a is number => typeof a === 'number');
 
-      const grade4Max = Math.max(...numericAnswers(grade4Problems));
-      const grade5Max = Math.max(...numericAnswers(grade5Problems));
-      const grade6Max = Math.max(...numericAnswers(grade6Problems));
+        const grade4Max = Math.max(...numericAnswers(grade4Problems));
+        const grade5Max = Math.max(...numericAnswers(grade5Problems));
+        const grade6Max = Math.max(...numericAnswers(grade6Problems));
 
-      // Grade 4 should regularly reach 3-digit territory.
-      expect(grade4Max).toBeGreaterThanOrEqual(250);
-      // Grade 5 should reach 4-digit answers at least sometimes.
-      expect(grade5Max).toBeGreaterThanOrEqual(800);
-      // Grade 6 should produce multi-thousand answers at least sometimes.
-      expect(grade6Max).toBeGreaterThanOrEqual(2000);
+        // Grade 4 should regularly reach 3-digit territory.
+        expect(grade4Max).toBeGreaterThanOrEqual(250);
+        // Grade 5 should reach 4-digit answers at least sometimes.
+        expect(grade5Max).toBeGreaterThanOrEqual(800);
+        // Grade 6 should produce multi-thousand answers at least sometimes.
+        expect(grade6Max).toBeGreaterThanOrEqual(2000);
+      } finally {
+        randomSpy.mockRestore();
+      }
     });
 
     it('should include proper English grammar', () => {

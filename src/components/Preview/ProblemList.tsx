@@ -38,6 +38,7 @@ import {
 import { estimateA4Fit } from '../../lib/utils/print-validator';
 import { useA4SheetOverflow } from './useA4SheetOverflow';
 import { buildPreviewTitle } from '../../lib/utils/previewTitle';
+import { arrangeProblems } from '../../lib/utils/problem-layout';
 import {
   emptyA4ContainerStyle,
   getA4ContainerStyle,
@@ -121,7 +122,7 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
     const measuredOverflow = useA4SheetOverflow(
       sheetElement,
       !printMode && problems.length > 0,
-      problems
+      `${problems.map((problem) => problem.id).join(',')}:${layoutColumns}:${showAnswers}:${settings.showEquationLine}:${settings.problemOrder}`
     );
 
     if (problems.length === 0) {
@@ -145,22 +146,11 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
       3: 'grid-cols-3',
     }[layoutColumns];
 
-    // 縦順に並び替えた問題配列を作成
-    const reorderedProblems: (Problem | null)[] = [];
-    const rowCount = Math.ceil(problems.length / layoutColumns);
-
-    for (let col = 0; col < layoutColumns; col++) {
-      for (let row = 0; row < rowCount; row++) {
-        const originalIndex = row + col * rowCount;
-        const newIndex = row * layoutColumns + col;
-
-        if (originalIndex < problems.length) {
-          reorderedProblems[newIndex] = problems[originalIndex];
-        } else {
-          reorderedProblems[newIndex] = null;
-        }
-      }
-    }
+    const reorderedProblems = arrangeProblems(
+      problems,
+      layoutColumns,
+      settings.problemOrder
+    );
 
     const previewTitle = buildPreviewTitle({
       settings,
@@ -214,11 +204,15 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
               <div>
                 <div style={a4WarningTitleStyle}>A4サイズを超えています</div>
                 <div style={a4WarningMessageStyle}>
-                  {isMeasuredOverflow && measuredOverflow
-                    ? `実測高さ: ${measuredOverflow.heightMm.toFixed(0)}mm（A4: 297mm）— このまま印刷すると2ページ目にはみ出します。`
-                    : `推定高さ: ${a4FitResult.estimatedHeight.toFixed(0)}mm（A4: ${a4FitResult.a4Height}mm）`}
+                  {isMeasuredOverflow &&
+                  (measuredOverflow?.horizontalOverflowMm ||
+                    measuredOverflow?.hasClippedProblems)
+                    ? '問題が用紙の幅、または隣の列にはみ出しています。'
+                    : isMeasuredOverflow && measuredOverflow
+                      ? `実測高さ: ${measuredOverflow.heightMm.toFixed(0)}mm（A4: 297mm）— このまま印刷すると2ページ目にはみ出します。`
+                      : `推定高さ: ${a4FitResult.estimatedHeight.toFixed(0)}mm（A4: ${a4FitResult.a4Height}mm）`}
                   <br />
-                  問題数を減らすか、列数を増やすか、問題を再生成してください。
+                  縦にはみ出す場合は問題数を減らしてください。横にはみ出す場合は列数を減らしてください。
                 </div>
               </div>
             </div>
@@ -253,22 +247,23 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
             <NumberTracingGrid problems={problems} />
           ) : (
             <div data-problem-grid className={gridCols} style={gridGapStyle}>
-              {reorderedProblems.map((problem, index) => {
-                if (!problem) {
+              {reorderedProblems.map((entry, index) => {
+                if (!entry) {
                   // 空のセルを配置（レイアウトを保つため）
                   return <div key={`empty-${index}`} className="avoid-break" />;
                 }
 
-                // 元のインデックスを計算（縦順から横順へ）
-                const col = index % layoutColumns;
-                const row = Math.floor(index / layoutColumns);
-                const originalNumber = col * rowCount + row + 1;
+                const { problem, number } = entry;
 
                 return (
-                  <div key={problem.id} className="avoid-break">
+                  <div
+                    key={problem.id}
+                    className="avoid-break"
+                    data-problem-number={number}
+                  >
                     <ProblemItem
                       problem={problem}
-                      number={originalNumber}
+                      number={number}
                       showAnswer={showAnswers}
                       showEquationLine={showEquationLine}
                     />
@@ -655,6 +650,22 @@ function ProblemItem({
         )}
         {wordProblem.dataDisplay && (
           <DataDisplay data={wordProblem.dataDisplay} />
+        )}
+        {showAnswer && wordProblem.solutionSteps && (
+          <ol
+            aria-label="解き方"
+            style={{
+              ...wordProblemTextStyle,
+              margin: '6px 0',
+              paddingLeft: '1.5em',
+              listStyleType: 'decimal',
+              overflowWrap: 'anywhere',
+            }}
+          >
+            {wordProblem.solutionSteps.map((step, index) => (
+              <li key={index}>{step}</li>
+            ))}
+          </ol>
         )}
         {showEquationLine && <EquationLine label="式:" />}
         <div

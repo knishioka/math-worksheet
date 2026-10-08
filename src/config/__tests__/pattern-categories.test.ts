@@ -245,7 +245,8 @@ describe('pattern-categories', () => {
 
   describe('constants', () => {
     it('should include geometry and data alongside calculation categories', () => {
-      expect(Object.keys(CATEGORY_CONFIG)).toHaveLength(9);
+      expect(Object.keys(CATEGORY_CONFIG)).toHaveLength(10);
+      expect(CATEGORY_CONFIG.entrance).toBeDefined();
       expect(CATEGORY_CONFIG.geometry).toBeDefined();
       expect(CATEGORY_CONFIG.data).toBeDefined();
       expect(CATEGORY_CONFIG.basic).toBeDefined();
@@ -265,6 +266,7 @@ describe('pattern-categories', () => {
         'geometry',
         'data',
         'word',
+        'entrance',
         'life',
         'anzan',
         'singapore',
@@ -274,6 +276,7 @@ describe('pattern-categories', () => {
     it('should have language-dependent categories defined', () => {
       expect(LANGUAGE_DEPENDENT_CATEGORIES).toContain('life');
       expect(LANGUAGE_DEPENDENT_CATEGORIES).toContain('word');
+      expect(LANGUAGE_DEPENDENT_CATEGORIES).toContain('entrance');
       expect(LANGUAGE_DEPENDENT_CATEGORIES).toContain('singapore');
       expect(LANGUAGE_DEPENDENT_CATEGORIES).not.toContain('basic');
       expect(LANGUAGE_DEPENDENT_CATEGORIES).not.toContain('hissan');

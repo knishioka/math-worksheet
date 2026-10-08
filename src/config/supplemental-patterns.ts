@@ -1,10 +1,12 @@
+import { ENTRANCE_EXAM_PATTERNS } from './entrance-exam-patterns';
+
 // 学習の片側だけが欠けないよう、追加教材の表示・配当・印刷種別を一元管理する。
 interface SupplementalDefinition {
   label: string;
   description: string;
   grade: number;
   type: 'basic' | 'fraction' | 'word';
-  category: 'basic' | 'fraction' | 'word' | 'geometry' | 'data';
+  category: 'basic' | 'fraction' | 'word' | 'geometry' | 'data' | 'entrance';
   difficulty: 1 | 2 | 3;
 }
 
@@ -26,6 +28,7 @@ const table = (n: number): SupplementalDefinition => ({
 });
 
 export const SUPPLEMENTAL_PATTERNS = {
+  ...ENTRANCE_EXAM_PATTERNS,
   'number-rounding-jap': {
     label: 'がい数（四捨五入）',
     description: '十の位・百の位までのがい数に直す。',

@@ -3,6 +3,67 @@ import { describe, expect, it, vi } from 'vitest';
 import { CalculationPatternSelector } from '../CalculationPatternSelector';
 
 describe('CalculationPatternSelector', () => {
+  it('shows category headings and offers learning order without selecting another material', () => {
+    const onPatternChange = vi.fn();
+    render(
+      <CalculationPatternSelector
+        grade={2}
+        selectedPattern="mult-table-five"
+        onPatternChange={onPatternChange}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: '問題を変更' }));
+    expect(
+      screen.getByRole('heading', { name: /基本計算 ·/ })
+    ).toBeInTheDocument();
+    const radios = screen.getAllByRole('radio');
+    const tables = radios
+      .map((radio) => (radio as HTMLInputElement).value)
+      .filter((pattern) => pattern.startsWith('mult-table-'));
+    expect(tables.slice(0, 2)).toEqual(['mult-table-two', 'mult-table-five']);
+    fireEvent.change(screen.getByLabelText('教材の並び順'), {
+      target: { value: 'difficulty' },
+    });
+    expect(onPatternChange).not.toHaveBeenCalled();
+    expect(screen.getByRole('radio', { name: /九九・5の段/ })).toBeChecked();
+  });
+  it('normalizes kana and matches multiple keywords regardless of their order', () => {
+    render(
+      <CalculationPatternSelector
+        grade={4}
+        selectedPattern="add-large-numbers"
+        onPatternChange={vi.fn()}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: '問題を変更' }));
+    fireEvent.change(screen.getByLabelText('キーワードで探す'), {
+      target: { value: 'タシ算　大きな数' },
+    });
+    expect(
+      screen.getByRole('radio', { name: /大きな数のたし算・ひき算ミックス/ })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('radio', { name: /^大きな数のひき算/ })
+    ).not.toBeInTheDocument();
+  });
+
+  it('focuses search on open and closes with Escape without changing the selection', () => {
+    const onPatternChange = vi.fn();
+    render(
+      <CalculationPatternSelector
+        grade={4}
+        selectedPattern="add-large-numbers"
+        onPatternChange={onPatternChange}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: '問題を変更' }));
+    const search = screen.getByLabelText('キーワードで探す');
+    expect(search).toHaveFocus();
+    fireEvent.keyDown(search, { key: 'Escape' });
+    expect(screen.queryByLabelText('キーワードで探す')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '問題を変更' })).toHaveFocus();
+    expect(onPatternChange).not.toHaveBeenCalled();
+  });
   it('keeps the sidebar compact until the user changes the problem', () => {
     render(
       <CalculationPatternSelector

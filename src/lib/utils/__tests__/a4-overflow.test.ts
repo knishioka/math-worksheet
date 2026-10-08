@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import {
   A4_HEIGHT_PX,
+  A4_WIDTH_PX,
   A4_OVERFLOW_TOLERANCE_PX,
   evaluateA4Overflow,
   measureSheetHeightPx,
+  measureSheetOverflow,
   findOverflowingSheets,
   withPrintMediaStyles,
 } from '../a4-overflow';
@@ -30,9 +32,16 @@ describe('evaluateA4Overflow', () => {
     expect(result.overflowMm).toBe(0);
   });
 
-  it('許容誤差内（+5px）は収まる判定になる', () => {
+  it('許容誤差内は収まる判定になる', () => {
     const result = evaluateA4Overflow(A4_HEIGHT_PX + A4_OVERFLOW_TOLERANCE_PX);
     expect(result.isOverflow).toBe(false);
+  });
+
+  it('横方向だけのはみ出しも検出する', () => {
+    const result = evaluateA4Overflow(A4_HEIGHT_PX, A4_WIDTH_PX + 20);
+    expect(result.isOverflow).toBe(true);
+    expect(result.overflowMm).toBe(0);
+    expect(result.horizontalOverflowMm).toBeGreaterThan(0);
   });
 
   it('許容誤差を超えるとはみ出し判定になる', () => {
@@ -84,6 +93,20 @@ describe('measureSheetHeightPx', () => {
 });
 
 describe('findOverflowingSheets', () => {
+  it('シート幅内で隣の列に重なる問題も検出する', () => {
+    const sheet = createSheet(1123);
+    const grid = document.createElement('div');
+    grid.setAttribute('data-problem-grid', '');
+    const cell = document.createElement('div');
+    Object.defineProperty(cell, 'clientWidth', { value: 200 });
+    Object.defineProperty(cell, 'scrollWidth', { value: 230 });
+    grid.append(cell);
+    sheet.append(grid);
+    expect(measureSheetOverflow(sheet).hasClippedProblems).toBe(true);
+    const root = document.createElement('div');
+    root.append(sheet);
+    expect(findOverflowingSheets(root)).toHaveLength(1);
+  });
   it('複数シートからはみ出しているものだけを返す', () => {
     const root = document.createElement('div');
     root.appendChild(createSheet(1123)); // 収まる

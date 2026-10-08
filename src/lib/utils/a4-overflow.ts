@@ -2,24 +2,26 @@
  * A4オーバーフロー実測ユーティリティ
  *
  * estimateA4Fit（定数ベースの推定）と異なり、実際に描画された
- * [data-a4-sheet] 要素の高さを測ってA4超過を判定する。
+ * [data-a4-sheet] 要素の縦横と列内のはみ出しを測って判定する。
  * 問題文の折り返し行数など、推定では捉えられない変動を検出できる。
  */
 
 import {
   A4_HEIGHT_MM,
+  A4_WIDTH_MM,
   MM_PER_PX,
   PX_PER_MM,
 } from '../../components/Export/fitPageToA4';
 
 /** A4の高さ（px @ 96dpi）。check-print-layout.mjs と同じ基準 */
 export const A4_HEIGHT_PX = A4_HEIGHT_MM * PX_PER_MM;
+export const A4_WIDTH_PX = A4_WIDTH_MM * PX_PER_MM;
 
-/** 許容誤差（px）。check-print-layout.mjs の TOLERANCE_PX と揃える */
-export const A4_OVERFLOW_TOLERANCE_PX = 5;
+/** 寸法の整数丸めによる誤差だけを許容する（px）。 */
+export const A4_OVERFLOW_TOLERANCE_PX = 1;
 
 export interface A4OverflowResult {
-  /** A4の高さを許容誤差を超えて上回っている場合 true */
+  /** 用紙寸法、または問題の列の範囲を超えている場合 true */
   isOverflow: boolean;
   /** 実測高さ（px） */
   heightPx: number;
@@ -27,19 +29,54 @@ export interface A4OverflowResult {
   heightMm: number;
   /** はみ出し量（mm）。収まっている場合は 0 */
   overflowMm: number;
+  widthPx: number;
+  widthMm: number;
+  horizontalOverflowMm: number;
+  hasClippedProblems?: boolean;
 }
 
 /**
- * 実測高さ（px）からA4超過を判定する
+ * 実測寸法（px）からA4超過を判定する
  */
-export function evaluateA4Overflow(heightPx: number): A4OverflowResult {
+export function evaluateA4Overflow(
+  heightPx: number,
+  widthPx = A4_WIDTH_PX
+): A4OverflowResult {
   const overflowPx = heightPx - A4_HEIGHT_PX;
-  const isOverflow = overflowPx > A4_OVERFLOW_TOLERANCE_PX;
+  const horizontalOverflowPx = widthPx - A4_WIDTH_PX;
+  const isOverflow =
+    overflowPx > A4_OVERFLOW_TOLERANCE_PX ||
+    horizontalOverflowPx > A4_OVERFLOW_TOLERANCE_PX;
   return {
     isOverflow,
     heightPx,
     heightMm: heightPx * MM_PER_PX,
-    overflowMm: isOverflow ? overflowPx * MM_PER_PX : 0,
+    overflowMm:
+      overflowPx > A4_OVERFLOW_TOLERANCE_PX ? overflowPx * MM_PER_PX : 0,
+    widthPx,
+    widthMm: widthPx * MM_PER_PX,
+    horizontalOverflowMm:
+      horizontalOverflowPx > A4_OVERFLOW_TOLERANCE_PX
+        ? horizontalOverflowPx * MM_PER_PX
+        : 0,
+  };
+}
+
+export function measureSheetOverflow(sheet: HTMLElement): A4OverflowResult {
+  const result = evaluateA4Overflow(
+    measureSheetHeightPx(sheet),
+    Math.max(sheet.clientWidth, sheet.scrollWidth)
+  );
+  // 用紙内に収まっていても、隣の問題の列へはみ出した数式を検出する。
+  const hasClippedProblems = Array.from(
+    sheet.querySelectorAll<HTMLElement>('[data-problem-grid] > div')
+  ).some(
+    (cell) => cell.scrollWidth > cell.clientWidth + A4_OVERFLOW_TOLERANCE_PX
+  );
+  return {
+    ...result,
+    hasClippedProblems,
+    isOverflow: result.isOverflow || hasClippedProblems,
   };
 }
 
@@ -58,7 +95,7 @@ export function measureSheetHeightPx(sheet: HTMLElement): number {
 }
 
 /**
- * ルート要素配下の全 [data-a4-sheet] を実測し、A4を超えるシートを返す
+ * 全 [data-a4-sheet] を実測し、用紙・列の範囲を超えるシートを返す
  *
  * 複数枚印刷では1ページごとに別のシートが描画されるため、
  * 印刷直前のガードはこの関数で全ページを検査する。
@@ -67,9 +104,7 @@ export function findOverflowingSheets(root: HTMLElement): A4OverflowResult[] {
   const sheets = Array.from(
     root.querySelectorAll<HTMLElement>('[data-a4-sheet]')
   );
-  return sheets
-    .map((sheet) => evaluateA4Overflow(measureSheetHeightPx(sheet)))
-    .filter((result) => result.isOverflow);
+  return sheets.map(measureSheetOverflow).filter((result) => result.isOverflow);
 }
 
 /**
@@ -81,10 +116,13 @@ export function findOverflowingSheets(root: HTMLElement): A4OverflowResult[] {
  * 全スタイルシートから @media print 内のルールを抽出し、一時的な
  * <style> 要素として適用した状態で計測する。
  */
-export function withPrintMediaStyles<T>(callback: () => T): T {
+export function withPrintMediaStyles<T>(
+  callback: () => T,
+  targetDocument = document
+): T {
   const printRules: string[] = [];
 
-  for (const sheet of Array.from(document.styleSheets)) {
+  for (const sheet of Array.from(targetDocument.styleSheets)) {
     let rules: CSSRuleList;
     try {
       rules = sheet.cssRules;
@@ -93,11 +131,12 @@ export function withPrintMediaStyles<T>(callback: () => T): T {
       continue;
     }
     for (const rule of Array.from(rules)) {
-      if (rule instanceof CSSMediaRule) {
+      if (rule.type === 4) {
+        const mediaRule = rule as CSSMediaRule;
         // conditionText 非対応環境（jsdom等）では media.mediaText を使う
-        const condition = rule.conditionText || rule.media.mediaText;
+        const condition = mediaRule.conditionText || mediaRule.media.mediaText;
         if (/(^|,)\s*print\s*($|,)/.test(condition)) {
-          for (const inner of Array.from(rule.cssRules)) {
+          for (const inner of Array.from(mediaRule.cssRules)) {
             printRules.push(inner.cssText);
           }
         }
@@ -109,10 +148,10 @@ export function withPrintMediaStyles<T>(callback: () => T): T {
     return callback();
   }
 
-  const styleElement = document.createElement('style');
+  const styleElement = targetDocument.createElement('style');
   styleElement.setAttribute('data-print-measure', '');
   styleElement.textContent = printRules.join('\n');
-  document.head.appendChild(styleElement);
+  targetDocument.head.appendChild(styleElement);
   try {
     return callback();
   } finally {

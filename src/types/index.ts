@@ -23,6 +23,7 @@ export type Grade = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export type Language = 'ja' | 'en';
 
 export type LayoutColumns = 1 | 2 | 3;
+export type ProblemOrder = 'column' | 'row';
 
 // 計算パターンの型をインポート
 export type { CalculationPattern } from './calculation-patterns';
@@ -117,6 +118,7 @@ export interface WordProblem {
   unit?: string;
   showCalculation?: boolean;
   isSymbolProblem?: boolean;
+  solutionSteps?: string[];
   dataDisplay?: {
     kind: 'table' | 'bar';
     label: string;
@@ -245,6 +247,7 @@ export interface WorksheetSettings {
   calculationPattern?: CalculationPattern;
   problemCount: number;
   layoutColumns: LayoutColumns;
+  problemOrder?: ProblemOrder;
   showEquationLine?: boolean;
   title?: string;
   studentName?: string;

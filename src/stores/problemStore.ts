@@ -104,8 +104,8 @@ export const useProblemStore = create<ProblemStore>()((set, get) => ({
   }),
 
   buildWorksheetBatch: (pageCount, baseWorksheet): WorksheetBatch => {
-    if (pageCount <= 0) {
-      return [];
+    if (!Number.isInteger(pageCount) || pageCount < 1 || pageCount > 20) {
+      throw new Error('Print page count must be an integer between 1 and 20');
     }
 
     const baseSettings = baseWorksheet

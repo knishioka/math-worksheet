@@ -67,7 +67,12 @@ export const MultiPagePrintDialog: React.FC<MultiPagePrintDialogProps> = ({
             同じ設定で異なる問題を複数枚生成して印刷します。
           </p>
           <p className="text-sm text-gray-500">
-            現在の設定: {settings.grade}年生 / {settings.problemCount}問
+            現在の設定:{' '}
+            {settings.grade === 0 ? '幼児' : `${settings.grade}年生`} /{' '}
+            {settings.problemType === 'number-tracing'
+              ? 10
+              : settings.problemCount}
+            問
           </p>
           <p className="mt-3 rounded-lg bg-stone-100 p-3 text-sm font-medium">
             {showAnswers ? '解答付きで印刷します' : '問題のみを印刷します'} ·

@@ -210,10 +210,9 @@ async function main() {
       page,
       scenario
     );
-    const A4_BASELINE = Math.round(A4_PX); // 1123px
-    const TOLERANCE_PX = 5;
+    const TOLERANCE_PX = 1;
     const ratio = height > 0 ? height / A4_PX : null;
-    const overflowOk = ratio === null || height <= A4_BASELINE + TOLERANCE_PX;
+    const overflowOk = ratio === null || height <= A4_PX + TOLERANCE_PX;
     const fillOk =
       fillRatio === null ||
       scenario.minFillRatio === undefined ||

@@ -294,6 +294,6 @@ describe('既存教材の学習上の不整合', () => {
       Object.entries(PATTERNS_BY_GRADE).map(([g, p]) => [g, p.length])
     );
     expect(Object.keys(counts)).toHaveLength(6);
-    expect(patterns).toHaveLength(47);
+    expect(patterns).toHaveLength(68);
   });
 });
