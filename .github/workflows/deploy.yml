@@ -12,8 +12,7 @@ concurrency:
 
 jobs:
   build-and-deploy:
-    # Playwright 1.55 は ubuntu-26.04（現在の ubuntu-latest）未対応のため固定する
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 10
 
     permissions:
