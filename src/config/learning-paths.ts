@@ -148,6 +148,7 @@ export const LEARNING_PATHS: Record<Exclude<Grade, 0>, LearningStage[]> = {
         'add-single-digit-mixed',
         'sub-single-digit-mixed',
         'add-sub-mixed-basic',
+        'add-sub-mixed-carry',
         'add-single-missing',
         'sub-single-missing',
         'word-add-sub-jap',
@@ -210,6 +211,7 @@ export const LEARNING_PATHS: Record<Exclude<Grade, 0>, LearningStage[]> = {
       patterns: [
         'add-triple-digit',
         'sub-triple-digit',
+        'add-sub-triple-mixed',
         'hissan-add-triple',
         'hissan-sub-triple',
         'mult-double-digit',

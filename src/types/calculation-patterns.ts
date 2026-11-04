@@ -30,7 +30,8 @@ export type CalculationPattern =
   | 'sub-single-digit' // 1桁－1桁（繰り下がりなし）
   | 'sub-single-digit-borrow' // 繰り下がりのある引き算（20まで）
   | 'sub-from-10' // 10－□の計算
-  | 'add-sub-mixed-basic' // たし算・ひき算混合（10まで）
+  | 'add-sub-mixed-basic' // たし算・ひき算混合（10まで、繰り上がり・繰り下がりなし）
+  | 'add-sub-mixed-carry' // たし算・ひき算混合（20まで、繰り上がり・繰り下がりあり/なし混在）
   | 'add-single-missing' // □＋△＝答え の虫食い算
   | 'sub-single-missing' // □－△＝答え の虫食い算
 
@@ -39,7 +40,7 @@ export type CalculationPattern =
   | 'add-double-digit-carry' // 2桁＋2桁（繰り上がりあり）
   | 'sub-double-digit-no-borrow' // 2桁－2桁（繰り下がりなし）
   | 'sub-double-digit-borrow' // 2桁－2桁（繰り下がりあり）
-  | 'add-sub-double-mixed' // 2桁の足し算・引き算混合（繰り上がり/下がり混在）
+  | 'add-sub-double-mixed' // 2桁のたし算・ひき算混合（繰り上がり・繰り下がりあり/なし混在）
   | 'mult-single-digit' // 九九（1×1〜9×9）
   | 'add-hundreds-simple' // 100単位の簡単な計算
   | 'add-double-missing' // 2桁の虫食い算（たし算）
@@ -51,6 +52,7 @@ export type CalculationPattern =
   // 3年生のパターン
   | 'add-triple-digit' // 3桁の足し算
   | 'sub-triple-digit' // 3桁の引き算
+  | 'add-sub-triple-mixed' // 3桁のたし算・ひき算混合（繰り上がり・繰り下がりあり/なし混在）
   | 'mult-double-digit' // 2桁×1桁
   | 'div-basic' // 基本的なわり算（九九の範囲）
   | 'add-dec-simple' // 小数のたし算（0.1の位まで）
@@ -217,6 +219,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'sub-single-digit-borrow',
     'sub-from-10',
     'add-sub-mixed-basic',
+    'add-sub-mixed-carry',
     'add-single-missing',
     'sub-single-missing',
     'word-en',
@@ -278,6 +281,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     ...supplementalPatternsForGrade(3),
     'add-triple-digit',
     'sub-triple-digit',
+    'add-sub-triple-mixed',
     'mult-double-digit',
     'div-basic',
     'add-dec-simple',
@@ -577,7 +581,8 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'sub-single-digit': '1桁のひき算（繰り下がりなし）',
   'sub-single-digit-borrow': '1桁のひき算（繰り下がりあり）',
   'sub-from-10': '10－□の計算',
-  'add-sub-mixed-basic': 'たし算・ひき算ミックス',
+  'add-sub-mixed-basic': 'たし算・ひき算ミックス（10まで）',
+  'add-sub-mixed-carry': 'たし算・ひき算ミックス（20まで）',
   'add-single-missing': 'たし算の虫食い算',
   'sub-single-missing': 'ひき算の虫食い算',
 
@@ -586,7 +591,7 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'add-double-digit-carry': '2桁のたし算（繰り上がりあり）',
   'sub-double-digit-no-borrow': '2桁のひき算（繰り下がりなし）',
   'sub-double-digit-borrow': '2桁のひき算（繰り下がりあり）',
-  'add-sub-double-mixed': '2桁のたし算・ひき算混合',
+  'add-sub-double-mixed': '2桁のたし算・ひき算ミックス',
   'mult-single-digit': '九九（かけ算）',
   'add-hundreds-simple': '100単位のたし算',
   'add-double-missing': '2桁たし算の虫食い算',
@@ -598,6 +603,7 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   // 3年生
   'add-triple-digit': '3桁のたし算',
   'sub-triple-digit': '3桁のひき算',
+  'add-sub-triple-mixed': '3桁のたし算・ひき算ミックス',
   'mult-double-digit': '2桁×1桁のかけ算',
   'div-basic': '基本的なわり算',
   'add-dec-simple': '小数のたし算',
@@ -765,7 +771,10 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'sub-single-digit': '8－3などの基本的なひき算',
   'sub-single-digit-borrow': '13－5などの繰り下がりのあるひき算',
   'sub-from-10': '10から引く計算',
-  'add-sub-mixed-basic': 'たし算とひき算を混ぜた問題',
+  'add-sub-mixed-basic':
+    '5＋3・8－3など、繰り上がり・繰り下がりのない10までのたし算・ひき算混合',
+  'add-sub-mixed-carry':
+    '8＋7・13－5と3＋4・8－3が混ざった、20までのたし算・ひき算混合（繰り上がり・繰り下がりあり/なし）',
   'add-single-missing': '□＋3＝7 のような虫食い算',
   'sub-single-missing': '8－□＝3 のような虫食い算',
 
@@ -774,7 +783,8 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'add-double-digit-carry': '67＋58などの繰り上がりのあるたし算',
   'sub-double-digit-no-borrow': '86－32などの繰り下がりのないひき算',
   'sub-double-digit-borrow': '72－38などの繰り下がりのあるひき算',
-  'add-sub-double-mixed': 'たし算・ひき算の混合（繰り上がり/下がり混在）',
+  'add-sub-double-mixed':
+    '67＋58・72－38と23＋45・86－32が混ざった、2桁のたし算・ひき算混合（繰り上がり・繰り下がりあり/なし）',
   'mult-single-digit': '1×1から9×9までの九九',
   'add-hundreds-simple': '300＋200などの100単位の計算',
   'add-double-missing': '□＋23＝45 のような2桁の虫食い算',
@@ -786,6 +796,8 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   // 3年生
   'add-triple-digit': '234＋567などの3桁のたし算',
   'sub-triple-digit': '876－432などの3桁のひき算',
+  'add-sub-triple-mixed':
+    '358＋267・523－178と234＋415・876－432が混ざった、3桁のたし算・ひき算混合（繰り上がり・繰り下がりあり/なし）',
   'mult-double-digit': '34×6などの2桁×1桁の計算',
   'div-basic': '48÷6などの九九範囲のわり算',
   'add-dec-simple': '1.2＋0.5などの小数のたし算',

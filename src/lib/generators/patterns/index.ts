@@ -59,6 +59,7 @@ import {
   generateSubSingleDigitBorrow,
   generateSubFrom10,
   generateAddSubMixedBasic,
+  generateAddSubMixedCarry,
 } from './grade1';
 
 import {
@@ -74,6 +75,7 @@ import {
 import {
   generateAddTripleDigit,
   generateSubTripleDigit,
+  generateAddSubTripleMixed,
   generateMultDoubleDigit,
   generateDivBasic,
   generateAddDecSimple,
@@ -196,6 +198,8 @@ export function generatePatternProblems(
       return generateSubFrom10(settings, count);
     case 'add-sub-mixed-basic':
       return generateAddSubMixedBasic(settings, count);
+    case 'add-sub-mixed-carry':
+      return generateAddSubMixedCarry(settings, count);
     case 'add-single-missing':
       return generateAddSingleMissing(settings, count);
     case 'sub-single-missing':
@@ -232,6 +236,8 @@ export function generatePatternProblems(
       return generateAddTripleDigit(settings, count);
     case 'sub-triple-digit':
       return generateSubTripleDigit(settings, count);
+    case 'add-sub-triple-mixed':
+      return generateAddSubTripleMixed(settings, count);
     case 'mult-double-digit':
       return generateMultDoubleDigit(settings, count);
     case 'div-basic':

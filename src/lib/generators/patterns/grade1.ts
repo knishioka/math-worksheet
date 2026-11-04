@@ -4,6 +4,7 @@ import type {
   WorksheetSettings,
 } from '../../../types';
 import { generateId, randomInt } from '../../utils/math';
+import { generateAddSubMix } from './add-sub-mix';
 
 // Fisher-Yatesシャッフル
 function shuffleArray<T>(arr: T[]): void {
@@ -641,4 +642,34 @@ export function generateAddSubMixedBasic(
   }
 
   return problems;
+}
+
+// 1年生: たし算・ひき算ミックス（繰り上がり・繰り下がりあり、20まで）
+// 8＋7 / 3＋4 / 13－5 / 8－3 の4種類をバランスよくランダムな順に出す
+export function generateAddSubMixedCarry(
+  _settings: WorksheetSettings,
+  count: number
+): BasicProblem[] {
+  return generateAddSubMix(count, {
+    // 答えが10まで（ちょうど10は「10をつくる計算」で繰り上がり扱いしない）
+    addPlain: () => {
+      const a = randomInt(1, 9);
+      return [a, randomInt(1, 10 - a)];
+    },
+    // 答えが11〜18
+    addCarry: () => {
+      const a = randomInt(2, 9);
+      return [a, randomInt(11 - a, 9)];
+    },
+    // 10までの数から引く
+    subPlain: () => {
+      const a = randomInt(2, 10);
+      return [a, randomInt(1, a - 1)];
+    },
+    // 11〜18 から一の位より大きい1桁を引く
+    subBorrow: () => {
+      const a = randomInt(11, 18);
+      return [a, randomInt(a - 9, 9)];
+    },
+  });
 }

@@ -4,6 +4,7 @@ import type {
   WorksheetSettings,
 } from '../../../types';
 import { generateId, randomInt } from '../../utils/math';
+import { generateAddSubMix } from './add-sub-mix';
 
 // 3年生: 3桁のたし算
 export function generateAddTripleDigit(
@@ -98,6 +99,74 @@ export function generateSubTripleDigit(
   }
 
   return problems;
+}
+
+const toNumber = (hundreds: number, tens: number, ones: number): number =>
+  hundreds * 100 + tens * 10 + ones;
+
+/** 繰り上がり（繰り下がり）を一の位・十の位のどちらか、または両方に起こす */
+function pickRegroupColumns(): { ones: boolean; tens: boolean } {
+  const choice = randomInt(0, 2);
+  return { ones: choice !== 1, tens: choice !== 0 };
+}
+
+// 3年生: 3桁のたし算・ひき算ミックス（繰り上がり・繰り下がりあり）
+// 繰り上がりあり/なしのたし算、繰り下がりあり/なしのひき算をバランスよく混ぜる。
+// 答えは999以下（4桁のたし算は4年生の範囲）。
+export function generateAddSubTripleMixed(
+  _settings: WorksheetSettings,
+  count: number
+): BasicProblem[] {
+  return generateAddSubMix(count, {
+    addPlain: () => {
+      const h1 = randomInt(1, 8);
+      const t1 = randomInt(0, 9);
+      const o1 = randomInt(0, 9);
+      return [
+        toNumber(h1, t1, o1),
+        toNumber(
+          randomInt(1, 9 - h1),
+          randomInt(0, 9 - t1),
+          randomInt(0, 9 - o1)
+        ),
+      ];
+    },
+    addCarry: () => {
+      const carry = pickRegroupColumns();
+      const o1 = carry.ones ? randomInt(1, 9) : randomInt(0, 9);
+      const o2 = carry.ones ? randomInt(10 - o1, 9) : randomInt(0, 9 - o1);
+      const cin = carry.ones ? 1 : 0;
+      const t1 = carry.tens ? randomInt(1, 9) : randomInt(0, 9 - cin);
+      const t2 = carry.tens
+        ? randomInt(Math.max(0, 10 - cin - t1), 9)
+        : randomInt(0, 9 - cin - t1);
+      const hin = carry.tens ? 1 : 0;
+      const h1 = randomInt(1, 8 - hin);
+      const h2 = randomInt(1, 9 - hin - h1);
+      return [toNumber(h1, t1, o1), toNumber(h2, t2, o2)];
+    },
+    subPlain: () => {
+      const h1 = randomInt(2, 9);
+      const t2 = randomInt(0, 9);
+      const o2 = randomInt(0, 9);
+      return [
+        toNumber(h1, randomInt(t2, 9), randomInt(o2, 9)),
+        toNumber(randomInt(1, h1 - 1), t2, o2),
+      ];
+    },
+    subBorrow: () => {
+      const borrow = pickRegroupColumns();
+      const o1 = borrow.ones ? randomInt(0, 8) : randomInt(0, 9);
+      const o2 = borrow.ones ? randomInt(o1 + 1, 9) : randomInt(0, o1);
+      const bin = borrow.ones ? 1 : 0;
+      const t1 = borrow.tens ? randomInt(0, 8 + bin) : randomInt(bin, 9);
+      const t2 = borrow.tens
+        ? randomInt(t1 - bin + 1, 9)
+        : randomInt(0, t1 - bin);
+      const h1 = randomInt(2, 9);
+      return [toNumber(h1, t1, o1), toNumber(randomInt(1, h1 - 1), t2, o2)];
+    },
+  });
 }
 
 // 3年生: 2桁×1桁のかけ算
