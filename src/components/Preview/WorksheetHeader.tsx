@@ -1,4 +1,5 @@
 import React from 'react';
+import { isAddSubMixedPattern } from '../../config/problem-patterns';
 
 interface WorksheetHeaderProps {
   title?: string;
@@ -18,11 +19,7 @@ export const WorksheetHeader: React.FC<WorksheetHeaderProps> = ({
 }) => {
   const getOperationName = (op: string, pattern?: string): string => {
     // 混合パターンの場合は特別な表示
-    if (
-      pattern === 'add-sub-mixed-basic' ||
-      pattern === 'add-sub-double-mixed' ||
-      pattern === 'add-sub-large-mixed'
-    ) {
+    if (isAddSubMixedPattern(pattern)) {
       return 'たし算・ひき算';
     }
 

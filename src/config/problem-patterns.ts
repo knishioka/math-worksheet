@@ -174,6 +174,25 @@ export const ANZAN_PATTERNS: readonly CalculationPattern[] = [
 ] as const;
 
 /**
+ * たし算とひき算を1枚に混ぜて出題する計算パターン
+ * （見出しを「たし算・ひき算」と表示するために使う）
+ */
+export const ADD_SUB_MIXED_PATTERNS: readonly CalculationPattern[] = [
+  'add-sub-mixed-basic', // 1年: 10まで
+  'add-sub-mixed-carry', // 1年: 20まで・繰り上がり/繰り下がり混在
+  'add-sub-double-mixed', // 2年: 2桁
+  'add-sub-triple-mixed', // 3年: 3桁
+  'add-sub-large-mixed', // 4年: 大きな数
+] as const;
+
+export function isAddSubMixedPattern(pattern?: string): boolean {
+  return (
+    pattern !== undefined &&
+    (ADD_SUB_MIXED_PATTERNS as readonly string[]).includes(pattern)
+  );
+}
+
+/**
  * パターンが文章問題かどうかを判定
  */
 export function isWordProblemPattern(pattern?: CalculationPattern): boolean {

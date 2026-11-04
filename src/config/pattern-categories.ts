@@ -195,6 +195,7 @@ const BASE_DIFFICULTY: Partial<Record<CalculationPattern, DifficultyLevel>> = {
   'add-single-digit-mixed': 3,
   'sub-single-digit-borrow': 2,
   'add-sub-mixed-basic': 3,
+  'add-sub-mixed-carry': 3,
   'add-single-missing': 3,
   'sub-single-missing': 3,
 
@@ -213,6 +214,7 @@ const BASE_DIFFICULTY: Partial<Record<CalculationPattern, DifficultyLevel>> = {
   // === 3年生 basic ===
   'add-triple-digit': 1,
   'sub-triple-digit': 1,
+  'add-sub-triple-mixed': 3,
   'mult-double-digit': 2,
   'div-basic': 2,
 

@@ -1,4 +1,5 @@
 import type { Operation, CalculationPattern } from '../../types';
+import { isAddSubMixedPattern } from '../../config/problem-patterns';
 
 /**
  * 演算タイプを日本語名に変換
@@ -14,10 +15,7 @@ export function getOperationName(
   calculationPattern?: CalculationPattern
 ): string {
   // 混合パターンの場合は特別な表示
-  if (
-    calculationPattern === 'add-sub-mixed-basic' ||
-    calculationPattern === 'add-sub-double-mixed'
-  ) {
+  if (isAddSubMixedPattern(calculationPattern)) {
     return 'たし算・ひき算';
   }
 
