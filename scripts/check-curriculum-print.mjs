@@ -437,9 +437,13 @@ try {
   assert.deepEqual(await problemContents(), beforeOrderChange);
   await page.reload();
   assert.deepEqual(await numberOrder(), [1, 2, 3, 4]);
-  // 学習順の候補をカテゴリごとに探せ、並べ替えでは教材を変更しない。
+  // 学習順の候補をカテゴリ・テーマごとに探せ、絞り込みでは教材を変更しない。
   await page.getByRole('button', { name: '問題を変更' }).click();
   await page.getByRole('heading', { name: /基本計算 ·/ }).waitFor();
+  await page
+    .locator('#pattern-picker')
+    .getByRole('group', { name: '九九', exact: true })
+    .waitFor();
   await page.getByLabel('キーワードで探す').fill('九九');
   const tablePatterns = await page
     .locator('#pattern-picker input[name="calculationPattern"]')
@@ -452,7 +456,7 @@ try {
     'mult-table-two',
     'mult-table-five',
   ]);
-  await page.getByLabel('教材の並び順').selectOption('difficulty');
+  await page.getByRole('button', { name: '★ やさしい' }).click();
   assert.equal(
     new URL(page.url()).searchParams.get('pattern'),
     'mult-table-five'
