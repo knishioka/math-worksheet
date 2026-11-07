@@ -15,19 +15,23 @@ import {
   CATEGORY_CONFIG,
   type DifficultyLevel,
   type PatternCategory,
-  type PatternLanguage,
-  filterPatternsByLanguage,
   getCategoryForPattern,
   getDifficultyLabel,
   getPatternDifficulty,
+  getPatternLanguage,
 } from '../../config/pattern-categories';
-import { LanguageFilter } from '../UI/LanguageFilter';
+import {
+  type CatalogCategory,
+  type CatalogEntry,
+  type CatalogLanguage,
+  buildPatternCatalog,
+  entryHasPattern,
+  getEntryLanguageSupport,
+  getEntrySearchText,
+  resolveEntryPattern,
+} from '../../config/pattern-catalog';
 import { DifficultyStars } from '../UI/DifficultyStars';
 import { getLearningStages } from '../../config/learning-paths';
-import {
-  getDiscoveryGroups,
-  type PatternSortOrder,
-} from '../../config/pattern-discovery';
 
 interface CalculationPatternSelectorProps {
   grade: Grade;
@@ -35,8 +39,19 @@ interface CalculationPatternSelectorProps {
   onPatternChange: (pattern: CalculationPattern) => void;
 }
 
-type CategoryFilter = 'all' | PatternCategory;
 type DifficultyFilter = 'all' | DifficultyLevel;
+
+const LANGUAGE_LABELS: Record<CatalogLanguage, string> = {
+  ja: '日本語',
+  en: 'English',
+};
+
+const DIFFICULTY_OPTIONS: { value: DifficultyFilter; label: string }[] = [
+  { value: 'all', label: 'すべて' },
+  { value: 1, label: '★ やさしい' },
+  { value: 2, label: '★★ ふつう' },
+  { value: 3, label: '★★★ チャレンジ' },
+];
 
 const normalizeSearch = (text: string): string =>
   text
@@ -46,15 +61,26 @@ const normalizeSearch = (text: string): string =>
       String.fromCharCode(character.charCodeAt(0) - 0x60)
     );
 
+const languageOfPattern = (
+  pattern: CalculationPattern | undefined
+): CatalogLanguage =>
+  pattern && getPatternLanguage(pattern) === 'en' ? 'en' : 'ja';
+
 export const CalculationPatternSelector: React.FC<
   CalculationPatternSelectorProps
 > = ({ grade, selectedPattern, onPatternChange }) => {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState<CategoryFilter>('all');
   const [difficulty, setDifficulty] = useState<DifficultyFilter>('all');
-  const [language, setLanguage] = useState<PatternLanguage>('all');
-  const [sortOrder, setSortOrder] = useState<PatternSortOrder>('learning');
+  const [language, setLanguage] = useState<CatalogLanguage>(() =>
+    languageOfPattern(selectedPattern)
+  );
+  const [openCategories, setOpenCategories] = useState<PatternCategory[]>(
+    () => {
+      const current = getCategoryForPattern(selectedPattern);
+      return current ? [current] : [];
+    }
+  );
   const previousGradeRef = useRef(grade);
   const changeButtonRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -63,61 +89,79 @@ export const CalculationPatternSelector: React.FC<
 
   const allPatterns = useMemo(() => PATTERNS_BY_GRADE[grade] || [], [grade]);
 
-  const languageFilteredPatterns = useMemo(
-    () => filterPatternsByLanguage(allPatterns, language),
-    [allPatterns, language]
-  );
-
-  const categorizedPatterns = useMemo(
-    () => getDiscoveryGroups(languageFilteredPatterns, grade, sortOrder),
-    [languageFilteredPatterns, grade, sortOrder]
+  const catalog = useMemo(
+    () => buildPatternCatalog(allPatterns, grade),
+    [allPatterns, grade]
   );
 
   const orderedPatterns = useMemo(
-    () => categorizedPatterns.flatMap((group) => group.patterns),
-    [categorizedPatterns]
+    () =>
+      catalog.flatMap((group) =>
+        group.entries.map((entry) => resolveEntryPattern(entry, language))
+      ),
+    [catalog, language]
   );
 
-  const visiblePatterns = useMemo(() => {
-    const keywords = normalizeSearch(query).trim().split(/\s+/).filter(Boolean);
-
-    return orderedPatterns.filter((pattern) => {
-      if (category !== 'all' && getCategoryForPattern(pattern) !== category) {
+  const entryMatches = useCallback(
+    (entry: CatalogEntry): boolean => {
+      if (difficulty !== 'all' && entry.difficulty !== difficulty) {
         return false;
       }
-      if (
-        difficulty !== 'all' &&
-        getPatternDifficulty(pattern) !== difficulty
-      ) {
-        return false;
-      }
-      if (keywords.length === 0) {
-        return true;
-      }
-
-      const searchableText = normalizeSearch(
-        `${PATTERN_LABELS[pattern]} ${PATTERN_DESCRIPTIONS[pattern]}`
-      );
+      const keywords = normalizeSearch(query)
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+      if (keywords.length === 0) return true;
+      const searchableText = normalizeSearch(getEntrySearchText(entry));
       return keywords.every((keyword) => searchableText.includes(keyword));
-    });
-  }, [category, difficulty, orderedPatterns, query]);
+    },
+    [difficulty, query]
+  );
 
-  const visibleGroups = useMemo(() => {
-    const visible = new Set(visiblePatterns);
-    return categorizedPatterns
-      .map((group) => ({
-        ...group,
-        patterns: group.patterns.filter((pattern) => visible.has(pattern)),
-      }))
-      .filter((group) => group.patterns.length > 0);
-  }, [categorizedPatterns, visiblePatterns]);
+  const visibleCatalog = useMemo<CatalogCategory[]>(
+    () =>
+      catalog
+        .map((group) => {
+          const themes = group.themes
+            .map((theme) => ({
+              ...theme,
+              entries: theme.entries.filter(entryMatches),
+            }))
+            .filter((theme) => theme.entries.length > 0);
+          return {
+            ...group,
+            themes,
+            entries: themes.flatMap((theme) => theme.entries),
+          };
+        })
+        .filter((group) => group.entries.length > 0),
+    [catalog, entryMatches]
+  );
+
+  const visibleCount = useMemo(
+    () => visibleCatalog.reduce((sum, group) => sum + group.entries.length, 0),
+    [visibleCatalog]
+  );
 
   const selectedCategory = getCategoryForPattern(selectedPattern);
-  const hasActiveFilters =
-    query.trim() !== '' ||
-    category !== 'all' ||
-    difficulty !== 'all' ||
-    language !== 'all';
+  const selectedEntry = useMemo(
+    () =>
+      catalog
+        .flatMap((group) => group.entries)
+        .find((entry) => entryHasPattern(entry, selectedPattern)),
+    [catalog, selectedPattern]
+  );
+  const selectedPairPattern =
+    selectedEntry && getEntryLanguageSupport(selectedEntry) === 'both'
+      ? resolveEntryPattern(
+          selectedEntry,
+          languageOfPattern(selectedPattern) === 'ja' ? 'en' : 'ja'
+        )
+      : undefined;
+
+  const hasActiveFilters = query.trim() !== '' || difficulty !== 'all';
+  // 検索・絞り込み中は該当カテゴリをすべて開き、探しやすくする
+  const forceOpen = hasActiveFilters;
 
   useEffect(() => {
     if (previousGradeRef.current === grade) {
@@ -127,11 +171,16 @@ export const CalculationPatternSelector: React.FC<
     previousGradeRef.current = grade;
     setIsPickerOpen(true);
     setQuery('');
-    setCategory('all');
     setDifficulty('all');
-    setLanguage('all');
-    setSortOrder('learning');
   }, [grade]);
+
+  // 選択中の教材が変わったら、そのカテゴリを開いた状態にする
+  useEffect(() => {
+    if (!selectedCategory) return;
+    setOpenCategories((open) =>
+      open.includes(selectedCategory) ? open : [...open, selectedCategory]
+    );
+  }, [selectedCategory]);
 
   useEffect(() => {
     if (isPickerOpen) searchInputRef.current?.focus();
@@ -149,9 +198,7 @@ export const CalculationPatternSelector: React.FC<
 
   const resetFilters = useCallback(() => {
     setQuery('');
-    setCategory('all');
     setDifficulty('all');
-    setLanguage('all');
     window.requestAnimationFrame(() => searchInputRef.current?.focus());
   }, []);
 
@@ -164,6 +211,14 @@ export const CalculationPatternSelector: React.FC<
     },
     [onPatternChange]
   );
+
+  const toggleCategory = useCallback((target: PatternCategory) => {
+    setOpenCategories((open) =>
+      open.includes(target)
+        ? open.filter((item) => item !== target)
+        : [...open, target]
+    );
+  }, []);
 
   if (allPatterns.length === 0) {
     return null;
@@ -214,6 +269,7 @@ export const CalculationPatternSelector: React.FC<
                 <span className="text-[11px] text-slate-500">
                   {getDifficultyLabel(getPatternDifficulty(selectedPattern))}
                 </span>
+                {selectedEntry?.onLearningPath && <LearningPathBadge />}
               </div>
               <p className="mt-0.5 text-sm font-semibold leading-snug text-slate-900">
                 {PATTERN_LABELS[selectedPattern]}
@@ -221,6 +277,19 @@ export const CalculationPatternSelector: React.FC<
               <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-600">
                 {PATTERN_DESCRIPTIONS[selectedPattern]}
               </p>
+              {selectedPairPattern && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLanguage(languageOfPattern(selectedPairPattern));
+                    onPatternChange(selectedPairPattern);
+                  }}
+                  className="mt-2 text-xs font-semibold text-teal-700 hover:text-teal-900 hover:underline"
+                >
+                  {LANGUAGE_LABELS[languageOfPattern(selectedPairPattern)]}
+                  版に切り替える
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -268,72 +337,59 @@ export const CalculationPatternSelector: React.FC<
             </div>
           </div>
 
-          <div>
-            <p className="mb-2 text-xs font-semibold text-slate-600">
-              目的から絞る
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              <FilterChip
-                label="すべて"
-                count={languageFilteredPatterns.length}
-                selected={category === 'all'}
-                onClick={() => setCategory('all')}
-              />
-              {categorizedPatterns.map((group) => (
-                <FilterChip
-                  key={group.category}
-                  label={`${CATEGORY_CONFIG[group.category].icon} ${CATEGORY_CONFIG[group.category].label}`}
-                  count={group.patterns.length}
-                  selected={category === group.category}
-                  onClick={() => setCategory(group.category)}
-                />
+          <div className="space-y-3 border-y border-slate-100 py-3">
+            <div
+              role="group"
+              aria-label="難易度で絞り込む"
+              className="flex flex-wrap items-center gap-1.5"
+            >
+              <span className="mr-1 text-xs font-semibold text-slate-600">
+                難易度
+              </span>
+              {DIFFICULTY_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={difficulty === option.value}
+                  onClick={() => setDifficulty(option.value)}
+                  className={`rounded-full border px-2.5 py-1 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-teal-300 ${
+                    difficulty === option.value
+                      ? 'border-teal-500 bg-teal-700 text-white shadow-sm'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-teal-200 hover:bg-teal-50'
+                  }`}
+                >
+                  {option.label}
+                </button>
               ))}
             </div>
-          </div>
-
-          <div className="flex flex-col gap-3 border-y border-slate-100 py-3">
-            <label className="flex items-center justify-between gap-3 text-xs font-semibold text-slate-600">
-              教材の並び順
-              <select
-                aria-label="教材の並び順"
-                value={sortOrder}
-                onChange={(event) =>
-                  setSortOrder(event.target.value as PatternSortOrder)
-                }
-                className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 font-medium text-slate-700"
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs font-semibold text-slate-600">
+                出題のことば
+              </span>
+              <div
+                role="group"
+                aria-label="出題のことば"
+                className="inline-flex rounded-lg bg-slate-200 p-0.5"
               >
-                <option value="learning">学習の道すじ順</option>
-                <option value="difficulty">やさしい順</option>
-              </select>
-            </label>
-            <label className="flex items-center justify-between gap-3 text-xs font-semibold text-slate-600">
-              難易度
-              <select
-                aria-label="難易度で絞り込む"
-                value={difficulty}
-                onChange={(event) =>
-                  setDifficulty(
-                    event.target.value === 'all'
-                      ? 'all'
-                      : (Number(event.target.value) as DifficultyLevel)
+                {(Object.keys(LANGUAGE_LABELS) as CatalogLanguage[]).map(
+                  (option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      aria-pressed={language === option}
+                      onClick={() => setLanguage(option)}
+                      className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
+                        language === option
+                          ? 'bg-white text-teal-700 shadow-sm'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      {LANGUAGE_LABELS[option]}
+                    </button>
                   )
-                }
-                className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 font-medium text-slate-700 outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
-              >
-                <option value="all">すべて</option>
-                <option value="1">やさしい</option>
-                <option value="2">ふつう</option>
-                <option value="3">チャレンジ</option>
-              </select>
-            </label>
-            <LanguageFilter
-              value={language}
-              onChange={(nextLanguage) => {
-                setLanguage(nextLanguage);
-                setCategory('all');
-              }}
-              className="justify-between"
-            />
+                )}
+              </div>
+            </div>
           </div>
 
           <div>
@@ -343,7 +399,7 @@ export const CalculationPatternSelector: React.FC<
                 role="status"
                 aria-live="polite"
               >
-                {visiblePatterns.length}件の候補
+                {visibleCount}件の候補
               </p>
               {hasActiveFilters && (
                 <button
@@ -356,33 +412,19 @@ export const CalculationPatternSelector: React.FC<
               )}
             </div>
 
-            {visiblePatterns.length > 0 ? (
-              <fieldset className="relative min-w-0 max-h-96 space-y-1.5 overflow-y-auto pr-1">
+            {visibleCount > 0 ? (
+              <fieldset className="relative min-w-0 space-y-2">
                 <legend className="sr-only">計算パターン</legend>
-                {visibleGroups.map((group) => (
-                  <div
+                {visibleCatalog.map((group) => (
+                  <CategorySection
                     key={group.category}
-                    role="group"
-                    aria-labelledby={`pattern-group-${group.category}`}
-                    className="space-y-1.5 pb-3"
-                  >
-                    <h4
-                      id={`pattern-group-${group.category}`}
-                      className="sticky top-0 z-10 border-b border-slate-100 bg-white py-2 text-xs font-semibold text-slate-700"
-                    >
-                      {CATEGORY_CONFIG[group.category].icon}{' '}
-                      {CATEGORY_CONFIG[group.category].label} ·{' '}
-                      {group.patterns.length}件
-                    </h4>
-                    {group.patterns.map((pattern) => (
-                      <PatternOption
-                        key={pattern}
-                        pattern={pattern}
-                        selected={selectedPattern === pattern}
-                        onSelect={handlePatternSelect}
-                      />
-                    ))}
-                  </div>
+                    group={group}
+                    open={forceOpen || openCategories.includes(group.category)}
+                    onToggle={() => toggleCategory(group.category)}
+                    language={language}
+                    selectedPattern={selectedPattern}
+                    onSelect={handlePatternSelect}
+                  />
                 ))}
               </fieldset>
             ) : (
@@ -409,50 +451,138 @@ export const CalculationPatternSelector: React.FC<
   );
 };
 
-interface FilterChipProps {
-  label: string;
-  count: number;
-  selected: boolean;
-  onClick: () => void;
+interface CategorySectionProps {
+  group: CatalogCategory;
+  open: boolean;
+  onToggle: () => void;
+  language: CatalogLanguage;
+  selectedPattern?: CalculationPattern;
+  onSelect: (pattern: CalculationPattern) => void;
 }
 
-function FilterChip({
-  label,
-  count,
-  selected,
-  onClick,
-}: FilterChipProps): React.ReactElement {
+function CategorySection({
+  group,
+  open,
+  onToggle,
+  language,
+  selectedPattern,
+  onSelect,
+}: CategorySectionProps): React.ReactElement {
+  const config = CATEGORY_CONFIG[group.category];
+  const headingId = `pattern-group-${group.category}`;
+  const panelId = `pattern-panel-${group.category}`;
+  const containsSelected = group.entries.some((entry) =>
+    entryHasPattern(entry, selectedPattern)
+  );
+  // 全部が道すじ上のカテゴリでは、バッジを付けても区別にならないので省く
+  const showPathBadge = group.entries.some((entry) => !entry.onLearningPath);
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={selected}
-      className={`rounded-full border px-2.5 py-1.5 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-teal-300 ${
-        selected
-          ? 'border-teal-500 bg-teal-700 text-white shadow-sm'
-          : 'border-slate-200 bg-white text-slate-600 hover:border-teal-200 hover:bg-teal-50'
-      }`}
+    <div
+      role="group"
+      aria-labelledby={headingId}
+      className="rounded-xl border border-slate-200 bg-white"
     >
-      {label}
-      <span className={`ml-1 ${selected ? 'text-teal-100' : 'text-slate-400'}`}>
-        {count}
-      </span>
-    </button>
+      <h4 id={headingId} className="sticky top-0 z-10 rounded-t-xl bg-white">
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={panelId}
+          onClick={onToggle}
+          className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-xs font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-300"
+        >
+          <span aria-hidden="true" className="w-5 text-center text-sm">
+            {config.icon}
+          </span>
+          <span className="flex-1 truncate">
+            {config.label}
+            <span className="ml-1 font-normal text-slate-400">
+              · {group.entries.length}件
+            </span>
+          </span>
+          {containsSelected && !open && (
+            <span className="rounded-full bg-teal-100 px-1.5 py-0.5 text-[10px] font-semibold text-teal-800">
+              選択中
+            </span>
+          )}
+          <span
+            aria-hidden="true"
+            className={`text-sm text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`}
+          >
+            ▾
+          </span>
+        </button>
+      </h4>
+      {open && (
+        <div id={panelId} className="space-y-3 border-t border-slate-100 p-2">
+          {group.themes.map((theme) => (
+            <div
+              key={theme.key ?? 'default'}
+              role="group"
+              aria-label={theme.key ? theme.label : config.label}
+              className="space-y-1.5"
+            >
+              {theme.key && (
+                <p className="px-1 pt-1 text-[11px] font-semibold tracking-wide text-slate-500">
+                  {theme.label}
+                  <span className="ml-1 font-normal text-slate-400">
+                    {theme.entries.length}
+                  </span>
+                </p>
+              )}
+              {theme.entries.map((entry) => (
+                <PatternOption
+                  key={entry.key}
+                  entry={entry}
+                  language={language}
+                  selected={entryHasPattern(entry, selectedPattern)}
+                  showPathBadge={showPathBadge}
+                  onSelect={onSelect}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LearningPathBadge(): React.ReactElement {
+  return (
+    <span
+      className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800"
+      title="学習の道すじに含まれる教材"
+    >
+      道すじ
+    </span>
   );
 }
 
 interface PatternOptionProps {
-  pattern: CalculationPattern;
+  entry: CatalogEntry;
+  language: CatalogLanguage;
   selected: boolean;
+  showPathBadge: boolean;
   onSelect: (pattern: CalculationPattern) => void;
 }
 
 function PatternOption({
-  pattern,
+  entry,
+  language,
   selected,
+  showPathBadge,
   onSelect,
 }: PatternOptionProps): React.ReactElement {
-  const difficulty = getPatternDifficulty(pattern);
+  const pattern = resolveEntryPattern(entry, language);
+  const support = getEntryLanguageSupport(entry);
+  // 選んだ言語と違う言語でしか用意がない教材には、その言語を示す
+  const languageNote =
+    support === 'ja' || support === 'en'
+      ? support !== language
+        ? `${LANGUAGE_LABELS[support]}のみ`
+        : undefined
+      : undefined;
 
   return (
     <label
@@ -484,7 +614,15 @@ function PatternOption({
             {PATTERN_DESCRIPTIONS[pattern]}
           </p>
         </div>
-        <DifficultyStars difficulty={difficulty} />
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          <DifficultyStars difficulty={entry.difficulty} />
+          {showPathBadge && entry.onLearningPath && <LearningPathBadge />}
+          {languageNote && (
+            <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
+              {languageNote}
+            </span>
+          )}
+        </div>
       </div>
     </label>
   );
