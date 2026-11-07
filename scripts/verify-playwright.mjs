@@ -139,21 +139,12 @@ function validateRenderedProblems(combo, renderedProblems) {
 // ─── Capture & verify ────────────────────────────────────────────────
 
 async function captureCombo(page, combo) {
-  await page.goto(BASE_URL, { waitUntil: 'networkidle' });
-  await page.selectOption('select', String(combo.grade));
-  // Wait for grade selection to take effect
-  await page
-    .locator('[data-a4-sheet]')
-    .waitFor({ state: 'visible', timeout: 5000 });
-  await page.evaluate((pattern) => {
-    const input = document.querySelector(
-      `input[name="calculationPattern"][value="${pattern}"]`
-    );
-    if (!(input instanceof HTMLInputElement)) {
-      throw new Error(`Pattern input not found: ${pattern}`);
-    }
-    input.click();
-  }, combo.pattern);
+  // 候補リストはカテゴリごとに折りたたまれるため、URLで教材を直接指定する
+  const url = new URL(BASE_URL);
+  url.searchParams.set('grade', String(combo.grade));
+  url.searchParams.set('type', 'basic');
+  url.searchParams.set('pattern', combo.pattern);
+  await page.goto(url.toString(), { waitUntil: 'networkidle' });
 
   await page
     .locator('[data-a4-sheet]')

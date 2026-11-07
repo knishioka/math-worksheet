@@ -495,8 +495,8 @@ function CategorySection({
             {config.icon}
           </span>
           <span className="flex-1 truncate">
-            {config.label}
-            <span className="ml-1 font-normal text-slate-400">
+            {config.label}{' '}
+            <span className="font-normal text-slate-400">
               · {group.entries.length}件
             </span>
           </span>
