@@ -41,6 +41,24 @@ export const WordProblemEnComponent: React.FC<WordProblemEnProps> = ({
     >
       <div style={{ marginBottom: '2px' }}>{problem.problemText}</div>
 
+      {showAnswer && problem.solutionSteps && (
+        <ol
+          aria-label="Solution"
+          style={{
+            margin: '4px 0',
+            paddingLeft: '1.5em',
+            fontSize: '12px',
+            lineHeight: '1.3',
+            listStyleType: 'decimal',
+            overflowWrap: 'anywhere',
+          }}
+        >
+          {problem.solutionSteps.map((step, index) => (
+            <li key={index}>{step}</li>
+          ))}
+        </ol>
+      )}
+
       {ANSWER_LINE_CATEGORIES.has(problem.category) && (
         <>
           {showEquationLine && (

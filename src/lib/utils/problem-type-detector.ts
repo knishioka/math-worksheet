@@ -24,7 +24,12 @@ import {
 export function isWordEnProblem(
   calculationPattern?: CalculationPattern
 ): boolean {
-  return calculationPattern === 'word-en';
+  if (calculationPattern === 'word-en') return true;
+  return (
+    calculationPattern !== undefined &&
+    isSupplementalPattern(calculationPattern) &&
+    SUPPLEMENTAL_PATTERNS[calculationPattern].type === 'word-en'
+  );
 }
 
 /**

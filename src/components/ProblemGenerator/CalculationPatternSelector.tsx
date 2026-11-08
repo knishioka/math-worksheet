@@ -53,6 +53,34 @@ const DIFFICULTY_OPTIONS: { value: DifficultyFilter; label: string }[] = [
   { value: 3, label: '★★★ チャレンジ' },
 ];
 
+const RECENT_STORAGE_KEY = 'math-worksheet-recent-patterns-v1';
+const RECENT_LIMIT = 8;
+const RECENT_VISIBLE = 5;
+
+function readRecentPatterns(): CalculationPattern[] {
+  try {
+    const saved: unknown = JSON.parse(
+      localStorage.getItem(RECENT_STORAGE_KEY) ?? '[]'
+    );
+    return Array.isArray(saved)
+      ? saved.filter(
+          (value): value is CalculationPattern =>
+            typeof value === 'string' && value in PATTERN_LABELS
+        )
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeRecentPatterns(patterns: CalculationPattern[]): void {
+  try {
+    localStorage.setItem(RECENT_STORAGE_KEY, JSON.stringify(patterns));
+  } catch {
+    // 保存できないブラウザでは画面を閉じるまでの記憶だけにする
+  }
+}
+
 const normalizeSearch = (text: string): string =>
   text
     .normalize('NFKC')
@@ -81,7 +109,10 @@ export const CalculationPatternSelector: React.FC<
       return current ? [current] : [];
     }
   );
+  const [recentPatterns, setRecentPatterns] =
+    useState<CalculationPattern[]>(readRecentPatterns);
   const previousGradeRef = useRef(grade);
+  const previousSelectedRef = useRef(selectedPattern);
   const changeButtonRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const onPatternChangeRef = useRef(onPatternChange);
@@ -144,13 +175,30 @@ export const CalculationPatternSelector: React.FC<
   );
 
   const selectedCategory = getCategoryForPattern(selectedPattern);
-  const selectedEntry = useMemo(
-    () =>
-      catalog
-        .flatMap((group) => group.entries)
-        .find((entry) => entryHasPattern(entry, selectedPattern)),
-    [catalog, selectedPattern]
+  const allEntries = useMemo(
+    () => catalog.flatMap((group) => group.entries),
+    [catalog]
   );
+  const selectedEntryIndex = allEntries.findIndex((entry) =>
+    entryHasPattern(entry, selectedPattern)
+  );
+  const selectedEntry =
+    selectedEntryIndex >= 0 ? allEntries[selectedEntryIndex] : undefined;
+  // 前後の教材は、いま選んでいる言語版を優先して選ぶ
+  const selectedLanguage = languageOfPattern(selectedPattern);
+  const neighbourPattern = (offset: -1 | 1): CalculationPattern | undefined => {
+    if (selectedEntryIndex < 0) return undefined;
+    const entry = allEntries[selectedEntryIndex + offset];
+    return entry ? resolveEntryPattern(entry, selectedLanguage) : undefined;
+  };
+  const previousPattern = neighbourPattern(-1);
+  const nextPattern = neighbourPattern(1);
+  // 最近使った教材（いま選んでいるものと、この学年に無いものは除く）
+  const visibleRecent = recentPatterns
+    .filter(
+      (pattern) => pattern !== selectedPattern && allPatterns.includes(pattern)
+    )
+    .slice(0, RECENT_VISIBLE);
   const selectedPairPattern =
     selectedEntry && getEntryLanguageSupport(selectedEntry) === 'both'
       ? resolveEntryPattern(
@@ -186,6 +234,23 @@ export const CalculationPatternSelector: React.FC<
     if (isPickerOpen) searchInputRef.current?.focus();
   }, [isPickerOpen]);
 
+  // 教材が切り替わったら、新しい教材と離れた教材を「最近使った」に積む
+  // （初期表示のまま使い続けている間は積まない）
+  useEffect(() => {
+    const previous = previousSelectedRef.current;
+    previousSelectedRef.current = selectedPattern;
+    if (!selectedPattern || previous === selectedPattern) return;
+    setRecentPatterns((recent) => {
+      const touched = previous ? [selectedPattern, previous] : [selectedPattern];
+      const updated = [
+        ...touched,
+        ...recent.filter((pattern) => !touched.includes(pattern)),
+      ].slice(0, RECENT_LIMIT);
+      writeRecentPatterns(updated);
+      return updated;
+    });
+  }, [selectedPattern]);
+
   // 未選択時だけ、現在の表示順で最初の問題を初期値にする。
   // フィルター操作では既存の選択を変更しない。
   useEffect(() => {
@@ -202,12 +267,19 @@ export const CalculationPatternSelector: React.FC<
     window.requestAnimationFrame(() => searchInputRef.current?.focus());
   }, []);
 
+  // 選んでも候補は閉じない。続けて別の教材へ切り替えられるようにする
+  // （プレビューは横に表示され、候補一覧は内側でスクロールする）。
   const handlePatternSelect = useCallback(
     (pattern: CalculationPattern) => {
       onPatternChange(pattern);
-      setIsPickerOpen(false);
-      setQuery('');
-      window.requestAnimationFrame(() => changeButtonRef.current?.focus());
+    },
+    [onPatternChange]
+  );
+
+  const jumpToPattern = useCallback(
+    (pattern: CalculationPattern) => {
+      setLanguage(languageOfPattern(pattern));
+      onPatternChange(pattern);
     },
     [onPatternChange]
   );
@@ -280,10 +352,7 @@ export const CalculationPatternSelector: React.FC<
               {selectedPairPattern && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setLanguage(languageOfPattern(selectedPairPattern));
-                    onPatternChange(selectedPairPattern);
-                  }}
+                  onClick={() => jumpToPattern(selectedPairPattern)}
                   className="mt-2 text-xs font-semibold text-teal-700 hover:text-teal-900 hover:underline"
                 >
                   {LANGUAGE_LABELS[languageOfPattern(selectedPairPattern)]}
@@ -291,6 +360,58 @@ export const CalculationPatternSelector: React.FC<
                 </button>
               )}
             </div>
+          </div>
+          {(previousPattern || nextPattern) && (
+            <div
+              className="mt-3 grid grid-cols-2 gap-2"
+              role="group"
+              aria-label="前後の教材"
+            >
+              <button
+                type="button"
+                disabled={!previousPattern}
+                onClick={() => previousPattern && jumpToPattern(previousPattern)}
+                title={previousPattern && PATTERN_LABELS[previousPattern]}
+                className="flex min-w-0 items-center gap-1 rounded-lg border border-teal-200 bg-white px-2 py-1.5 text-left text-xs font-medium text-teal-800 transition hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <span aria-hidden="true">←</span>
+                <span className="min-w-0 flex-1 truncate">
+                  前：{previousPattern ? PATTERN_LABELS[previousPattern] : '—'}
+                </span>
+              </button>
+              <button
+                type="button"
+                disabled={!nextPattern}
+                onClick={() => nextPattern && jumpToPattern(nextPattern)}
+                title={nextPattern && PATTERN_LABELS[nextPattern]}
+                className="flex min-w-0 items-center gap-1 rounded-lg border border-teal-200 bg-white px-2 py-1.5 text-right text-xs font-medium text-teal-800 transition hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <span className="min-w-0 flex-1 truncate">
+                  次：{nextPattern ? PATTERN_LABELS[nextPattern] : '—'}
+                </span>
+                <span aria-hidden="true">→</span>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {visibleRecent.length > 0 && (
+        <div role="group" aria-label="最近使った教材">
+          <p className="mb-1.5 text-[11px] font-semibold tracking-wide text-slate-500">
+            最近使った
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {visibleRecent.map((pattern) => (
+              <button
+                key={pattern}
+                type="button"
+                onClick={() => jumpToPattern(pattern)}
+                className="max-w-full truncate rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-700 transition hover:border-teal-300 hover:bg-teal-50 hover:text-teal-900"
+              >
+                {PATTERN_LABELS[pattern]}
+              </button>
+            ))}
           </div>
         </div>
       )}
@@ -413,7 +534,9 @@ export const CalculationPatternSelector: React.FC<
             </div>
 
             {visibleCount > 0 ? (
-              <fieldset className="relative min-w-0 space-y-2">
+              // 候補は内側でスクロールし、下にあるレイアウト・問題数の設定を
+              // 押し下げないようにする（カテゴリ見出しは中で固定表示）。
+              <fieldset className="relative min-w-0 max-h-[60vh] space-y-2 overflow-y-auto pr-0.5">
                 <legend className="sr-only">計算パターン</legend>
                 {visibleCatalog.map((group) => (
                   <CategorySection

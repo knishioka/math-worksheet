@@ -929,7 +929,9 @@ function ProblemItem({
           <span style={answerUnderlineStyle} />
         )}
         {basicProblem.remainder !== undefined && (
-          <div className="text-sm mt-2">
+          // 2行目の余白は詰める。mt-2 だと画面用の行高(1.8)で 1列8問/2列16問/3列24問が
+          // A4をわずか(約2mm)に超え、プレビューに誤った警告が出る
+          <div className="text-sm mt-1">
             あまり{' '}
             {showAnswer ? (
               <span style={answerDisplayStyle}>{basicProblem.remainder}</span>

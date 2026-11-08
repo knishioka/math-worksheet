@@ -1,4 +1,4 @@
-import type { WordProblem } from '../../types';
+import type { WordProblem, WordProblemEn } from '../../types';
 import type { EntranceExamPattern } from '../../config/entrance-exam-patterns';
 import { generateId, randomInt } from '../utils/math';
 import {
@@ -6,6 +6,13 @@ import {
   type EntranceContent as Content,
 } from './entrance-exam-shared';
 import { UPPER_ENTRANCE_GENERATORS } from './entrance-exam-upper';
+import {
+  ENTRANCE_EN_GENERATORS,
+  type EntranceEnContent,
+} from './entrance-exam-en';
+
+/** 受験文章題は日本語版（word）と英語版（word-en）のどちらかで出題する */
+export type EntranceExamProblem = WordProblem | WordProblemEn;
 
 function sumDifference(index: number): Content {
   const small = randomInt(10, 80);
@@ -190,8 +197,12 @@ function elimination(index: number): Content {
   );
 }
 
-const GENERATORS: Record<EntranceExamPattern, (index: number) => Content> = {
+const GENERATORS: Record<
+  EntranceExamPattern,
+  (index: number) => Content | EntranceEnContent
+> = {
   ...UPPER_ENTRANCE_GENERATORS,
+  ...ENTRANCE_EN_GENERATORS,
   'entrance-sum-difference-jap': sumDifference,
   'entrance-tree-planting-jap': treePlanting,
   'entrance-crane-turtle-jap': craneTurtle,
@@ -203,11 +214,14 @@ const GENERATORS: Record<EntranceExamPattern, (index: number) => Content> = {
 export function generateEntranceExamProblems(
   pattern: EntranceExamPattern,
   count: number
-): WordProblem[] {
+): EntranceExamProblem[] {
   // 2・3・4条件の巡回の開始位置を変え、少ない問題数でも同じ条件だけに偏らせない。
   const start = randomInt(0, 11);
-  return Array.from({ length: count }, (_, index) => ({
-    ...GENERATORS[pattern](index + start),
-    id: `${generateId()}-${index}`,
-  }));
+  return Array.from(
+    { length: count },
+    (_, index): EntranceExamProblem => ({
+      ...GENERATORS[pattern](index + start),
+      id: `${generateId()}-${index}`,
+    })
+  );
 }

@@ -380,15 +380,16 @@ export function getPatternCategory(
 export function getPatternLanguage(
   pattern: CalculationPattern
 ): PatternLanguage {
-  if (
-    isSupplementalPattern(pattern) &&
-    SUPPLEMENTAL_PATTERNS[pattern].type === 'word'
-  )
-    return 'ja';
+  // -jap / -en の接尾辞が最優先（受験文章題の英語版など）
   for (const [suffix, lang] of Object.entries(LANGUAGE_SUFFIX_MAP)) {
     if (pattern.endsWith(suffix)) {
       return lang;
     }
+  }
+  if (isSupplementalPattern(pattern)) {
+    const type = SUPPLEMENTAL_PATTERNS[pattern].type;
+    if (type === 'word') return 'ja';
+    if (type === 'word-en') return 'en';
   }
 
   // word-en は特別扱い

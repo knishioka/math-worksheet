@@ -5,7 +5,7 @@ interface SupplementalDefinition {
   label: string;
   description: string;
   grade: number;
-  type: 'basic' | 'fraction' | 'word';
+  type: 'basic' | 'fraction' | 'word' | 'word-en';
   category: 'basic' | 'fraction' | 'word' | 'geometry' | 'data' | 'entrance';
   difficulty: 1 | 2 | 3;
 }

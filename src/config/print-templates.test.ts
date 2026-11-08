@@ -380,5 +380,55 @@ describe('Print Templates', () => {
       expect(counts.recommendedCounts[3]).toBe(12);
       expect(counts.maxCounts[1]).toBe(6);
     });
+
+    it('あまりのあるわり算は2行表示に合わせて問題数を抑え、警告の閾値も一致させる', () => {
+      // 実測: 1列9問・2列18問・3列27問からA4を超える
+      const counts = getEffectiveCounts('basic', 'div-with-remainder', 4);
+      expect(counts.recommendedCounts).toEqual({ 1: 8, 2: 16, 3: 24 });
+      expect(counts.maxCounts).toEqual({ 1: 8, 2: 16, 3: 24 });
+      expect(counts.thresholds).toEqual({ 1: 8, 2: 16, 3: 24 });
+      // 他の基本計算には影響しない
+      expect(
+        getEffectiveCounts('basic', 'mult-triple-digit', 4).maxCounts
+      ).toEqual(getPrintTemplate('basic').maxCounts);
+    });
+
+    it('中学受験の文章題は日本語版 8/12/12、英語版 6/10/9 を上限にする', () => {
+      const japanese = getEffectiveCounts(
+        'word',
+        'entrance-crane-turtle-jap',
+        4
+      );
+      expect(japanese.recommendedCounts).toEqual({ 1: 6, 2: 10, 3: 9 });
+      expect(japanese.maxCounts).toEqual({ 1: 8, 2: 12, 3: 12 });
+      expect(japanese.thresholds).toEqual({ 1: 8, 2: 12, 3: 12 });
+      // 高学年の受験教材も同じ上限
+      expect(
+        getEffectiveCounts('word', 'entrance-newton-jap', 6).maxCounts
+      ).toEqual({ 1: 8, 2: 12, 3: 12 });
+
+      // 英語版は word-en の高学年調整（12問）より教材固有の上限を優先する
+      const english = getEffectiveCounts(
+        'word-en',
+        'entrance-crane-turtle-en',
+        4
+      );
+      expect(english.recommendedCounts).toEqual({ 1: 5, 2: 8, 3: 6 });
+      expect(english.maxCounts).toEqual({ 1: 6, 2: 10, 3: 9 });
+      expect(english.thresholds).toEqual({ 1: 6, 2: 10, 3: 9 });
+    });
+
+    it('オーバーライドのA4閾値はテンプレートの閾値を超えない', () => {
+      const counts = getEffectiveCounts('singapore', 'singapore-bar-model', 4);
+      const template = getPrintTemplate('singapore');
+      for (const column of [1, 2, 3] as const) {
+        expect(counts.thresholds[column]).toBeLessThanOrEqual(
+          template.fitsInA4.threshold[column]
+        );
+        expect(counts.thresholds[column]).toBeLessThanOrEqual(
+          counts.maxCounts[column]
+        );
+      }
+    });
   });
 });

@@ -5,8 +5,14 @@ import {
   waitFor,
   within,
 } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CalculationPatternSelector } from '../CalculationPatternSelector';
+import {
+  buildPatternCatalog,
+  entryHasPattern,
+  resolveEntryPattern,
+} from '../../../config/pattern-catalog';
+import { PATTERNS_BY_GRADE } from '../../../types';
 
 const openPicker = (): void => {
   fireEvent.click(screen.getByRole('button', { name: '問題を変更' }));
@@ -16,6 +22,8 @@ const categoryButton = (name: RegExp): HTMLElement =>
   screen.getByRole('button', { name });
 
 describe('CalculationPatternSelector', () => {
+  beforeEach(() => localStorage.clear());
+
   it('shows category headings and keeps the learning order inside themes', () => {
     const onPatternChange = vi.fn();
     render(
@@ -279,7 +287,7 @@ describe('CalculationPatternSelector', () => {
     ).toBeInTheDocument();
   });
 
-  it('selects a result and closes the picker', () => {
+  it('keeps the picker open after selecting so the next switch needs no extra click', () => {
     const onPatternChange = vi.fn();
     render(
       <CalculationPatternSelector
@@ -290,27 +298,106 @@ describe('CalculationPatternSelector', () => {
     );
 
     openPicker();
+    fireEvent.change(screen.getByLabelText('キーワードで探す'), {
+      target: { value: '大きな数' },
+    });
     fireEvent.click(screen.getByRole('radio', { name: /大きな数のひき算/ }));
 
     expect(onPatternChange).toHaveBeenCalledWith('sub-large-numbers');
-    expect(screen.queryByLabelText('キーワードで探す')).not.toBeInTheDocument();
+    // 候補も検索語も残り、続けて別の教材を選べる
+    expect(screen.getByLabelText('キーワードで探す')).toHaveValue('大きな数');
+    expect(
+      screen.getByRole('radio', { name: /大きな数のたし算・ひき算ミックス/ })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '候補を閉じる' })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
   });
 
-  it('restores focus to the change button after selecting a result', async () => {
+  it('steps to the previous and next material in catalog order', () => {
+    const onPatternChange = vi.fn();
     render(
       <CalculationPatternSelector
         grade={4}
-        selectedPattern="add-large-numbers"
-        onPatternChange={vi.fn()}
+        selectedPattern="sub-large-numbers"
+        onPatternChange={onPatternChange}
       />
     );
-
-    openPicker();
-    fireEvent.click(screen.getByRole('radio', { name: /大きな数のひき算/ }));
-
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: '問題を変更' })).toHaveFocus()
+    // 候補一覧と同じ並び（道すじ順）で前後へ動く
+    const entries = buildPatternCatalog(PATTERNS_BY_GRADE[4], 4).flatMap(
+      (group) => group.entries
     );
+    const index = entries.findIndex((entry) =>
+      entryHasPattern(entry, 'sub-large-numbers')
+    );
+    expect(index).toBeGreaterThan(0);
+    const nav = screen.getByRole('group', { name: '前後の教材' });
+    fireEvent.click(within(nav).getByRole('button', { name: /^前：/ }));
+    expect(onPatternChange).toHaveBeenLastCalledWith(
+      resolveEntryPattern(entries[index - 1], 'ja')
+    );
+    fireEvent.click(within(nav).getByRole('button', { name: /^次：/ }));
+    expect(onPatternChange).toHaveBeenLastCalledWith(
+      resolveEntryPattern(entries[index + 1], 'ja')
+    );
+  });
+
+  it('keeps the current language when stepping between paired materials', () => {
+    const onPatternChange = vi.fn();
+    render(
+      <CalculationPatternSelector
+        grade={4}
+        selectedPattern="money-change-en"
+        onPatternChange={onPatternChange}
+      />
+    );
+    const nav = screen.getByRole('group', { name: '前後の教材' });
+    fireEvent.click(within(nav).getByRole('button', { name: /^次：/ }));
+    expect(onPatternChange).toHaveBeenLastCalledWith('money-total-en');
+  });
+
+  it('offers recently used materials as one-click shortcuts', () => {
+    const onPatternChange = vi.fn();
+    const { rerender } = render(
+      <CalculationPatternSelector
+        grade={4}
+        selectedPattern="add-large-numbers"
+        onPatternChange={onPatternChange}
+      />
+    );
+    expect(
+      screen.queryByRole('group', { name: '最近使った教材' })
+    ).not.toBeInTheDocument();
+
+    rerender(
+      <CalculationPatternSelector
+        grade={4}
+        selectedPattern="word-en"
+        onPatternChange={onPatternChange}
+      />
+    );
+    rerender(
+      <CalculationPatternSelector
+        grade={4}
+        selectedPattern="entrance-crane-turtle-jap"
+        onPatternChange={onPatternChange}
+      />
+    );
+    const recent = screen.getByRole('group', { name: '最近使った教材' });
+    // 直前に使ったものが先頭、いま選んでいる鶴亀算は出さない
+    expect(
+      within(recent)
+        .getAllByRole('button')
+        .map((button) => button.textContent)
+    ).toEqual(['English Word Problems', '大きな数のたし算']);
+    fireEvent.click(
+      within(recent).getByRole('button', { name: 'English Word Problems' })
+    );
+    expect(onPatternChange).toHaveBeenLastCalledWith('word-en');
+    expect(
+      JSON.parse(localStorage.getItem('math-worksheet-recent-patterns-v1')!)
+    ).toEqual(['entrance-crane-turtle-jap', 'word-en', 'add-large-numbers']);
   });
 
   it('clears the difficulty restriction with the other filters', () => {
