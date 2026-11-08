@@ -2,10 +2,64 @@ interface EntranceExamDefinition {
   label: string;
   description: string;
   grade: 4 | 5 | 6;
-  type: 'word';
+  /** 日本語版は 'word'、英語版（-en）は 'word-en' で印刷する */
+  type: 'word' | 'word-en';
   category: 'entrance';
   difficulty: 2 | 3;
 }
+
+const english = (
+  label: string,
+  description: string,
+  difficulty: 2 | 3
+): EntranceExamDefinition => ({
+  label,
+  description,
+  grade: 4,
+  type: 'word-en',
+  category: 'entrance',
+  difficulty,
+});
+
+/**
+ * 4年生向け受験文章題の英語版。
+ * 日本語版（-jap）と同じ出題ロジックで、教材カタログでは1枚のカードに
+ * まとまり「English版に切り替える」で行き来できる。
+ */
+export const ENTRANCE_EXAM_EN_PATTERNS = {
+  'entrance-sum-difference-en': english(
+    'Sum and Difference',
+    'Find two numbers from their total and their difference.',
+    2
+  ),
+  'entrance-tree-planting-en': english(
+    'Tree Planting',
+    'Count trees along a road or around a pond by telling trees from gaps.',
+    2
+  ),
+  'entrance-crane-turtle-en': english(
+    'Cranes and Turtles',
+    'Suppose every animal (or item) were the same kind, then fix the difference.',
+    3
+  ),
+  'entrance-difference-gathering-en': english(
+    'Collecting Differences',
+    'Divide the total difference by the difference per item to find how many.',
+    3
+  ),
+  'entrance-excess-shortage-en': english(
+    'Excess and Shortage',
+    'Compare two ways of sharing, with leftovers or shortages, to find the group size.',
+    3
+  ),
+  'entrance-elimination-en': english(
+    'Elimination',
+    'Line up two purchases so one item cancels out, then find the unit price.',
+    3
+  ),
+} satisfies Record<string, EntranceExamDefinition>;
+
+export type EntranceExamEnPattern = keyof typeof ENTRANCE_EXAM_EN_PATTERNS;
 
 const upper = (
   grade: 5 | 6,
@@ -150,10 +204,20 @@ export const ENTRANCE_EXAM_PATTERNS = {
     category: 'entrance',
     difficulty: 3,
   },
+  ...ENTRANCE_EXAM_EN_PATTERNS,
   ...UPPER_ENTRANCE_EXAM_PATTERNS,
 } satisfies Record<string, EntranceExamDefinition>;
 
 export type EntranceExamPattern = keyof typeof ENTRANCE_EXAM_PATTERNS;
+
+export function isEntranceExamEnPattern(
+  pattern?: string
+): pattern is EntranceExamEnPattern {
+  return (
+    pattern !== undefined &&
+    Object.prototype.hasOwnProperty.call(ENTRANCE_EXAM_EN_PATTERNS, pattern)
+  );
+}
 
 export function isEntranceExamPattern(
   pattern?: string

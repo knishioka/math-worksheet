@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   ENTRANCE_EXAM_PATTERNS,
+  type EntranceExamEnPattern,
   type EntranceExamPattern,
   type UpperEntranceExamPattern,
 } from '../../config/entrance-exam-patterns';
@@ -17,11 +18,12 @@ import { generateEntranceExamProblems } from './entrance-exam';
 
 type BasicEntranceExamPattern = Exclude<
   EntranceExamPattern,
-  UpperEntranceExamPattern
+  UpperEntranceExamPattern | EntranceExamEnPattern
 >;
 const patterns = Object.keys(ENTRANCE_EXAM_PATTERNS).filter(
   (pattern) =>
-    ENTRANCE_EXAM_PATTERNS[pattern as EntranceExamPattern].grade === 4
+    ENTRANCE_EXAM_PATTERNS[pattern as EntranceExamPattern].grade === 4 &&
+    pattern.endsWith('-jap')
 ) as BasicEntranceExamPattern[];
 afterEach(() => vi.restoreAllMocks());
 
@@ -32,7 +34,7 @@ function numbers(text: string): number[] {
 // 出題文の条件を満たす候補を全て列挙し、保存された解答と独立に検証する。
 function solve(
   pattern: BasicEntranceExamPattern,
-  problem: WordProblem
+  problem: Pick<WordProblem, 'problemText'>
 ): number[] {
   const text = problem.problemText;
   const values = numbers(text);

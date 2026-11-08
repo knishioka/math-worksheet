@@ -142,6 +142,8 @@ export interface WordProblemEn {
     | 'number-bond'
     | 'multi-step';
   showCalculation?: boolean;
+  /** 解答表示時に示す解き方（受験文章題の英語版など） */
+  solutionSteps?: string[];
   language: 'en';
 }
 

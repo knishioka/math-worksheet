@@ -493,16 +493,30 @@ export const PATTERN_COUNT_OVERRIDES: Partial<
         },
       ])
   ),
+  // 中学受験の文章題。実測（scripts/measure 相当、各教材4サンプル）では
+  // 日本語版（12px）は 1列9問・2列14問・3列18問から超過し始めるため、
+  // 1行ぶんの余裕を残して 8/12/12 を上限にする。
+  // 英語版（15px）は行数が増えるぶん少なめ。
   ...Object.fromEntries(
     Object.entries(ENTRANCE_EXAM_PATTERNS).map(([pattern, definition]) => [
       pattern,
-      {
-        recommendedCounts: { 1: 3, 2: 4, 3: 3 },
-        maxCounts:
-          definition.grade === 4 ? { 1: 4, 2: 6, 3: 3 } : { 1: 3, 2: 4, 3: 3 },
-      },
+      definition.type === 'word-en'
+        ? {
+            recommendedCounts: { 1: 5, 2: 8, 3: 6 },
+            maxCounts: { 1: 6, 2: 10, 3: 9 },
+          }
+        : {
+            recommendedCounts: { 1: 6, 2: 10, 3: 9 },
+            maxCounts: { 1: 8, 2: 12, 3: 12 },
+          },
     ])
   ),
+  // あまりのあるわり算は「あまり ___」の2行目が付くため、基本計算より
+  // 1問あたりの高さが約2倍（実測96px）。1列9問・2列18問・3列27問で超過。
+  'div-with-remainder': {
+    recommendedCounts: { 1: 8, 2: 16, 3: 24 },
+    maxCounts: { 1: 8, 2: 16, 3: 24 },
+  },
   'data-bar-chart-jap': {
     recommendedCounts: { 1: 3, 2: 6, 3: 6 },
     maxCounts: { 1: 3, 2: 6, 3: 6 },
@@ -580,18 +594,32 @@ export function getEffectiveCounts(
   calculationPattern: CalculationPattern | undefined,
   grade: Grade | undefined
 ): EffectiveCounts {
+  const template = PRINT_TEMPLATES[effectiveType];
+  const override = calculationPattern
+    ? PATTERN_COUNT_OVERRIDES[calculationPattern]
+    : undefined;
+
+  // パターン固有の上限は実測ベースなので、タイプ共通の調整より優先する。
+  // A4閾値も上限に合わせて下げ、「2ページに分かれる」警告と上限を一致させる。
+  if (override) {
+    return {
+      recommendedCounts: override.recommendedCounts,
+      maxCounts: override.maxCounts,
+      thresholds: {
+        1: Math.min(template.fitsInA4.threshold[1], override.maxCounts[1]),
+        2: Math.min(template.fitsInA4.threshold[2], override.maxCounts[2]),
+        3: Math.min(template.fitsInA4.threshold[3], override.maxCounts[3]),
+      },
+    };
+  }
+
   if (effectiveType === 'word-en' && grade !== undefined && grade >= 4) {
     return WORD_EN_ADVANCED_COUNTS;
   }
 
-  const override = calculationPattern
-    ? PATTERN_COUNT_OVERRIDES[calculationPattern]
-    : undefined;
-  const template = PRINT_TEMPLATES[effectiveType];
   return {
-    recommendedCounts:
-      override?.recommendedCounts ?? template.recommendedCounts,
-    maxCounts: override?.maxCounts ?? template.maxCounts,
+    recommendedCounts: template.recommendedCounts,
+    maxCounts: template.maxCounts,
     thresholds: template.fitsInA4.threshold,
   };
 }

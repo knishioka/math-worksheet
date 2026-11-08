@@ -7,7 +7,7 @@
 ```bash
 npm run dev        # 開発サーバー起動 (http://localhost:5174/)
 npm run build      # 本番ビルド
-npm run test       # テスト実行 (941テスト)
+npm run test       # テスト実行 (970テスト)
 npm run typecheck  # 型チェック
 npm run lint       # ESLintチェック
 ```
@@ -51,6 +51,8 @@ src/
 | `anzan`      | 24px   | 6/12/18                  |
 
 > ※ `word-en`（英語文章問題）は4年生以上で長文の「advanced」ストーリーを使うため、2列/3列の狭いセルで3〜4行に折り返してA4を超過する。`getEffectiveCounts(effectiveType, pattern, grade)` が grade>=4 のとき推奨/最大/A4閾値を 8/12/12 に抑える（実測ベース。`scripts/repro-word-en-overflow.mjs` で検証）。問題数は学年に依存するため、`template.maxCounts` を直接参照せず必ず `getEffectiveCounts` を使うこと。
+>
+> ※ パターン固有の上限は `PATTERN_COUNT_OVERRIDES` にあり、テンプレートより優先される（A4閾値も上限に合わせて下がる）。実測で決めた主なもの: 中学受験の文章題（`entrance-*-jap`）は推奨 6/10/9・最大 8/12/12、英語版（`entrance-*-en`、15px表示）は推奨 5/8/6・最大 6/10/9、`div-with-remainder`（「あまり」の2行目が付く）は 8/16/24。問題文が2行になる・折り返す教材を追加するときは、テンプレート値のままにせず `scripts/measure-a4-counts.mjs` で実測して上限を決めること。
 
 **テンプレート取得**:
 
@@ -146,7 +148,7 @@ npm run check:layout:local
 
 ## テスト
 
-**構成** (941テスト):
+**構成** (970テスト):
 
 - `src/lib/generators/*.test.ts`: 問題生成ロジック
 - `src/components/**/__tests__/`: コンポーネント
