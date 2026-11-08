@@ -502,7 +502,8 @@ export const PATTERN_COUNT_OVERRIDES: Partial<
       pattern,
       definition.type === 'word-en'
         ? {
-            recommendedCounts: { 1: 5, 2: 8, 3: 6 },
+            // 3列は6問（2行）だと行間が大きく空くので上限と同じ9問（3行）にする
+            recommendedCounts: { 1: 5, 2: 8, 3: 9 },
             maxCounts: { 1: 6, 2: 10, 3: 9 },
           }
         : {
