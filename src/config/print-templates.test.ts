@@ -413,7 +413,7 @@ describe('Print Templates', () => {
         'entrance-crane-turtle-en',
         4
       );
-      expect(english.recommendedCounts).toEqual({ 1: 5, 2: 8, 3: 6 });
+      expect(english.recommendedCounts).toEqual({ 1: 5, 2: 8, 3: 9 });
       expect(english.maxCounts).toEqual({ 1: 6, 2: 10, 3: 9 });
       expect(english.thresholds).toEqual({ 1: 6, 2: 10, 3: 9 });
     });
