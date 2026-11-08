@@ -39,7 +39,7 @@ describe('新しい学習内容の印刷', () => {
       const english = ENTRANCE_EXAM_PATTERNS[pattern].type === 'word-en';
       const listName = english ? 'Solution' : '解き方';
       const answerText = english
-        ? `${problems[0].answer} ${problems[0].unit}`
+        ? `${problems[0].answer}${problems[0].unit ? ` ${problems[0].unit}` : ''}`
         : `答え: ${problems[0].answer}${problems[0].unit}`;
       const view = render(<ProblemList {...props} />);
       expect(problems[0].type).toBe(english ? 'word-en' : 'word');

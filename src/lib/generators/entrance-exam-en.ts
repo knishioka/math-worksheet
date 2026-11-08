@@ -1,6 +1,7 @@
 import type { Operation, WordProblemEn } from '../../types';
 import type { EntranceExamEnPattern } from '../../config/entrance-exam-patterns';
 import { randomInt } from '../utils/math';
+import { UPPER_ENTRANCE_EN_GENERATORS } from './entrance-exam-upper-en';
 
 /**
  * 4年生向け受験文章題の英語版。
@@ -10,7 +11,7 @@ import { randomInt } from '../utils/math';
  */
 export type EntranceEnContent = Omit<WordProblemEn, 'id'>;
 
-function word(
+export function entranceWordEn(
   problemText: string,
   answer: number,
   unit: string,
@@ -28,6 +29,13 @@ function word(
     category: 'word-story',
     language: 'en',
   };
+}
+
+const word = entranceWordEn;
+
+/** "1 pencil" / "2 pencils" */
+export function plural(count: number, noun: string): string {
+  return `${count} ${noun}${count === 1 ? '' : 's'}`;
 }
 
 function sumDifference(index: number): EntranceEnContent {
@@ -206,7 +214,7 @@ function elimination(index: number): EntranceEnContent {
   const secondTotal = secondPencils * pencilPrice + secondErasers * eraserPrice;
   const extraCost = extra * eraserPrice;
   return word(
-    `${pencils} pencils and ${erasers} erasers cost RM${firstTotal}. ${secondPencils} pencils and ${secondErasers} erasers cost RM${secondTotal}. Items of the same kind all have the same price. How much does one eraser cost?`,
+    `${plural(pencils, 'pencil')} and ${plural(erasers, 'eraser')} cost RM${firstTotal}. ${plural(secondPencils, 'pencil')} and ${plural(secondErasers, 'eraser')} cost RM${secondTotal}. Items of the same kind all have the same price. How much does one eraser cost?`,
     eraserPrice,
     'RM',
     [
@@ -225,6 +233,7 @@ export const ENTRANCE_EN_GENERATORS: Record<
   EntranceExamEnPattern,
   (index: number) => EntranceEnContent
 > = {
+  ...UPPER_ENTRANCE_EN_GENERATORS,
   'entrance-sum-difference-en': sumDifference,
   'entrance-tree-planting-en': treePlanting,
   'entrance-crane-turtle-en': craneTurtle,
