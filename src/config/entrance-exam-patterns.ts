@@ -11,22 +11,123 @@ interface EntranceExamDefinition {
 const english = (
   label: string,
   description: string,
-  difficulty: 2 | 3
+  difficulty: 2 | 3,
+  grade: 4 | 5 | 6 = 4
 ): EntranceExamDefinition => ({
   label,
   description,
-  grade: 4,
+  grade,
   type: 'word-en',
   category: 'entrance',
   difficulty,
 });
 
 /**
- * 4年生向け受験文章題の英語版。
+ * 5・6年生向け受験文章題の英語版（UPPER_ENTRANCE_EXAM_PATTERNS と対）。
+ */
+export const UPPER_ENTRANCE_EXAM_EN_PATTERNS = {
+  'entrance-multiples-en': english(
+    'Changing Ratios',
+    'Use the total or difference that stays the same to find the original amount.',
+    3,
+    5
+  ),
+  'entrance-ratio-sharing-en': english(
+    'Sharing in a Ratio',
+    'Share a total in a given ratio, including problems that link two ratios.',
+    3,
+    5
+  ),
+  'entrance-age-en': english(
+    'Age Problems',
+    'Use the age difference that never changes to find when one age is a multiple of another.',
+    3,
+    5
+  ),
+  'entrance-equivalent-en': english(
+    'Fraction of a Whole',
+    'Read what fraction of the whole or of the rest is used, and find the whole from what is left.',
+    3,
+    5
+  ),
+  'entrance-reverse-en': english(
+    'Working Backwards',
+    'Undo adding, subtracting, multiplying and dividing in reverse order to find the original number.',
+    3,
+    5
+  ),
+  'entrance-profit-loss-en': english(
+    'Profit and Loss',
+    'Relate cost, list price and selling price to find the profit, loss or cost.',
+    3,
+    5
+  ),
+  'entrance-salt-water-en': english(
+    'Salt Water',
+    'Keep track of the amount of salt to find the concentration of a mixture or the water to add.',
+    3,
+    5
+  ),
+  'entrance-traveler-en': english(
+    'Meeting and Catching Up',
+    'Use the sum or difference of two speeds for meeting and catching-up problems.',
+    3,
+    5
+  ),
+  'entrance-train-passing-en': english(
+    'Passing Trains',
+    'Use the lengths of a train and a bridge, or of two trains, to find the time to pass.',
+    3,
+    5
+  ),
+  'entrance-river-en': english(
+    'Boats on a River',
+    'Separate the speed of the boat from the speed of the current for upstream and downstream trips.',
+    3,
+    5
+  ),
+  'entrance-work-en': english(
+    'Work Problems',
+    'Use the amount of work done per day to find how long people take working together.',
+    3,
+    6
+  ),
+  'entrance-newton-en': english(
+    'Newton Problems',
+    'Compare an amount that keeps growing with the rate it is cleared to find the inflow or the people needed.',
+    3,
+    6
+  ),
+  'entrance-advanced-crane-turtle-en': english(
+    'Cranes and Turtles (3 Kinds)',
+    'Combine a total count, a total number of legs and a relation between two kinds.',
+    3,
+    6
+  ),
+  'entrance-advanced-ratio-age-en': english(
+    'Ratios and Ages',
+    'Use the present ratio and the unchanging age difference to find when a future ratio is reached.',
+    3,
+    6
+  ),
+  'entrance-advanced-speed-en': english(
+    'Speed in Stages',
+    'Split a journey at a late start or a change of speed and handle each stage in turn.',
+    3,
+    6
+  ),
+} satisfies Record<string, EntranceExamDefinition>;
+
+export type UpperEntranceExamEnPattern =
+  keyof typeof UPPER_ENTRANCE_EXAM_EN_PATTERNS;
+
+/**
+ * 受験文章題の英語版。
  * 日本語版（-jap）と同じ出題ロジックで、教材カタログでは1枚のカードに
  * まとまり「English版に切り替える」で行き来できる。
  */
 export const ENTRANCE_EXAM_EN_PATTERNS = {
+  ...UPPER_ENTRANCE_EXAM_EN_PATTERNS,
   'entrance-sum-difference-en': english(
     'Sum and Difference',
     'Find two numbers from their total and their difference.',

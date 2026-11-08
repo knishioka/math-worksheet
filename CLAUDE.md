@@ -7,7 +7,7 @@
 ```bash
 npm run dev        # 開発サーバー起動 (http://localhost:5174/)
 npm run build      # 本番ビルド
-npm run test       # テスト実行 (970テスト)
+npm run test       # テスト実行 (1020テスト)
 npm run typecheck  # 型チェック
 npm run lint       # ESLintチェック
 ```
@@ -148,7 +148,7 @@ npm run check:layout:local
 
 ## テスト
 
-**構成** (970テスト):
+**構成** (1020テスト):
 
 - `src/lib/generators/*.test.ts`: 問題生成ロジック
 - `src/components/**/__tests__/`: コンポーネント

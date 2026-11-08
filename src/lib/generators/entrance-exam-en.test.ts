@@ -4,6 +4,7 @@ import {
   ENTRANCE_EXAM_PATTERNS,
   isEntranceExamEnPattern,
   type EntranceExamEnPattern,
+  type UpperEntranceExamEnPattern,
 } from '../../config/entrance-exam-patterns';
 import {
   buildPatternCatalog,
@@ -24,9 +25,17 @@ import {
 import { generateProblems } from './index';
 import { generateEntranceExamProblems } from './entrance-exam';
 
-const patterns = Object.keys(
-  ENTRANCE_EXAM_EN_PATTERNS
-) as EntranceExamEnPattern[];
+// 4年生の英語版。5・6年生は entrance-exam-upper-en.test.ts で検証する
+type Grade4EnPattern = Exclude<
+  EntranceExamEnPattern,
+  UpperEntranceExamEnPattern
+>;
+const patterns = (
+  Object.keys(ENTRANCE_EXAM_EN_PATTERNS) as EntranceExamEnPattern[]
+).filter(
+  (pattern): pattern is Grade4EnPattern =>
+    ENTRANCE_EXAM_EN_PATTERNS[pattern].grade === 4
+);
 afterEach(() => vi.restoreAllMocks());
 
 function numbers(text: string): number[] {
@@ -35,7 +44,7 @@ function numbers(text: string): number[] {
 const range = (n: number): number[] => Array.from({ length: n }, (_, i) => i);
 
 // 英語の問題文だけから条件を読み取り、保存された答えと独立に解く。
-function solve(pattern: EntranceExamEnPattern, text: string): number[] {
+function solve(pattern: Grade4EnPattern, text: string): number[] {
   const values = numbers(text);
   switch (pattern) {
     case 'entrance-sum-difference-en': {
