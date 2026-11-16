@@ -1,5 +1,9 @@
 import type { WorksheetData, WorksheetSettings } from '../../types';
 import { generateProblems, validateSettings } from './index';
+import {
+  generateFractionDecimalProblems,
+  isFractionDecimalPattern,
+} from './patterns/fraction-decimal';
 
 /** レイアウト変更では問題を保ち、問題数の増減では末尾だけを調整する。 */
 export function buildWorksheet(
@@ -31,12 +35,24 @@ export function buildWorksheet(
       ? previous.problems
       : previous.problems.slice(0, count);
   if (problems.length < count) {
-    problems.push(
-      ...generateProblems({
-        ...settings,
-        problemCount: count - problems.length,
-      })
-    );
+    const missingCount = count - problems.length;
+    const additional =
+      settings.problemType === 'basic' &&
+      isFractionDecimalPattern(settings.calculationPattern)
+        ? generateFractionDecimalProblems(
+            settings,
+            missingCount,
+            new Set(
+              problems.flatMap((problem) =>
+                problem.type === 'word' ? [problem.problemText] : []
+              )
+            )
+          )
+        : generateProblems({
+            ...settings,
+            problemCount: missingCount,
+          });
+    problems.push(...additional);
   }
   return {
     settings: { ...settings },

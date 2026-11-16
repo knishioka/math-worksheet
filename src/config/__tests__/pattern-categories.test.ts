@@ -38,6 +38,8 @@ describe('pattern-categories', () => {
     it('should categorize fraction and decimal patterns', () => {
       expect(getPatternCategory('frac-same-denom')).toBe('fraction');
       expect(getPatternCategory('frac-mult')).toBe('fraction');
+      expect(getPatternCategory('frac-to-decimal')).toBe('fraction');
+      expect(getPatternCategory('decimal-to-frac')).toBe('fraction');
       expect(getPatternCategory('dec-add-simple' as CalculationPattern)).toBe(
         'fraction'
       );

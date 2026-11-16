@@ -15,6 +15,33 @@ const defaults: WorksheetSettings = {
 };
 
 describe('parseUrlSettings', () => {
+  it.each(['frac-to-decimal', 'decimal-to-frac'] as const)(
+    'round-trips %s with the conversion layout counts',
+    (calculationPattern) => {
+      for (const grade of [4, 5] as const) {
+        for (const layoutColumns of [1, 2, 3] as const) {
+          const settings: WorksheetSettings = {
+            ...defaults,
+            grade,
+            calculationPattern,
+            layoutColumns,
+            problemCount: 6,
+          };
+          const restored = parseUrlSettings(
+            `?${settingsToUrlParams(settings)}`,
+            defaults
+          );
+          expect(restored).toMatchObject({
+            grade,
+            calculationPattern,
+            layoutColumns,
+            problemCount: 6,
+          });
+        }
+      }
+    }
+  );
+
   it('restores the problem order and ignores unknown orders', () => {
     expect(parseUrlSettings('?order=row', defaults).problemOrder).toBe('row');
     expect(parseUrlSettings('?order=column', defaults).problemOrder).toBe(

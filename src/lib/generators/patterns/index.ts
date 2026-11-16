@@ -1,6 +1,7 @@
 import type { Problem, WorksheetSettings } from '../../../types';
 import { isSupplementalPattern } from '../../../config/supplemental-patterns';
 import { generateSupplementalProblems } from './supplemental';
+import { generateFractionDecimalProblems } from './fraction-decimal';
 import { generateGradeEnWordProblems } from '../word-problem-en';
 import { generateGradeMoneyProblems } from '../money-problems';
 import { generateGradeMoneyProblemsEn } from '../money-problems-en';
@@ -272,6 +273,9 @@ export function generatePatternProblems(
       return generateDivDecInt(settings, count);
     case 'frac-mixed-number':
       return generateFracMixedNumber(settings, count);
+    case 'frac-to-decimal':
+    case 'decimal-to-frac':
+      return generateFractionDecimalProblems(settings, count);
     case 'hissan-mult-advanced':
       return generateHissanMultAdvanced(settings, count);
     case 'hissan-div-basic':

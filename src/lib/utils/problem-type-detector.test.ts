@@ -5,6 +5,16 @@ import {
   supportsEquationLine,
 } from './problem-type-detector';
 
+describe('fraction/decimal conversion classification', () => {
+  it.each(['frac-to-decimal', 'decimal-to-frac'] as const)(
+    'uses the existing word layout for %s',
+    (pattern) => {
+      expect(isWordProblem('basic', pattern)).toBe(true);
+      expect(getEffectiveProblemType('basic', pattern)).toBe('word');
+    }
+  );
+});
+
 describe('problem-type-detector allowance classification', () => {
   it('treats allowance goal (Japanese) as a word problem', () => {
     expect(isWordProblem('basic', 'allowance-goal-jap')).toBe(true);

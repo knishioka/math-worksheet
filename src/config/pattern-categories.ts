@@ -241,6 +241,8 @@ const BASE_DIFFICULTY: Partial<Record<CalculationPattern, DifficultyLevel>> = {
   'mult-dec-int': 2,
   'div-dec-int': 2,
   'frac-mixed-number': 2,
+  'frac-to-decimal': 2,
+  'decimal-to-frac': 2,
   'mult-dec-dec': 2,
   'div-dec-dec': 2,
   'frac-different-denom': 2,
