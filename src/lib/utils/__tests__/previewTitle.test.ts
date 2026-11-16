@@ -12,6 +12,19 @@ const baseSettings: WorksheetSettings = {
 };
 
 describe('buildPreviewTitle', () => {
+  it.each([
+    ['frac-to-decimal', '分数→小数'],
+    ['decimal-to-frac', '小数→分数'],
+  ] as const)('uses the %s conversion title', (calculationPattern, label) => {
+    for (const grade of [4, 5] as const) {
+      expect(
+        buildPreviewTitle({
+          settings: { ...baseSettings, grade, calculationPattern },
+        })
+      ).toBe(`${label} (${grade}年生)`);
+    }
+  });
+
   const worksheetFormat = { description: 'worksheet preview title' } as const;
   const problemListFormat = {
     description: 'problem list header',
@@ -57,17 +70,19 @@ describe('buildPreviewTitle', () => {
     const format = 'format' in formatConfig ? formatConfig.format : undefined;
 
     describe(description, () => {
-      permutations.forEach(({ description: permutationDescription, settings, expectedTopic }) => {
-        it(`matches current output for ${permutationDescription}`, () => {
-          const title = buildPreviewTitle({ settings, format });
+      permutations.forEach(
+        ({ description: permutationDescription, settings, expectedTopic }) => {
+          it(`matches current output for ${permutationDescription}`, () => {
+            const title = buildPreviewTitle({ settings, format });
 
-          if (format?.gradeFirst) {
-            expect(title).toBe(`3年生 ${expectedTopic}`);
-          } else {
-            expect(title).toBe(`${expectedTopic} (3年生)`);
-          }
-        });
-      });
+            if (format?.gradeFirst) {
+              expect(title).toBe(`3年生 ${expectedTopic}`);
+            } else {
+              expect(title).toBe(`${expectedTopic} (3年生)`);
+            }
+          });
+        }
+      );
     });
   });
 

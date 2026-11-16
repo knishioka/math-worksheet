@@ -23,6 +23,8 @@ export const WORD_PROBLEM_PATTERNS: readonly CalculationPattern[] = [
   'counting-add', // ○を使ったたし算
   'counting-sub', // ○を使ったひき算
   // 高学年向け
+  'frac-to-decimal', // 分数から小数への変換
+  'decimal-to-frac', // 小数から分数への変換
   'percent-basic', // 百分率
   'area-volume', // 面積・体積
   'ratio-proportion', // 比と比例

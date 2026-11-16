@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { WorksheetSettings } from '../../types';
 import { buildWorksheet } from './worksheet';
 
@@ -12,6 +12,41 @@ const settings: WorksheetSettings = {
 };
 
 describe('worksheet updates', () => {
+  it.each(['frac-to-decimal', 'decimal-to-frac'] as const)(
+    'keeps %s unique through growth, shrinkage and layout changes',
+    (calculationPattern) => {
+      const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0);
+      try {
+        const conversionSettings = {
+          ...settings,
+          grade: 4 as const,
+          calculationPattern,
+        };
+        const previous = buildWorksheet(conversionSettings);
+        const more = buildWorksheet(
+          { ...conversionSettings, problemCount: 100 },
+          previous
+        );
+        expect(more.problems.slice(0, 8)).toEqual(previous.problems);
+        expect(more.problems).toHaveLength(100);
+        const less = buildWorksheet(conversionSettings, more);
+        const regrown = buildWorksheet(
+          { ...conversionSettings, problemCount: 100, layoutColumns: 3 },
+          less
+        );
+        expect(regrown.problems.slice(0, 8)).toEqual(previous.problems);
+        const texts = regrown.problems.map((problem) =>
+          problem.type === 'word' ? problem.problemText : ''
+        );
+        expect(new Set(texts).size).toBe(100);
+        expect(regrown.generatedAt).toBe(previous.generatedAt);
+        expect(previous.problems).toHaveLength(8);
+      } finally {
+        randomSpy.mockRestore();
+      }
+    }
+  );
+
   it('preserves problems and generation date when adjusting layout and equation lines', () => {
     const previous = buildWorksheet(settings);
     const next = buildWorksheet(

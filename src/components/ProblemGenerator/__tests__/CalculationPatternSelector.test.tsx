@@ -24,6 +24,28 @@ const categoryButton = (name: RegExp): HTMLElement =>
 describe('CalculationPatternSelector', () => {
   beforeEach(() => localStorage.clear());
 
+  it.each([4, 5] as const)(
+    'selects both conversion patterns for grade %s',
+    (grade) => {
+      const onPatternChange = vi.fn();
+      render(
+        <CalculationPatternSelector
+          grade={grade}
+          selectedPattern="frac-to-decimal"
+          onPatternChange={onPatternChange}
+        />
+      );
+      openPicker();
+      expect(categoryButton(/分数・小数 ·/)).toHaveAttribute(
+        'aria-expanded',
+        'true'
+      );
+      expect(screen.getByRole('radio', { name: /分数→小数/ })).toBeChecked();
+      fireEvent.click(screen.getByRole('radio', { name: /小数→分数/ }));
+      expect(onPatternChange).toHaveBeenCalledWith('decimal-to-frac');
+    }
+  );
+
   it('shows category headings and keeps the learning order inside themes', () => {
     const onPatternChange = vi.fn();
     render(
@@ -309,10 +331,9 @@ describe('CalculationPatternSelector', () => {
     expect(
       screen.getByRole('radio', { name: /大きな数のたし算・ひき算ミックス/ })
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '候補を閉じる' })).toHaveAttribute(
-      'aria-expanded',
-      'true'
-    );
+    expect(
+      screen.getByRole('button', { name: '候補を閉じる' })
+    ).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('steps to the previous and next material in catalog order', () => {
@@ -411,10 +432,10 @@ describe('CalculationPatternSelector', () => {
 
     openPicker();
     fireEvent.click(screen.getByRole('button', { name: '★ やさしい' }));
-    expect(screen.queryByText('62件の候補')).not.toBeInTheDocument();
+    expect(screen.queryByText('64件の候補')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '絞り込みを解除' }));
 
-    expect(screen.getByText('62件の候補')).toBeInTheDocument();
+    expect(screen.getByText('64件の候補')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'すべて' })).toHaveAttribute(
       'aria-pressed',
       'true'

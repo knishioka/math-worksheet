@@ -10,6 +10,20 @@ import {
 import type { CalculationPattern } from '../../types';
 
 describe('pattern catalog', () => {
+  it.each([4, 5] as const)(
+    'offers both conversions in the fraction/decimal catalog for grade %s',
+    (grade) => {
+      const catalog = buildPatternCatalog(PATTERNS_BY_GRADE[grade], grade);
+      const fraction = catalog.find((group) => group.category === 'fraction')!;
+      expect(fraction.entries.map((entry) => entry.key)).toEqual(
+        expect.arrayContaining(['frac-to-decimal', 'decimal-to-frac'])
+      );
+      for (const pattern of ['frac-to-decimal', 'decimal-to-frac'] as const) {
+        expect(getPatternTheme(pattern, 'fraction')?.key).toBe('conversion');
+      }
+    }
+  );
+
   it('merges Japanese and English versions into one entry', () => {
     const catalog = buildPatternCatalog(
       ['money-change-jap', 'money-change-en', 'add-plus-one'],

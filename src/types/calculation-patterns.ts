@@ -71,6 +71,8 @@ export type CalculationPattern =
   | 'mult-dec-int' // 小数×整数
   | 'div-dec-int' // 小数÷整数
   | 'frac-mixed-number' // 帯分数の計算
+  | 'frac-to-decimal' // 分数から小数への変換
+  | 'decimal-to-frac' // 小数から分数への変換
   | 'hissan-mult-advanced' // 3桁×2桁のかけ算の筆算
   | 'hissan-div-basic' // わり算の筆算
 
@@ -363,6 +365,8 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'mult-dec-int',
     'div-dec-int',
     'frac-mixed-number',
+    'frac-to-decimal',
+    'decimal-to-frac',
     'hissan-mult-advanced',
     'hissan-div-basic',
     'word-en',
@@ -443,6 +447,8 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
     'div-dec-dec',
     'frac-different-denom',
     'frac-simplify',
+    'frac-to-decimal',
+    'decimal-to-frac',
     'percent-basic',
     'area-volume',
     'word-en',
@@ -622,6 +628,8 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'mult-dec-int': '小数×整数',
   'div-dec-int': '小数÷整数',
   'frac-mixed-number': '帯分数の計算',
+  'frac-to-decimal': '分数→小数',
+  'decimal-to-frac': '小数→分数',
   'hissan-mult-advanced': '3桁×2桁のかけ算の筆算',
   'hissan-div-basic': 'わり算の筆算',
 
@@ -816,6 +824,8 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
   'mult-dec-int': '2.3×4などの小数×整数',
   'div-dec-int': '7.2÷3などの小数÷整数（割り切れる問題）',
   'frac-mixed-number': '1と2/5＋2と1/5など、同じ分母の帯分数',
+  'frac-to-decimal': '3/4を0.75など、分数を有限小数に直す練習',
+  'decimal-to-frac': '0.75を3/4など、小数を約分した分数に直す練習',
   'hissan-mult-advanced':
     '3桁×2桁の筆算形式（例：234×56）。部分積を2段に分けて練習',
   'hissan-div-basic': 'わり算の筆算形式（例：84÷7）',

@@ -88,6 +88,12 @@ const THEME_DEFINITIONS: Partial<Record<PatternCategory, ThemeDefinition[]>> = {
   ],
   fraction: [
     {
+      key: 'conversion',
+      label: '分数と小数の変換',
+      matches: (pattern) =>
+        pattern === 'frac-to-decimal' || pattern === 'decimal-to-frac',
+    },
+    {
       key: 'decimal',
       label: '小数',
       matches: (pattern) => pattern.includes('-dec-'),
