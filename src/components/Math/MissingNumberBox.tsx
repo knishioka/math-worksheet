@@ -1,4 +1,5 @@
 import React from 'react';
+import { missingNumberBoxStyle } from '../../config/styles';
 
 interface MissingNumberBoxProps {
   className?: string;
@@ -9,13 +10,8 @@ export const MissingNumberBox: React.FC<MissingNumberBoxProps> = ({
 }) => {
   return (
     <span
-      className={`missing-number-box inline-block border-2 border-gray-400 rounded ${className}`}
-      style={{
-        width: '1.75rem',
-        height: '1.75rem',
-        verticalAlign: 'text-bottom',
-        backgroundColor: '#f9f9f9',
-      }}
+      className={`missing-number-box ${className}`}
+      style={missingNumberBoxStyle}
     />
   );
 };

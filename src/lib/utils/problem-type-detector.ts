@@ -11,6 +11,7 @@ import {
   isSingaporeDiagramPattern,
   isFractionPattern,
   isMixedNumberPattern,
+  isMissingNumberPattern,
 } from '../../config/problem-patterns';
 
 /**
@@ -92,6 +93,9 @@ export function getEffectiveProblemType(
   problemType?: ProblemType,
   calculationPattern?: CalculationPattern
 ): ProblemType {
+  if (problemType === 'basic' && isMissingNumberPattern(calculationPattern)) {
+    return 'missing';
+  }
   if (
     problemType === 'basic' &&
     calculationPattern &&

@@ -107,3 +107,17 @@ describe('supportsEquationLine', () => {
     expect(supportsEquationLine('number-tracing')).toBe(false);
   });
 });
+
+describe('missing number layouts', () => {
+  it.each([
+    'add-single-missing',
+    'sub-single-missing',
+    'add-double-missing',
+    'sub-double-missing',
+    'mult-single-missing',
+    'div-single-missing',
+  ] as const)('uses the missing number template for %s', (pattern) => {
+    expect(getEffectiveProblemType('basic', pattern)).toBe('missing');
+    expect(getEffectiveProblemType('decimal', pattern)).toBe('decimal');
+  });
+});
