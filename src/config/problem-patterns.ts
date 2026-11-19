@@ -156,6 +156,15 @@ export const MIXED_NUMBER_PATTERNS: readonly CalculationPattern[] = [
   'frac-mixed-number', // 帯分数の計算
 ] as const;
 
+export const MISSING_NUMBER_PATTERNS: readonly CalculationPattern[] = [
+  'add-single-missing',
+  'sub-single-missing',
+  'add-double-missing',
+  'sub-double-missing',
+  'mult-single-missing',
+  'div-single-missing',
+] as const;
+
 export const ANZAN_PATTERNS: readonly CalculationPattern[] = [
   'anzan-complement-10',
   'anzan-complement-100',
@@ -257,4 +266,8 @@ export function isFractionPattern(pattern?: CalculationPattern): boolean {
  */
 export function isMixedNumberPattern(pattern?: CalculationPattern): boolean {
   return pattern !== undefined && MIXED_NUMBER_PATTERNS.includes(pattern);
+}
+
+export function isMissingNumberPattern(pattern?: CalculationPattern): boolean {
+  return pattern !== undefined && MISSING_NUMBER_PATTERNS.includes(pattern);
 }

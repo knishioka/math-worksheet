@@ -13,6 +13,7 @@ import type {
   WorksheetSettings,
 } from '../../types';
 import { MathDecimal, MathMixedNumber } from '../Math/MathExpression';
+import { MissingNumberBox } from '../Math/MissingNumberBox';
 import { HissanDivisionJapanese } from '../Math/HissanDivisionJapanese';
 import {
   calculateMissingOperand1,
@@ -59,7 +60,6 @@ import {
   wordProblemAnswerUnderlineStyle,
   answerDisplayStyle,
   answerUnderlineStyle,
-  missingNumberBoxStyle,
   fractionContainerStyle,
   fractionNumeratorStyle,
   fractionDenominatorStyle,
@@ -895,7 +895,7 @@ function ProblemItem({
             {calculateMissingOperand1(basicProblem)}
           </span>
         ) : (
-          <span style={missingNumberBoxStyle} />
+          <MissingNumberBox />
         )}
         {' ' + operationSymbol + ' '}
         {/* operand2 */}
@@ -906,7 +906,7 @@ function ProblemItem({
             {calculateMissingOperand2(basicProblem)}
           </span>
         ) : (
-          <span style={missingNumberBoxStyle} />
+          <MissingNumberBox />
         )}
         {' = '}
         {/* 答え */}
@@ -916,7 +916,7 @@ function ProblemItem({
               {calculateMissingAnswer(basicProblem)}
             </span>
           ) : (
-            <span style={missingNumberBoxStyle} />
+            <MissingNumberBox />
           )
         ) : basicProblem.missingPosition ? (
           // 虫食い算でoperand1またはoperand2が空白の場合、答えは常に表示

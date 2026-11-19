@@ -287,12 +287,12 @@ export const PRINT_TEMPLATES = {
   missing: createPrintTemplate({
     type: 'missing',
     displayName: '虫食い算',
-    description: '虫食い算。ボックス表示のため標準よりやや広め。',
+    description: '虫食い算。36px角の記入欄を確保し、10行でA4に収める。',
     layout: {
       rowGap: '18px',
       colGap: '32px',
       fontSize: '18px',
-      minProblemHeight: '45px',
+      minProblemHeight: '80px',
     },
     recommendedCounts: {
       1: 10,

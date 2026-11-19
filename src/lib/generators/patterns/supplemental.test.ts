@@ -46,7 +46,9 @@ describe('補完教材の出題契約', () => {
     });
     expect(problems).toHaveLength(30);
     expect(new Set(problems.map((p) => p.id)).size).toBe(30);
-    expect(getEffectiveProblemType('basic', pattern)).toBe(definition.type);
+    expect(getEffectiveProblemType('basic', pattern)).toBe(
+      pattern === 'div-single-missing' ? 'missing' : definition.type
+    );
     for (const p of problems) {
       expect(p.type).toBe(definition.type);
       if (p.type === 'basic') {

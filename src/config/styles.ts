@@ -271,11 +271,12 @@ export const answerDisplayStyle: CSSProperties = {
  */
 export const missingNumberBoxStyle: CSSProperties = {
   display: 'inline-block',
-  width: '24px',
-  height: '24px',
+  width: '36px',
+  height: '36px',
+  boxSizing: 'border-box',
   border: BORDERS.box,
   backgroundColor: COLORS.bgGray,
-  verticalAlign: 'text-bottom',
+  verticalAlign: 'middle',
 };
 
 /**
