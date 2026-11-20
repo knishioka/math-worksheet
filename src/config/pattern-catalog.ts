@@ -238,6 +238,21 @@ export function getEntrySearchText(entry: CatalogEntry): string {
     .join(' ');
 }
 
+export const normalizeCatalogText = (text: string): string =>
+  text
+    .normalize('NFKC')
+    .toLocaleLowerCase('ja')
+    .replace(/[ァ-ヶ]/g, (character) =>
+      String.fromCharCode(character.charCodeAt(0) - 0x60)
+    );
+
+export function matchesCatalogQuery(text: string, query: string): boolean {
+  if (!query.trim()) return true;
+  const words = normalizeCatalogText(query).trim().split(/\s+/);
+  const searchable = normalizeCatalogText(text);
+  return words.every((word) => searchable.includes(word));
+}
+
 /**
  * 学年の教材リストからカタログを組み立てる。
  * 並び順は「学習の道すじ順 → 難易度順」。

@@ -1,5 +1,8 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Header } from './components/Layout/Header';
+import { WorksheetCatalog } from './components/WorksheetCatalog';
+import { isCatalogHash } from './config/worksheet-catalog';
+import { getGradeProblemType } from './config/grades';
 import { Container } from './components/Layout/Container';
 import { ProblemTypeSelector } from './components/ProblemGenerator/ProblemTypeSelector';
 import { CalculationPatternSelector } from './components/ProblemGenerator/CalculationPatternSelector';
@@ -22,6 +25,17 @@ function App(): React.ReactElement {
   const [showAnswers, setShowAnswers] = useState(false);
   const [error, setError] = useState('');
   const [showPath, setShowPath] = useState(true);
+  const [hash, setHash] = useState(() => window.location.hash);
+  const catalogOpen = isCatalogHash(hash);
+  useEffect(() => {
+    const onHashChange = (): void => setHash(window.location.hash);
+    window.addEventListener('hashchange', onHashChange);
+    return (): void => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+  const replaceCatalogHash = (next: string): void => {
+    window.history.replaceState(null, '', next);
+    setHash(next);
+  };
   const hasPatternSelectionStep = settings.problemType === 'basic';
   const selectPattern = (calculationPattern: CalculationPattern): void => {
     setShowAnswers(false);
@@ -53,9 +67,45 @@ function App(): React.ReactElement {
   );
 
   useEffect(() => {
+    if (catalogOpen) return;
     handleGenerate();
     syncUrlFromSettings(settings);
-  }, [handleGenerate, settings]);
+  }, [handleGenerate, settings, catalogOpen]);
+
+  useEffect(() => {
+    if (hash !== '#worksheet-preview' && hash !== '#main') return;
+    const frame = requestAnimationFrame(() => {
+      const target = document.getElementById(hash.slice(1));
+      target?.focus({ preventScroll: true });
+      target?.scrollIntoView?.();
+    });
+    return (): void => cancelAnimationFrame(frame);
+  }, [hash]);
+
+  if (catalogOpen) {
+    return (
+      <div className="app-shell min-h-screen no-print">
+        <a
+          className="skip-link"
+          href="#catalog-filters"
+          onClick={(event) => {
+            event.preventDefault();
+            document
+              .querySelector<HTMLInputElement>('#catalog input[type="search"]')
+              ?.focus();
+          }}
+        >
+          教材の絞り込みへ移動
+        </a>
+        <Header catalogHash={hash} />
+        <WorksheetCatalog
+          hash={hash}
+          onReplaceHash={replaceCatalogHash}
+          settings={settings}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="app-shell min-h-screen no-print">
@@ -63,7 +113,7 @@ function App(): React.ReactElement {
         プリント設定へ移動
       </a>
       <Header />
-      <main id="main" className="py-7 md:py-10">
+      <main id="main" tabIndex={-1} className="py-7 md:py-10">
         <Container className="space-y-6">
           <section className="intro-row">
             <div>
@@ -96,7 +146,7 @@ function App(): React.ReactElement {
                 setShowAnswers(false);
                 updateSettings({
                   grade,
-                  problemType: grade === 0 ? 'number-tracing' : 'basic',
+                  problemType: getGradeProblemType(grade),
                   calculationPattern: getLearningStages(grade)[0]?.patterns[0],
                   operation: 'addition',
                 });
@@ -201,7 +251,7 @@ function App(): React.ReactElement {
                 </p>
               </div>
             </aside>
-            <div className="min-w-0" id="worksheet-preview">
+            <div className="min-w-0" id="worksheet-preview" tabIndex={-1}>
               {error && (
                 <div
                   role="alert"

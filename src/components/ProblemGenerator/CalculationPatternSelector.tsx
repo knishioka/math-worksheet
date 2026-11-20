@@ -28,6 +28,7 @@ import {
   entryHasPattern,
   getEntryLanguageSupport,
   getEntrySearchText,
+  matchesCatalogQuery,
   resolveEntryPattern,
 } from '../../config/pattern-catalog';
 import { DifficultyStars } from '../UI/DifficultyStars';
@@ -81,14 +82,6 @@ function writeRecentPatterns(patterns: CalculationPattern[]): void {
   }
 }
 
-const normalizeSearch = (text: string): string =>
-  text
-    .normalize('NFKC')
-    .toLocaleLowerCase('ja')
-    .replace(/[ァ-ヶ]/g, (character) =>
-      String.fromCharCode(character.charCodeAt(0) - 0x60)
-    );
-
 const languageOfPattern = (
   pattern: CalculationPattern | undefined
 ): CatalogLanguage =>
@@ -138,13 +131,7 @@ export const CalculationPatternSelector: React.FC<
       if (difficulty !== 'all' && entry.difficulty !== difficulty) {
         return false;
       }
-      const keywords = normalizeSearch(query)
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean);
-      if (keywords.length === 0) return true;
-      const searchableText = normalizeSearch(getEntrySearchText(entry));
-      return keywords.every((keyword) => searchableText.includes(keyword));
+      return matchesCatalogQuery(getEntrySearchText(entry), query);
     },
     [difficulty, query]
   );

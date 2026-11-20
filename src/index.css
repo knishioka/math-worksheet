@@ -227,8 +227,68 @@
   .app-header {
     @apply border-b border-slate-200 bg-white;
   }
+  .app-nav {
+    @apply inline-flex items-center gap-1 rounded-xl bg-stone-100 p-1 text-xs font-semibold sm:text-sm;
+  }
+  .app-nav a {
+    @apply rounded-lg px-2 py-2 sm:px-3 text-slate-600 hover:text-teal-900;
+  }
+  .app-nav a[aria-current='page'] {
+    @apply bg-white text-teal-800 shadow-sm;
+  }
+  .catalog-layout {
+    @apply mt-6 grid items-start gap-6 lg:grid-cols-[16rem_minmax(0,1fr)];
+  }
+  .catalog-filters,
+  .catalog-empty {
+    @apply rounded-2xl border border-slate-200 bg-white p-5;
+  }
+  .catalog-filters {
+    @apply grid gap-4 lg:sticky lg:top-4;
+  }
+  .catalog-selects {
+    @apply grid gap-3;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 5.3rem), 1fr));
+  }
+  @screen lg {
+    .catalog-selects {
+      grid-template-columns: 1fr;
+    }
+  }
+  .catalog-field {
+    @apply grid min-w-0 gap-1.5 text-xs font-semibold text-slate-700;
+  }
+  .catalog-field input,
+  .catalog-field select,
+  .catalog-row select {
+    @apply min-w-0 rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm font-normal text-slate-900 focus-visible:outline-teal-700;
+  }
+  .catalog-reset {
+    @apply text-xs font-medium text-teal-800 underline underline-offset-2 disabled:text-slate-400 disabled:no-underline;
+  }
+  .catalog-section {
+    @apply mb-6 overflow-hidden rounded-xl border border-slate-200 bg-white;
+  }
+  .catalog-group-heading {
+    @apply flex items-baseline gap-3 border-b border-slate-200 bg-teal-50 px-4 py-3 font-bold text-teal-900 sm:px-5;
+  }
+  .catalog-group-heading span {
+    @apply text-xs font-normal text-teal-800;
+  }
+  .catalog-row {
+    @apply grid gap-2 border-b border-slate-100 px-4 py-4 last:border-b-0 sm:px-5 xl:grid-cols-[minmax(0,1fr)_19rem] xl:items-center xl:gap-5;
+  }
+  .catalog-row-actions {
+    @apply flex flex-wrap items-center justify-between gap-2;
+  }
+  .catalog-launch {
+    @apply inline-flex items-center gap-1.5 rounded-lg border border-teal-200 px-2.5 py-2 text-sm font-semibold text-teal-800 hover:border-teal-700 hover:bg-teal-50 focus-visible:outline-teal-700;
+  }
+  .catalog-sample {
+    @apply mt-1.5 overflow-x-auto rounded-lg border border-slate-200 bg-stone-50 p-3;
+  }
   .brand-mark {
-    @apply flex flex-col items-center justify-center w-11 h-11 rounded-xl bg-teal-800 text-white text-xl font-bold leading-4;
+    @apply flex flex-col items-center justify-center w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-teal-800 text-white text-base sm:text-xl font-bold leading-3 sm:leading-4;
   }
   .eyebrow {
     @apply text-[11px] font-semibold tracking-widest text-teal-700;

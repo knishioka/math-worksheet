@@ -6,13 +6,13 @@ import type {
   LayoutColumns,
 } from '../../types';
 import { PATTERN_LABELS } from '../../types';
+import { GRADES } from '../../config/grades';
 import { getEffectiveCounts } from '../../config/print-templates';
 import {
   getEffectiveProblemType,
   supportsEquationLine as supportsEquationLineForType,
 } from './problem-type-detector';
 
-const VALID_GRADES: readonly number[] = [0, 1, 2, 3, 4, 5, 6];
 const VALID_PROBLEM_TYPES: readonly string[] = [
   'basic',
   'fraction',
@@ -56,7 +56,7 @@ export function parseUrlSettings(
   const gradeParam = params.get('grade');
   if (gradeParam !== null) {
     const grade = Number(gradeParam);
-    result.grade = VALID_GRADES.includes(grade)
+    result.grade = GRADES.includes(grade as Grade)
       ? (grade as Grade)
       : defaults.grade;
   }
@@ -133,6 +133,6 @@ export function settingsToUrlParams(settings: WorksheetSettings): string {
 
 export function syncUrlFromSettings(settings: WorksheetSettings): void {
   const queryString = settingsToUrlParams(settings);
-  const newUrl = `${window.location.pathname}?${queryString}`;
+  const newUrl = `${window.location.pathname}?${queryString}${window.location.hash}`;
   window.history.replaceState(null, '', newUrl);
 }

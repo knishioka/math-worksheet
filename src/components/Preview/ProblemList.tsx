@@ -499,7 +499,7 @@ interface ProblemItemProps {
   showEquationLine?: boolean;
 }
 
-function ProblemItem({
+export function ProblemItem({
   problem,
   number,
   showAnswer = false,
