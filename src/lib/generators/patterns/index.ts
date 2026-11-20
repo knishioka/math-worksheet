@@ -2,7 +2,11 @@ import type { Problem, WorksheetSettings } from '../../../types';
 import { isSupplementalPattern } from '../../../config/supplemental-patterns';
 import { generateSupplementalProblems } from './supplemental';
 import { generateFractionDecimalProblems } from './fraction-decimal';
-import { generateGradeEnWordProblems } from '../word-problem-en';
+import {
+  generateEnWordStory,
+  generateGradeEnWordProblems,
+} from '../word-problem-en';
+import { isEnglishUnitPattern } from '../templates/en-word-story';
 import { generateGradeMoneyProblems } from '../money-problems';
 import { generateGradeMoneyProblemsEn } from '../money-problems-en';
 import { generateGradeTimeProblems } from '../time-problems';
@@ -152,6 +156,8 @@ export function generatePatternProblems(
 
   if (isSupplementalPattern(pattern))
     return generateSupplementalProblems(pattern, count);
+  if (isEnglishUnitPattern(pattern))
+    return generateEnWordStory(settings.grade, count, pattern);
 
   switch (pattern) {
     // 1年生（入門）のパターン

@@ -239,6 +239,52 @@
   .catalog-layout {
     @apply mt-6 grid items-start gap-6 lg:grid-cols-[16rem_minmax(0,1fr)];
   }
+  .catalog-view-switch {
+    @apply mt-4 inline-flex gap-1 rounded-xl bg-stone-100 p-1 text-sm font-semibold text-slate-600;
+  }
+  .catalog-view-switch a {
+    @apply rounded-lg px-4 py-2 hover:text-teal-900;
+  }
+  .catalog-view-switch a[aria-current='page'] {
+    @apply bg-white text-teal-800 shadow-sm;
+  }
+  .catalog-practice {
+    @apply flex flex-wrap gap-x-4 gap-y-2;
+  }
+  .catalog-practice legend {
+    @apply mb-2 text-xs font-semibold text-slate-700;
+  }
+  .catalog-practice label {
+    @apply flex cursor-pointer items-center gap-1.5 text-sm text-slate-800;
+  }
+  .catalog-practice input {
+    @apply accent-teal-700;
+  }
+  .catalog-coverage {
+    @apply mb-3 text-sm text-slate-700;
+  }
+  .catalog-coverage summary {
+    @apply w-fit cursor-pointer py-1 font-semibold text-teal-800;
+  }
+  .catalog-coverage p {
+    @apply my-2 text-xs;
+  }
+  .catalog-coverage table {
+    @apply my-3 w-full max-w-lg border-collapse rounded bg-white text-right tabular-nums;
+  }
+  .catalog-coverage th,
+  .catalog-coverage td {
+    @apply border-b border-slate-200 px-3 py-1.5;
+  }
+  .catalog-coverage th:first-child {
+    @apply text-left;
+  }
+  .catalog-coverage tbody th {
+    @apply font-medium;
+  }
+  .catalog-coverage button {
+    @apply rounded px-2 py-1 font-semibold text-teal-800 underline underline-offset-2;
+  }
   .catalog-filters,
   .catalog-empty {
     @apply rounded-2xl border border-slate-200 bg-white p-5;

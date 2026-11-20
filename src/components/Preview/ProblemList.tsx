@@ -25,10 +25,13 @@ import { SingaporeProblemComponent } from '../Math/SingaporeProblemComponent';
 import { EquationLine } from '../Math/EquationLine';
 import { DataDisplay } from '../Math/DataDisplay';
 import { WorksheetFigure } from '../Math/WorksheetFigure';
+import { isEntranceExamPattern } from '../../config/entrance-exam-patterns';
+import { getPatternLanguage } from '../../config/pattern-categories';
 import {
-  isEntranceExamEnPattern,
-  isEntranceExamPattern,
-} from '../../config/entrance-exam-patterns';
+  ENGLISH_STORY_UNITS,
+  isEnglishUnitPattern,
+} from '../../lib/generators/templates/en-word-story';
+import { WORD_TOPICS } from '../../config/word-topics';
 import { PATTERN_LABELS } from '../../types';
 import { NumberTracingRow } from '../Math/NumberTracingRow';
 import type { NumberTracingProblem } from '../../types';
@@ -158,11 +161,16 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
       settings.problemOrder
     );
 
-    const englishPattern = isEntranceExamEnPattern(settings.calculationPattern)
-      ? settings.calculationPattern
-      : undefined;
-    const previewTitle = englishPattern
-      ? `Grade ${settings.grade} · ${PATTERN_LABELS[englishPattern]}`
+    const pattern = settings.calculationPattern;
+    const englishPattern = pattern && getPatternLanguage(pattern) === 'en';
+    const english = englishPattern || settings.problemType === 'word-en';
+    const englishTitle = isEnglishUnitPattern(pattern)
+      ? WORD_TOPICS[ENGLISH_STORY_UNITS[pattern]].en
+      : pattern && pattern !== 'word-en'
+        ? PATTERN_LABELS[pattern]
+        : 'Mixed Word Problems';
+    const previewTitle = english
+      ? `Grade ${settings.grade} · ${englishTitle}`
       : buildPreviewTitle({
           settings,
           format: { gradeFirst: true, wrapGradeInParentheses: false },
@@ -239,7 +247,7 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
         <div
           ref={setSheetRef}
           data-a4-sheet
-          lang={englishPattern ? 'en' : undefined}
+          lang={english ? 'en' : undefined}
           className="bg-white"
           style={getA4ContainerStyle(
             '15mm 15mm 7.5mm',
@@ -251,14 +259,14 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
           <div style={headerBorderStyle}>
             <div style={headerGridStyle}>
               <div style={headerTextStyle}>
-                {englishPattern ? 'Name: ' : '名前：'}
+                {english ? 'Name: ' : '名前：'}
                 <span style={getUnderlineStyle('128px')}></span>
               </div>
               <div style={headerCenterTextStyle}>{previewTitle}</div>
               <div style={headerRightTextStyle}>
-                {englishPattern ? 'Score: ' : '点数：'}
+                {english ? 'Score: ' : '点数：'}
                 <span style={getUnderlineStyle('64px')}></span>
-                {!englishPattern && '点'}
+                {!english && '点'}
               </div>
             </div>
           </div>

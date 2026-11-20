@@ -150,9 +150,9 @@ describe('CalculationPatternSelector', () => {
       />
     );
     openPicker();
-    fireEvent.click(categoryButton(/文章問題 ·/));
+    fireEvent.click(categoryButton(/学校の文章題 ·/));
     const option = screen
-      .getByRole('radio', { name: /English Word Problems/ })
+      .getByRole('radio', { name: /英語の文章題｜学年別ミックス/ })
       .closest('label');
     expect(option).not.toBeNull();
     expect(within(option!).getByText('Englishのみ')).toBeInTheDocument();
@@ -411,9 +411,11 @@ describe('CalculationPatternSelector', () => {
       within(recent)
         .getAllByRole('button')
         .map((button) => button.textContent)
-    ).toEqual(['English Word Problems', '大きな数のたし算']);
+    ).toEqual(['英語の文章題｜学年別ミックス', '大きな数のたし算']);
     fireEvent.click(
-      within(recent).getByRole('button', { name: 'English Word Problems' })
+      within(recent).getByRole('button', {
+        name: '英語の文章題｜学年別ミックス',
+      })
     );
     expect(onPatternChange).toHaveBeenLastCalledWith('word-en');
     expect(

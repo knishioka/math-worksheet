@@ -65,7 +65,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const effectiveCounts = getEffectiveCounts(
     effectiveProblemType,
     calculationPattern,
-    grade
+    grade,
+    showEquationLine
   );
   const maxProblems = effectiveCounts.maxCounts[layoutColumns];
   const recommendedCount = effectiveCounts.recommendedCounts[layoutColumns];
@@ -77,7 +78,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   // 再マウントでも値が変わっていなければ適用されない
   const lastRecommendationRef = React.useRef<{
     material: string;
-    columns: LayoutColumns;
     problemType: ProblemType;
   } | null>(null);
   React.useEffect(() => {
@@ -85,7 +85,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     const previous = lastRecommendationRef.current;
     lastRecommendationRef.current = {
       material,
-      columns: layoutColumns,
       problemType: effectiveProblemType,
     };
     if (!previous) return;
@@ -95,15 +94,11 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         (isWord || isWordEn || isAnzan)
           ? 2
           : layoutColumns;
-      lastRecommendationRef.current.columns = columns;
       if (columns !== layoutColumns) onLayoutColumnsChange(columns);
       onProblemCountChange(
         columns === 2 ? twoColumnRecommendedCount : recommendedCount
       );
-    } else if (
-      previous.columns !== layoutColumns &&
-      problemCount > maxProblems
-    ) {
+    } else if (problemCount > maxProblems) {
       onProblemCountChange(maxProblems);
     }
   }, [

@@ -4,10 +4,17 @@ import {
   supplementalPatternsForGrade,
   type SupplementalPattern,
 } from '../config/supplemental-patterns';
+import { WORD_TOPICS } from '../config/word-topics';
+import {
+  ENGLISH_STORY_UNITS,
+  englishUnitPatternsForGrade,
+  type EnglishUnitPattern,
+} from '../lib/generators/templates/en-word-story';
 
 // 計算パターンの定義
 export type CalculationPattern =
   | SupplementalPattern
+  | EnglishUnitPattern
   // 1年生のパターン（入門）
   | 'add-plus-one' // □＋1（+1のたし算）
   | 'add-plus-two' // □＋2（+2のたし算）
@@ -200,6 +207,7 @@ export type CalculationPattern =
 export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
   1: [
     ...supplementalPatternsForGrade(1),
+    ...englishUnitPatternsForGrade(1),
     'add-plus-one',
     'add-plus-two',
     'add-plus-three',
@@ -235,6 +243,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
   ],
   2: [
     ...supplementalPatternsForGrade(2),
+    ...englishUnitPatternsForGrade(2),
     'add-double-digit-no-carry',
     'add-double-digit-carry',
     'sub-double-digit-no-borrow',
@@ -281,6 +290,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
   ],
   3: [
     ...supplementalPatternsForGrade(3),
+    ...englishUnitPatternsForGrade(3),
     'add-triple-digit',
     'sub-triple-digit',
     'add-sub-triple-mixed',
@@ -357,6 +367,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
   ],
   4: [
     ...supplementalPatternsForGrade(4),
+    ...englishUnitPatternsForGrade(4),
     'add-large-numbers',
     'sub-large-numbers',
     'add-sub-large-mixed',
@@ -442,6 +453,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
   ],
   5: [
     ...supplementalPatternsForGrade(5),
+    ...englishUnitPatternsForGrade(5),
     'speed-time-distance',
     'mult-dec-dec',
     'div-dec-dec',
@@ -503,6 +515,7 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
   ],
   6: [
     ...supplementalPatternsForGrade(6),
+    ...englishUnitPatternsForGrade(6),
     'frac-mult',
     'frac-div',
     'ratio-proportion',
@@ -564,6 +577,12 @@ export const PATTERNS_BY_GRADE: Record<number, CalculationPattern[]> = {
 
 // パターンの表示名
 export const PATTERN_LABELS: Record<CalculationPattern, string> = {
+  ...(Object.fromEntries(
+    Object.entries(ENGLISH_STORY_UNITS).map(([pattern, topic]) => [
+      pattern,
+      WORD_TOPICS[topic].ja + 'の文章題（英語）',
+    ])
+  ) as Record<EnglishUnitPattern, string>),
   ...SUPPLEMENTAL_LABELS,
   // 1年生（入門）
   'add-plus-one': '+1のたし算',
@@ -649,7 +668,7 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
   'complex-calc': '複雑な計算',
 
   // 英語文章問題
-  'word-en': 'English Word Problems',
+  'word-en': '英語の文章題｜学年別ミックス',
   'singapore-bar-model': 'Singapore Math: Bar Model',
   'singapore-number-bond': 'Singapore Math: Number Bond',
 
@@ -756,6 +775,12 @@ export const PATTERN_LABELS: Record<CalculationPattern, string> = {
 
 // パターンの説明
 export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
+  ...(Object.fromEntries(
+    Object.entries(ENGLISH_STORY_UNITS).map(([pattern, topic]) => [
+      pattern,
+      `${WORD_TOPICS[topic].en} — ${WORD_TOPICS[topic].description}`,
+    ])
+  ) as Record<EnglishUnitPattern, string>),
   ...SUPPLEMENTAL_DESCRIPTIONS,
   // 1年生（入門）
   'add-plus-one': '□＋1の計算で数の感覚を身につける',
@@ -847,7 +872,7 @@ export const PATTERN_DESCRIPTIONS: Record<CalculationPattern, string> = {
 
   // 英語文章問題
   'word-en':
-    'English word story problems for international school students (e.g., "Tom has 5 apples. He gets 3 more. How many apples does he have now?")',
+    'English Word Problems — 学年に合う複数の単元から出題。どの計算を使うか自分で考える総合演習。',
   'singapore-bar-model':
     'Singapore bar model problems focusing on part-whole and comparison reasoning',
   'singapore-number-bond':

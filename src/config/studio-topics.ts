@@ -1,9 +1,10 @@
-import type { EntranceExamDefinition } from './entrance-exam-patterns';
+import { entranceDefinitions, type EntranceTopic } from './entrance-topic';
 
 // 公開済みの算数教材に対応する日英の演習。配当と教材IDを両言語で共有する。
 export const STUDIO_TOPICS = {
   cycle: {
     grade: 4,
+    topics: ['patterns'],
     ja: ['周期算', 'くり返しの中の位置と個数を求める。'],
     en: [
       'Repeating Patterns',
@@ -12,6 +13,7 @@ export const STUDIO_TOPICS = {
   },
   sequence: {
     grade: 4,
+    topics: ['patterns'],
     ja: ['等差数列・群数列', '段ごとの増え方と、組の切れ目を調べる。'],
     en: [
       'Number Sequences',
@@ -20,11 +22,13 @@ export const STUDIO_TOPICS = {
   },
   sets: {
     grade: 4,
+    topics: ['counting'],
     ja: ['集合算', '両方に入る人を一度だけ数える。'],
     en: ['Overlapping Sets', 'Count students in overlapping groups.'],
   },
   'polygon-angles': {
     grade: 4,
+    topics: ['geometry'],
     ja: ['三角形と多角形の角', '内角と外角の関係から角度を求める。'],
     en: [
       'Angles in Polygons',
@@ -33,6 +37,7 @@ export const STUDIO_TOPICS = {
   },
   'composite-area': {
     grade: 4,
+    topics: ['geometry'],
     ja: ['複合図形と道の面積', '図形を分け、欠けた部分や道の重なりを引く。'],
     en: [
       'Composite Areas',
@@ -41,6 +46,7 @@ export const STUDIO_TOPICS = {
   },
   'changing-counts': {
     grade: 4,
+    topics: ['arithmetic', 'reasoning'],
     ja: [
       '個数と差の応用',
       '弁償算や分かれ道など、個数の重複と差に注意して解く。',
@@ -52,6 +58,7 @@ export const STUDIO_TOPICS = {
   },
   averages: {
     grade: 5,
+    topics: ['data'],
     ja: ['平均とならし', '人数の違う組や入れ替わりを合計に戻して考える。'],
     en: [
       'Combining Averages',
@@ -60,6 +67,7 @@ export const STUDIO_TOPICS = {
   },
   divisibility: {
     grade: 5,
+    topics: ['patterns'],
     ja: [
       '約数・倍数の利用',
       '同じ大きさに分ける条件と、周期がそろう条件を区別する。',
@@ -71,6 +79,7 @@ export const STUDIO_TOPICS = {
   },
   'percent-change': {
     grade: 5,
+    topics: ['percent'],
     ja: ['割合の変化', '割合をかける基準が変わる問題を解く。'],
     en: [
       'Successive Percentages',
@@ -79,6 +88,7 @@ export const STUDIO_TOPICS = {
   },
   'speed-units': {
     grade: 5,
+    topics: ['speed', 'measurement'],
     ja: [
       '速さの換算と往復',
       '長さと時間の単位をそろえ、往復の平均の速さを求める。',
@@ -90,11 +100,13 @@ export const STUDIO_TOPICS = {
   },
   'equal-area': {
     grade: 5,
+    topics: ['geometry'],
     ja: ['等積変形', '面積を保つときの底辺と高さを求める。'],
     en: ['Equal Areas', 'Use equal areas to find a missing base or height.'],
   },
   'triangle-ratio': {
     grade: 5,
+    topics: ['geometry', 'ratio'],
     ja: ['三角形の面積比', '高さが等しい三角形を底辺の比で分ける。'],
     en: [
       'Triangle Area Ratios',
@@ -103,6 +115,7 @@ export const STUDIO_TOPICS = {
   },
   exchange: {
     grade: 5,
+    topics: ['percent', 'ratio'],
     ja: [
       'やりとりと割合の応用',
       '売り方や食塩水のやりとりを段階に分けて考える。',
@@ -114,6 +127,7 @@ export const STUDIO_TOPICS = {
   },
   'digit-count': {
     grade: 6,
+    topics: ['counting'],
     ja: ['条件のある場合の数', '先頭の0や同じ数字の重複に注意して数を作る。'],
     en: [
       'Counting Possible Numbers',
@@ -122,6 +136,7 @@ export const STUDIO_TOPICS = {
   },
   'clock-hands': {
     grade: 6,
+    topics: ['time', 'speed'],
     ja: ['時計算', '針の動く角度から、なす角や重なる時刻を求める。'],
     en: [
       'Clock Hands',
@@ -130,6 +145,7 @@ export const STUDIO_TOPICS = {
   },
   'water-depth': {
     grade: 6,
+    topics: ['work', 'data'],
     ja: [
       '水そうの深さと流量',
       '水の出入りや途中で変わる底面積から深さを求める。',
@@ -141,6 +157,7 @@ export const STUDIO_TOPICS = {
   },
   'similar-area': {
     grade: 6,
+    topics: ['ratio', 'geometry'],
     ja: ['相似と面積比', '対応する長さの比を面積の比に直す。'],
     en: [
       'Similar Figures',
@@ -149,11 +166,13 @@ export const STUDIO_TOPICS = {
   },
   sectors: {
     grade: 6,
+    topics: ['geometry'],
     ja: ['円とおうぎ形', '回転角から、おうぎ形の面積や弧の長さを求める。'],
     en: ['Circular Sectors', 'Find a swept area or an arc length from a turn.'],
   },
   motion: {
     grade: 6,
+    topics: ['geometry'],
     ja: ['図形の移動と対称', '平行移動・回転・対称移動の前後を比べる。'],
     en: [
       'Moving Shapes',
@@ -162,6 +181,7 @@ export const STUDIO_TOPICS = {
   },
   'solid-nets': {
     grade: 6,
+    topics: ['geometry'],
     ja: [
       '立体の体積と展開図',
       '段に分けて体積を求め、展開図を折った面を考える。',
@@ -173,6 +193,7 @@ export const STUDIO_TOPICS = {
   },
   'cube-section': {
     grade: 6,
+    topics: ['geometry'],
     ja: [
       '立方体の切断',
       '同じ面にある点を結び、切り口の面積や辺の数を求める。',
@@ -184,13 +205,14 @@ export const STUDIO_TOPICS = {
   },
   'staged-rates': {
     grade: 6,
+    topics: ['work', 'speed'],
     ja: ['仕事・速さの条件変化', '途中で変わる処理量や速さから時間を求める。'],
     en: [
       'Changing Rates',
       'Work through changes in flow, work rates and relative speed.',
     ],
   },
-} as const;
+} as const satisfies Record<string, EntranceTopic>;
 
 export type StudioTopic = keyof typeof STUDIO_TOPICS;
 export type StudioPattern<L extends 'jap' | 'en'> =
@@ -206,21 +228,5 @@ export function mapStudioTopics<L extends 'jap' | 'en', T>(
   ) as Record<StudioPattern<L>, T>;
 }
 
-function definitions<L extends 'jap' | 'en'>(
-  language: L
-): Record<StudioPattern<L>, EntranceExamDefinition> {
-  return mapStudioTopics(language, (topic) => {
-    const { grade, ja, en } = STUDIO_TOPICS[topic];
-    const [label, description] = language === 'en' ? en : ja;
-    return {
-      grade,
-      label,
-      description,
-      category: 'entrance',
-      difficulty: 3,
-      type: language === 'en' ? 'word-en' : 'word',
-    } as const;
-  });
-}
-export const STUDIO_JA_PATTERNS = definitions('jap');
-export const STUDIO_EN_PATTERNS = definitions('en');
+export const STUDIO_JA_PATTERNS = entranceDefinitions(STUDIO_TOPICS, 'jap');
+export const STUDIO_EN_PATTERNS = entranceDefinitions(STUDIO_TOPICS, 'en');

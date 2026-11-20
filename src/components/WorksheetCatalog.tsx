@@ -13,11 +13,15 @@ import {
   catalogHash,
   EMPTY_FILTERS,
   filterWorksheetCatalog,
+  countWordTopics,
   filtersFromHash,
   type CatalogFilters,
   type CatalogMaterial,
   type MaterialVersion,
+  STORY_COURSES,
 } from '../config/worksheet-catalog';
+import { WORD_TOPICS, type WordTopic } from '../config/word-topics';
+import { WordTopicCoverage } from './WordTopicCoverage';
 import {
   getOperationFromPattern,
   settingsToUrlParams,
@@ -53,7 +57,8 @@ function worksheetHref(
   const counts = getEffectiveCounts(
     getEffectiveProblemType(problemType, pattern),
     pattern,
-    grade
+    grade,
+    settings.showEquationLine
   );
   const query = settingsToUrlParams({
     ...settings,
@@ -105,10 +110,12 @@ function MaterialRow({
   material,
   gradeFilter,
   settings,
+  showTopics,
 }: {
   material: CatalogMaterial;
   gradeFilter: CatalogFilters['grade'];
   settings: WorksheetSettings;
+  showTopics: boolean;
 }): ReactElement {
   const { versions } = material;
   const grades = GRADES.filter((grade) =>
@@ -142,6 +149,11 @@ function MaterialRow({
         <p className="mt-1 text-sm leading-relaxed text-slate-600">
           {primary.description}
         </p>
+        {showTopics && material.topics.length > 0 && (
+          <p className="mt-1 text-xs text-teal-800">
+            {material.topics.map((topic) => WORD_TOPICS[topic].ja).join(' ・ ')}
+          </p>
+        )}
         <details
           className="mt-1.5"
           onToggle={(event) => setShowSample(event.currentTarget.open)}
@@ -231,6 +243,12 @@ export function WorksheetCatalog({
     () => filterWorksheetCatalog(catalog, filters),
     [catalog, filters]
   );
+  const topicCounts = useMemo(() => {
+    if (filters.practice !== 'unit') return new Map<WordTopic, number>();
+    return countWordTopics(
+      filterWorksheetCatalog(catalog, { ...filters, topic: '' })
+    );
+  }, [catalog, filters]);
   const title = useRef<HTMLHeadingElement>(null);
   const search = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -245,7 +263,10 @@ export function WorksheetCatalog({
     };
   }, []);
   function change(patch: Partial<CatalogFilters>): void {
-    onReplaceHash(catalogHash({ ...filters, ...patch }));
+    // ネイティブリンクの hashchange が届く前の操作でも、移動先の条件を引き継ぐ。
+    onReplaceHash(
+      catalogHash({ ...filtersFromHash(window.location.hash), ...patch })
+    );
   }
   function reset(): void {
     onReplaceHash(catalogHash(EMPTY_FILTERS));
@@ -261,9 +282,29 @@ export function WorksheetCatalog({
         >
           教材一覧
         </h1>
-        <p className="mt-2 text-sm text-slate-600">
-          教材を選ぶと、そのままプリントを開けます。
-        </p>
+        <nav aria-label="教材の探し方" className="catalog-view-switch">
+          <a
+            aria-current={!filters.practice ? 'page' : undefined}
+            href={catalogHash({
+              ...filters,
+              practice: '',
+              course: '',
+              topic: '',
+            })}
+          >
+            全教材
+          </a>
+          <a
+            aria-current={filters.practice ? 'page' : undefined}
+            href={catalogHash({
+              ...filters,
+              category: '',
+              practice: filters.practice || 'unit',
+            })}
+          >
+            文章題から探す
+          </a>
+        </nav>
         <div className="catalog-layout">
           <section
             aria-labelledby="catalog-filters"
@@ -276,12 +317,51 @@ export function WorksheetCatalog({
               <button
                 type="button"
                 className="catalog-reset"
-                disabled={hash === '#catalog'}
-                onClick={reset}
+                disabled={
+                  !filters.query &&
+                  filters.grade === '' &&
+                  !filters.category &&
+                  !filters.language &&
+                  !filters.topic &&
+                  !filters.course
+                }
+                onClick={() => {
+                  onReplaceHash(
+                    catalogHash({
+                      ...EMPTY_FILTERS,
+                      practice: filters.practice,
+                    })
+                  );
+                  search.current?.focus();
+                }}
               >
                 条件をクリア
               </button>
             </div>
+            {filters.practice && (
+              <fieldset className="catalog-practice">
+                <legend>練習のしかた</legend>
+                {(
+                  [
+                    ['unit', '単元を選んで練習'],
+                    ['mixed', '学年別の総合演習'],
+                  ] as const
+                ).map(([value, label]) => (
+                  <label key={value}>
+                    <input
+                      type="radio"
+                      name="catalog-practice"
+                      value={value}
+                      checked={filters.practice === value}
+                      onChange={() =>
+                        change({ practice: value, topic: '', course: '' })
+                      }
+                    />
+                    {label}
+                  </label>
+                ))}
+              </fieldset>
+            )}
             <label className="catalog-field">
               キーワード
               <input
@@ -315,23 +395,48 @@ export function WorksheetCatalog({
                   ))}
                 </select>
               </div>
-              <div className="catalog-field">
-                <label htmlFor="catalog-category">分野</label>
-                <select
-                  id="catalog-category"
-                  value={filters.category}
-                  onChange={(e) =>
-                    change({ category: e.target.value as PatternCategory | '' })
-                  }
-                >
-                  <option value="">すべて</option>
-                  {CATEGORY_ORDER.map((c) => (
-                    <option key={c} value={c}>
-                      {CATEGORY_CONFIG[c].label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {!filters.practice && (
+                <div className="catalog-field">
+                  <label htmlFor="catalog-category">分野</label>
+                  <select
+                    id="catalog-category"
+                    value={filters.category}
+                    onChange={(e) =>
+                      change({
+                        category: e.target.value as PatternCategory | '',
+                      })
+                    }
+                  >
+                    <option value="">すべて</option>
+                    {CATEGORY_ORDER.map((c) => (
+                      <option key={c} value={c}>
+                        {CATEGORY_CONFIG[c].label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {filters.practice === 'unit' && (
+                <div className="catalog-field">
+                  <label htmlFor="catalog-course">コース</label>
+                  <select
+                    id="catalog-course"
+                    value={filters.course}
+                    onChange={(e) =>
+                      change({
+                        course: e.target.value as CatalogFilters['course'],
+                      })
+                    }
+                  >
+                    <option value="">すべて</option>
+                    {Object.entries(STORY_COURSES).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="catalog-field">
                 <label htmlFor="catalog-language">言語</label>
                 <select
@@ -350,8 +455,43 @@ export function WorksheetCatalog({
                 </select>
               </div>
             </div>
+            {filters.practice === 'unit' && (
+              <div className="catalog-field">
+                <label htmlFor="catalog-topic">単元</label>
+                <select
+                  id="catalog-topic"
+                  value={filters.topic}
+                  onChange={(e) =>
+                    change({ topic: e.target.value as CatalogFilters['topic'] })
+                  }
+                >
+                  <option value="">すべての単元</option>
+                  {(Object.keys(WORD_TOPICS) as WordTopic[])
+                    .filter(
+                      (topic) =>
+                        topicCounts.has(topic) || topic === filters.topic
+                    )
+                    .map((topic) => (
+                      <option key={topic} value={topic}>
+                        {WORD_TOPICS[topic].ja}（{topicCounts.get(topic) ?? 0}
+                        件）
+                      </option>
+                    ))}
+                </select>
+              </div>
+            )}
           </section>
           <section aria-label="検索結果" className="min-w-0">
+            {filters.practice === 'unit' && (
+              <WordTopicCoverage
+                catalog={catalog}
+                grade={filters.grade}
+                course={filters.course}
+                onChoose={(topic, language) =>
+                  change({ topic, language, query: '' })
+                }
+              />
+            )}
             <p className="mb-4 text-sm text-slate-700" role="status">
               <strong className="text-xl tabular-nums text-teal-800">
                 {results.length}
@@ -403,6 +543,7 @@ export function WorksheetCatalog({
                         material={material}
                         gradeFilter={filters.grade}
                         settings={settings}
+                        showTopics={filters.practice === 'unit'}
                       />
                     ))}
                   </ul>

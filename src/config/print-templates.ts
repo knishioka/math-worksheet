@@ -11,6 +11,7 @@ import type { ProblemType, LayoutColumns, Grade } from '../types';
 import type { CalculationPattern } from '../types/calculation-patterns';
 import { SUPPLEMENTAL_PATTERNS } from './supplemental-patterns';
 import { ENTRANCE_EXAM_PATTERNS } from './entrance-exam-patterns';
+import { isEnglishUnitPattern } from '../lib/generators/templates/en-word-story';
 
 const LAYOUT_COLUMNS: LayoutColumns[] = [1, 2, 3];
 
@@ -612,6 +613,14 @@ const WORD_EN_ADVANCED_COUNTS: EffectiveCounts = {
   thresholds: { 1: 8, 2: 12, 3: 12 },
 };
 
+// 同じ単元の長文が続く場合にも、式と答えを書くスペースをA4内に確保する。
+const storyWritingSpace = { 1: 6, 2: 8, 3: 9 } as const;
+const STORY_UNIT_COUNTS: EffectiveCounts = {
+  recommendedCounts: storyWritingSpace,
+  maxCounts: storyWritingSpace,
+  thresholds: storyWritingSpace,
+};
+
 /**
  * 問題タイプ・パターン・学年に応じた実効カウントを取得する。
  *
@@ -621,7 +630,8 @@ const WORD_EN_ADVANCED_COUNTS: EffectiveCounts = {
 export function getEffectiveCounts(
   effectiveType: ProblemType,
   calculationPattern: CalculationPattern | undefined,
-  grade: Grade | undefined
+  grade: Grade | undefined,
+  showEquationLine = false
 ): EffectiveCounts {
   const template = PRINT_TEMPLATES[effectiveType];
   const override = calculationPattern
@@ -642,6 +652,14 @@ export function getEffectiveCounts(
     };
   }
 
+  if (
+    isEnglishUnitPattern(calculationPattern) ||
+    (effectiveType === 'word-en' &&
+      showEquationLine &&
+      (!calculationPattern || calculationPattern === 'word-en'))
+  ) {
+    return STORY_UNIT_COUNTS;
+  }
   if (effectiveType === 'word-en' && grade !== undefined && grade >= 4) {
     return WORD_EN_ADVANCED_COUNTS;
   }

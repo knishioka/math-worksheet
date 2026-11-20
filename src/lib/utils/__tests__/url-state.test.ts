@@ -15,6 +15,25 @@ const defaults: WorksheetSettings = {
 };
 
 describe('parseUrlSettings', () => {
+  it('restores mixed worksheets and reserves writing space when equation lines are requested', () => {
+    const mixed = '?type=basic&grade=6&pattern=word-en&cols=2&count=12';
+    expect(parseUrlSettings(mixed, defaults)).toMatchObject({
+      calculationPattern: 'word-en',
+      problemCount: 12,
+    });
+    expect(parseUrlSettings(mixed + '&eq=1', defaults)).toMatchObject({
+      showEquationLine: true,
+      problemCount: 8,
+    });
+    const topic = '?type=basic&pattern=word-unit-percent-en&cols=2&count=12';
+    expect(parseUrlSettings(topic + '&grade=5', defaults)).toMatchObject({
+      calculationPattern: 'word-unit-percent-en',
+      problemCount: 8,
+    });
+    expect(
+      parseUrlSettings(topic + '&grade=1', defaults).calculationPattern
+    ).toBeUndefined();
+  });
   it.each(['frac-to-decimal', 'decimal-to-frac'] as const)(
     'round-trips %s with the conversion layout counts',
     (calculationPattern) => {

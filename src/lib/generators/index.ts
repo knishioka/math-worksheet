@@ -18,7 +18,8 @@ import {
 import { generateGradeFractionProblems } from './fraction';
 import { generateGradeDecimalProblems } from './decimal';
 import { generatePatternProblems } from './patterns';
-import { generateGradeEnWordProblems } from './word-problem-en';
+import { generateEnWordStory } from './word-problem-en';
+import { isEnglishUnitPattern } from './templates/en-word-story';
 import { generateNumberTracingProblems } from './number-tracing';
 import { generateHissanProblem } from './hissan';
 
@@ -52,7 +53,11 @@ export function generateProblems(settings: WorksheetSettings): Problem[] {
 
   if (problemType === 'word-en') {
     // 英語文章問題
-    return generateGradeEnWordProblems(grade, problemCount);
+    return generateEnWordStory(
+      grade,
+      problemCount,
+      isEnglishUnitPattern(calculationPattern) ? calculationPattern : undefined
+    );
   }
 
   if (problemType === 'hissan' || problemType === 'hissan-div') {

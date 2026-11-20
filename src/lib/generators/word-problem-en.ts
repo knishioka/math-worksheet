@@ -5,7 +5,10 @@ import {
   getTemplatesForGrade,
   type MissingNumberTemplate,
 } from './templates/en-missing-number';
-import { getStoriesForGrade } from './templates/en-word-story';
+import {
+  getStoriesForGrade,
+  type EnglishUnitPattern,
+} from './templates/en-word-story';
 
 /**
  * Generate missing number problems in English
@@ -67,12 +70,15 @@ export function generateEnMissingNumber(
  */
 export function generateEnWordStory(
   grade: Grade,
-  count: number
+  count: number,
+  pattern?: EnglishUnitPattern
 ): WordProblemEn[] {
   const problems: WordProblemEn[] = [];
-  const stories = getStoriesForGrade(grade);
+  const stories = getStoriesForGrade(grade, pattern);
 
   if (stories.length === 0) {
+    if (pattern)
+      throw new Error(`No templates for ${pattern} in grade ${grade}`);
     // Fallback to missing number for grades without stories
     return generateEnMissingNumber(grade, count);
   }

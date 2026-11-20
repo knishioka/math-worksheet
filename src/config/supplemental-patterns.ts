@@ -1,4 +1,5 @@
 import { ENTRANCE_EXAM_PATTERNS } from './entrance-exam-patterns';
+import type { WordTopic } from './word-topics';
 
 // 学習の片側だけが欠けないよう、追加教材の表示・配当・印刷種別を一元管理する。
 interface SupplementalDefinition {
@@ -8,6 +9,7 @@ interface SupplementalDefinition {
   type: 'basic' | 'fraction' | 'word' | 'word-en';
   category: 'basic' | 'fraction' | 'word' | 'geometry' | 'data' | 'entrance';
   difficulty: 1 | 2 | 3;
+  topics?: readonly WordTopic[];
 }
 
 const subtraction = (n: number): SupplementalDefinition => ({
@@ -70,6 +72,7 @@ export const SUPPLEMENTAL_PATTERNS = {
     difficulty: 1,
   },
   'data-combinations-jap': {
+    topics: ['counting'],
     label: '場合の数（組み合わせ）',
     description: '2つの種類から1つずつ選ぶ組み合わせを、順序よく調べる。',
     grade: 6,
@@ -200,6 +203,7 @@ export const SUPPLEMENTAL_PATTERNS = {
     difficulty: 2,
   },
   'word-add-sub-jap': {
+    topics: ['arithmetic'],
     label: 'あわせて・のこり・ちがい',
     description: '短い日本語の文章から、たし算かひき算かを考える。',
     grade: 1,

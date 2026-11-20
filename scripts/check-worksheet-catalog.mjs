@@ -97,6 +97,60 @@ try {
   await result.getByRole('link').click();
   await expect(worksheetGrade).toHaveValue('0');
   await expect(page.locator('[data-a4-sheet]')).toBeVisible();
+  await nav.getByRole('link', { name: '教材一覧' }).click();
+  await page.getByRole('link', { name: '文章題から探す' }).click();
+  await page.getByLabel('学年', { exact: true }).selectOption('5');
+  await page.getByLabel('言語', { exact: true }).selectOption('en');
+  await page.getByLabel('単元', { exact: true }).selectOption('speed');
+  await expect(
+    result.getByRole('heading', { name: 'Meeting and Catching Up' })
+  ).toBeVisible();
+  await page.getByLabel('コース', { exact: true }).selectOption('school');
+  const speed = result
+    .getByRole('listitem')
+    .filter({ hasText: '速さの文章題（英語）' });
+  await speed.getByText('例題を見る').click();
+  await expect(speed.locator('.catalog-sample')).toContainText(/km|minute/);
+  await page.screenshot({ path: output + '/story-units-mobile.png' });
+  await speed.getByRole('link').click();
+  const sheet = page.locator('[data-a4-sheet]');
+  await expect(sheet).toHaveAttribute('lang', 'en');
+  await expect(sheet).toContainText('Grade 5 · Speed');
+  await page.getByRole('checkbox', { name: '解答表示' }).check();
+  await expect(sheet.locator('output').first()).toBeVisible();
+  await page.goBack();
+  await expect(page.getByLabel('単元', { exact: true })).toHaveValue('speed');
+  await page.getByRole('radio', { name: '学年別の総合演習' }).check();
+  await expect(result.getByRole('listitem')).toHaveCount(1);
+  await result.getByRole('link').click();
+  assert.equal(new URL(page.url()).searchParams.get('pattern'), 'word-en');
+  await expect(sheet).toContainText('Grade 5 · Mixed Word Problems');
+  await page.goto(
+    base + '#catalog?practice=unit&topic=age&course=entrance&lang=en&grade=6'
+  );
+  await expect(
+    result.getByRole('heading', { name: 'Ratios and Ages' })
+  ).toBeVisible();
+  await page.reload();
+  await page.getByLabel('単元', { exact: true }).selectOption('ratio');
+  await expect(
+    result.getByRole('heading', { name: 'Ratios and Ages' })
+  ).toBeVisible();
+  await page.setViewportSize({ width: 1360, height: 900 });
+  await page.screenshot({ path: output + '/story-units-desktop.png' });
+  await page.getByText('単元ごとの日英の教材数', { exact: true }).click();
+  const coverage = page.getByRole('table', { name: '単元と言語ごとの教材数' });
+  const japaneseAge = coverage.getByRole('button', { name: /^年齢・日本語の/ });
+  const expected = Number.parseInt(await japaneseAge.innerText(), 10);
+  await page.screenshot({ path: output + '/story-coverage.png' });
+  await japaneseAge.click();
+  await expect(coverage).toHaveCount(0);
+  await expect(page.getByLabel('言語', { exact: true })).toHaveValue('ja');
+  await expect(page.getByLabel('単元', { exact: true })).toHaveValue('age');
+  await expect(result.getByRole('listitem')).toHaveCount(expected);
+  await expect(
+    result.getByRole('heading', { name: '比と年齢の複合問題' })
+  ).toBeVisible();
   assert.deepEqual(errors, []);
   console.log(
     '教材一覧の検索・例題・日英と学年の選択・URL復元・スマートフォン表示を確認しました。'
