@@ -7,6 +7,10 @@ import type {
 } from '../../types';
 import { PATTERN_LABELS } from '../../types';
 import { GRADES } from '../../config/grades';
+import {
+  getStoriesForGrade,
+  isEnglishUnitPattern,
+} from '../generators/templates/en-word-story';
 import { getEffectiveCounts } from '../../config/print-templates';
 import {
   getEffectiveProblemType,
@@ -70,7 +74,12 @@ export function parseUrlSettings(
 
   const patternParam = params.get('pattern');
   if (patternParam !== null) {
-    if (patternParam in PATTERN_LABELS) {
+    if (
+      Object.prototype.hasOwnProperty.call(PATTERN_LABELS, patternParam) &&
+      (!isEnglishUnitPattern(patternParam) ||
+        getStoriesForGrade(result.grade ?? defaults.grade, patternParam)
+          .length > 0)
+    ) {
       result.calculationPattern = patternParam as CalculationPattern;
       result.operation = getOperationFromPattern(result.calculationPattern);
     }
@@ -85,6 +94,12 @@ export function parseUrlSettings(
       : defaults.layoutColumns;
   }
 
+  const equationParam = params.get('eq');
+  if (equationParam !== null && supportsEquationLine(result)) {
+    result.showEquationLine =
+      equationParam === '1' || equationParam.toLowerCase() === 'true';
+  }
+
   const countParam = params.get('count');
   if (countParam !== null) {
     const count = Number(countParam);
@@ -97,20 +112,16 @@ export function parseUrlSettings(
       const maxCount = getEffectiveCounts(
         effectiveType,
         result.calculationPattern,
-        result.grade ?? defaults.grade
+        result.grade ?? defaults.grade,
+        result.showEquationLine ?? defaults.showEquationLine
       ).maxCounts[cols];
       result.problemCount = Math.min(count, maxCount);
     }
   }
 
-  const equationParam = params.get('eq');
   const orderParam = params.get('order');
   if (orderParam === 'column' || orderParam === 'row')
     result.problemOrder = orderParam;
-  if (equationParam !== null && supportsEquationLine(result)) {
-    result.showEquationLine =
-      equationParam === '1' || equationParam.toLowerCase() === 'true';
-  }
 
   return result;
 }

@@ -1,4 +1,5 @@
 import type { ProblemType, CalculationPattern } from '../../types';
+import { isEnglishUnitPattern } from '../generators/templates/en-word-story';
 import {
   isSupplementalPattern,
   SUPPLEMENTAL_PATTERNS,
@@ -25,7 +26,11 @@ import {
 export function isWordEnProblem(
   calculationPattern?: CalculationPattern
 ): boolean {
-  if (calculationPattern === 'word-en') return true;
+  if (
+    calculationPattern === 'word-en' ||
+    isEnglishUnitPattern(calculationPattern)
+  )
+    return true;
   return (
     calculationPattern !== undefined &&
     isSupplementalPattern(calculationPattern) &&

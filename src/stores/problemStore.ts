@@ -65,7 +65,8 @@ export function getInitialSettings(): WorksheetSettings {
         settings.calculationPattern
       ),
       settings.calculationPattern,
-      settings.grade
+      settings.grade,
+      settings.showEquationLine
     ).recommendedCounts[settings.layoutColumns];
   }
 

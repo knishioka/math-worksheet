@@ -85,9 +85,9 @@ export const CATEGORY_CONFIG: Record<
     description: 'お金・時間・単位などの実用計算',
   },
   word: {
-    label: '文章問題',
+    label: '学校の文章題',
     icon: '📝',
-    description: '文章を読んで解く問題',
+    description: '学年に合った単元別の文章題と総合演習',
   },
   singapore: {
     label: 'Singapore Math',
@@ -401,6 +401,8 @@ export function getPatternLanguage(
   if (pattern.startsWith('singapore-')) {
     return 'en';
   }
+  if (pattern === 'speed-time-distance' || pattern === 'area-volume')
+    return 'ja';
 
   return 'all';
 }

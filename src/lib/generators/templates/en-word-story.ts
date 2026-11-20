@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import type { Operation } from '../../../types';
+import type { WordTopic } from '../../../config/word-topics';
 
 /**
  * Word story problem templates for English
@@ -2535,9 +2536,10 @@ export const TRAVEL_STORIES: WordStoryTemplate[] = [
  * elapsed time, average, ratio, fraction-of, multi-step shopping, and
  * narrative-style problems with subordinate clauses and richer vocabulary.
  */
-export const ADVANCED_STORIES: WordStoryTemplate[] = [
+export const ADVANCED_STORIES = [
   // T4-AREA-1: Rectangle area in a school context (grade 4+)
   {
+    topics: ['geometry'],
     generateProblem: (grade) => {
       const venue = getAdvancedVenue((v) => v.room === true);
       const length = gradeRandomInt(
@@ -2570,6 +2572,7 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
   },
   // T4-AREA-2: Composite (L-shaped) area (grade 5+)
   {
+    topics: ['geometry', 'reasoning'],
     generateProblem: (grade) => {
       const aLen = gradeRandomInt(grade, [{ upTo: 5, min: 14, max: 40 }], {
         upTo: 6,
@@ -2605,6 +2608,7 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
   },
   // T4-ELAPSED-1: Elapsed time across the hour (grade 4+)
   {
+    topics: ['time'],
     generateProblem: (grade) => {
       const venue = getAdvancedVenue((v) => v.performance === true);
       const duration = gradeRandomInt(
@@ -2646,6 +2650,7 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
   },
   // T4-AVG-1: Average (grade 5+)
   {
+    topics: ['data', 'money'],
     generateProblem: (grade) => {
       const event = getAdvancedEvent((e) => e.fundraising === true);
       const numClasses = 4;
@@ -2683,6 +2688,7 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
   },
   // T4-RATIO-1: Ratio scaling (grade 5+)
   {
+    topics: ['ratio'],
     generateProblem: (grade) => {
       const event = getAdvancedEvent((e) => e.seated === true);
       const ratios: Array<[number, number]> = [
@@ -2715,6 +2721,7 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
   },
   // T4-MULTI-1: Multi-step shopping (grade 4+)
   {
+    topics: ['money', 'reasoning'],
     generateProblem: (grade) => {
       const name = getAdvancedName();
       const pronouns = getPronouns(name);
@@ -2773,6 +2780,7 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
   },
   // T4-FRACTION-1: Fraction of a quantity (grade 4+)
   {
+    topics: ['fractions'],
     generateProblem: (grade) => {
       const event = getAdvancedEvent((e) => e.sports === true);
       const fractions: Array<[number, number]> = [
@@ -2816,6 +2824,7 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
   },
   // T4-DIV-1: Sequenced narrative division (grade 4+)
   {
+    topics: ['division'],
     generateProblem: (grade) => {
       const name = getAdvancedName();
       const pronouns = getPronouns(name);
@@ -2850,6 +2859,7 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
   },
   // T4-EVENT-1: School festival multi-step (grade 4+)
   {
+    topics: ['multiplication', 'reasoning'],
     generateProblem: (grade) => {
       const event = getAdvancedEvent((e) => e.foodSale === true);
       const morning = gradeRandomInt(
@@ -2890,6 +2900,7 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
   },
   // T4-DIST-1: Three-leg round trip (grade 4+)
   {
+    topics: ['measurement', 'arithmetic'],
     generateProblem: (grade) => {
       const venue = getAdvancedVenue();
       const leg1 = gradeRandomInt(
@@ -2928,7 +2939,9 @@ export const ADVANCED_STORIES: WordStoryTemplate[] = [
     maxGrade: 6,
     category: 'word-story',
   },
-];
+] as const satisfies readonly (WordStoryTemplate & {
+  topics: readonly WordTopic[];
+})[];
 
 /**
  * Grade 3-4: 2-3 digit × 1-digit multiplication (curriculum: G3 introduces
@@ -3590,48 +3603,86 @@ export const FRACTION_MUL_DIV_STORIES: WordStoryTemplate[] = [
   },
 ];
 
-/**
- * Get appropriate story templates for a grade level
- */
-export function getStoriesForGrade(grade: number): WordStoryTemplate[] {
-  const stories: WordStoryTemplate[] = [];
+// 学年別ミックスと単元別プリントは、同じテンプレートと配当学年から作る。
+const storyGroups = [
+  { topic: 'arithmetic', stories: SIMPLE_ADDITION_STORIES },
+  { topic: 'patterns', stories: NUMBER_SEQUENCE_STORIES },
+  { topic: 'arithmetic', stories: SECOND_GRADE_CONTEXT_STORIES },
+  { topic: 'reasoning', stories: MULTI_STEP_STORIES },
+  { topic: 'multiplication', stories: MULTIPLICATION_STORIES },
+  { topic: 'multiplication', stories: GRADE3_DIGIT_MULTIPLICATION_STORIES },
+  { topic: 'division', stories: DIVISION_STORIES },
+  { topic: 'division', stories: DIVISION_REMAINDER_STORIES },
+  { topic: 'fractions', stories: UNIT_FRACTION_STORIES },
+  { topic: 'decimals', stories: DECIMAL_ADD_SUB_STORIES },
+  { topic: 'fractions', stories: FRACTION_SAME_DENOM_STORIES },
+  { topic: 'decimals', stories: DECIMAL_INT_OP_STORIES },
+  { topic: 'decimals', stories: DECIMAL_DECIMAL_OP_STORIES },
+  { topic: 'fractions', stories: FRACTION_DIFF_DENOM_STORIES },
+  { topic: 'speed', stories: SPEED_STORIES },
+  { topic: 'percent', stories: PERCENT_STORIES },
+  { topic: 'fractions', stories: FRACTION_MUL_DIV_STORIES },
+  { topic: 'arithmetic', stories: COMPARISON_STORIES },
+  { topic: 'time', stories: TIME_STORIES },
+  { topic: 'money', stories: MONEY_STORIES },
+  { topic: 'measurement', stories: MEASUREMENT_STORIES },
+  { topic: 'reasoning', stories: MIXED_OPERATION_STORIES },
+  { topic: 'patterns', stories: PATTERN_STORIES },
+  { topic: 'geometry', stories: GEOMETRY_STORIES },
+  { topic: 'reasoning', stories: COLLECTION_STORIES },
+  { topic: 'reasoning', stories: TRAVEL_STORIES },
+] as const satisfies readonly {
+  topic: WordTopic;
+  stories: WordStoryTemplate[];
+}[];
 
-  // Add stories appropriate for the grade
-  const allStories = [
-    ...SIMPLE_ADDITION_STORIES,
-    ...NUMBER_SEQUENCE_STORIES,
-    ...SECOND_GRADE_CONTEXT_STORIES,
-    ...MULTI_STEP_STORIES,
-    ...MULTIPLICATION_STORIES,
-    ...GRADE3_DIGIT_MULTIPLICATION_STORIES,
-    ...DIVISION_STORIES,
-    ...DIVISION_REMAINDER_STORIES,
-    ...UNIT_FRACTION_STORIES,
-    ...DECIMAL_ADD_SUB_STORIES,
-    ...FRACTION_SAME_DENOM_STORIES,
-    ...DECIMAL_INT_OP_STORIES,
-    ...DECIMAL_DECIMAL_OP_STORIES,
-    ...FRACTION_DIFF_DENOM_STORIES,
-    ...SPEED_STORIES,
-    ...PERCENT_STORIES,
-    ...FRACTION_MUL_DIV_STORIES,
-    ...COMPARISON_STORIES,
-    ...TIME_STORIES,
-    ...MONEY_STORIES,
-    ...MEASUREMENT_STORIES,
-    ...MIXED_OPERATION_STORIES,
-    ...PATTERN_STORIES,
-    ...GEOMETRY_STORIES,
-    ...COLLECTION_STORIES,
-    ...TRAVEL_STORIES,
-    ...ADVANCED_STORIES,
-  ];
+type EnglishStoryTopic =
+  | (typeof storyGroups)[number]['topic']
+  | (typeof ADVANCED_STORIES)[number]['topics'][number];
+export type EnglishUnitPattern = `word-unit-${EnglishStoryTopic}-en`;
 
-  allStories.forEach((story) => {
-    if (grade >= story.minGrade && grade <= story.maxGrade) {
-      stories.push(story);
-    }
-  });
+const storyBank: {
+  story: WordStoryTemplate;
+  topics: readonly EnglishStoryTopic[];
+}[] = [
+  ...storyGroups.flatMap(({ topic, stories }) =>
+    stories.map((story) => ({ story, topics: [topic] }))
+  ),
+  ...ADVANCED_STORIES.map((story) => ({ story, topics: story.topics })),
+];
+const topics = [...new Set(storyBank.flatMap((entry) => entry.topics))];
+export const ENGLISH_STORY_UNITS = Object.fromEntries(
+  topics.map((topic) => [`word-unit-${topic}-en`, topic])
+) as Record<EnglishUnitPattern, EnglishStoryTopic>;
 
-  return stories;
+export function isEnglishUnitPattern(
+  pattern?: string
+): pattern is EnglishUnitPattern {
+  return (
+    pattern !== undefined &&
+    Object.prototype.hasOwnProperty.call(ENGLISH_STORY_UNITS, pattern)
+  );
+}
+
+export function getStoriesForGrade(
+  grade: number,
+  pattern?: EnglishUnitPattern
+): WordStoryTemplate[] {
+  const topic = pattern && ENGLISH_STORY_UNITS[pattern];
+  return storyBank
+    .filter(
+      ({ story, topics }) =>
+        grade >= story.minGrade &&
+        grade <= story.maxGrade &&
+        (!topic || topics.includes(topic))
+    )
+    .map(({ story }) => story);
+}
+
+export function englishUnitPatternsForGrade(
+  grade: number
+): EnglishUnitPattern[] {
+  return (Object.keys(ENGLISH_STORY_UNITS) as EnglishUnitPattern[]).filter(
+    (pattern) => getStoriesForGrade(grade, pattern).length > 0
+  );
 }

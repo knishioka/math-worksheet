@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { PATTERN_LABELS, PATTERNS_BY_GRADE } from '../../types';
 import { getPrintTemplate } from '../print-templates';
+import { generateProblems } from '../../lib/generators';
+import {
+  englishUnitPatternsForGrade,
+  getStoriesForGrade,
+  isEnglishUnitPattern,
+} from '../../lib/generators/templates/en-word-story';
+import { GRADES } from '../grades';
 import {
   buildWorksheetCatalog,
   catalogHash,
@@ -12,6 +19,81 @@ import {
 const catalog = buildWorksheetCatalog();
 
 describe('全学年の教材一覧', () => {
+  it('複合問題を各単元から同じ教材として探せ、学校算数と受験算数を横断できる', () => {
+    const base = {
+      ...EMPTY_FILTERS,
+      practice: 'unit',
+      language: 'en',
+    } as const;
+    for (const topic of ['age', 'ratio'] as const) {
+      const filters = { ...base, topic, grade: 6, course: 'entrance' } as const;
+      expect(filtersFromHash(catalogHash(filters))).toEqual(filters);
+      const rows = filterWorksheetCatalog(catalog, filters);
+      expect(
+        rows.filter((row) => row.key === 'entrance-advanced-ratio-age')
+      ).toHaveLength(1);
+    }
+    const speed = filterWorksheetCatalog(catalog, {
+      ...base,
+      grade: 5,
+      topic: 'speed',
+    });
+    expect(speed.map((m) => m.key)).toEqual(
+      expect.arrayContaining(['entrance-traveler', 'word-unit-speed'])
+    );
+    expect(speed.some((m) => m.practice === 'mixed')).toBe(false);
+    expect(
+      filterWorksheetCatalog(catalog, {
+        ...base,
+        grade: 6,
+        practice: 'mixed',
+      }).flatMap((m) => m.versions.map((v) => v.pattern))
+    ).toEqual(['word-en']);
+  });
+
+  it('各学年で実際に出題できる英語の単元だけを登録し、総合演習と全素材を共有する', () => {
+    for (const grade of GRADES.filter((g) => g > 0)) {
+      const patterns = englishUnitPatternsForGrade(grade);
+      expect(PATTERNS_BY_GRADE[grade].filter(isEnglishUnitPattern)).toEqual(
+        patterns
+      );
+      const templates = patterns.flatMap((pattern) =>
+        getStoriesForGrade(grade, pattern)
+      );
+      expect(new Set(templates)).toEqual(new Set(getStoriesForGrade(grade)));
+      expect(getStoriesForGrade(grade)).toHaveLength(new Set(templates).size);
+      for (const pattern of patterns) {
+        expect(
+          generateProblems({
+            grade,
+            problemType: 'basic',
+            operation: 'addition',
+            calculationPattern: pattern,
+            layoutColumns: 1,
+            problemCount: 1,
+          })[0].type
+        ).toBe('word-en');
+      }
+    }
+    expect(englishUnitPatternsForGrade(1)).not.toContain(
+      'word-unit-percent-en'
+    );
+    for (const problemType of ['basic', 'word-en'] as const) {
+      const problems = generateProblems({
+        grade: 5,
+        problemType,
+        calculationPattern: 'word-unit-percent-en',
+        operation: 'addition',
+        layoutColumns: 2,
+        problemCount: 8,
+      });
+      expect(
+        problems.every(
+          (p) => p.type === 'word-en' && p.problemText.includes('%')
+        )
+      ).toBe(true);
+    }
+  });
   it('教材登録の全件と各学年の選択肢に一致し、同一の教材・言語版を重複表示しない', () => {
     const versions = catalog.flatMap((material) => material.versions);
     expect(new Set(catalog.map((m) => m.key)).size).toBe(catalog.length);

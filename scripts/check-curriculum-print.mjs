@@ -17,6 +17,9 @@ const { getEffectiveCounts } = await vite.ssrLoadModule(
 const { PATTERNS_BY_GRADE } = await vite.ssrLoadModule(
   '/src/types/calculation-patterns.ts'
 );
+const { isEnglishUnitPattern } = await vite.ssrLoadModule(
+  '/src/lib/generators/templates/en-word-story.ts'
+);
 await vite.close();
 const base = process.argv[2] ?? 'http://127.0.0.1:5174/';
 const printOnly = process.argv.includes('--print-only');
@@ -27,7 +30,15 @@ const minValues = process.argv.includes('--min-values');
 const patternPrefix = process.argv
   .find((argument) => argument.startsWith('--pattern-prefix='))
   ?.slice('--pattern-prefix='.length);
-const selectedPatterns = Object.entries(SUPPLEMENTAL_PATTERNS).filter(
+const curriculumPatterns = [
+  ...Object.entries(SUPPLEMENTAL_PATTERNS),
+  ...Object.entries(PATTERNS_BY_GRADE).flatMap(([grade, patterns]) =>
+    patterns
+      .filter(isEnglishUnitPattern)
+      .map((pattern) => [pattern, { grade: Number(grade), type: 'word-en' }])
+  ),
+];
+const selectedPatterns = curriculumPatterns.filter(
   ([pattern]) => !patternPrefix || pattern.startsWith(patternPrefix)
 );
 assert.ok(selectedPatterns.length > 0, 'Pattern filter must match a material');
@@ -209,7 +220,14 @@ async function verifyCurriculum() {
           !result.clipped;
         if (measureOnly) {
           if (!fits)
-            overflow.push({ pattern, cols, count, answers, ...result });
+            overflow.push({
+              pattern,
+              grade: definition.grade,
+              cols,
+              count,
+              answers,
+              ...result,
+            });
         } else {
           assert.ok(
             fits,
@@ -331,6 +349,24 @@ async function verifyCurriculum() {
     await page
       .getByRole('heading', { name: `${grade}年生の中学受験の道すじ` })
       .waitFor();
+  }
+  if (!patternPrefix) {
+    for (const [pattern, title] of [
+      ['word-unit-percent-en', 'Percentages'],
+      ['word-en', 'Mixed Word Problems'],
+    ]) {
+      const count = getEffectiveCounts('word-en', pattern, 5)
+        .recommendedCounts[2];
+      await page.goto(
+        `${base}?grade=5&type=basic&pattern=${pattern}&cols=2&count=${count}`
+      );
+      await page.getByRole('checkbox', { name: '解答表示' }).check();
+      await checkSinglePagePdf(`${output}/${pattern}.pdf`, count, false);
+      const sheet = pdfPage.locator('[data-a4-sheet]');
+      assert.equal(await sheet.getAttribute('lang'), 'en');
+      assert.ok((await sheet.innerText()).includes('Grade 5 · ' + title));
+      assert.equal(await sheet.locator('output').count(), count);
+    }
   }
   // 実際の印刷ボタンで作られるiframeを捕捉し、複数枚のページ分割も検証する。
   await page.goto(
@@ -560,8 +596,8 @@ async function verifyCurriculum() {
   const summary = {
     checked,
     checkedPdfs,
-    patterns: Object.keys(SUPPLEMENTAL_PATTERNS).length,
-    checkedPatterns: selectedPatterns.length,
+    patterns: new Set(curriculumPatterns.map(([pattern]) => pattern)).size,
+    checkedPatterns: new Set(selectedPatterns.map(([pattern]) => pattern)).size,
     maxValues,
     gradeCounts: Object.fromEntries(
       Object.entries(PATTERNS_BY_GRADE).map(([grade, patterns]) => [
