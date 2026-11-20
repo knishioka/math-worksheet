@@ -4,12 +4,11 @@ import { generateId, randomInt } from '../utils/math';
 import {
   entranceWord as word,
   type EntranceContent as Content,
+  type EntranceEnContent,
 } from './entrance-exam-shared';
 import { UPPER_ENTRANCE_GENERATORS } from './entrance-exam-upper';
-import {
-  ENTRANCE_EN_GENERATORS,
-  type EntranceEnContent,
-} from './entrance-exam-en';
+import { STUDIO_JA_GENERATORS } from './studio';
+import { ENTRANCE_EN_GENERATORS } from './entrance-exam-en';
 
 /** 受験文章題は日本語版（word）と英語版（word-en）のどちらかで出題する */
 export type EntranceExamProblem = WordProblem | WordProblemEn;
@@ -163,7 +162,7 @@ function excessShortage(index: number): Content {
     '人',
     [
       `1人あたりに配る数の差は${high}−${low}＝${difference}（個）。`,
-      `${variant === 0 ? '余りと不足を足す' : variant === 1 ? '余りの差を求める' : '不足の差を求める'}と、追加で必要なあめは${calculation}＝${surplusDifference}（個）。`,
+      `${variant === 0 ? '余りと不足を足す' : variant === 1 ? '余りの差を求める' : '不足の差を求める'}と、二つの配り方で必要なあめの数の差は${calculation}＝${surplusDifference}（個）。`,
       `人数は${surplusDifference}÷${difference}＝${people}（人）。`,
     ]
   );
@@ -202,6 +201,7 @@ const GENERATORS: Record<
   (index: number) => Content | EntranceEnContent
 > = {
   ...UPPER_ENTRANCE_GENERATORS,
+  ...STUDIO_JA_GENERATORS,
   ...ENTRANCE_EN_GENERATORS,
   'entrance-sum-difference-jap': sumDifference,
   'entrance-tree-planting-jap': treePlanting,

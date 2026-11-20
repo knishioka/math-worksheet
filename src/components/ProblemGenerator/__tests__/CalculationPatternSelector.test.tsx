@@ -431,11 +431,12 @@ describe('CalculationPatternSelector', () => {
     );
 
     openPicker();
+    const allCandidates = screen.getByText(/^\d+件の候補$/).textContent!;
     fireEvent.click(screen.getByRole('button', { name: '★ やさしい' }));
-    expect(screen.queryByText('64件の候補')).not.toBeInTheDocument();
+    expect(screen.queryByText(allCandidates)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '絞り込みを解除' }));
 
-    expect(screen.getByText('64件の候補')).toBeInTheDocument();
+    expect(screen.getByText(allCandidates)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'すべて' })).toHaveAttribute(
       'aria-pressed',
       'true'

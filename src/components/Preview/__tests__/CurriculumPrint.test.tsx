@@ -38,9 +38,7 @@ describe('新しい学習内容の印刷', () => {
       };
       const english = ENTRANCE_EXAM_PATTERNS[pattern].type === 'word-en';
       const listName = english ? 'Solution' : '解き方';
-      const answerText = english
-        ? `${problems[0].answer}${problems[0].unit ? ` ${problems[0].unit}` : ''}`
-        : `答え: ${problems[0].answer}${problems[0].unit}`;
+      const answerLabel = english ? 'Answer' : '答え';
       const view = render(<ProblemList {...props} />);
       expect(problems[0].type).toBe(english ? 'word-en' : 'word');
       expect(
@@ -48,10 +46,14 @@ describe('新しい学習内容の印刷', () => {
       ).not.toBeInTheDocument();
       for (const step of problems[0].solutionSteps!)
         expect(screen.queryByText(step)).not.toBeInTheDocument();
-      expect(screen.queryByText(answerText)).not.toBeInTheDocument();
+      expect(
+        screen.queryByLabelText(answerLabel, { selector: 'output' })
+      ).not.toBeInTheDocument();
       view.rerender(<ProblemList {...props} showAnswers />);
       expect(screen.getByRole('list', { name: listName })).toBeInTheDocument();
-      expect(screen.getByText(answerText)).toBeInTheDocument();
+      const output = screen.getByLabelText(answerLabel, { selector: 'output' });
+      expect(output).toHaveTextContent(String(problems[0].answer));
+      if (problems[0].unit) expect(output).toHaveTextContent(problems[0].unit);
       for (const step of problems[0].solutionSteps!)
         expect(screen.getByText(step)).toBeInTheDocument();
     }

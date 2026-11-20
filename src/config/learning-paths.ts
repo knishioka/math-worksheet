@@ -33,6 +33,23 @@ export const ENTRANCE_LEARNING_PATHS: Partial<
       check: '求めた人数や値段を、両方の条件に戻して確かめよう。',
       patterns: ['entrance-excess-shortage-jap', 'entrance-elimination-jap'],
     },
+    {
+      title: 'くり返しと数え方',
+      goal: 'くり返しのまとまりや重なりに注目しよう。',
+      check: '数えた範囲を図や表で確かめよう。',
+      patterns: [
+        'entrance-cycle-jap',
+        'entrance-sequence-jap',
+        'entrance-sets-jap',
+        'entrance-changing-counts-jap',
+      ],
+    },
+    {
+      title: '角度と面積',
+      goal: '図形を分けて、分かっている量を整理しよう。',
+      check: '辺や角に分かっている値を書き込もう。',
+      patterns: ['entrance-polygon-angles-jap', 'entrance-composite-area-jap'],
+    },
   ],
   5: [
     {
@@ -66,6 +83,24 @@ export const ENTRANCE_LEARNING_PATHS: Partial<
         'entrance-river-jap',
       ],
     },
+    {
+      title: '数量の変化と単位',
+      goal: '比べる基準と単位をそろえよう。',
+      check: 'もとの量や組全体の合計から確かめよう。',
+      patterns: [
+        'entrance-divisibility-jap',
+        'entrance-averages-jap',
+        'entrance-percent-change-jap',
+        'entrance-exchange-jap',
+        'entrance-speed-units-jap',
+      ],
+    },
+    {
+      title: '底辺と高さ',
+      goal: '共通する底辺や高さを見つけよう。',
+      check: '面積の比を図で説明しよう。',
+      patterns: ['entrance-equal-area-jap', 'entrance-triangle-ratio-jap'],
+    },
   ],
   6: [
     {
@@ -88,6 +123,29 @@ export const ENTRANCE_LEARNING_PATHS: Partial<
       goal: '出発時刻や速さが変わる前後で、距離を分けよう。',
       check: 'それぞれの場面で進んだ距離と時間を説明しよう。',
       patterns: ['entrance-advanced-speed-jap'],
+    },
+    {
+      title: '場合分けと変化',
+      goal: '条件の変わるところで場合や区間を分けよう。',
+      check: 'どの条件を使ったか説明しよう。',
+      patterns: [
+        'entrance-digit-count-jap',
+        'entrance-clock-hands-jap',
+        'entrance-water-depth-jap',
+        'entrance-staged-rates-jap',
+      ],
+    },
+    {
+      title: '図形の変化と立体',
+      goal: '移動・拡大・切断の前後を比べよう。',
+      check: '対応する点や面を図で確かめよう。',
+      patterns: [
+        'entrance-motion-jap',
+        'entrance-similar-area-jap',
+        'entrance-sectors-jap',
+        'entrance-solid-nets-jap',
+        'entrance-cube-section-jap',
+      ],
     },
   ],
 };

@@ -1,11 +1,12 @@
 import type { UpperEntranceExamEnPattern } from '../../config/entrance-exam-patterns';
 import { randomInt } from '../utils/math';
-import { gcd, lcm } from './entrance-exam-shared';
 import {
+  gcd,
+  lcm,
   entranceWordEn as word,
   plural,
   type EntranceEnContent,
-} from './entrance-exam-en';
+} from './entrance-exam-shared';
 
 /**
  * 5・6年生向け受験文章題の英語版。

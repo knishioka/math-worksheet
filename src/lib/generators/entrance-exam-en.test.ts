@@ -25,16 +25,22 @@ import {
 import { generateProblems } from './index';
 import { generateEntranceExamProblems } from './entrance-exam';
 
-// 4年生の英語版。5・6年生は entrance-exam-upper-en.test.ts で検証する
+import {
+  STUDIO_EN_PATTERNS,
+  type StudioPattern,
+} from '../../config/studio-topics';
+
+// 基礎6単元を問題文から解き直す。
 type Grade4EnPattern = Exclude<
   EntranceExamEnPattern,
-  UpperEntranceExamEnPattern
+  UpperEntranceExamEnPattern | StudioPattern<'en'>
 >;
 const patterns = (
   Object.keys(ENTRANCE_EXAM_EN_PATTERNS) as EntranceExamEnPattern[]
 ).filter(
   (pattern): pattern is Grade4EnPattern =>
-    ENTRANCE_EXAM_EN_PATTERNS[pattern].grade === 4
+    ENTRANCE_EXAM_EN_PATTERNS[pattern].grade === 4 &&
+    !(pattern in STUDIO_EN_PATTERNS)
 );
 afterEach(() => vi.restoreAllMocks());
 
@@ -109,7 +115,7 @@ function solve(pattern: Grade4EnPattern, text: string): number[] {
     case 'entrance-excess-shortage-en': {
       const conditions = [
         ...text.matchAll(
-          /each child gets (\d+) candies, (?:(\d+) candies are left over|there are (\d+) candies too few)/g
+          /each child gets (\d+) candies, (?:(\d+) (?:candy is|candies are) left over|there (?:is|are) (\d+) cand(?:y|ies) too few)/g
         ),
       ].map((match) => ({
         each: Number(match[1]),
@@ -216,7 +222,10 @@ describe('英語版の登録と日本語版との対応', () => {
   it('教材カタログでは日本語版と1枚にまとまり、言語で行き来できる', () => {
     const catalog = buildPatternCatalog(PATTERNS_BY_GRADE[4], 4);
     const entrance = catalog.find((group) => group.category === 'entrance')!;
-    expect(entrance.entries).toHaveLength(6);
+    expect(entrance.entries).toHaveLength(
+      Object.values(ENTRANCE_EXAM_EN_PATTERNS).filter((p) => p.grade === 4)
+        .length
+    );
     for (const entry of entrance.entries) {
       expect(getEntryLanguageSupport(entry)).toBe('both');
       expect(resolveEntryPattern(entry, 'ja')).toMatch(/-jap$/);

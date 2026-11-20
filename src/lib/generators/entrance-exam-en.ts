@@ -1,4 +1,10 @@
-import type { Operation, WordProblemEn } from '../../types';
+import {
+  entranceWordEn,
+  plural,
+  type EntranceEnContent,
+} from './entrance-exam-shared';
+import { STUDIO_EN_GENERATORS } from './studio';
+
 import type { EntranceExamEnPattern } from '../../config/entrance-exam-patterns';
 import { randomInt } from '../utils/math';
 import { UPPER_ENTRANCE_EN_GENERATORS } from './entrance-exam-upper-en';
@@ -9,34 +15,7 @@ import { UPPER_ENTRANCE_EN_GENERATORS } from './entrance-exam-upper-en';
  * 出題ロジック（数の範囲・条件の巡回）は日本語版 entrance-exam.ts と同じにし、
  * 文章と解き方だけを英語にする。金額はアプリの他の英語教材に合わせて RM。
  */
-export type EntranceEnContent = Omit<WordProblemEn, 'id'>;
-
-export function entranceWordEn(
-  problemText: string,
-  answer: number,
-  unit: string,
-  solutionSteps: string[],
-  operation: Operation = 'division'
-): EntranceEnContent {
-  return {
-    type: 'word-en',
-    operation,
-    problemText,
-    answer,
-    unit,
-    solutionSteps,
-    showCalculation: true,
-    category: 'word-story',
-    language: 'en',
-  };
-}
-
 const word = entranceWordEn;
-
-/** "1 pencil" / "2 pencils" */
-export function plural(count: number, noun: string): string {
-  return `${count} ${noun}${count === 1 ? '' : 's'}`;
-}
 
 function sumDifference(index: number): EntranceEnContent {
   const small = randomInt(10, 80);
@@ -174,8 +153,12 @@ function excessShortage(index: number): EntranceEnContent {
   const highBalance = total - high * people;
   const describeBalance = (balance: number): string =>
     balance > 0
-      ? `${balance} candies are left over`
-      : `there are ${-balance} candies too few`;
+      ? balance === 1
+        ? '1 candy is left over'
+        : `${balance} candies are left over`
+      : balance === -1
+        ? 'there is 1 candy too few'
+        : `there are ${-balance} candies too few`;
   const surplusDifference = lowBalance - highBalance;
   const calculation =
     variant === 0
@@ -195,7 +178,7 @@ function excessShortage(index: number): EntranceEnContent {
           : variant === 1
             ? 'Taking the difference between the leftovers'
             : 'Taking the difference between the shortages'
-      } gives the extra candies needed: ${calculation} = ${surplusDifference}.`,
+      } gives the difference between the two amounts to be handed out: ${calculation} = ${surplusDifference}.`,
       `Number of children: ${surplusDifference} ÷ ${difference} = ${people}.`,
     ]
   );
@@ -223,7 +206,7 @@ function elimination(index: number): EntranceEnContent {
         : [
             `Multiply the first purchase by ${scale}: ${secondPencils} pencils and ${erasers * scale} erasers cost ${firstTotal} × ${scale} = RM${firstTotal * scale}.`,
           ]),
-      `Subtracting, the extra ${secondErasers} − ${erasers * scale} = ${extra} erasers cost ${secondTotal} − ${firstTotal * scale} = RM${extraCost}.`,
+      `The difference in the number of erasers is ${secondErasers} − ${erasers * scale} = ${extra}. The price difference is ${secondTotal} − ${firstTotal * scale} = RM${extraCost}.`,
       `One eraser costs ${extraCost} ÷ ${extra} = RM${eraserPrice}.`,
     ]
   );
@@ -234,6 +217,7 @@ export const ENTRANCE_EN_GENERATORS: Record<
   (index: number) => EntranceEnContent
 > = {
   ...UPPER_ENTRANCE_EN_GENERATORS,
+  ...STUDIO_EN_GENERATORS,
   'entrance-sum-difference-en': sumDifference,
   'entrance-tree-planting-en': treePlanting,
   'entrance-crane-turtle-en': craneTurtle,
