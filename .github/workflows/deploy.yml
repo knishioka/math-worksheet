@@ -76,11 +76,12 @@ jobs:
           npm run preview -- --host 127.0.0.1 --port 4173 --strictPort > /tmp/math-worksheet-preview.log 2>&1 &
           npx wait-on http://127.0.0.1:4173/math-worksheet/ --timeout 30000
 
-      - name: Check print layout and PDF output
+      - name: Check catalog navigation, print layout and PDF output
         if: github.event_name == 'pull_request' && steps.changes.outputs.app == 'true'
         run: |
           npm run check:layout -- http://127.0.0.1:4173/math-worksheet/
           npm run check:curriculum -- http://127.0.0.1:4173/math-worksheet/ --print-only
+          npm run check:catalog -- http://127.0.0.1:4173/math-worksheet/
 
       - name: Setup Pages
         if: github.ref == 'refs/heads/main'

@@ -21,6 +21,7 @@
     "check:layout": "node scripts/check-print-layout.mjs",
     "check:layout:local": "node scripts/check-print-layout.mjs http://localhost:4173/",
     "check:curriculum": "node scripts/check-curriculum-print.mjs",
+    "check:catalog": "node scripts/check-worksheet-catalog.mjs",
     "verify:playwright:dev": "node scripts/verify-playwright.mjs",
     "verify:playwright:preview": "node scripts/verify-playwright.mjs http://localhost:4173/",
     "verify:singapore": "node scripts/verify-playwright.mjs --singapore-only"

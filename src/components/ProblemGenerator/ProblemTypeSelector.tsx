@@ -1,4 +1,5 @@
 import React from 'react';
+import { GRADES, GRADE_LABELS, getGradeProblemType } from '../../config/grades';
 import type { Grade, Operation, ProblemType } from '../../types';
 
 interface ProblemTypeSelectorProps {
@@ -64,7 +65,7 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
   // If current problem type is not available for the new grade, switch to default
   React.useEffect(() => {
     if (!isProblemTypeAvailable(problemType)) {
-      onProblemTypeChange(grade === 0 ? 'number-tracing' : 'basic');
+      onProblemTypeChange(getGradeProblemType(grade));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [grade, problemType, isProblemTypeAvailable]);
@@ -88,13 +89,11 @@ export const ProblemTypeSelector: React.FC<ProblemTypeSelectorProps> = ({
           onChange={(e) => onGradeChange(Number(e.target.value) as Grade)}
           className="w-full rounded-xl border border-teal-200 bg-white/80 px-4 py-2 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-300"
         >
-          <option value={0}>幼児（年長）</option>
-          <option value={1}>1年生</option>
-          <option value={2}>2年生</option>
-          <option value={3}>3年生</option>
-          <option value={4}>4年生</option>
-          <option value={5}>5年生</option>
-          <option value={6}>6年生</option>
+          {GRADES.map((value) => (
+            <option value={value} key={value}>
+              {GRADE_LABELS[value]}
+            </option>
+          ))}
         </select>
       </div>
     </section>
