@@ -1,6 +1,7 @@
 import React from 'react';
 import type { WordProblemEn } from '../../types';
 import { EquationLine } from './EquationLine';
+import { WorksheetFigure } from './WorksheetFigure';
 import {
   wordProblemAnswerRowStyle,
   wordProblemAnswerUnderlineStyle,
@@ -41,6 +42,7 @@ export const WordProblemEnComponent: React.FC<WordProblemEnProps> = ({
     >
       <div style={{ marginBottom: '2px' }}>{problem.problemText}</div>
 
+      {problem.figure && <WorksheetFigure figure={problem.figure} english />}
       {showAnswer && problem.solutionSteps && (
         <ol
           aria-label="Solution"
@@ -61,14 +63,15 @@ export const WordProblemEnComponent: React.FC<WordProblemEnProps> = ({
 
       {ANSWER_LINE_CATEGORIES.has(problem.category) && (
         <>
-          {showEquationLine && (
-            <EquationLine
-              label="Equation:"
-              labelColor="#000"
-              labelFontSize="13px"
-              minWidth="3.5rem"
-            />
-          )}
+          {showEquationLine &&
+            !(showAnswer && problem.solutionSteps?.length) && (
+              <EquationLine
+                label="Equation:"
+                labelColor="#000"
+                labelFontSize="13px"
+                minWidth="3.5rem"
+              />
+            )}
           <div style={wordProblemAnswerRowStyle}>
             <span style={{ color: '#000', fontSize: '13px' }}>Answer:</span>
             <div
@@ -79,10 +82,14 @@ export const WordProblemEnComponent: React.FC<WordProblemEnProps> = ({
               }}
             >
               {showAnswer && (
-                <span style={{ fontWeight: '500', color: '#000' }}>
-                  {problem.answer}
-                  {problem.unit && ` ${problem.unit}`}
-                </span>
+                <output
+                  aria-label="Answer"
+                  style={{ fontWeight: '500', color: '#000' }}
+                >
+                  {problem.unit === 'RM'
+                    ? `RM${problem.answer}`
+                    : `${problem.answer}${problem.unit && !['%', '°'].includes(problem.unit) ? ' ' : ''}${problem.unit ?? ''}`}
+                </output>
               )}
             </div>
           </div>

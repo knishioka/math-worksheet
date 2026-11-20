@@ -20,7 +20,10 @@ const { PATTERNS_BY_GRADE } = await vite.ssrLoadModule(
 await vite.close();
 const base = process.argv[2] ?? 'http://127.0.0.1:5174/';
 const printOnly = process.argv.includes('--print-only');
+const measureOnly = process.argv.includes('--measure-only');
+const overflow = [];
 const maxValues = process.argv.includes('--max-values');
+const minValues = process.argv.includes('--min-values');
 const patternPrefix = process.argv
   .find((argument) => argument.startsWith('--pattern-prefix='))
   ?.slice('--pattern-prefix='.length);
@@ -33,16 +36,19 @@ await mkdir(output, { recursive: true });
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
 const pdfPage = await browser.newPage();
-if (maxValues) {
-  await page.addInitScript(() => {
-    if (
-      new URLSearchParams(location.search)
-        .get('pattern')
-        ?.startsWith('entrance-')
-    ) {
-      Math.random = () => 0.999999;
-    }
-  });
+if (maxValues || minValues) {
+  await page.addInitScript(
+    (value) => {
+      if (
+        new URLSearchParams(location.search)
+          .get('pattern')
+          ?.startsWith('entrance-')
+      ) {
+        Math.random = () => value;
+      }
+    },
+    maxValues ? 0.999999 : 0
+  );
 }
 const errors = [];
 page.on('pageerror', (error) => errors.push(error.message));
@@ -50,7 +56,29 @@ let checked = 0;
 let checkedPdfs = 0;
 await mkdir(`${output}/entrance-pdfs`, { recursive: true });
 
-async function checkSinglePagePdf(path, count, answers) {
+async function loadPrintDocument(target, html) {
+  // 印刷 iframe と同じ URL を使い、本番ビルドの相対 CSS も読み込む。
+  await target.route(
+    base,
+    (route) =>
+      route.fulfill({ contentType: 'text/html; charset=utf-8', body: html }),
+    { times: 1 }
+  );
+  await target.emulateMedia({ media: 'print' });
+  await target.goto(base, { waitUntil: 'load' });
+  await target.evaluate(async () => {
+    await document.fonts.ready;
+    for (const link of document.querySelectorAll(
+      'link[rel~="stylesheet"][href]'
+    )) {
+      if (!link.disabled && !link.sheet) {
+        throw new Error(`Print stylesheet failed to load: ${link.href}`);
+      }
+    }
+  });
+}
+
+async function capturePrintDocument(copies) {
   await page.evaluate(() => {
     delete window.__printedHTML;
     if (window.__printCaptureInstalled) return;
@@ -60,8 +88,9 @@ async function checkSinglePagePdf(path, count, answers) {
       if (!frame) return;
       const capture = () => {
         frame.contentWindow.print = () => {
-          window.__printedHTML =
-            frame.contentDocument.documentElement.outerHTML;
+          const doc = frame.contentDocument;
+          const doctype = new XMLSerializer().serializeToString(doc.doctype);
+          window.__printedHTML = doctype + doc.documentElement.outerHTML;
         };
       };
       capture();
@@ -71,19 +100,19 @@ async function checkSinglePagePdf(path, count, answers) {
   await page
     .getByRole('button', { name: '印刷（複数ページにも対応）' })
     .click();
-  await page.getByLabel('印刷枚数').fill('1');
+  await page.getByLabel('印刷枚数').fill(String(copies));
   await page.getByRole('button', { name: '印刷する', exact: true }).click();
   await page.waitForFunction(() => typeof window.__printedHTML === 'string');
-  const html = await page.evaluate(() => window.__printedHTML);
-  await pdfPage.setContent(html, { waitUntil: 'load' });
-  await pdfPage.emulateMedia({ media: 'print' });
-  await pdfPage.evaluate(async () => {
-    await document.fonts.ready;
-  });
+  return page.evaluate(() => window.__printedHTML);
+}
+
+async function checkSinglePagePdf(path, count, answers) {
+  const html = await capturePrintDocument(1);
+  await loadPrintDocument(pdfPage, html);
   assert.equal(await pdfPage.locator('[data-a4-sheet]').count(), 1);
   assert.equal(await pdfPage.locator('[data-problem-number]').count(), count);
   assert.equal(
-    await pdfPage.getByRole('list', { name: '解き方' }).count(),
+    await pdfPage.getByRole('list', { name: /^(解き方|Solution)$/ }).count(),
     answers ? count : 0,
     `${path}: Solution visibility in the actual print output`
   );
@@ -124,7 +153,7 @@ async function checkSinglePagePdf(path, count, answers) {
   checkedPdfs++;
 }
 
-try {
+async function verifyCurriculum() {
   for (const [pattern, definition] of printOnly ? [] : selectedPatterns) {
     for (const cols of [1, 2, 3]) {
       const count = getEffectiveCounts(
@@ -174,15 +203,20 @@ try {
             ].some((el) => el.scrollWidth > el.clientWidth + 2);
             return { width, height, clipped };
           });
-        assert.ok(
-          Math.abs(result.width - 794) <= 1,
-          `${pattern}/${cols}: A4 width ${result.width}`
-        );
-        assert.ok(
-          result.height <= 1123 && !result.clipped,
-          `${pattern}/${cols}/${answers}: ${JSON.stringify(result)}`
-        );
-        if (pattern.startsWith('entrance-')) {
+        const fits =
+          Math.abs(result.width - 794) <= 1 &&
+          result.height <= 1123 &&
+          !result.clipped;
+        if (measureOnly) {
+          if (!fits)
+            overflow.push({ pattern, cols, count, answers, ...result });
+        } else {
+          assert.ok(
+            fits,
+            `${pattern}/${cols}/${answers}: ${JSON.stringify(result)}`
+          );
+        }
+        if (!measureOnly && pattern.startsWith('entrance-')) {
           await checkSinglePagePdf(
             `${output}/entrance-pdfs/${pattern}-${cols}cols-${answers ? 'answers' : 'questions'}.pdf`,
             count,
@@ -193,6 +227,11 @@ try {
       }
     }
   }
+  if (measureOnly) {
+    console.log(JSON.stringify({ checked, overflow }, null, 2));
+    assert.equal(overflow.length, 0, 'A4 overflow');
+    return;
+  }
   if (selectedPatterns.some(([pattern]) => pattern.startsWith('entrance-'))) {
     await page.goto(
       `${base}?grade=4&type=basic&pattern=entrance-crane-turtle-jap&cols=2&count=4&eq=1`
@@ -201,6 +240,18 @@ try {
       .getByRole('heading', { name: '4年生の中学受験の道すじ' })
       .waitFor();
     assert.equal(await page.getByRole('list', { name: '解き方' }).count(), 0);
+    const writingSpace = await page
+      .locator('[data-problem-number]')
+      .evaluateAll((cells) =>
+        cells.map(
+          (cell) => cell.clientHeight - cell.firstElementChild.offsetHeight
+        )
+      );
+    assert.equal(writingSpace.length, 4);
+    assert.ok(
+      Math.min(...writingSpace) >= 38,
+      'Leave at least 1 cm below each of the four short problems'
+    );
     const questionText = await page.locator('[data-problem-grid]').innerText();
     await page.getByRole('button', { name: '学校算数', exact: true }).click();
     await page.getByRole('heading', { name: '4年生の学習の道すじ' }).waitFor();
@@ -304,30 +355,9 @@ try {
   }
   await page.getByRole('checkbox', { name: '解答表示' }).check();
   await page.getByRole('radio', { name: /よこ順/ }).check();
-  await page.evaluate(() => {
-    new MutationObserver(() => {
-      const frame = document.getElementById('printWindow');
-      if (!frame) return;
-      const capture = () => {
-        frame.contentWindow.print = () => {
-          window.__printedHTML =
-            frame.contentDocument.documentElement.outerHTML;
-        };
-      };
-      capture();
-      frame.addEventListener('load', capture, { once: true });
-    }).observe(document.body, { childList: true });
-  });
-  await page
-    .getByRole('button', { name: '印刷（複数ページにも対応）' })
-    .click();
-  await page.getByLabel('印刷枚数').fill('3');
-  await page.getByRole('button', { name: '印刷する', exact: true }).click();
-  await page.waitForFunction(() => typeof window.__printedHTML === 'string');
-  const html = await page.evaluate(() => window.__printedHTML);
+  const html = await capturePrintDocument(3);
   const printPage = await browser.newPage();
-  await printPage.setContent(html, { waitUntil: 'load' });
-  await printPage.emulateMedia({ media: 'print' });
+  await loadPrintDocument(printPage, html);
   assert.equal(await printPage.locator('[data-a4-sheet]').count(), 3);
   assert.deepEqual(
     await printPage
@@ -546,6 +576,10 @@ try {
     JSON.stringify(summary, null, 2)
   );
   console.log(JSON.stringify(summary));
+}
+
+try {
+  await verifyCurriculum();
 } finally {
   await browser.close();
 }

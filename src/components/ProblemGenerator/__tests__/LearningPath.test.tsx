@@ -91,6 +91,18 @@ describe('学習の道すじ', () => {
     ).toBeInTheDocument();
   });
 
+  it('英語の受験教材では英語の道すじをたどれる', () => {
+    const onSelect = vi.fn();
+    render(
+      <LearningPath grade={4} pattern="entrance-cycle-en" onSelect={onSelect} />
+    );
+    expect(
+      screen.getByRole('button', { name: /Repeating Patterns/ })
+    ).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: /次の教材/ }));
+    expect(onSelect).toHaveBeenCalledWith('entrance-sequence-en');
+  });
+
   it('前の教材に戻れる', () => {
     const onSelect = vi.fn();
     render(

@@ -109,7 +109,18 @@ export interface MissingNumberProblem {
   missingPosition: 'operand1' | 'operand2' | 'answer';
 }
 
+export type WorksheetFigure =
+  | { kind: 'cube-net'; first: number }
+  | {
+      kind: 'depth-graph';
+      firstMinute: number;
+      lastMinute: number;
+      firstDepth: number;
+      lastDepth: number;
+    };
+
 export interface WordProblem {
+  figure?: WorksheetFigure;
   id: string;
   type: 'word';
   operation: Operation;
@@ -128,6 +139,7 @@ export interface WordProblem {
 }
 
 export interface WordProblemEn {
+  figure?: WorksheetFigure;
   id: string;
   type: 'word-en';
   operation: Operation;

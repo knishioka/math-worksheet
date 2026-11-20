@@ -1,4 +1,6 @@
-interface EntranceExamDefinition {
+import { STUDIO_EN_PATTERNS, STUDIO_JA_PATTERNS } from './studio-topics';
+
+export interface EntranceExamDefinition {
   label: string;
   description: string;
   grade: 4 | 5 | 6;
@@ -128,6 +130,7 @@ export type UpperEntranceExamEnPattern =
  */
 export const ENTRANCE_EXAM_EN_PATTERNS = {
   ...UPPER_ENTRANCE_EXAM_EN_PATTERNS,
+  ...STUDIO_EN_PATTERNS,
   'entrance-sum-difference-en': english(
     'Sum and Difference',
     'Find two numbers from their total and their difference.',
@@ -307,6 +310,7 @@ export const ENTRANCE_EXAM_PATTERNS = {
   },
   ...ENTRANCE_EXAM_EN_PATTERNS,
   ...UPPER_ENTRANCE_EXAM_PATTERNS,
+  ...STUDIO_JA_PATTERNS,
 } satisfies Record<string, EntranceExamDefinition>;
 
 export type EntranceExamPattern = keyof typeof ENTRANCE_EXAM_PATTERNS;

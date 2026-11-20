@@ -7,6 +7,10 @@ import {
 } from '../../config/entrance-exam-patterns';
 import { getLearningStages } from '../../config/learning-paths';
 import {
+  STUDIO_JA_PATTERNS,
+  type StudioPattern,
+} from '../../config/studio-topics';
+import {
   filterPatternsByLanguage,
   getPatternCategory,
 } from '../../config/pattern-categories';
@@ -18,12 +22,13 @@ import { generateEntranceExamProblems } from './entrance-exam';
 
 type BasicEntranceExamPattern = Exclude<
   EntranceExamPattern,
-  UpperEntranceExamPattern | EntranceExamEnPattern
+  UpperEntranceExamPattern | EntranceExamEnPattern | StudioPattern<'jap'>
 >;
 const patterns = Object.keys(ENTRANCE_EXAM_PATTERNS).filter(
   (pattern) =>
     ENTRANCE_EXAM_PATTERNS[pattern as EntranceExamPattern].grade === 4 &&
-    pattern.endsWith('-jap')
+    pattern.endsWith('-jap') &&
+    !(pattern in STUDIO_JA_PATTERNS)
 ) as BasicEntranceExamPattern[];
 afterEach(() => vi.restoreAllMocks());
 
@@ -202,7 +207,7 @@ describe('中学受験教材の登録と学習順', () => {
     const route = getLearningStages(4, 'entrance').flatMap(
       (stage) => stage.patterns
     );
-    expect(route).toEqual(patterns);
+    expect(route.filter((p) => !(p in STUDIO_JA_PATTERNS))).toEqual(patterns);
     expect(getLearningStages(4).flatMap((stage) => stage.patterns)).not.toEqual(
       expect.arrayContaining(patterns)
     );

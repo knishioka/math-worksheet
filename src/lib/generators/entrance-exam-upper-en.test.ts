@@ -209,7 +209,10 @@ function solve(pattern: UpperEntranceExamEnPattern, text: string): number[] {
             (a * perWorker - arriving) * t === (b * perWorker - arriving) * u
         );
       }
-      const arriving = number(text, /(\d+) books? (?:is|are) returned per minute/);
+      const arriving = number(
+        text,
+        /(\d+) books? (?:is|are) returned per minute/
+      );
       const workers = number(text, /With (\d+) people/);
       const firstMinutes = number(text, /cleared in (\d+) minutes/);
       const targetMinutes = number(text, /pile in (\d+) minutes/);
@@ -361,14 +364,15 @@ describe('5・6年生の受験文章題（英語版）', () => {
           expect(p.language).toBe('en');
           expect(solve(pattern, p.problemText)).toEqual([p.answer]);
         }
-        // 英語版の上限（6/10/9）を使う
-        expect(
-          getEffectiveCounts('word-en', pattern, grade as Grade).maxCounts
-        ).toEqual({ 1: 6, 2: 10, 3: 9 });
+        // 解説を含む英語版の上限を使う
+        const counts = getEffectiveCounts('word-en', pattern, grade as Grade);
+        expect(counts.maxCounts[1]).toBe(4);
+        expect(counts.maxCounts[2]).toBe(6);
+        expect([6, 9]).toContain(counts.maxCounts[3]);
       }
       const catalog = buildPatternCatalog(PATTERNS_BY_GRADE[grade], grade);
       const entrance = catalog.find((group) => group.category === 'entrance')!;
-      expect(entrance.entries).toHaveLength(japanese.length);
+      expect(entrance.entries).toHaveLength(route.length);
       for (const entry of entrance.entries) {
         expect(getEntryLanguageSupport(entry)).toBe('both');
         expect(resolveEntryPattern(entry, 'en')).toMatch(/-en$/);

@@ -393,19 +393,19 @@ describe('Print Templates', () => {
       ).toEqual(getPrintTemplate('basic').maxCounts);
     });
 
-    it('中学受験の文章題は日本語版 8/12/12、英語版 6/10/9 を上限にする', () => {
+    it('中学受験の文章題は日本語版 5/8/9、英語版 4/6/6 を上限にする', () => {
       const japanese = getEffectiveCounts(
         'word',
         'entrance-crane-turtle-jap',
         4
       );
-      expect(japanese.recommendedCounts).toEqual({ 1: 6, 2: 10, 3: 9 });
-      expect(japanese.maxCounts).toEqual({ 1: 8, 2: 12, 3: 12 });
-      expect(japanese.thresholds).toEqual({ 1: 8, 2: 12, 3: 12 });
+      expect(japanese.recommendedCounts).toEqual({ 1: 5, 2: 8, 3: 9 });
+      expect(japanese.maxCounts).toEqual({ 1: 5, 2: 8, 3: 9 });
+      expect(japanese.thresholds).toEqual({ 1: 5, 2: 8, 3: 9 });
       // 高学年の受験教材も同じ上限
       expect(
         getEffectiveCounts('word', 'entrance-newton-jap', 6).maxCounts
-      ).toEqual({ 1: 8, 2: 12, 3: 12 });
+      ).toEqual({ 1: 5, 2: 8, 3: 9 });
 
       // 英語版は word-en の高学年調整（12問）より教材固有の上限を優先する
       const english = getEffectiveCounts(
@@ -413,9 +413,9 @@ describe('Print Templates', () => {
         'entrance-crane-turtle-en',
         4
       );
-      expect(english.recommendedCounts).toEqual({ 1: 5, 2: 8, 3: 9 });
-      expect(english.maxCounts).toEqual({ 1: 6, 2: 10, 3: 9 });
-      expect(english.thresholds).toEqual({ 1: 6, 2: 10, 3: 9 });
+      expect(english.recommendedCounts).toEqual({ 1: 4, 2: 6, 3: 6 });
+      expect(english.maxCounts).toEqual({ 1: 4, 2: 6, 3: 6 });
+      expect(english.thresholds).toEqual({ 1: 4, 2: 6, 3: 6 });
     });
 
     it('オーバーライドのA4閾値はテンプレートの閾値を超えない', () => {

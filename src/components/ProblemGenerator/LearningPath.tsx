@@ -5,7 +5,10 @@ import {
   getLearningStages,
   type LearningCourse,
 } from '../../config/learning-paths';
-import { isEntranceExamPattern } from '../../config/entrance-exam-patterns';
+import {
+  isEntranceExamPattern,
+  isEntranceExamEnPattern,
+} from '../../config/entrance-exam-patterns';
 
 const STORAGE_KEY = 'math-worksheet-practice-v1';
 function readPractice(): string[] {
@@ -35,7 +38,17 @@ export function LearningPath({ grade, pattern, onSelect }: Props): ReactNode {
     ? (browsingCourse ??
       (isEntranceExamPattern(pattern) ? 'entrance' : 'school'))
     : 'school';
-  const stages = getLearningStages(grade, course);
+  const route = getLearningStages(grade, course);
+  const stages =
+    course === 'entrance' && isEntranceExamEnPattern(pattern)
+      ? route.map((stage) => ({
+          ...stage,
+          patterns: stage.patterns.map((item) => {
+            const english = item.replace(/-jap$/, '-en');
+            return isEntranceExamEnPattern(english) ? english : item;
+          }),
+        }))
+      : route;
   const currentStage = stages.findIndex(
     (stage) => pattern && stage.patterns.includes(pattern)
   );

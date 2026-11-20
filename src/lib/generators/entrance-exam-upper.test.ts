@@ -4,6 +4,7 @@ import {
   type UpperEntranceExamPattern,
 } from '../../config/entrance-exam-patterns';
 import { getLearningStages } from '../../config/learning-paths';
+import { STUDIO_JA_PATTERNS } from '../../config/studio-topics';
 import { getDiscoveryGroups } from '../../config/pattern-discovery';
 import {
   getPatternCategory,
@@ -310,10 +311,10 @@ describe('5・6年生の受験文章題', () => {
       const route = getLearningStages(grade, 'entrance').flatMap(
         (stage) => stage.patterns
       );
-      expect(new Set(route)).toEqual(new Set(gradePatterns));
-      expect(route).toHaveLength(grade === 5 ? 10 : 5);
+      const originalRoute = route.filter((p) => !(p in STUDIO_JA_PATTERNS));
+      expect(new Set(originalRoute)).toEqual(new Set(gradePatterns));
       expect(getDiscoveryGroups([...gradePatterns].reverse(), grade)).toEqual([
-        { category: 'entrance', patterns: route },
+        { category: 'entrance', patterns: originalRoute },
       ]);
       for (const pattern of gradePatterns) {
         expect(getPatternCategory(pattern)).toBe('entrance');

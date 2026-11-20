@@ -24,6 +24,12 @@ import { WordProblemEnComponent } from '../Math/WordProblemEn';
 import { SingaporeProblemComponent } from '../Math/SingaporeProblemComponent';
 import { EquationLine } from '../Math/EquationLine';
 import { DataDisplay } from '../Math/DataDisplay';
+import { WorksheetFigure } from '../Math/WorksheetFigure';
+import {
+  isEntranceExamEnPattern,
+  isEntranceExamPattern,
+} from '../../config/entrance-exam-patterns';
+import { PATTERN_LABELS } from '../../types';
 import { NumberTracingRow } from '../Math/NumberTracingRow';
 import type { NumberTracingProblem } from '../../types';
 import { getPrintTemplate } from '../../config/print-templates';
@@ -152,10 +158,15 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
       settings.problemOrder
     );
 
-    const previewTitle = buildPreviewTitle({
-      settings,
-      format: { gradeFirst: true, wrapGradeInParentheses: false },
-    });
+    const englishPattern = isEntranceExamEnPattern(settings.calculationPattern)
+      ? settings.calculationPattern
+      : undefined;
+    const previewTitle = englishPattern
+      ? `Grade ${settings.grade} · ${PATTERN_LABELS[englishPattern]}`
+      : buildPreviewTitle({
+          settings,
+          format: { gradeFirst: true, wrapGradeInParentheses: false },
+        });
 
     // 実効的な問題タイプを取得（わり算筆算の場合は 'hissan-div'、暗算は 'anzan' になる）
     const effectiveProblemType = getEffectiveProblemType(
@@ -176,7 +187,7 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
       effectiveProblemType,
       showEquationLine
     );
-    // A4に収まる場合は align-content: space-between で行間を自動拡張し余白を均等配分
+    // 受験の文章題では、最終行にも途中式を書けるように各行に余白を配る。
     const gridGapStyle: React.CSSProperties = {
       display: 'grid',
       // 印刷用 iframe で Tailwind の grid-cols-* 読み込みが遅れても、
@@ -184,7 +195,12 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
       gridTemplateColumns: `repeat(${layoutColumns}, minmax(0, 1fr))`,
       rowGap: template.layout.rowGap,
       columnGap: template.layout.colGap,
-      ...(a4FitResult.fits ? { alignContent: 'space-between', flex: 1 } : {}),
+      ...(a4FitResult.fits && {
+        alignContent: isEntranceExamPattern(settings.calculationPattern)
+          ? 'stretch'
+          : 'space-between',
+        flex: 1,
+      }),
     };
 
     // 推定（estimateA4Fit）と実測（useA4SheetOverflow）のどちらかが
@@ -223,6 +239,7 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
         <div
           ref={setSheetRef}
           data-a4-sheet
+          lang={englishPattern ? 'en' : undefined}
           className="bg-white"
           style={getA4ContainerStyle(
             '15mm 15mm 7.5mm',
@@ -234,11 +251,14 @@ export const ProblemList = React.forwardRef<HTMLDivElement, ProblemListProps>(
           <div style={headerBorderStyle}>
             <div style={headerGridStyle}>
               <div style={headerTextStyle}>
-                名前：<span style={getUnderlineStyle('128px')}></span>
+                {englishPattern ? 'Name: ' : '名前：'}
+                <span style={getUnderlineStyle('128px')}></span>
               </div>
               <div style={headerCenterTextStyle}>{previewTitle}</div>
               <div style={headerRightTextStyle}>
-                点数：<span style={getUnderlineStyle('64px')}></span>点
+                {englishPattern ? 'Score: ' : '点数：'}
+                <span style={getUnderlineStyle('64px')}></span>
+                {!englishPattern && '点'}
               </div>
             </div>
           </div>
@@ -648,6 +668,7 @@ function ProblemItem({
             {wordProblem.problemText}
           </div>
         )}
+        {wordProblem.figure && <WorksheetFigure figure={wordProblem.figure} />}
         {wordProblem.dataDisplay && (
           <DataDisplay data={wordProblem.dataDisplay} />
         )}
@@ -667,7 +688,10 @@ function ProblemItem({
             ))}
           </ol>
         )}
-        {showEquationLine && <EquationLine label="式:" />}
+        {showEquationLine &&
+          !(showAnswer && wordProblem.solutionSteps?.length) && (
+            <EquationLine label="式:" />
+          )}
         <div
           style={
             isCountingProblem
@@ -676,10 +700,10 @@ function ProblemItem({
           }
         >
           {showAnswer ? (
-            <span style={answerDisplayStyle}>
+            <output aria-label="答え" style={answerDisplayStyle}>
               答え: {wordProblem.answer}
               {wordProblem.unit && wordProblem.unit}
-            </span>
+            </output>
           ) : (
             <>
               <span style={wordProblemAnswerLabelStyle}>答え:</span>
