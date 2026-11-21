@@ -224,6 +224,13 @@ export const wordProblemAnswerRowStyle: CSSProperties = {
   marginTop: SPACING.gap.small,
 };
 
+export const solutionAnswerStyle: CSSProperties = {
+  display: 'block',
+  fontSize: '14px',
+  lineHeight: '1.3',
+  fontWeight: 600,
+};
+
 /**
  * 記号を数える問題用の答え記入行
  */

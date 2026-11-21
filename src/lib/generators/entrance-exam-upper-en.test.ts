@@ -366,9 +366,10 @@ describe('5・6年生の受験文章題（英語版）', () => {
         }
         // 解説を含む英語版の上限を使う
         const counts = getEffectiveCounts('word-en', pattern, grade as Grade);
-        expect(counts.maxCounts[1]).toBe(4);
-        expect(counts.maxCounts[2]).toBe(6);
-        expect([6, 9]).toContain(counts.maxCounts[3]);
+        const rows = ENTRANCE_EXAM_PATTERNS[pattern].printRows;
+        for (const columns of [1, 2, 3] as const) {
+          expect(counts.maxCounts[columns]).toBe(rows[columns - 1] * columns);
+        }
       }
       const catalog = buildPatternCatalog(PATTERNS_BY_GRADE[grade], grade);
       const entrance = catalog.find((group) => group.category === 'entrance')!;

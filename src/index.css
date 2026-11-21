@@ -199,6 +199,10 @@
 }
 
 @layer components {
+  [data-a4-sheet][lang='en'] {
+    font-family: Arial, 'Liberation Sans', sans-serif;
+  }
+
   .worksheet-data-table {
     border-collapse: collapse;
     font-family: sans-serif;

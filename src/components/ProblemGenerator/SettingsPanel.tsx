@@ -47,7 +47,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   onShowEquationLineChange,
 }) => {
   // 問題タイプの判定
-  const isWordEn = isWordEnProblem(calculationPattern);
+  const isWordEn =
+    problemType === 'word-en' || isWordEnProblem(calculationPattern);
   const isWord = isWordProblem(problemType, calculationPattern);
 
   // 実効的な問題タイプを取得
@@ -255,7 +256,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <p className="mt-1 text-xs text-slate-500">
           ※ {layoutColumns}列の場合、最大{maxProblems}問まで入ります
         </p>
-        {isWord && (
+        {(isWord || isWordEn) && (
           <div className="mt-2 rounded-2xl border border-teal-100 bg-teal-50/70 p-3">
             <p className="mb-2 text-xs font-semibold text-teal-800">
               💡 {template.displayName}の推奨問題数 (A4用紙1枚に最適)

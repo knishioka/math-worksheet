@@ -4,6 +4,7 @@ import { entranceDefinitions, type EntranceTopic } from './entrance-topic';
 const elementaryTopics = {
   'sum-difference': {
     grade: 4,
+    printRows: { ja: [6, 5, 4], en: [7, 6, 3] },
     difficulty: 2,
     topics: ['arithmetic'],
     ja: [
@@ -17,6 +18,7 @@ const elementaryTopics = {
   },
   'tree-planting': {
     grade: 4,
+    printRows: { ja: [6, 5, 4], en: [6, 4, 3] },
     difficulty: 2,
     topics: ['counting'],
     ja: ['植木算', '両端・片端・輪の条件を読み、木の本数と間の数を区別する。'],
@@ -27,6 +29,7 @@ const elementaryTopics = {
   },
   'crane-turtle': {
     grade: 4,
+    printRows: { ja: [6, 5, 3], en: [7, 4, 3] },
     difficulty: 3,
     topics: ['arithmetic', 'reasoning'],
     ja: ['鶴亀算', '動物の足や買い物を、全部同じ種類だったらと考えて解く。'],
@@ -37,6 +40,7 @@ const elementaryTopics = {
   },
   'difference-gathering': {
     grade: 4,
+    printRows: { ja: [6, 5, 4], en: [6, 5, 3] },
     difficulty: 3,
     topics: ['arithmetic'],
     ja: ['差集め算', '1つあたりの差と全体の差から、個数や日数を求める。'],
@@ -47,6 +51,7 @@ const elementaryTopics = {
   },
   'excess-shortage': {
     grade: 4,
+    printRows: { ja: [6, 5, 4], en: [6, 4, 2] },
     difficulty: 3,
     topics: ['arithmetic'],
     ja: ['過不足算', '2つの配り方で余る・足りない量を比べ、人数を求める。'],
@@ -57,6 +62,7 @@ const elementaryTopics = {
   },
   elimination: {
     grade: 4,
+    printRows: { ja: [6, 4, 3], en: [7, 4, 3] },
     difficulty: 3,
     topics: ['arithmetic', 'reasoning'],
     ja: ['消去算', '2種類の買い物の個数をそろえて引き、1個の値段を求める。'],
@@ -70,6 +76,7 @@ const elementaryTopics = {
 const upperTopics = {
   multiples: {
     grade: 5,
+    printRows: { ja: [6, 4, 3], en: [6, 4, 3] },
     difficulty: 3,
     topics: ['ratio'],
     ja: ['倍数算', 'やりとりで変わらない合計や差を使い、もとの個数を求める。'],
@@ -80,6 +87,7 @@ const upperTopics = {
   },
   'ratio-sharing': {
     grade: 5,
+    printRows: { ja: [6, 5, 4], en: [7, 4, 3] },
     difficulty: 3,
     topics: ['ratio'],
     ja: ['比の分配', '合計を比で分ける。2つの比をそろえる問題にも取り組む。'],
@@ -90,6 +98,7 @@ const upperTopics = {
   },
   age: {
     grade: 5,
+    printRows: { ja: [7, 6, 4], en: [7, 4, 3] },
     difficulty: 3,
     topics: ['age', 'ratio'],
     ja: ['年齢算', '変わらない年齢の差から、指定の倍数になる年を求める。'],
@@ -100,6 +109,7 @@ const upperTopics = {
   },
   equivalent: {
     grade: 5,
+    printRows: { ja: [6, 5, 4], en: [7, 4, 3] },
     difficulty: 3,
     topics: ['fractions', 'ratio'],
     ja: [
@@ -113,6 +123,7 @@ const upperTopics = {
   },
   reverse: {
     grade: 5,
+    printRows: { ja: [7, 6, 4], en: [7, 5, 3] },
     difficulty: 3,
     topics: ['arithmetic', 'reasoning'],
     ja: [
@@ -126,6 +137,7 @@ const upperTopics = {
   },
   'profit-loss': {
     grade: 5,
+    printRows: { ja: [6, 5, 4], en: [7, 5, 3] },
     difficulty: 3,
     topics: ['money', 'percent'],
     ja: ['売買損益', '原価・定価・売価の関係から利益・損失や原価を求める。'],
@@ -136,6 +148,7 @@ const upperTopics = {
   },
   'salt-water': {
     grade: 5,
+    printRows: { ja: [7, 5, 4], en: [7, 5, 3] },
     difficulty: 3,
     topics: ['percent'],
     ja: ['食塩水', '食塩の量をもとに、混ぜた濃度や追加する水の量を求める。'],
@@ -146,6 +159,7 @@ const upperTopics = {
   },
   traveler: {
     grade: 5,
+    printRows: { ja: [6, 5, 4], en: [6, 5, 3] },
     difficulty: 3,
     topics: ['speed'],
     ja: ['旅人算', '出会い・追いつきを、速さの和や差で考える。'],
@@ -156,6 +170,7 @@ const upperTopics = {
   },
   'train-passing': {
     grade: 5,
+    printRows: { ja: [6, 5, 4], en: [6, 5, 3] },
     difficulty: 3,
     topics: ['speed'],
     ja: [
@@ -169,6 +184,7 @@ const upperTopics = {
   },
   river: {
     grade: 5,
+    printRows: { ja: [6, 5, 4], en: [6, 4, 3] },
     difficulty: 3,
     topics: ['speed'],
     ja: ['流水算', '船の速さと川の流れを区別し、上り・下りの時間を求める。'],
@@ -179,6 +195,7 @@ const upperTopics = {
   },
   work: {
     grade: 6,
+    printRows: { ja: [6, 4, 3], en: [6, 4, 2] },
     difficulty: 3,
     topics: ['work'],
     ja: [
@@ -192,6 +209,7 @@ const upperTopics = {
   },
   newton: {
     grade: 6,
+    printRows: { ja: [6, 4, 3], en: [6, 3, 2] },
     difficulty: 3,
     topics: ['work'],
     ja: [
@@ -205,6 +223,7 @@ const upperTopics = {
   },
   'advanced-crane-turtle': {
     grade: 6,
+    printRows: { ja: [6, 4, 3], en: [6, 3, 2] },
     difficulty: 3,
     topics: ['arithmetic', 'reasoning'],
     ja: [
@@ -218,6 +237,7 @@ const upperTopics = {
   },
   'advanced-ratio-age': {
     grade: 6,
+    printRows: { ja: [7, 5, 4], en: [7, 4, 3] },
     difficulty: 3,
     topics: ['ratio', 'age'],
     ja: [
@@ -231,6 +251,7 @@ const upperTopics = {
   },
   'advanced-speed': {
     grade: 6,
+    printRows: { ja: [6, 4, 3], en: [6, 3, 2] },
     difficulty: 3,
     topics: ['speed', 'reasoning'],
     ja: [

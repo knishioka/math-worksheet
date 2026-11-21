@@ -23,6 +23,8 @@ export type Grade = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export type Language = 'ja' | 'en';
 
 export type LayoutColumns = 1 | 2 | 3;
+/** 1列・2列・3列の順の、A4用紙1枚に収まる行数。 */
+export type PrintRows = readonly [number, number, number];
 export type ProblemOrder = 'column' | 'row';
 
 // 計算パターンの型をインポート
