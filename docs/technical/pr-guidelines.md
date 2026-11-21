@@ -5,7 +5,7 @@ To keep our review process smooth and highlight the educational value of each ch
 ## 1. Background / Context
 - Summarize the learner or teacher problem the change addresses.
 - Mention any prior incidents, regression reports, or feedback that motivated the work.
-- Link to relevant specs, planning documents, or issues from the `docs/` tree when they provide additional detail.
+- Link to the relevant issue or curriculum notes when they explain a teaching or design decision.
 
 ## 2. Value Delivered
 - Explain how the change improves worksheet quality, UI clarity, or authoring workflow.
@@ -17,7 +17,7 @@ To keep our review process smooth and highlight the educational value of each ch
 - Mention noteworthy design decisions or trade-offs reviewers should be aware of.
 
 ## 4. Quality Gates
-- List every lint, test, or verification command executed (e.g., `npm run lint`, `npm test -- --run`, `node verify-generation.mjs`).
+- List the lint, test, build, or browser checks you ran. For browser checks, include the worksheet or catalog view you exercised. [Print and catalog checks](../print-validation.md)
 - Include any manual QA steps, especially for worksheet rendering or MathML output.
 
 ## 5. Related Issues / Tasks

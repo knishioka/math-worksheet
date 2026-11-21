@@ -71,10 +71,7 @@ echo -e "  ${GREEN}./.claude/scripts/stop-dev.sh${NC}       - 開発サーバー
 
 echo -e "\n${BLUE}📖 詳細情報:${NC}"
 echo -e "  プロジェクトガイド: ${GREEN}CLAUDE.md${NC}"
-echo -e "  エージェント設定: ${GREEN}AGENTS.md${NC}"
-echo -e "  実装状況: ${GREEN}docs/implementation-status.md${NC}"
-
-echo -e "\n${YELLOW}💡 Playwright MCP でUIを確認する場合:${NC}"
-echo -e "  ${GREEN}await mcp__playwright__browser_navigate({ url: 'http://localhost:5174/' })${NC}"
+echo -e "  教材の追加と変更: ${GREEN}docs/materials.md${NC}"
+echo -e "  印刷と教材一覧の検証: ${GREEN}docs/print-validation.md${NC}"
 
 echo ""
