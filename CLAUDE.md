@@ -1,224 +1,32 @@
-# CLAUDE.md - 計算プリント自動作成サービス
+# まいにち算数 開発ガイド
 
-小学校算数カリキュラム対応の計算プリント自動生成システム。MathMLネイティブ対応、A4印刷最適化。
+セットアップとプリントの使い方は [README](README.md) を参照してください。依存関係と利用できる npm スクリプトは [package.json](package.json) で管理しています。
 
-## クイックリファレンス
+## 実装の入口
 
-```bash
-npm run dev        # 開発サーバー起動 (http://localhost:5174/)
-npm run build      # 本番ビルド
-npm run test       # テスト実行 (1020テスト)
-npm run typecheck  # 型チェック
-npm run lint       # ESLintチェック
-```
+| 変更したいもの | 実装 |
+| --- | --- |
+| 問題の生成・再生成 | [ジェネレーター](src/lib/generators/)と[プリントの組み立て](src/lib/generators/worksheet.ts) |
+| 教材一覧と学習順 | [教材カタログ](src/config/worksheet-catalog.ts)と[学習の道すじ](src/config/learning-paths.ts) |
+| 設定の更新と共有URLの復元 | [Zustand ストア](src/stores/problemStore.ts)と[URLパラメーター](src/lib/utils/url-state.ts) |
+| 数式・図・解答の表示 | [Math コンポーネント](src/components/Math/)と[問題リスト](src/components/Preview/ProblemList.tsx) |
+| 問題数の上限と印刷 | [印刷テンプレート](src/config/print-templates.ts)と[印刷プレビュー](src/components/Preview/WorksheetPreview.tsx) |
 
-**プッシュ前必須**: `npm run lint && npm run typecheck && npm test -- --run && npm run build`
+## 実装時の規約
 
-## アーキテクチャ
+- React の関数コンポーネントを使い、問題生成は UI から独立させます。TypeScript の型を明示し、`any` を避けます。副作用と表示の責務を小さく保ちます。
+- 問題生成ロジックを変えたら、変更した出題条件と正答をテストします。Bar Model や Number Bond の図では `hidden` で未知数を指定し、問題用紙では `?` や空欄で示します。解答表示を切り替えて印刷時の見え方も目視で確認します。MathML のスタイルは共通化します。
+- 教材の登録先・学年配当・解説動画は[教材の追加と変更](docs/materials.md)、列数ごとの実測手順は[印刷と教材一覧の検証](docs/print-validation.md)を参照してください。手動確認のスクリーンショットは `.playwright-cli/` に保存します。
 
-```
-src/
-├── lib/generators/     # 問題生成ロジック（純関数）
-├── config/
-│   ├── print-templates.ts  # レイアウト設定（重要）
-│   ├── problem-patterns.ts # パターン定義
-│   └── styles.ts           # スタイル定数
-├── components/
-│   ├── Math/           # 数式表示（MathML）
-│   ├── Preview/        # プレビュー
-│   └── Export/         # 印刷・PDF
-├── stores/             # Zustand状態管理
-└── types/              # 型定義
-```
-
-**技術スタック**: React 18 + TypeScript 5 + Vite + Tailwind CSS + Zustand
-
-## プリントテンプレート
-
-`src/config/print-templates.ts` で問題タイプごとのレイアウトを管理：
-
-| 問題タイプ   | rowGap | 推奨問題数 (1/2/3列)     |
-| ------------ | ------ | ------------------------ |
-| `basic`      | 24px   | 10/20/30                 |
-| `fraction`   | 24px   | 10/18/27                 |
-| `decimal`    | 24px   | 10/20/30                 |
-| `mixed`      | 24px   | 8/16/24                  |
-| `hissan`     | 32px   | 6/12/18                  |
-| `hissan-div` | 75px   | 4/8/12                   |
-| `missing`    | 18px   | 10/20/30                 |
-| `word`       | 12px   | 8/16/24                  |
-| `word-en`    | 2px    | 8/16/18 ※高学年は8/12/12 |
-| `anzan`      | 24px   | 6/12/18                  |
-
-> ※ `word-en`（英語文章問題）は4年生以上で長文の「advanced」ストーリーを使うため、2列/3列の狭いセルで3〜4行に折り返してA4を超過する。`getEffectiveCounts(effectiveType, pattern, grade)` が grade>=4 のとき推奨/最大/A4閾値を 8/12/12 に抑える（実測ベース。`scripts/repro-word-en-overflow.mjs` で検証）。問題数は学年に依存するため、`template.maxCounts` を直接参照せず必ず `getEffectiveCounts` を使うこと。
->
-> ※ 中学受験教材は、式欄付きの問題と解説付きの解答を基準に `PATTERN_COUNT_OVERRIDES` で列ごとの問題数を設定する。図付き教材には個別の設定がある。変更時は `scripts/check-curriculum-print.mjs` の `--pattern-prefix=entrance- --max-values` で問題と解答の両方を実際にPDF化して確認する。
-
-**テンプレート取得**:
-
-```typescript
-import {
-  getPrintTemplate,
-  getEffectiveProblemType,
-} from '@/config/print-templates';
-const effectiveType = getEffectiveProblemType(
-  settings.problemType,
-  settings.calculationPattern
-);
-const template = getPrintTemplate(effectiveType);
-```
-
-## ルール
-
-### やるべきこと
-
-- 小さなPRで頻繁にコミット
-- 変更箇所のテストを追加・更新
-- 既存パターン（Zustand → コンポーネント）を踏襲
-- UI変更時は`npm run test:e2e`で確認
-- 印刷レイアウト変更時は`npm run build`で確認
-
-### やってはいけないこと
-
-- クラスコンポーネントの新規追加
-- `any`型の使用
-- `verify-*.mjs`や品質ゲートのスキップ
-- テストなしの問題生成ロジック変更
-- 巨大な`useEffect`/多責務コンポーネント
-- MathMLへのインラインスタイル直書き
-- **図やダイアグラムに答えをそのまま表示する**: 教育用の図（Bar Model、Number Bondなど）を問題に組み込む際、求める値は `?` や空欄にし、生徒が計算して求める余地を残すこと。型定義に `hidden` フィールドを設けて隠す値を構造的に管理する。実装後はPlaywright MCPのスクリーンショットで「問題として成立しているか」を必ず目視確認する
-
-## レイアウト確認
-
-印刷レイアウトの確認に2つのツールを使い分ける。
-
-| ツール                     | 用途                                       | 設定                             |
-| -------------------------- | ------------------------------------------ | -------------------------------- |
-| **Playwright MCP**         | 開発中のUI確認・インタラクティブなデバッグ | `.mcp.json`                      |
-| **check-print-layout.mjs** | CI/ローカルでの自動レイアウトチェック      | `scripts/check-print-layout.mjs` |
-
-### スクリーンショットの保存先
-
-スクリーンショットは必ず `.playwright-cli/` ディレクトリに保存する（`.gitignore`済み）。**リポジトリルート直下にpng/jpegを置かない。**
-
-```text
-# ✅ 正しい保存先
-mcp__playwright__browser_take_screenshot → filename: ".playwright-cli/check-bar-model.png"
-
-# ❌ ルート直下に置かない
-mcp__playwright__browser_take_screenshot → filename: "check-bar-model.png"
-```
-
-### Playwright MCP（インタラクティブ確認）
-
-`.mcp.json` で設定済み。Claude Code から直接ブラウザを操作できる。
-
-```text
-# ページを開く
-mcp__playwright__browser_navigate → url: "https://knishioka.github.io/math-worksheet/"
-
-# アクセシビリティツリーで要素を確認
-mcp__playwright__browser_snapshot
-
-# 学年セレクターを変更（snapshotでref確認後）
-mcp__playwright__browser_select_option → ref: "e5", values: ["3"]
-
-# ボタンをクリック
-mcp__playwright__browser_click → ref: "e10"
-
-# スクリーンショット（必ず .playwright-cli/ に保存）
-mcp__playwright__browser_take_screenshot → filename: ".playwright-cli/screenshot.png"
-```
-
-**利点**: 状態がセッション間で維持される、`$`のシェル展開問題なし、複数行コード対応。
-
-### レイアウト自動チェック（CI向け）
-
-`scripts/check-print-layout.mjs` は Playwright Node.js API を使い、複数シナリオの印刷レイアウトを自動検証する。
+## プッシュ前の確認
 
 ```bash
-# デプロイ済みサイトをチェック
-npm run check:layout
-
-# ローカルビルドをチェック
-npm run check:layout:local
+npm run lint
+npm run typecheck
+npm test -- --run
+npm run build
 ```
 
-スクリーンショットは `.playwright-cli/layout-check/` に保存される。
+個別のテストは、例えば `npm test -- --run src/config/print-templates.test.ts` で実行できます。UI・教材・印刷の変更では該当するブラウザ検証も実行します。開発サーバーをバックグラウンドで管理する手順は[補助スクリプトの説明](.claude/scripts/README.md)にあります。
 
-## テスト
-
-**構成** (1020テスト):
-
-- `src/lib/generators/*.test.ts`: 問題生成ロジック
-- `src/components/**/__tests__/`: コンポーネント
-- `src/config/print-templates.test.ts`: テンプレート検証
-- `src/config/__tests__/`: パターン分類・教材カタログ・学習の道すじの検証
-
-**実行**:
-
-```bash
-npm test -- --run                    # 全テスト
-npm test -- --run path/to/file.test  # 個別ファイル
-npm run test:ui                      # Vitest UI
-```
-
-## トラブルシューティング
-
-### テストで`storage.setItem is not a function`
-
-Zustand persist用のlocalStorageモックが`src/test/setup.ts`に定義済み。
-
-### `npm run lint`でエラー
-
-```bash
-npm run lint -- --fix  # 自動修正
-```
-
-### Tailwindクラスがビルドで欠落
-
-`tailwind.config.js`の`content`パスを確認。
-
-### MathMLレンダリング崩れ
-
-`src/components/Math/`のテンプレートと`@media print`スタイルを確認。
-
-## 品質ゲート
-
-PRマージ条件：
-
-1. `npm run lint` 成功
-2. `npm run typecheck` 成功
-3. `npm test -- --run` 成功
-4. `npm run build` 成功
-5. CIステータス緑
-
-## コミット規約
-
-Conventional Commits形式：
-
-- `feat:` 新機能
-- `fix:` バグ修正
-- `docs:` ドキュメント
-- `refactor:` リファクタリング
-- `test:` テスト追加
-- `chore:` その他
-
-```bash
-git commit -m "feat(generator): add new problem type"
-```
-
-## 問題タイプ追加手順
-
-1. `src/types/index.ts`に型追加
-2. `src/config/print-templates.ts`にテンプレート追加
-3. `src/lib/generators/`に生成ロジック実装
-4. `src/components/Math/`に表示コンポーネント実装
-5. テスト追加
-6. Playwright MCP または `npm run check:layout` でレイアウト確認
-
-## 参考リソース
-
-- `docs/specifications/`: 仕様書
-- `docs/research/`: 技術調査（MathML vs KaTeX等）
-- `docs/plans/`: 実装計画
+PRは変更目的ごとに小さくまとめ、コミットには Conventional Commits（例 `fix(print): align answer boxes`）を使います。PRには学習者への影響、実行したチェック、目視確認の結果を記載し、CIの成功を確認します。[PRの記載ガイド](docs/technical/pr-guidelines.md)

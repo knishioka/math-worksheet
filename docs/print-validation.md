@@ -1,251 +1,44 @@
-# 印刷プレビュー検証システム
+# 印刷と教材一覧の検証
 
-## 概要
+## 印刷レイアウトを変更したとき
 
-印刷時の問題を自動検出するテストシステムです。以下の問題を検出できます：
+問題タイプごとの余白・行間と、教材別の推奨問題数・上限は[印刷テンプレート](../src/config/print-templates.ts)で管理します。設定画面や共有URLから問題数を決めるときは、`getEffectiveCounts` に問題タイプ・教材・学年・式欄の有無を渡します。例えば英語文章題では、同じ列数でも文章の長さや式欄によって収まる問題数が変わります。
 
-1. **問題の消失** - 生成された問題数と印刷される問題数の不一致
-2. **ページはみ出し** - A4サイズを超える問題数
-3. **問題タイプの表示エラー** - 分数・小数・帯分数などが正しく表示されていない
+印刷ボタンを押すと、`react-to-print` が印刷用の iframe を作ります。アプリはフォントの読み込みを待って用紙の実寸コピーと iframe 内の全ページを測り、縦横のはみ出しや列内で切れた問題があれば印刷を中止します。縦に収まらない場合は問題数を減らし、横に切れる場合は列数を減らします。[印刷処理](../src/components/Preview/WorksheetPreview.tsx)・[用紙と列の測定](../src/lib/utils/a4-overflow.ts)
 
-## 検出方法
+## CIと同じビルドで確認する
 
-### 1. 問題の消失検出
-
-生成されたHTMLから問題番号 `(1)`, `(2)`, ... `(N)` をカウントし、元の問題数と一致するか確認します。
-
-```typescript
-function countProblemsInHTML(html: string): number {
-  const problemNumberPattern = /\((\d+)\)/g;
-  const matches = html.match(problemNumberPattern);
-  return matches ? matches.length : 0;
-}
-
-// 使用例
-const html = printContainer.innerHTML;
-const problemCount = countProblemsInHTML(html);
-expect(problemCount).toBe(20); // 期待される問題数
-```
-
-### 2. 問題タイプの表示検証
-
-各問題タイプが正しく表示されているか、HTML内の特定のマーカーで確認します。
-
-```typescript
-function validateProblemType(html: string, problemType: Problem['type']): boolean {
-  switch (problemType) {
-    case 'fraction':
-      // MathMLの分数タグを確認
-      return html.includes('<mfrac>') && html.includes('</mfrac>');
-
-    case 'decimal':
-      // 小数表示を確認
-      return html.includes('<mn>') && /\d+\.\d+/.test(html);
-
-    case 'mixed':
-      // 帯分数タグを確認
-      return html.includes('<mrow>') && html.includes('<mfrac>');
-
-    case 'word':
-      // 日本語文章問題
-      return html.includes('答え:');
-
-    case 'word-en':
-      // 英語文章問題
-      return html.includes('Answer:');
-
-    case 'hissan':
-      // 筆算の横線を確認
-      return html.includes('border-top: 2px solid black');
-
-    case 'basic':
-      // 基本問題（演算子記号を確認）
-      return /[+−×÷]/.test(html);
-
-    default:
-      return false;
-  }
-}
-
-// 使用例
-expect(validateProblemType(html, 'fraction')).toBe(true);
-```
-
-### 3. A4サイズ検証
-
-問題数と問題タイプから、A4サイズ（297mm）に収まるか推定します。
-
-```typescript
-function estimateA4Fit(
-  problemCount: number,
-  layoutColumns: number,
-  problemType: Problem['type']
-): { fits: boolean; estimatedHeight: number; a4Height: number } {
-  const template = getPrintTemplate(problemType);
-  const rowCount = Math.ceil(problemCount / layoutColumns);
-
-  // 問題タイプごとの推定高さ（mm）
-  const minProblemHeightMm = parseInt(template.layout.minProblemHeight) * 0.26; // px to mm
-  const rowGapMm = parseInt(template.layout.rowGap) * 0.26;
-
-  // 必要な高さを計算
-  const headerHeight = 25; // ヘッダー部分の高さ (mm)
-  const verticalMarginMin = 5; // 最小余白 (mm)
-
-  const contentHeight = headerHeight + (minProblemHeightMm + rowGapMm) * rowCount;
-  const estimatedHeight = contentHeight + verticalMarginMin * 2;
-
-  const a4Height = 297; // A4の高さ (mm)
-  const fits = estimatedHeight <= a4Height;
-
-  return { fits, estimatedHeight, a4Height };
-}
-
-// 使用例
-const result = estimateA4Fit(20, 2, 'basic');
-expect(result.fits).toBe(true);
-expect(result.estimatedHeight).toBeLessThanOrEqual(297);
-```
-
-## テストの実行
-
-### 単体テストの実行
+リポジトリのルートで `npm ci` を済ませ、Playwright のテスト用 Chromium を導入します。次のコマンドで本番用ビルドのプレビューを起動したままにします。
 
 ```bash
-# 全テスト実行
-npm test
-
-# 印刷検証テストのみ実行
-npm test -- PrintValidation.test.tsx --run
+npx playwright install --only-shell chromium
+npm run build
+BROWSER=none npm run preview -- --host 127.0.0.1 --port 4173 --strictPort
 ```
 
-### CI/CDでの統合
-
-`.github/workflows/test.yml`
-
-```yaml
-name: Test
-
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-      - run: npm ci
-      - run: npm test
-```
-
-## 検出された問題の修正フロー
-
-### 1. 問題が消失している場合
-
-```
-❌ Error: expected 20 to be 18
-   - Expected problem count: 20
-   - Actual problem count: 18
-   - Missing problems: 2
-```
-
-**原因**:
-- `MultiPrintButton.tsx`に問題タイプの表示ロジックが実装されていない
-- 問題番号の重複や欠番
-
-**修正方法**:
-1. `MultiPrintButton.tsx`で該当の問題タイプのHTMLレンダリングを追加
-2. 問題番号の並び替えロジックを確認
-
-### 2. ページがはみ出している場合
-
-```
-❌ Error: expected false to be true
-   - Estimated height: 320mm
-   - A4 height: 297mm
-   - Overflow: 23mm
-```
-
-**原因**:
-- 推奨問題数を超えている
-- 問題タイプの高さ設定が不適切
-
-**修正方法**:
-1. `print-templates.ts`で推奨問題数を調整
-2. `rowGap`や`minProblemHeight`を縮小
-3. ユーザーに警告を表示
-
-### 3. 問題タイプが表示されていない場合
-
-```
-❌ Error: expected false to be true
-   - Problem type: fraction
-   - MathML tags not found in HTML
-```
-
-**原因**:
-- 問題タイプの表示ロジックが実装されていない
-- MathMLタグが正しく生成されていない
-
-**修正方法**:
-1. `MultiPrintButton.tsx`に問題タイプの表示ロジックを追加
-2. MathMLタグの生成を確認
-
-## ベストプラクティス
-
-### 1. 新しい問題タイプを追加する場合
-
-1. `validateProblemType()`に検証ロジックを追加
-2. テストケースを追加
-3. `MultiPrintButton.tsx`に表示ロジックを実装
-4. テストを実行して確認
-
-### 2. レイアウトを変更する場合
-
-1. `estimateA4Fit()`で事前にサイズを確認
-2. 変更後にテストを実行
-3. 印刷プレビューで目視確認
-
-### 3. 継続的な監視
-
-- Pull Requestごとにテストを実行
-- 新機能追加時は必ず検証テストを追加
-- 定期的に印刷プレビューをチェック
-
-## トラブルシューティング
-
-### テストが失敗する場合
+別のターミナルで、プレビューのURLを明示して検証します。本番ビルドの既定のベースパスは `/math-worksheet/` です。
 
 ```bash
-# キャッシュをクリア
-npm run clean
-npm ci
-
-# テストを再実行
-npm test -- PrintValidation.test.tsx --run
+url=http://127.0.0.1:4173/math-worksheet/
+npm run check:layout -- "$url"
+npm run check:curriculum -- "$url" --print-only
+npm run check:catalog -- "$url"
 ```
 
-### 印刷プレビューで手動確認
+| コマンド | 確認できること | 結果の保存先 |
+| --- | --- | --- |
+| `check:layout` | 筆算・暗算・文章題などの代表例で、用紙の高さや余白を確認する | `.playwright-cli/layout-check/` |
+| `check:curriculum -- … --print-only` | 印刷用 iframe からの複数ページPDF、超過時の印刷中止、学習画面の操作を確認する | `.playwright-cli/curriculum-check/` |
+| `check:catalog` | 教材一覧の絞り込み、例題、言語別のプリント、ブラウザの「戻る」を確認する | `.playwright-cli/catalog/` |
 
-1. 開発サーバーを起動: `npm run dev`
-2. 問題を生成
-3. 「印刷する」ボタンをクリック
-4. 印刷プレビューで確認:
-   - すべての問題が表示されているか
-   - ページからはみ出ていないか
-   - レイアウトが崩れていないか
+GitHub Actions はアプリの変更を含むPRでテスト・lint・型チェック付きビルドと上記のブラウザ検証を実行します。文書だけのPRではこれらを省略し、`main` へのpushではテスト・lint・ビルドの成功後に GitHub Pages へ公開します。[ワークフロー](../.github/workflows/deploy.yml)
 
-## 今後の拡張
+## 個別の教材を詳しく調べる
 
-- [ ] Visual Regression Testing (Playwrightでスクリーンショット比較)
-- [ ] クロスブラウザテスト (Chrome, Firefox, Safari)
-- [ ] PDF生成テスト
-- [ ] パフォーマンステスト
+中学受験の問題を変更したときは、同じプレビューを使い、該当する教材IDの接頭辞を指定します。例えば「水そうの深さと流量」の日英両版を確認するには次を実行します。
 
-## 関連ドキュメント
+```bash
+npm run check:curriculum -- http://127.0.0.1:4173/math-worksheet/ --pattern-prefix=entrance-water-depth --max-values
+```
 
-- [プリントテンプレートシステム](/docs/specifications/print-template-system.md)
-- [印刷・PDF仕様](/docs/specifications/pdf-generation-spec.md)
-- [開発ガイド](/CLAUDE.md)
+最大側の数値と列ごとの最大問題数を使い、1〜3列で式欄付きの問題用紙と解説付きの解答用紙を検査します。印刷ボタン経由のPDFで本文の有無とページ数も確認します。中学受験全体を調べる場合は接頭辞を `entrance-` にします。`--measure-only` を追加すると、PDFを作成せずにプレビューのはみ出しだけを集計できます。[検証スクリプト](../scripts/check-curriculum-print.mjs)
