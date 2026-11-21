@@ -24,12 +24,12 @@ function sumDifference(index: number): EntranceEnContent {
   const total = small + large;
   const askLarge = index % 2 === 0;
   return word(
-    `Aoi and Ken have ${total} marbles altogether. Aoi has ${difference} more marbles than Ken. How many marbles does ${askLarge ? 'Aoi' : 'Ken'} have?`,
+    `Aoi and Ken have ${total} marbles in all. Aoi has ${difference} more than Ken. How many does ${askLarge ? 'Aoi' : 'Ken'} have?`,
     askLarge ? large : small,
     'marbles',
     [
-      `Taking the difference away from the total leaves twice the smaller amount: ${total} − ${difference} = ${small * 2}.`,
-      `Ken has ${small * 2} ÷ 2 = ${small} marbles.`,
+      `Remove Aoi's extra ${difference}: ${total} − ${difference} = ${small * 2}.`,
+      `Half is Ken's share: ${small * 2} ÷ 2 = ${small} marbles.`,
       ...(askLarge
         ? [`Aoi has ${small} + ${difference} = ${large} marbles.`]
         : []),
