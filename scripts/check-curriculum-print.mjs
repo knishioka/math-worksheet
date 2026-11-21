@@ -362,6 +362,34 @@ async function verifyCurriculum() {
       .waitFor();
   }
   if (!patternPrefix) {
+    // 動画配信のネットワーク状態に依存せず、再生操作と印刷対象を確認する。
+    await page.route('https://www.youtube-nocookie.com/embed/**', (route) =>
+      route.fulfill({ contentType: 'text/html', body: '<title>Lesson</title>' })
+    );
+    await page.goto(
+      `${base}?grade=4&type=basic&pattern=entrance-tree-planting-jap`
+    );
+    const player = page.locator('iframe[title^="日本語の解説動画"]');
+    const play = page.getByRole('button', { name: '解説動画を見る（日本語）' });
+    assert.equal(await player.count(), 0);
+    await play.click();
+    await page
+      .getByRole('combobox', { name: '解説動画を選ぶ' })
+      .selectOption('SRtVoQWwXaU');
+    assert.match(await player.getAttribute('src'), /\/embed\/SRtVoQWwXaU\?/);
+    assert.equal(
+      await page
+        .getByRole('link', { name: 'YouTubeで開く' })
+        .getAttribute('href'),
+      'https://www.youtube.com/watch?v=SRtVoQWwXaU'
+    );
+    await page.getByRole('button', { name: '動画を閉じる' }).click();
+    assert.equal(await player.count(), 0);
+    await play.click();
+    assert.match(await player.getAttribute('src'), /\/embed\/SRtVoQWwXaU\?/);
+    await page.getByRole('button', { name: /次の教材/ }).click();
+    assert.equal(await player.count(), 0);
+
     // 共有URLの問題数を維持し、同じ画面から新しい推奨数を選べる。
     for (const [pattern, oldCount, recommended] of [
       ['entrance-sum-difference-en', 6, 12],
@@ -379,6 +407,7 @@ async function verifyCurriculum() {
         .getByRole('button', { name: `2列: ${recommended}問`, exact: true })
         .click();
       await page.locator(`[data-problem-number="${recommended}"]`).waitFor();
+      await play.click();
       for (const answers of [false, true]) {
         await page
           .getByRole('checkbox', { name: '解答表示' })
@@ -392,6 +421,7 @@ async function verifyCurriculum() {
           await pdfPage.locator('output').count(),
           answers ? recommended : 0
         );
+        assert.equal(await pdfPage.locator('iframe').count(), 0);
       }
       await page.getByRole('checkbox', { name: '解答表示' }).uncheck();
       await page.getByRole('checkbox', { name: '式を書く欄' }).check();
@@ -415,6 +445,10 @@ async function verifyCurriculum() {
       );
       await page.getByRole('checkbox', { name: '解答表示' }).check();
       await checkSinglePagePdf(`${output}/${pattern}.pdf`, count, false);
+      assert.equal(
+        await page.getByRole('region', { name: '解説動画' }).count(),
+        pattern === 'word-en' ? 0 : 1
+      );
       const sheet = pdfPage.locator('[data-a4-sheet]');
       assert.equal(await sheet.getAttribute('lang'), 'en');
       assert.ok((await sheet.innerText()).includes('Grade 5 · ' + title));
