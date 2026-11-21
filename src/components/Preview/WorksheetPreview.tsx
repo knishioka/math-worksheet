@@ -5,6 +5,8 @@ import type { WorksheetData } from '../../types';
 import { ProblemList } from './ProblemList';
 import { MultiPagePrintDialog } from './MultiPagePrintDialog';
 import { ResponsiveSheet } from './ResponsiveSheet';
+import { LessonVideos } from './LessonVideos';
+import { getLessonVideos } from '../../config/lesson-videos';
 import { useProblemStore } from '../../stores/problemStore';
 import { buildPreviewTitle } from '../../lib/utils/previewTitle';
 import {
@@ -200,6 +202,10 @@ export const WorksheetPreview: React.FC<WorksheetPreviewProps> = ({
               </span>
             )}
           </div>
+          <LessonVideos
+            key={`${settings.grade}-${settings.problemType}-${settings.calculationPattern}`}
+            videos={getLessonVideos(settings)}
+          />
           {printError && (
             <p
               role="alert"
