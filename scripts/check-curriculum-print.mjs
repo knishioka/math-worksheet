@@ -114,11 +114,20 @@ async function capturePrintDocument(copies) {
     .click();
   await page.getByLabel('印刷枚数').fill(String(copies));
   await page.getByRole('button', { name: '印刷する', exact: true }).click();
-  await page.waitForFunction(() => typeof window.__printedHTML === 'string');
+  await page.waitForFunction(
+    () =>
+      typeof window.__printedHTML === 'string' ||
+      document.querySelector('.preview-toolbar [role="alert"]')?.textContent
+  );
+  const printError = await page
+    .locator('.preview-toolbar [role="alert"]')
+    .allTextContents();
+  assert.equal(printError.length, 0, `${page.url()}: ${printError.join(' ')}`);
   return page.evaluate(() => window.__printedHTML);
 }
 
 async function checkSinglePagePdf(path, count, answers) {
+  console.log(`Checking ${path}`);
   const html = await capturePrintDocument(1);
   await loadPrintDocument(pdfPage, html);
   assert.equal(await pdfPage.locator('[data-a4-sheet]').count(), 1);
