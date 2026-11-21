@@ -3,6 +3,7 @@ import type { WordProblemEn } from '../../types';
 import { EquationLine } from './EquationLine';
 import { WorksheetFigure } from './WorksheetFigure';
 import {
+  solutionAnswerStyle,
   wordProblemAnswerRowStyle,
   wordProblemAnswerUnderlineStyle,
 } from '../../config/styles';
@@ -30,6 +31,10 @@ export const WordProblemEnComponent: React.FC<WordProblemEnProps> = ({
     'number-bond',
     'multi-step',
   ]);
+  const answerText =
+    problem.unit === 'RM'
+      ? `RM${problem.answer}`
+      : `${problem.answer}${problem.unit && !['%', '°'].includes(problem.unit) ? ' ' : ''}${problem.unit ?? ''}`;
 
   return (
     <div
@@ -61,10 +66,14 @@ export const WordProblemEnComponent: React.FC<WordProblemEnProps> = ({
         </ol>
       )}
 
-      {ANSWER_LINE_CATEGORIES.has(problem.category) && (
-        <>
-          {showEquationLine &&
-            !(showAnswer && problem.solutionSteps?.length) && (
+      {showAnswer && problem.solutionSteps?.length ? (
+        <output aria-label="Answer" style={solutionAnswerStyle}>
+          Answer: {answerText}
+        </output>
+      ) : (
+        ANSWER_LINE_CATEGORIES.has(problem.category) && (
+          <>
+            {showEquationLine && (
               <EquationLine
                 label="Equation:"
                 labelColor="#000"
@@ -72,28 +81,27 @@ export const WordProblemEnComponent: React.FC<WordProblemEnProps> = ({
                 minWidth="3.5rem"
               />
             )}
-          <div style={wordProblemAnswerRowStyle}>
-            <span style={{ color: '#000', fontSize: '13px' }}>Answer:</span>
-            <div
-              style={{
-                ...wordProblemAnswerUnderlineStyle,
-                minWidth: '3.5rem',
-                maxWidth: '10rem',
-              }}
-            >
-              {showAnswer && (
-                <output
-                  aria-label="Answer"
-                  style={{ fontWeight: '500', color: '#000' }}
-                >
-                  {problem.unit === 'RM'
-                    ? `RM${problem.answer}`
-                    : `${problem.answer}${problem.unit && !['%', '°'].includes(problem.unit) ? ' ' : ''}${problem.unit ?? ''}`}
-                </output>
-              )}
+            <div style={wordProblemAnswerRowStyle}>
+              <span style={{ color: '#000', fontSize: '13px' }}>Answer:</span>
+              <div
+                style={{
+                  ...wordProblemAnswerUnderlineStyle,
+                  minWidth: '3.5rem',
+                  maxWidth: '10rem',
+                }}
+              >
+                {showAnswer && (
+                  <output
+                    aria-label="Answer"
+                    style={{ fontWeight: '500', color: '#000' }}
+                  >
+                    {answerText}
+                  </output>
+                )}
+              </div>
             </div>
-          </div>
-        </>
+          </>
+        )
       )}
     </div>
   );

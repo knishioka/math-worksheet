@@ -24,6 +24,7 @@ await vite.close();
 const base = process.argv[2] ?? 'http://127.0.0.1:5174/';
 const printOnly = process.argv.includes('--print-only');
 const measureOnly = process.argv.includes('--measure-only');
+const equation = !process.argv.includes('--no-equation');
 const overflow = [];
 const maxValues = process.argv.includes('--max-values');
 const minValues = process.argv.includes('--min-values');
@@ -170,7 +171,8 @@ async function verifyCurriculum() {
       const count = getEffectiveCounts(
         definition.type,
         pattern,
-        definition.grade
+        definition.grade,
+        equation
       ).maxCounts[cols];
       const url = new URL(base);
       url.search = new URLSearchParams({
@@ -179,7 +181,7 @@ async function verifyCurriculum() {
         pattern,
         cols: String(cols),
         count: String(count),
-        eq: '1',
+        eq: equation ? '1' : '0',
       });
       await page.goto(url.href, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('[data-a4-sheet]');
@@ -351,6 +353,48 @@ async function verifyCurriculum() {
       .waitFor();
   }
   if (!patternPrefix) {
+    // 共有URLの問題数を維持し、同じ画面から新しい推奨数を選べる。
+    for (const [pattern, oldCount, recommended] of [
+      ['entrance-sum-difference-en', 6, 12],
+      ['word-unit-patterns-en', 8, 16],
+    ]) {
+      await page.goto(
+        `${base}?grade=4&type=basic&pattern=${pattern}&cols=2&count=${oldCount}#worksheet-preview`
+      );
+      await page.locator(`[data-problem-number="${oldCount}"]`).waitFor();
+      assert.equal(
+        await page.locator('[data-problem-number]').count(),
+        oldCount
+      );
+      await page
+        .getByRole('button', { name: `2列: ${recommended}問`, exact: true })
+        .click();
+      await page.locator(`[data-problem-number="${recommended}"]`).waitFor();
+      for (const answers of [false, true]) {
+        await page
+          .getByRole('checkbox', { name: '解答表示' })
+          .setChecked(answers);
+        await checkSinglePagePdf(
+          `${output}/${pattern}-${answers ? 'answers' : 'questions'}.pdf`,
+          recommended,
+          answers && pattern === 'entrance-sum-difference-en'
+        );
+        assert.equal(
+          await pdfPage.locator('output').count(),
+          answers ? recommended : 0
+        );
+      }
+      await page.getByRole('checkbox', { name: '解答表示' }).uncheck();
+      await page.getByRole('checkbox', { name: '式を書く欄' }).check();
+      await page
+        .getByRole('button', { name: '2列: 12問', exact: true })
+        .waitFor();
+      await checkSinglePagePdf(`${output}/${pattern}-equations.pdf`, 12, false);
+      assert.equal(
+        await pdfPage.getByText('Equation:', { exact: true }).count(),
+        12
+      );
+    }
     for (const [pattern, title] of [
       ['word-unit-percent-en', 'Percentages'],
       ['word-en', 'Mixed Word Problems'],

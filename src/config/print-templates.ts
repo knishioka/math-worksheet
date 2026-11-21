@@ -7,11 +7,15 @@ import {
   NUMBER_TRACING_MIN_PROBLEM_HEIGHT_PX,
   NUMBER_TRACING_ROW_GAP_PX,
 } from './number-tracing-layout';
-import type { ProblemType, LayoutColumns, Grade } from '../types';
+import type { ProblemType, LayoutColumns, Grade, PrintRows } from '../types';
 import type { CalculationPattern } from '../types/calculation-patterns';
 import { SUPPLEMENTAL_PATTERNS } from './supplemental-patterns';
 import { ENTRANCE_EXAM_PATTERNS } from './entrance-exam-patterns';
-import { isEnglishUnitPattern } from '../lib/generators/templates/en-word-story';
+import {
+  ENGLISH_STORY_UNITS,
+  isEnglishUnitPattern,
+  type EnglishUnitPattern,
+} from '../lib/generators/templates/en-word-story';
 
 const LAYOUT_COLUMNS: LayoutColumns[] = [1, 2, 3];
 
@@ -470,23 +474,12 @@ export const PRINT_TEMPLATES = {
   }),
 } satisfies Record<ProblemType, PrintTemplate>;
 
-// 3列で解説を含めても3行置ける短文の教材。
-const THREE_ROW_ENGLISH = new Set<CalculationPattern>([
-  'entrance-sum-difference-en',
-  'entrance-ratio-sharing-en',
-  'entrance-age-en',
-  'entrance-reverse-en',
-  'entrance-profit-loss-en',
-  'entrance-salt-water-en',
-  'entrance-traveler-en',
-  'entrance-sets-en',
-  'entrance-polygon-angles-en',
-  'entrance-averages-en',
-  'entrance-percent-change-en',
-  'entrance-digit-count-en',
-  'entrance-equal-area-en',
-  'entrance-sectors-en',
-]);
+function countsFromRows([one, two, three]: PrintRows): Record<
+  LayoutColumns,
+  number
+> {
+  return { 1: one, 2: two * 2, 3: three * 3 };
+}
 
 /**
  * パターン固有の推奨問題数オーバーライド
@@ -515,31 +508,9 @@ export const PATTERN_COUNT_OVERRIDES: Partial<
   // 式欄を付けた問題用紙と、解説付き解答の両方がA4に収まる行数。
   ...Object.fromEntries(
     Object.entries(ENTRANCE_EXAM_PATTERNS).map(([pattern, definition]) => {
-      const counts =
-        definition.type === 'word-en'
-          ? {
-              1: 4,
-              2: 6,
-              3: THREE_ROW_ENGLISH.has(pattern as CalculationPattern) ? 9 : 6,
-            }
-          : { 1: 5, 2: 8, 3: 9 };
+      const counts = countsFromRows(definition.printRows);
       return [pattern, { recommendedCounts: counts, maxCounts: counts }];
     })
-  ),
-  // グラフや展開図を読み取れる高さを確保する。
-  ...Object.fromEntries(
-    [
-      'entrance-water-depth-jap',
-      'entrance-water-depth-en',
-      'entrance-solid-nets-jap',
-      'entrance-solid-nets-en',
-    ].map((pattern) => [
-      pattern,
-      {
-        recommendedCounts: { 1: 3, 2: 6, 3: 6 },
-        maxCounts: { 1: 3, 2: 6, 3: 6 },
-      },
-    ])
   ),
   // あまりのあるわり算は「あまり ___」の2行目が付くため、基本計算より
   // 1問あたりの高さが約2倍（実測96px）。1列9問・2列18問・3列27問で超過。
@@ -613,13 +584,44 @@ const WORD_EN_ADVANCED_COUNTS: EffectiveCounts = {
   thresholds: { 1: 8, 2: 12, 3: 12 },
 };
 
-// 同じ単元の長文が続く場合にも、式と答えを書くスペースをA4内に確保する。
-const storyWritingSpace = { 1: 6, 2: 8, 3: 9 } as const;
-const STORY_UNIT_COUNTS: EffectiveCounts = {
-  recommendedCounts: storyWritingSpace,
-  maxCounts: storyWritingSpace,
-  thresholds: storyWritingSpace,
-};
+// 単元内の長い問題が各行に並んだ場合の実測行数。式の記入欄は1問につき約32px。
+const storyRows = {
+  short: { plain: [10, 8, 6], equation: [7, 6, 5] },
+  medium: { plain: [9, 7, 5], equation: [7, 5, 4] },
+  long: { plain: [8, 6, 4], equation: [6, 5, 3] },
+  longest: { plain: [8, 5, 3], equation: [6, 4, 3] },
+} as const satisfies Record<string, { plain: PrintRows; equation: PrintRows }>;
+
+function storyLength(
+  pattern: EnglishUnitPattern,
+  grade: Grade | undefined
+): keyof typeof storyRows {
+  const lowerGrade = grade !== undefined && grade <= 3;
+  switch (ENGLISH_STORY_UNITS[pattern]) {
+    case 'patterns':
+    case 'decimals':
+    case 'time':
+    case 'speed':
+    case 'percent':
+      return 'short';
+    case 'money':
+    case 'fractions':
+      return lowerGrade ? 'short' : 'medium';
+    case 'ratio':
+    case 'data':
+      return 'medium';
+    case 'arithmetic':
+      return grade === 1 ? 'short' : lowerGrade ? 'medium' : 'longest';
+    case 'measurement':
+      return lowerGrade ? 'short' : 'longest';
+    case 'geometry':
+      return grade === 3 ? 'short' : grade === 4 ? 'medium' : 'long';
+    case 'multiplication':
+    case 'reasoning':
+    case 'division':
+      return lowerGrade ? 'medium' : 'long';
+  }
+}
 
 /**
  * 問題タイプ・パターン・学年に応じた実効カウントを取得する。
@@ -658,7 +660,13 @@ export function getEffectiveCounts(
       showEquationLine &&
       (!calculationPattern || calculationPattern === 'word-en'))
   ) {
-    return STORY_UNIT_COUNTS;
+    const length = isEnglishUnitPattern(calculationPattern)
+      ? storyLength(calculationPattern, grade)
+      : 'longest';
+    const counts = countsFromRows(
+      storyRows[length][showEquationLine ? 'equation' : 'plain']
+    );
+    return { recommendedCounts: counts, maxCounts: counts, thresholds: counts };
   }
   if (effectiveType === 'word-en' && grade !== undefined && grade >= 4) {
     return WORD_EN_ADVANCED_COUNTS;

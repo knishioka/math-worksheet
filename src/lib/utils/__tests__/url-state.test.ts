@@ -28,7 +28,7 @@ describe('parseUrlSettings', () => {
     const topic = '?type=basic&pattern=word-unit-percent-en&cols=2&count=12';
     expect(parseUrlSettings(topic + '&grade=5', defaults)).toMatchObject({
       calculationPattern: 'word-unit-percent-en',
-      problemCount: 8,
+      problemCount: 12,
     });
     expect(
       parseUrlSettings(topic + '&grade=1', defaults).calculationPattern

@@ -4,6 +4,7 @@ import { entranceDefinitions, type EntranceTopic } from './entrance-topic';
 export const STUDIO_TOPICS = {
   cycle: {
     grade: 4,
+    printRows: { ja: [6, 5, 4], en: [7, 5, 3] },
     topics: ['patterns'],
     ja: ['周期算', 'くり返しの中の位置と個数を求める。'],
     en: [
@@ -13,6 +14,7 @@ export const STUDIO_TOPICS = {
   },
   sequence: {
     grade: 4,
+    printRows: { ja: [7, 5, 4], en: [7, 6, 4] },
     topics: ['patterns'],
     ja: ['等差数列・群数列', '段ごとの増え方と、組の切れ目を調べる。'],
     en: [
@@ -22,12 +24,14 @@ export const STUDIO_TOPICS = {
   },
   sets: {
     grade: 4,
+    printRows: { ja: [6, 5, 4], en: [7, 6, 4] },
     topics: ['counting'],
     ja: ['集合算', '両方に入る人を一度だけ数える。'],
     en: ['Overlapping Sets', 'Count students in overlapping groups.'],
   },
   'polygon-angles': {
     grade: 4,
+    printRows: { ja: [7, 6, 4], en: [7, 5, 4] },
     topics: ['geometry'],
     ja: ['三角形と多角形の角', '内角と外角の関係から角度を求める。'],
     en: [
@@ -37,6 +41,7 @@ export const STUDIO_TOPICS = {
   },
   'composite-area': {
     grade: 4,
+    printRows: { ja: [6, 5, 4], en: [7, 5, 4] },
     topics: ['geometry'],
     ja: ['複合図形と道の面積', '図形を分け、欠けた部分や道の重なりを引く。'],
     en: [
@@ -46,6 +51,7 @@ export const STUDIO_TOPICS = {
   },
   'changing-counts': {
     grade: 4,
+    printRows: { ja: [6, 5, 4], en: [7, 5, 3] },
     topics: ['arithmetic', 'reasoning'],
     ja: [
       '個数と差の応用',
@@ -58,6 +64,7 @@ export const STUDIO_TOPICS = {
   },
   averages: {
     grade: 5,
+    printRows: { ja: [7, 5, 4], en: [7, 5, 3] },
     topics: ['data'],
     ja: ['平均とならし', '人数の違う組や入れ替わりを合計に戻して考える。'],
     en: [
@@ -67,6 +74,7 @@ export const STUDIO_TOPICS = {
   },
   divisibility: {
     grade: 5,
+    printRows: { ja: [6, 5, 4], en: [7, 5, 4] },
     topics: ['patterns'],
     ja: [
       '約数・倍数の利用',
@@ -79,6 +87,7 @@ export const STUDIO_TOPICS = {
   },
   'percent-change': {
     grade: 5,
+    printRows: { ja: [7, 6, 4], en: [7, 5, 4] },
     topics: ['percent'],
     ja: ['割合の変化', '割合をかける基準が変わる問題を解く。'],
     en: [
@@ -88,6 +97,7 @@ export const STUDIO_TOPICS = {
   },
   'speed-units': {
     grade: 5,
+    printRows: { ja: [6, 5, 4], en: [7, 5, 4] },
     topics: ['speed', 'measurement'],
     ja: [
       '速さの換算と往復',
@@ -100,12 +110,14 @@ export const STUDIO_TOPICS = {
   },
   'equal-area': {
     grade: 5,
+    printRows: { ja: [6, 5, 4], en: [7, 5, 4] },
     topics: ['geometry'],
     ja: ['等積変形', '面積を保つときの底辺と高さを求める。'],
     en: ['Equal Areas', 'Use equal areas to find a missing base or height.'],
   },
   'triangle-ratio': {
     grade: 5,
+    printRows: { ja: [6, 5, 4], en: [6, 4, 3] },
     topics: ['geometry', 'ratio'],
     ja: ['三角形の面積比', '高さが等しい三角形を底辺の比で分ける。'],
     en: [
@@ -115,6 +127,7 @@ export const STUDIO_TOPICS = {
   },
   exchange: {
     grade: 5,
+    printRows: { ja: [6, 5, 4], en: [7, 4, 3] },
     topics: ['percent', 'ratio'],
     ja: [
       'やりとりと割合の応用',
@@ -127,6 +140,7 @@ export const STUDIO_TOPICS = {
   },
   'digit-count': {
     grade: 6,
+    printRows: { ja: [6, 5, 4], en: [7, 5, 4] },
     topics: ['counting'],
     ja: ['条件のある場合の数', '先頭の0や同じ数字の重複に注意して数を作る。'],
     en: [
@@ -136,6 +150,7 @@ export const STUDIO_TOPICS = {
   },
   'clock-hands': {
     grade: 6,
+    printRows: { ja: [6, 5, 4], en: [7, 5, 3] },
     topics: ['time', 'speed'],
     ja: ['時計算', '針の動く角度から、なす角や重なる時刻を求める。'],
     en: [
@@ -145,6 +160,7 @@ export const STUDIO_TOPICS = {
   },
   'water-depth': {
     grade: 6,
+    printRows: { ja: [3, 3, 2], en: [3, 3, 2] },
     topics: ['work', 'data'],
     ja: [
       '水そうの深さと流量',
@@ -157,6 +173,7 @@ export const STUDIO_TOPICS = {
   },
   'similar-area': {
     grade: 6,
+    printRows: { ja: [6, 5, 4], en: [7, 5, 3] },
     topics: ['ratio', 'geometry'],
     ja: ['相似と面積比', '対応する長さの比を面積の比に直す。'],
     en: [
@@ -166,12 +183,14 @@ export const STUDIO_TOPICS = {
   },
   sectors: {
     grade: 6,
+    printRows: { ja: [7, 6, 4], en: [7, 5, 4] },
     topics: ['geometry'],
     ja: ['円とおうぎ形', '回転角から、おうぎ形の面積や弧の長さを求める。'],
     en: ['Circular Sectors', 'Find a swept area or an arc length from a turn.'],
   },
   motion: {
     grade: 6,
+    printRows: { ja: [6, 5, 4], en: [7, 5, 3] },
     topics: ['geometry'],
     ja: ['図形の移動と対称', '平行移動・回転・対称移動の前後を比べる。'],
     en: [
@@ -181,6 +200,7 @@ export const STUDIO_TOPICS = {
   },
   'solid-nets': {
     grade: 6,
+    printRows: { ja: [3, 3, 2], en: [3, 3, 2] },
     topics: ['geometry'],
     ja: [
       '立体の体積と展開図',
@@ -193,6 +213,7 @@ export const STUDIO_TOPICS = {
   },
   'cube-section': {
     grade: 6,
+    printRows: { ja: [6, 5, 4], en: [7, 4, 3] },
     topics: ['geometry'],
     ja: [
       '立方体の切断',
@@ -205,6 +226,7 @@ export const STUDIO_TOPICS = {
   },
   'staged-rates': {
     grade: 6,
+    printRows: { ja: [6, 4, 3], en: [6, 4, 3] },
     topics: ['work', 'speed'],
     ja: ['仕事・速さの条件変化', '途中で変わる処理量や速さから時間を求める。'],
     en: [

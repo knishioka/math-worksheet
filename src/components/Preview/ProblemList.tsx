@@ -75,6 +75,7 @@ import {
   fractionAnswerNumeratorStyle,
   wordEnNumberStyle,
   symbolProblemAnswerRowStyle,
+  solutionAnswerStyle,
   wordProblemAnswerLabelStyle,
   wordProblemAnswerRowStyle,
   hissanContainerStyle,
@@ -653,8 +654,16 @@ export function ProblemItem({
   if (problem.type === 'word') {
     const wordProblem = problem as WordProblem;
     const isCountingProblem = !!wordProblem.isSymbolProblem;
+    const hasSolution = showAnswer && !!wordProblem.solutionSteps?.length;
     return (
-      <div className="problem-text" style={problemItemStyle}>
+      <div
+        className="problem-text"
+        style={
+          hasSolution
+            ? { marginBottom: SPACING.margin.medium }
+            : problemItemStyle
+        }
+      >
         <div style={problemNumberStyle}>({number})</div>
         {isCountingProblem ? (
           <div>
@@ -696,15 +705,14 @@ export function ProblemItem({
             ))}
           </ol>
         )}
-        {showEquationLine &&
-          !(showAnswer && wordProblem.solutionSteps?.length) && (
-            <EquationLine label="式:" />
-          )}
+        {showEquationLine && !hasSolution && <EquationLine label="式:" />}
         <div
           style={
-            isCountingProblem
-              ? symbolProblemAnswerRowStyle
-              : wordProblemAnswerRowStyle
+            hasSolution
+              ? solutionAnswerStyle
+              : isCountingProblem
+                ? symbolProblemAnswerRowStyle
+                : wordProblemAnswerRowStyle
           }
         >
           {showAnswer ? (
@@ -733,7 +741,10 @@ export function ProblemItem({
       <div
         className="problem-item"
         style={{
-          ...problemItemStyle,
+          marginBottom:
+            showAnswer && wordProblemEn.solutionSteps?.length
+              ? SPACING.margin.medium
+              : problemItemStyle.marginBottom,
           display: 'flex',
           gap: SPACING.gap.medium,
         }}

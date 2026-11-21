@@ -234,17 +234,15 @@ describe('英語版の登録と日本語版との対応', () => {
     }
   });
 
-  it('英語版は長文に合わせて問題数の上限を日本語版より抑える', () => {
+  it('鶴亀算の2列では英語の解説の折り返しに合わせる', () => {
     const english = getEffectiveCounts(
       'word-en',
       'entrance-crane-turtle-en',
       4
     );
     const japanese = getEffectiveCounts('word', 'entrance-crane-turtle-jap', 4);
+    expect(english.maxCounts[2]).toBeLessThan(japanese.maxCounts[2]);
     for (const column of [1, 2, 3] as const) {
-      expect(english.maxCounts[column]).toBeLessThan(
-        japanese.maxCounts[column]
-      );
       expect(english.recommendedCounts[column]).toBeLessThanOrEqual(
         english.maxCounts[column]
       );

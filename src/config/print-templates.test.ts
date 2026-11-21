@@ -393,29 +393,37 @@ describe('Print Templates', () => {
       ).toEqual(getPrintTemplate('basic').maxCounts);
     });
 
-    it('中学受験の文章題は日本語版 5/8/9、英語版 4/6/6 を上限にする', () => {
-      const japanese = getEffectiveCounts(
-        'word',
-        'entrance-crane-turtle-jap',
-        4
-      );
-      expect(japanese.recommendedCounts).toEqual({ 1: 5, 2: 8, 3: 9 });
-      expect(japanese.maxCounts).toEqual({ 1: 5, 2: 8, 3: 9 });
-      expect(japanese.thresholds).toEqual({ 1: 5, 2: 8, 3: 9 });
-      // 高学年の受験教材も同じ上限
-      expect(
-        getEffectiveCounts('word', 'entrance-newton-jap', 6).maxCounts
-      ).toEqual({ 1: 5, 2: 8, 3: 9 });
-
-      // 英語版は word-en の高学年調整（12問）より教材固有の上限を優先する
-      const english = getEffectiveCounts(
+    it('解説や図の高さに合わせて受験教材の問題数を決める', () => {
+      const sum = getEffectiveCounts(
         'word-en',
-        'entrance-crane-turtle-en',
+        'entrance-sum-difference-en',
         4
       );
-      expect(english.recommendedCounts).toEqual({ 1: 4, 2: 6, 3: 6 });
-      expect(english.maxCounts).toEqual({ 1: 4, 2: 6, 3: 6 });
-      expect(english.thresholds).toEqual({ 1: 4, 2: 6, 3: 6 });
+      expect(sum.recommendedCounts[2]).toBe(12);
+      expect(sum.thresholds).toEqual(sum.maxCounts);
+      expect(
+        getEffectiveCounts('word-en', 'entrance-water-depth-en', 6).maxCounts[2]
+      ).toBe(6);
+      expect(
+        getEffectiveCounts('word', 'entrance-crane-turtle-jap', 4)
+          .recommendedCounts[2]
+      ).toBe(10);
+    });
+
+    it('英語の文章題の推奨数は単元・学年・式欄の有無を反映する', () => {
+      const unit = 'word-unit-patterns-en';
+      expect(getEffectiveCounts('word-en', unit, 4).recommendedCounts[2]).toBe(
+        16
+      );
+      expect(getEffectiveCounts('word-en', unit, 4, true).maxCounts[2]).toBe(
+        12
+      );
+      const longer = 'word-unit-arithmetic-en';
+      expect(
+        getEffectiveCounts('word-en', longer, 4).recommendedCounts[2]
+      ).toBeLessThan(
+        getEffectiveCounts('word-en', longer, 1).recommendedCounts[2]
+      );
     });
 
     it('オーバーライドのA4閾値はテンプレートの閾値を超えない', () => {
