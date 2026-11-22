@@ -196,8 +196,8 @@ function splitTriangle(): StudioExercise {
   const total = (left + right) * part;
   return exercise(
     [
-      `面積${total}cm²の三角形ABCで、辺BC上の点DはBD:DC＝${left}:${right}を満たします。三角形ABDの面積は何cm²ですか。`,
-      `Triangle ABC has area ${total} cm². Point D lies on BC with BD:DC = ${left}:${right}. What is the area of triangle ABD?`,
+      `三角形ABCの面積は${total}cm²です。灰色の三角形の面積は何cm²ですか。`,
+      `Triangle ABC has area ${total} cm². What is the area of the shaded triangle?`,
     ],
     left * part,
     ['cm²', 'cm²'],
@@ -205,7 +205,8 @@ function splitTriangle(): StudioExercise {
       `頂点Aから直線BCまでの高さが共通なので、面積の比は底辺の比と等しい。`,
       `Both triangles have the same altitude from A, so their areas follow their base lengths.`,
     ],
-    `${total} × ${left} ÷ (${left} + ${right}) = ${left * part}`
+    `${total} × ${left} ÷ (${left} + ${right}) = ${left * part}`,
+    { kind: 'split-triangle', left, right, midpoint: false }
   );
 }
 
@@ -217,8 +218,8 @@ function trapezoidDiagonals(): StudioExercise {
   const whole = (top + bottom) ** 2 * unit;
   return exercise(
     [
-      `上底と下底の長さの比が${top}:${bottom}の台形に、対角線を二本引きます。交点と上底の両端で作る三角形は${smallArea}cm²です。台形全体は何cm²ですか。`,
-      `In a trapezoid the top and bottom parallel sides have lengths in the ratio ${top}:${bottom}. Both diagonals are drawn. The triangle between their intersection and the top side has area ${smallArea} cm². What is the area of the trapezoid?`,
+      `図の台形の上底と下底の比は${top}：${bottom}です。灰色の三角形の面積が${smallArea}cm²のとき、台形全体は何cm²ですか。`,
+      `The top and bottom bases of the trapezoid are in the ratio ${top}:${bottom}. The shaded triangle has area ${smallArea} cm². What is the whole area?`,
     ],
     whole,
     ['cm²', 'cm²'],
@@ -226,11 +227,37 @@ function trapezoidDiagonals(): StudioExercise {
       `上下の三角形は相似で高さの比も${top}:${bottom}。台形の高さは上の三角形の高さの${top + bottom}/${top}倍になる。`,
       `The top and bottom triangles are similar, so their heights are in the ratio ${top}:${bottom}. The full height is ${top + bottom}/${top} times the top height.`,
     ],
-    `${smallArea} × (${top + bottom}/${top}) × (${top + bottom}/${top}) = ${whole}`
+    `${smallArea} × (${top + bottom}/${top}) × (${top + bottom}/${top}) = ${whole}`,
+    { kind: 'trapezoid-diagonals', top, bottom }
   );
 }
 
-export const triangleRatio = [splitTriangle, trapezoidDiagonals] as const;
+function midpointArea(): StudioExercise {
+  const left = randomInt(2, 7);
+  const right = randomInt(2, 7);
+  const part = randomInt(2, 6);
+  const total = (left + right) * 2 * part;
+  return exercise(
+    [
+      `三角形ABCの面積は${total}cm²で、EはADの中点です。灰色の三角形の面積は何cm²ですか。`,
+      `Triangle ABC has area ${total} cm². E is the midpoint of AD. What is the area of the shaded triangle?`,
+    ],
+    left * part,
+    ['cm²', 'cm²'],
+    [
+      '底辺BDとBCの比から三角形ABDの面積を求める。BEは底辺ADを二等分するので、三角形BDEはその半分。',
+      'Use BD as a fraction of BC to find the area of ABD. BE halves base AD, so BDE has half the area of ABD.',
+    ],
+    `${total} × ${left} ÷ (${left} + ${right}) ÷ 2 = ${left * part}`,
+    { kind: 'split-triangle', left, right, midpoint: true }
+  );
+}
+
+export const triangleRatio = [
+  splitTriangle,
+  trapezoidDiagonals,
+  midpointArea,
+] as const;
 
 function mixedSales(): StudioExercise {
   const count = randomInt(12, 30);

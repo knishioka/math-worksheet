@@ -497,13 +497,13 @@ export const PATTERN_COUNT_OVERRIDES: Partial<
   ...Object.fromEntries(
     Object.entries(SUPPLEMENTAL_PATTERNS)
       .filter(([, definition]) => definition.type === 'word')
-      .map(([pattern]) => [
-        pattern,
-        {
-          recommendedCounts: { 1: 6, 2: 12, 3: 12 },
-          maxCounts: { 1: 6, 2: 12, 3: 12 },
-        },
-      ])
+      .map(([pattern, definition]) => {
+        const counts =
+          definition.category === 'geometry'
+            ? countsFromRows([4, 4, 3])
+            : countsFromRows([6, 6, 4]);
+        return [pattern, { recommendedCounts: counts, maxCounts: counts }];
+      })
   ),
   // 式欄を付けた問題用紙と、解説付き解答の両方がA4に収まる行数。
   ...Object.fromEntries(
@@ -525,6 +525,10 @@ export const PATTERN_COUNT_OVERRIDES: Partial<
   'data-change-jap': {
     recommendedCounts: { 1: 4, 2: 8, 3: 9 },
     maxCounts: { 1: 4, 2: 8, 3: 9 },
+  },
+  'geometry-angle-jap': {
+    recommendedCounts: { 1: 4, 2: 6, 3: 9 },
+    maxCounts: { 1: 4, 2: 6, 3: 9 },
   },
   'add-counting': {
     recommendedCounts: { 1: 4, 2: 8, 3: 12 },

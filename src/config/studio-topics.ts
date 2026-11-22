@@ -41,7 +41,7 @@ export const STUDIO_TOPICS = {
   },
   'composite-area': {
     grade: 4,
-    printRows: { ja: [6, 5, 4], en: [7, 5, 4] },
+    printRows: { ja: [4, 3, 3], en: [4, 3, 3] },
     topics: ['geometry'],
     ja: ['複合図形と道の面積', '図形を分け、欠けた部分や道の重なりを引く。'],
     en: [
@@ -117,7 +117,7 @@ export const STUDIO_TOPICS = {
   },
   'triangle-ratio': {
     grade: 5,
-    printRows: { ja: [6, 5, 4], en: [6, 4, 3] },
+    printRows: { ja: [4, 3, 3], en: [4, 3, 2] },
     topics: ['geometry', 'ratio'],
     ja: ['三角形の面積比', '高さが等しい三角形を底辺の比で分ける。'],
     en: [
@@ -183,10 +183,16 @@ export const STUDIO_TOPICS = {
   },
   sectors: {
     grade: 6,
-    printRows: { ja: [7, 6, 4], en: [7, 5, 4] },
+    printRows: { ja: [4, 3, 3], en: [4, 3, 3] },
     topics: ['geometry'],
-    ja: ['円とおうぎ形', '回転角から、おうぎ形の面積や弧の長さを求める。'],
-    en: ['Circular Sectors', 'Find a swept area or an arc length from a turn.'],
+    ja: [
+      '円とおうぎ形',
+      '図の中心角を読み、面積・弧の長さ・周りの長さを求める。',
+    ],
+    en: [
+      'Circular Sectors',
+      'Read a central angle to find an area, arc length or perimeter.',
+    ],
   },
   motion: {
     grade: 6,
@@ -213,7 +219,7 @@ export const STUDIO_TOPICS = {
   },
   'cube-section': {
     grade: 6,
-    printRows: { ja: [6, 5, 4], en: [7, 4, 3] },
+    printRows: { ja: [4, 3, 3], en: [4, 3, 2] },
     topics: ['geometry'],
     ja: [
       '立方体の切断',

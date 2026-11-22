@@ -41,6 +41,11 @@ describe('新しい学習内容の印刷', () => {
       const answerLabel = english ? 'Answer' : '答え';
       const view = render(<ProblemList {...props} />);
       expect(problems[0].type).toBe(english ? 'word-en' : 'word');
+      if (problems[0].figure) {
+        const name = screen.getByRole('img').getAttribute('aria-label');
+        expect(name).toBeTruthy();
+        expect(/[ぁ-んァ-ン一-龥]/.test(name!)).toBe(!english);
+      }
       expect(
         screen.queryByRole('list', { name: listName })
       ).not.toBeInTheDocument();
@@ -58,6 +63,34 @@ describe('新しい学習内容の印刷', () => {
         expect(screen.getByText(step)).toBeInTheDocument();
     }
   );
+
+  it('底辺の比と灰色の領域を印刷し、面積は解答用紙だけに載せる', () => {
+    const problem: WordProblem = {
+      id: 'midpoint',
+      type: 'word',
+      operation: 'division',
+      problemText:
+        '三角形ABCの面積は60cm²で、EはADの中点です。灰色の三角形の面積は何cm²ですか。',
+      figure: { kind: 'split-triangle', left: 4, right: 6, midpoint: true },
+      answer: 12,
+      unit: 'cm²',
+    };
+    const props = {
+      problems: [problem],
+      settings,
+      layoutColumns: 1 as const,
+      printMode: true,
+    };
+    const view = render(<ProblemList {...props} />);
+    const diagram = screen.getByRole('img', {
+      name: /BDとDCの比は4対6。三角形BDE/,
+    });
+    expect(diagram).toHaveTextContent('BD : DC = 4 : 6');
+    expect(screen.queryByText(/12cm²/)).not.toBeInTheDocument();
+    view.rerender(<ProblemList {...props} showAnswers />);
+    expect(screen.getByRole('img')).toBeInTheDocument();
+    expect(screen.getByText('答え: 12cm²')).toBeInTheDocument();
+  });
 
   it('あまりの解答欄があり、解答表示時のみ値が見える', () => {
     const problem: BasicProblem = {
