@@ -49,8 +49,8 @@ function sweptArea(): StudioExercise {
   const area = Math.round((314 * radius * radius * angle) / 360) / 100;
   return exercise(
     [
-      `長さ${radius}cmの棒が片端を中心に平面上で${angle}°回ります。棒が通った部分の面積は何cm²ですか。円周率は3.14とします。`,
-      `A ${radius} cm rod pivots ${angle}° around one end on a flat surface. What area does it sweep out? Use 3.14 for pi.`,
+      `長さ${radius}cmの棒が片端を中心に図の角度だけ回ります。棒が通った灰色の部分は何cm²ですか。円周率は3.14とします。`,
+      `A ${radius} cm rod turns about one end through the angle shown. What shaded area does it sweep out? Use 3.14 for pi.`,
     ],
     area,
     ['cm²', 'cm²'],
@@ -58,7 +58,8 @@ function sweptArea(): StudioExercise {
       `おうぎ形が円全体のどの割合かを中心角で求める。`,
       `Multiply the disk area by the fraction of a full turn.`,
     ],
-    `3.14 × ${radius} × ${radius} × ${angle} ÷ 360 = ${area}`
+    `3.14 × ${radius} × ${radius} × ${angle} ÷ 360 = ${area}`,
+    { kind: 'sector', angle, highlight: 'area' }
   );
 }
 
@@ -68,8 +69,8 @@ function arcLength(): StudioExercise {
   const length = Math.round((628 * radius * angle) / 360) / 100;
   return exercise(
     [
-      `半径${radius}mの円形トラックに沿って、中心角${angle}°の分だけ走りました。走った距離は何mですか。円周率は3.14とします。`,
-      `A runner follows an arc of a circular track with radius ${radius} m. The arc subtends ${angle}° at the centre. How long is the arc? Use 3.14 for pi.`,
+      `半径${radius}mの円形トラックのうち、図の太い弧を走りました。走った距離は何mですか。円周率は3.14とします。`,
+      `On a circular track of radius ${radius} m, a runner follows the bold arc. How far does the runner go? Use 3.14 for pi.`,
     ],
     length,
     ['m', 'm'],
@@ -77,11 +78,33 @@ function arcLength(): StudioExercise {
       `円周に中心角が一周に占める割合をかける。`,
       `Take the same fraction of the circumference as the angle is of a full turn.`,
     ],
-    `2 × 3.14 × ${radius} × ${angle} ÷ 360 = ${length}`
+    `2 × 3.14 × ${radius} × ${angle} ÷ 360 = ${length}`,
+    { kind: 'sector', angle, highlight: 'arc' }
   );
 }
 
-export const sectors = [sweptArea, arcLength] as const;
+function sectorPerimeter(): StudioExercise {
+  const radius = randomInt(2, 8) * 2;
+  const angle = [90, 180, 270][randomInt(0, 2)];
+  const perimeter =
+    Math.round((628 * radius * angle) / 360 + 200 * radius) / 100;
+  return exercise(
+    [
+      `半径${radius}cmのおうぎ形を太線に沿って切り取ります。切り取った形の周りの長さは何cmですか。円周率は3.14とします。`,
+      `Cut out the sector of radius ${radius} cm along the bold outline. What is the perimeter of the cutout? Use 3.14 for pi.`,
+    ],
+    perimeter,
+    ['cm', 'cm'],
+    [
+      '円周に中心角の割合をかけて弧の長さを求め、半径二本分を足す。',
+      'Take the indicated fraction of the circumference, then add the two straight radii.',
+    ],
+    `2 × 3.14 × ${radius} × ${angle} ÷ 360 + 2 × ${radius} = ${perimeter}`,
+    { kind: 'sector', angle, highlight: 'perimeter' }
+  );
+}
+
+export const sectors = [sweptArea, arcLength, sectorPerimeter] as const;
 
 function slidingCard(): StudioExercise {
   const width = randomInt(4, 10);
@@ -207,8 +230,8 @@ function parallelSlice(): StudioExercise {
   const height = randomInt(1, edge - 1);
   return exercise(
     [
-      `一辺${edge}cmの立方体を、底面から${height}cmの高さで底面と平行に切ります。切り口の面積は何cm²ですか。`,
-      `A cube with edge length ${edge} cm is sliced parallel to its base at a height of ${height} cm above it. What is the area of the cross-section?`,
+      `図の立方体を、底面から${height}cmの高さで底面と平行に切ります。切り口の面積は何cm²ですか。`,
+      `Slice the cube parallel to its base at a height of ${height} cm above it. What is the area of the cross-section?`,
     ],
     edge * edge,
     ['cm²', 'cm²'],
@@ -216,7 +239,8 @@ function parallelSlice(): StudioExercise {
       `切り口は底面と同じ大きさの正方形になる。`,
       `The section is a square congruent to the base.`,
     ],
-    `${edge} × ${edge} = ${edge * edge}`
+    `${edge} × ${edge} = ${edge * edge}`,
+    { kind: 'level-slice', edge, height }
   );
 }
 
@@ -225,8 +249,8 @@ function cornerSlice(): StudioExercise {
   const distance = randomInt(2, edge - 1);
   return exercise(
     [
-      `一辺${edge}cmの立方体で、一つの頂点から出る三本の辺に、その頂点から${distance}cmの点を一つずつ取ります。その三点を通る平面で切ると、切り口には何本の辺がありますか。`,
-      `On each edge meeting at one corner of a ${edge} cm cube, mark a point ${distance} cm from that corner. A plane cuts through the three marks. How many sides does the section have?`,
+      `図の黒い点は、同じ頂点からそれぞれ${distance}cmの位置にあります。三点を通る平面で立方体を切ると、切り口には何本の辺がありますか。`,
+      `The marked points are each ${distance} cm from the same corner. A plane cuts through the three marks. How many sides does the section have?`,
     ],
     3,
     ['本', 'sides'],
@@ -234,7 +258,8 @@ function cornerSlice(): StudioExercise {
       `同じ面にある印を二つずつ結ぶ。角に接する三面に線分が一本ずつできる。`,
       `Join each pair of marks on a shared face. Each of the three faces at the corner contributes one segment.`,
     ],
-    `1 + 1 + 1 = 3`
+    `1 + 1 + 1 = 3`,
+    { kind: 'corner-marks', edge, distance }
   );
 }
 
@@ -242,8 +267,8 @@ function diagonalSlice(): StudioExercise {
   const side = randomInt(2, 7);
   return exercise(
     [
-      `一辺${side}cmの立方体を、底面の対角線を通り、底面に垂直な平面で切ります。切り口は長方形です。切ってできる一方の立体の体積は何cm³ですか。`,
-      `Cut a cube of side ${side} cm with a plane through two diagonally opposite vertical edges. The section is a rectangle. What is the volume of one of the two resulting solids?`,
+      '図の立方体を、底面の対角線を通り、底面に垂直な平面で切ります。できた一方の立体の体積は何cm³ですか。',
+      'Cut the cube through the base diagonal with a plane perpendicular to the base, as shown. What is the volume of one of the resulting solids?',
     ],
     side ** 3 / 2,
     ['cm³', 'cm³'],
@@ -251,7 +276,8 @@ function diagonalSlice(): StudioExercise {
       '上面も底面も対角線で二等分される。どの高さでも切り分けた二つの断面積は等しい。',
       'The plane follows a diagonal across the top and base. At every height it divides the square into two equal triangles.',
     ],
-    `${side} × ${side} × ${side} ÷ 2 = ${side ** 3 / 2}`
+    `${side} × ${side} × ${side} ÷ 2 = ${side ** 3 / 2}`,
+    { kind: 'diagonal-slice', edge: side }
   );
 }
 

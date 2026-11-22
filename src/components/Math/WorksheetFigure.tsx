@@ -1,5 +1,12 @@
 import type { ReactElement } from 'react';
 import type { WorksheetFigure as Figure } from '../../types';
+import { CubeSectionDiagram } from './diagrams/CubeSectionDiagram';
+import {
+  GardenDiagram,
+  SchoolGeometryDiagram,
+  SectorDiagram,
+  TriangleRatioDiagram,
+} from './diagrams/GeometryDiagrams';
 
 export function WorksheetFigure({
   figure,
@@ -8,6 +15,26 @@ export function WorksheetFigure({
   figure: Figure;
   english?: boolean;
 }): ReactElement {
+  switch (figure.kind) {
+    case 'polygon':
+    case 'rectangle':
+    case 'split-angle':
+    case 'circle':
+      return <SchoolGeometryDiagram figure={figure} />;
+    case 'corner-garden':
+    case 'crossing-paths':
+    case 'garden-border':
+      return <GardenDiagram figure={figure} english={english} />;
+    case 'split-triangle':
+    case 'trapezoid-diagonals':
+      return <TriangleRatioDiagram figure={figure} english={english} />;
+    case 'sector':
+      return <SectorDiagram figure={figure} english={english} />;
+    case 'level-slice':
+    case 'corner-marks':
+    case 'diagonal-slice':
+      return <CubeSectionDiagram figure={figure} english={english} />;
+  }
   if (figure.kind === 'cube-net') {
     const { first } = figure;
     return (

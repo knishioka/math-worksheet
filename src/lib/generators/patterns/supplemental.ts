@@ -42,7 +42,8 @@ function word(
   problemText: string,
   answer: number | string,
   operation: Operation = 'addition',
-  unit?: string
+  unit?: string,
+  figure?: WordProblem['figure']
 ): WordProblem {
   return {
     id: generateId(),
@@ -52,6 +53,7 @@ function word(
     answer,
     unit,
     showCalculation: true,
+    figure,
   };
 }
 function shuffle<T>(values: T[]): T[] {
@@ -295,56 +297,59 @@ export function generateSupplementalProblems(
         );
       }
       case 'geometry-shapes-jap': {
-        const triangle = i % 2 === 0;
-        return i % 4 < 2
-          ? word(
-              `${triangle ? '三角形' : '四角形'}の ${i % 2 === 0 ? '辺' : '頂点'}は いくつ？`,
-              triangle ? 3 : 4,
-              'addition',
-              'つ'
-            )
-          : word(
-              `まっすぐな ${triangle ? 3 : 4}本の 辺で かこまれた かたちは？`,
-              triangle ? '三角形' : '四角形'
-            );
+        const sides = value % 2 === 0 ? 3 : 4;
+        const nameShape = i % 4 >= 2;
+        return word(
+          nameShape
+            ? '図の かたちの 名前は？'
+            : `図の ${i % 2 === 0 ? '辺' : '頂点'}は いくつ？`,
+          nameShape ? (sides === 3 ? '三角形' : '四角形') : sides,
+          'addition',
+          nameShape ? undefined : 'つ',
+          { kind: 'polygon', sides }
+        );
       }
       case 'geometry-perimeter-jap': {
         const a = randomInt(2, 12),
           b = randomInt(2, 12);
         return word(
-          `たて${a}cm、よこ${b}cmの長方形。まわりの長さは？`,
+          '図の長方形のまわりの長さは何cmですか。',
           2 * (a + b),
           'addition',
-          'cm'
+          'cm',
+          { kind: 'rectangle', width: b, height: a }
         );
       }
       case 'geometry-rectangle-area-jap': {
         const a = randomInt(2, 20),
           b = i % 2 === 0 ? a : randomInt(2, 20);
         return word(
-          `たて${a}cm、よこ${b}cmの${a === b ? '正方形' : '長方形'}。面積は？`,
+          `図の${a === b ? '正方形' : '長方形'}の面積は何cm²ですか。`,
           a * b,
           'multiplication',
-          'cm²'
+          'cm²',
+          { kind: 'rectangle', width: b, height: a }
         );
       }
       case 'geometry-angle-jap': {
         const total = i % 2 === 0 ? 90 : 180,
           a = randomInt(1, total / 10 - 1) * 10;
         return word(
-          `${total === 90 ? '直角' : '一直線の角'}を2つに分けました。一方が${a}°のとき、もう一方は何度？`,
+          `角AOBは${total === 90 ? '直角' : '一直線の角'}です。角AOCが${a}°のとき、角COBは何度ですか。`,
           total - a,
           'subtraction',
-          '°'
+          '°',
+          { kind: 'split-angle', total, known: a }
         );
       }
       case 'geometry-circle-jap': {
         const r = randomInt(1, 10);
         return word(
-          `半径${r}cmの円の面積は？ 円周率は3.14とします。`,
+          '図の円の面積は何cm²ですか。円周率は3.14とします。',
           Math.round(r * r * 314) / 100,
           'multiplication',
-          'cm²'
+          'cm²',
+          { kind: 'circle', radius: r }
         );
       }
       case 'data-count-jap': {

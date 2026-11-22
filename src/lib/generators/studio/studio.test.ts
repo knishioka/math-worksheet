@@ -29,6 +29,7 @@ const solvers: Record<StudioTopic, Solver[]> = {
   'composite-area': [
     ([w, h, x, y]): number => w * h - x * y,
     ([w, h, p]): number => w * p + h * p - p * p,
+    ([w, h, p]): number => 2 * w * p + 2 * (h - 2 * p) * p,
   ],
   'changing-counts': [
     ([n, r, p, s]): number => (n * r - s) / (r + p),
@@ -64,6 +65,7 @@ const solvers: Record<StudioTopic, Solver[]> = {
   'triangle-ratio': [
     ([t, a, b]): number => (t * a) / (a + b),
     ([a, b, t]): number => t * (1 + b / a) ** 2,
+    ([t, a, b]): number => ((t / 2) * a) / (a + b),
   ],
   exchange: [
     ([n, p, s, t]): number => (t - n * s) / (p - s),
@@ -78,6 +80,7 @@ const solvers: Record<StudioTopic, Solver[]> = {
   sectors: [
     ([r, a, pi]): number => (pi * r * r * a) / 360,
     ([r, a, pi]): number => (2 * pi * r * a) / 360,
+    ([r, a, pi]): number => 2 * r * (1 + (pi * a) / 360),
   ],
   motion: [
     ([w, h, s]): number => w * h + s * h,
@@ -183,6 +186,47 @@ describe.each(Object.keys(STUDIO_TOPICS) as StudioTopic[])('%s', (topic) => {
           const values = (
             problem.problemText.match(/\d+(?:\.\d+)?/g) ?? []
           ).map(Number);
+          const figure = problem.figure;
+          if (
+            topic === 'composite-area' ||
+            topic === 'triangle-ratio' ||
+            topic === 'sectors' ||
+            topic === 'cube-section'
+          )
+            expect(figure).toBeDefined();
+          switch (figure?.kind) {
+            case 'corner-garden':
+              expect(values).toEqual([figure.cutWidth, figure.cutHeight]);
+              values.unshift(figure.width, figure.height);
+              break;
+            case 'crossing-paths':
+            case 'garden-border':
+              expect(values).toEqual([figure.pathWidth]);
+              values.unshift(figure.width, figure.height);
+              break;
+            case 'split-triangle':
+              values.push(figure.left, figure.right);
+              expect(figure.midpoint).toBe(
+                problem.problemText.includes(english ? 'midpoint' : '中点')
+              );
+              break;
+            case 'trapezoid-diagonals':
+              expect(values.slice(0, 2)).toEqual([figure.top, figure.bottom]);
+              break;
+            case 'sector':
+              values.splice(1, 0, figure.angle);
+              break;
+            case 'level-slice':
+              expect(values).toEqual([figure.height]);
+              values.unshift(figure.edge);
+              break;
+            case 'corner-marks':
+              expect(values).toEqual([figure.distance]);
+              break;
+            case 'diagonal-slice':
+              values.push(figure.edge);
+              break;
+          }
           if (problem.figure?.kind === 'depth-graph')
             values.push(problem.figure.firstDepth, problem.figure.lastDepth);
           if (problem.figure?.kind === 'cube-net') {

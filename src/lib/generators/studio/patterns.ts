@@ -170,8 +170,8 @@ function cornerCut(): StudioExercise {
   const y = randomInt(2, 6);
   return exercise(
     [
-      `横${width}m、縦${height}mの長方形の花壇から、すみにある横${x}m、縦${y}mの長方形を通路にします。残る花壇は何m²ですか。`,
-      `A rectangular garden measures ${width} m by ${height} m. A ${x} m by ${y} m rectangle in one corner becomes a path. How many square metres of garden remain?`,
+      `図の右上の通路は横${x}m、縦${y}mです。灰色の花壇の面積は何m²ですか。`,
+      `The path in the top right corner is ${x} m wide and ${y} m tall. What is the area of the shaded garden in square metres?`,
     ],
     width * height - x * y,
     ['m²', 'm²'],
@@ -179,7 +179,8 @@ function cornerCut(): StudioExercise {
       `全体の長方形から通路の長方形を引く。`,
       `Subtract the area of the path from the original rectangle.`,
     ],
-    `${width} × ${height} − ${x} × ${y} = ${width * height - x * y}`
+    `${width} × ${height} − ${x} × ${y} = ${width * height - x * y}`,
+    { kind: 'corner-garden', width, height, cutWidth: x, cutHeight: y }
   );
 }
 
@@ -189,8 +190,8 @@ function crossingPaths(): StudioExercise {
   const path = randomInt(2, 4);
   return exercise(
     [
-      `横${width}m、縦${height}mの庭を、幅${path}mのまっすぐな道が縦と横に一本ずつ端から端まで横切ります。直角に交わる道の面積は合わせて何m²ですか。`,
-      `A ${width} m by ${height} m garden has two paths, each ${path} m wide. One spans its length, the other its width. They cross at right angles inside the garden. What is their combined area?`,
+      `図の庭を横切る二本の道は、どちらも幅${path}mです。道の面積は合わせて何m²ですか。`,
+      `Each shaded path across the garden is ${path} m wide. What is their combined area in square metres?`,
     ],
     path * (width + height - path),
     ['m²', 'm²'],
@@ -198,11 +199,35 @@ function crossingPaths(): StudioExercise {
       `二本の長方形を足すと交差した正方形を二度数える。`,
       `Add the two rectangles, then subtract their shared square.`,
     ],
-    `${width} × ${path} + ${height} × ${path} − ${path} × ${path} = ${path * (width + height - path)}`
+    `${width} × ${path} + ${height} × ${path} − ${path} × ${path} = ${path * (width + height - path)}`,
+    { kind: 'crossing-paths', width, height, pathWidth: path }
   );
 }
 
-export const compositeArea = [cornerCut, crossingPaths] as const;
+function gardenBorder(): StudioExercise {
+  const width = randomInt(12, 20);
+  const height = randomInt(8, 14);
+  const pathWidth = randomInt(1, 3);
+  const insideWidth = width - 2 * pathWidth;
+  const insideHeight = height - 2 * pathWidth;
+  const area = width * height - insideWidth * insideHeight;
+  return exercise(
+    [
+      `庭の内側を囲む灰色の道は、どこも幅${pathWidth}mです。道の面積は何m²ですか。`,
+      `The shaded path around the inside of the garden is ${pathWidth} m wide everywhere. What is its area in square metres?`,
+    ],
+    area,
+    ['m²', 'm²'],
+    [
+      '中央の長方形は、縦も横も道の幅二本分だけ短い。その面積を庭全体から引く。',
+      'Subtract two path widths from each garden dimension. Subtract the area of that inner rectangle from the whole garden.',
+    ],
+    `${width} × ${height} − ${insideWidth} × ${insideHeight} = ${area}`,
+    { kind: 'garden-border', width, height, pathWidth }
+  );
+}
+
+export const compositeArea = [cornerCut, crossingPaths, gardenBorder] as const;
 
 function breakage(): StudioExercise {
   const count = randomInt(22, 30);

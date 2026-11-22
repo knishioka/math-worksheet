@@ -150,10 +150,44 @@ describe('補完教材の出題契約', () => {
       });
     }
   });
-  it('面積・平均・中央値・約数・倍数を問題文から再計算できる', () => {
+  it.each(patterns.filter((pattern) => pattern.startsWith('geometry-')))(
+    '%s: 図の条件から答えを確かめる',
+    (pattern) => {
+      for (const p of generateSupplementalProblems(pattern, 20)) {
+        if (p.type !== 'word' || !p.figure) throw new Error('Expected diagram');
+        const f = p.figure;
+        switch (f.kind) {
+          case 'rectangle':
+            expect(p.answer).toBe(
+              pattern === 'geometry-perimeter-jap'
+                ? 2 * (f.height + f.width)
+                : f.height * f.width
+            );
+            break;
+          case 'circle':
+            expect(p.answer).toBeCloseTo(3.14 * f.radius ** 2);
+            break;
+          case 'polygon':
+            expect(p.answer).toBe(
+              p.problemText.includes('名前')
+                ? f.sides === 3
+                  ? '三角形'
+                  : '四角形'
+                : f.sides
+            );
+            break;
+          case 'split-angle':
+            expect(p.problemText).toContain(f.known + '°');
+            expect(p.answer).toBe(f.total - f.known);
+            break;
+          default:
+            throw new Error('Unexpected school geometry diagram');
+        }
+      }
+    }
+  );
+  it('平均・中央値・約数・倍数を問題文から再計算できる', () => {
     for (const pattern of [
-      'geometry-rectangle-area-jap',
-      'geometry-circle-jap',
       'data-average-jap',
       'data-median-jap',
       'number-gcd-jap',
@@ -163,10 +197,6 @@ describe('補完教材の出題契約', () => {
       for (const p of generateSupplementalProblems(pattern, 30)) {
         if (p.type !== 'word') throw new Error('Expected word');
         const values = p.problemText.match(/\d+(?:\.\d+)?/g)!.map(Number);
-        if (pattern === 'geometry-rectangle-area-jap')
-          expect(p.answer).toBe(values[0] * values[1]);
-        if (pattern === 'geometry-circle-jap')
-          expect(p.answer).toBeCloseTo(values[0] ** 2 * 3.14);
         if (pattern === 'data-average-jap')
           expect(p.answer).toBe(values.slice(1, 5).reduce((a, b) => a + b) / 4);
         if (pattern === 'data-median-jap')

@@ -111,7 +111,26 @@ export interface MissingNumberProblem {
   missingPosition: 'operand1' | 'operand2' | 'answer';
 }
 
+export type GardenFigure = { width: number; height: number } & (
+  | { kind: 'corner-garden'; cutWidth: number; cutHeight: number }
+  | { kind: 'crossing-paths' | 'garden-border'; pathWidth: number }
+);
+
+export type CubeSectionFigure =
+  | { kind: 'level-slice'; edge: number; height: number }
+  | { kind: 'corner-marks'; edge: number; distance: number }
+  | { kind: 'diagonal-slice'; edge: number };
+
 export type WorksheetFigure =
+  | { kind: 'polygon'; sides: 3 | 4 }
+  | { kind: 'rectangle'; width: number; height: number }
+  | { kind: 'split-angle'; total: 90 | 180; known: number }
+  | { kind: 'circle'; radius: number }
+  | GardenFigure
+  | { kind: 'split-triangle'; left: number; right: number; midpoint: boolean }
+  | { kind: 'trapezoid-diagonals'; top: number; bottom: number }
+  | { kind: 'sector'; angle: number; highlight: 'area' | 'arc' | 'perimeter' }
+  | CubeSectionFigure
   | { kind: 'cube-net'; first: number }
   | {
       kind: 'depth-graph';
